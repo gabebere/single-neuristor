@@ -4,7 +4,7 @@ Single VO₂ neuristor simulator (paper-faithful Zhang–Qiu–Di Ventra model).
 This script implements the electrical/thermal ODEs and the hysteretic R(T) model used for
 single-device VO₂ oscillators. It is **vectorized, NumPy-only**, and produces the same
 currents/voltages/temperatures as the original code with straightforward parameters.
-
+HELLO WORLD
 Model summary
 -------------
 Electrical ODE (node voltage V across VO₂, series load R_load, capacitor C):
