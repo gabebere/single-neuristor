@@ -515,7 +515,7 @@ if __name__ == "__main__":
         except ValueError:
             raise SystemExit("Could not parse --vin_list. Use comma-separated floats like '9,11,13'.")
     else:
-        vins = [9.0, 11.0, 13.0, 15.0, 17.0]
+        vins = [-9.0, -11.0, -13.0, -15.0, -17.0]
 
     import matplotlib.pyplot as plt
     import os

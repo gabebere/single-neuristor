@@ -410,20 +410,21 @@ def _detect_spike_times(
     I_vo2: List[float],
     threshold_A: float = 1e-3,
 ) -> List[float]:
-    """Detect spike times (in seconds) in I_vo2 as local maxima above `threshold_A`.
+    """Detect spike times (in seconds) in I_vo2 as local maxima of |I| above `threshold_A`.
 
     A sample at index i is a spike if:
-        I[i] > threshold_A, I[i] > I[i-1], and I[i] >= I[i+1].
-    This is a simple, robust detector sufficient for clean VO₂ oscillations.
+        |I[i]| > threshold_A, |I[i]| > |I[i-1]|, and |I[i]| >= |I[i+1]|.
+    This makes the detector insensitive to the sign of the bias (±Vin).
     """
     n = len(time_s)
     if n < 3:
         return []
     t = np.asarray(time_s, dtype=float)
     I = np.asarray(I_vo2, dtype=float)
+    mag = np.abs(I)
     spikes: List[float] = []
     for i in range(1, n - 1):
-        if I[i] > threshold_A and I[i] > I[i - 1] and I[i] >= I[i + 1]:
+        if mag[i] > threshold_A and mag[i] > mag[i - 1] and mag[i] >= mag[i + 1]:
             spikes.append(t[i])
     return spikes
 
@@ -529,6 +530,11 @@ if __name__ == "__main__":
         action="store_true",
         help="Use paper-exact preset (Zhang–Qiu–Di Ventra): additive mixing, Table-1 constants, zero coupling, plot I_load with 0–5 mA scale on per-V plots.",
     )
+    parser.add_argument(
+        "--negative",
+        action="store_true",
+        help="If set, use the negative of all Vin values in the sweep (e.g. 10.5–15.5 → -10.5 to -15.5).",
+    )
     args = parser.parse_args()
 
     t_end = args.t_end_us * 1e-6
@@ -546,6 +552,9 @@ if __name__ == "__main__":
         step = 0.05
         n_steps = int(round((v_max - v_min) / step))
         vins = [v_min + step * i for i in range(n_steps + 1)]
+    # Optionally flip all Vin values to negative for reverse-bias sweep.
+    if getattr(args, "negative", False):
+        vins = [-v for v in vins]
 
     import matplotlib.pyplot as plt
     from matplotlib.colors import Normalize
@@ -663,5 +672,87 @@ if __name__ == "__main__":
         ax.set_ylabel("Count")
         ax.set_title("Inter-spike interval histogram (I_vo2 spikes, 25–300 µs window)")
         ax.grid(True)
+
+        # --- Mean ISI vs Vin (with spread) ---
+        # For each Vin that oscillates, compute the mean and standard deviation of the ISI
+        mean_isi_us = []
+        std_isi_us = []
+        for v in vin_values:
+            isi_us = isi_data[v]
+            mean_isi_us.append(float(np.mean(isi_us)))
+            std_isi_us.append(float(np.std(isi_us)))
+
+        # Frequency (MHz) from mean ISI (µs): f_MHz = 1 / <ISI_µs>
+        freq_MHz = [1.0 / val for val in mean_isi_us]
+
+        fig2, ax2 = plt.subplots(figsize=(9, 5))
+        ax2.errorbar(
+            vin_values,
+            mean_isi_us,
+            yerr=std_isi_us,
+            fmt="o-",
+            capsize=3,
+        )
+        ax2.set_xlabel("Vin (V)")
+        ax2.set_ylabel("Mean inter-spike interval (µs)")
+        ax2.set_title("Mean ISI vs Vin (25–300 µs window)")
+        ax2.grid(True)
+
+        # --- Frequency vs Vin ---
+        fig3, ax3 = plt.subplots(figsize=(9, 5))
+        ax3.plot(vin_values, freq_MHz, "o-")
+        ax3.set_xlabel("Vin (V)")
+        ax3.set_ylabel("Oscillation frequency (MHz)")
+        ax3.set_title("Oscillation frequency vs Vin (25–300 µs window)")
+        ax3.grid(True)
+
+        # --- Peak temperature vs Vin (steady‑state window) ---
+        # For each Vin, compute the maximum temperature in the 25–300 µs window.
+        peak_T_K = []
+        for v in vin_values:
+            data = results[v]
+            time_s = data["time_s"]
+            T_series = _series_first(data["T_K"])
+            if not time_s or not T_series:
+                peak_T_K.append(np.nan)
+                continue
+
+            t_arr = np.asarray(time_s, dtype=float)
+            T_arr = np.asarray(T_series, dtype=float)
+            t_us = t_arr * 1e6
+
+            # Restrict to the same "steady‑state" window used for the ISI analysis.
+            mask = (t_us >= 25.0) & (t_us <= 300.0)
+            if np.any(mask):
+                T_win = T_arr[mask]
+            else:
+                # Fallback to the full trace if the window is empty for some reason.
+                T_win = T_arr
+
+            peak_T_K.append(float(np.max(T_win)))
+
+        fig4, ax4 = plt.subplots(figsize=(9, 5))
+        ax4.plot(vin_values, peak_T_K, "o-")
+        ax4.set_xlabel("Vin (V)")
+        ax4.set_ylabel("Peak temperature (K)")
+        ax4.set_title("Peak device temperature vs Vin (25–300 µs window)")
+        ax4.grid(True)
+
+        # --- Integral of peak temperature vs Vin ---
+        # Compute cumulative integral I(V) = ∫_{V_min}^{V} T_peak(V') dV'
+        # using the trapezoidal rule on the (vin_values, peak_T_K) samples.
+        peak_T_arr = np.asarray(peak_T_K, dtype=float)
+        vin_arr = np.asarray(vin_values, dtype=float)
+        integral_peak_T = [0.0]
+        for i in range(1, len(vin_arr)):
+            dV = vin_arr[i] - vin_arr[i - 1]
+            integral_peak_T.append(integral_peak_T[-1] + 0.5 * (peak_T_arr[i] + peak_T_arr[i - 1]) * dV)
+
+        fig5, ax5 = plt.subplots(figsize=(9, 5))
+        ax5.plot(vin_values, integral_peak_T, "o-")
+        ax5.set_xlabel("Vin (V)")
+        ax5.set_ylabel("∫ T_peak dV  (K·V)")
+        ax5.set_title("Numerical integral of peak temperature vs Vin")
+        ax5.grid(True)
 
     plt.show()
