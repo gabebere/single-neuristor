@@ -1,3 +1,6 @@
+#Peak Voltage vs 
+# Power vs time
+
 """
 Single VO₂ neuristor simulator (paper-faithful Zhang–Qiu–Di Ventra model).
 
@@ -77,7 +80,7 @@ class YuanhangCircuitParams:
     """Electrical and thermal circuit parameters for a single neuristor.
     R_series is the load resistor; C_par the node capacitance; thermal parameters use SI."""
     R_series_kohm: float = 12.0
-    C_par_pF: float = 145.34619293
+    C_par_pF: float = 300.34619293
     Cth_mW_ns_per_K: float = 49.62776831
     Sth_mW_per_K: float = 0.20558726
     couple_factor: float = 0.0
@@ -515,7 +518,7 @@ if __name__ == "__main__":
         except ValueError:
             raise SystemExit("Could not parse --vin_list. Use comma-separated floats like '9,11,13'.")
     else:
-        vins = [-9.0, -11.0, -13.0, -15.0, -17.0]
+        vins = [15.5,15.6]
 
     import matplotlib.pyplot as plt
     import os

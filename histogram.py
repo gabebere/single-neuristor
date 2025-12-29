@@ -77,8 +77,8 @@ class YuanhangResistParams:
 class YuanhangCircuitParams:
     """Electrical and thermal circuit parameters for a single neuristor.
     R_series is the load resistor; C_par the node capacitance; thermal parameters use SI."""
-    R_series_kohm: float = 12.0
-    C_par_pF: float = 145.34619293
+    R_series_kohm: float = 14.0
+    C_par_pF: float = 200.0
     Cth_mW_ns_per_K: float = 49.62776831
     Sth_mW_per_K: float = 0.20558726
     couple_factor: float = 0.0
@@ -429,6 +429,90 @@ def _detect_spike_times(
     return spikes
 
 
+# --- Oscillation-detection helpers ---
+def _has_oscillations(
+    data: SimOut,
+    t_start_us: float = 25.0,
+    t_end_us: float = 300.0,
+    threshold_A: float = 1e-3,
+    min_spikes: int = 4,
+) -> bool:
+    """Return True if the given SimOut exhibits at least `min_spikes` spikes in I_vo2
+    within the time window [t_start_us, t_end_us]. By default, min_spikes=4, which
+    corresponds to requiring roughly three consecutive oscillation cycles (four peaks)
+    before classifying a Vin as oscillatory.
+
+    This uses the same spike-detection logic as the ISI analysis, so it is
+    consistent with the definition of "oscillatory" used for the histograms.
+    """
+    time_s = data["time_s"]
+    I_vo2 = _series_first(data["I_vo2"])
+    if not time_s or not I_vo2:
+        return False
+    t_arr = np.asarray(time_s, dtype=float)
+    I_arr = np.asarray(I_vo2, dtype=float)
+    t_us = t_arr * 1e6
+    mask = (t_us >= t_start_us) & (t_us <= t_end_us)
+    if not np.any(mask):
+        return False
+    t_win = t_arr[mask]
+    I_win = I_arr[mask]
+    spike_times = _detect_spike_times(t_win.tolist(), I_win.tolist(), threshold_A=threshold_A)
+    return len(spike_times) >= min_spikes
+
+
+def _auto_find_oscillatory_band(
+    v_start: float,
+    v_step: float,
+    v_max: float,
+    t_end: float,
+    dt: float,
+    start_branch: str,
+    lattice_shape: Tuple[int, int],
+    noise_seed: int | None,
+    resist_params: YuanhangResistParams | None,
+    circuit_params: YuanhangCircuitParams | None,
+) -> Tuple[float | None, float | None]:
+    """Coarsely scan Vin from v_start in steps of v_step up to v_max and detect
+    the first and last voltages that show oscillations.
+
+    Returns (v_min_osc, v_max_osc); either may be None if no oscillatory Vin
+    is found within the scan range.
+    """
+    v_min_osc: float | None = None
+    v_max_osc: float | None = None
+
+    n_steps = int(math.floor((v_max - v_start) / v_step))
+    print(
+        f"[auto_domain] Coarse sweep: Vin from {v_start:.2f} V to {v_max:.2f} V "
+        f"in steps of {v_step:.2f} V ({n_steps + 1} points)"
+    )
+    for i in range(n_steps + 1):
+        v = v_start + i * v_step
+        sim = _simulate_single_neuristor(
+            Vin=v,
+            t_end=t_end,
+            dt=dt,
+            resist_params=resist_params,
+            circuit_params=circuit_params,
+            start_branch=start_branch,
+            lattice_shape=lattice_shape,
+            noise_seed=None if noise_seed is None else noise_seed + int(v * 10),
+        )
+        if _has_oscillations(sim):
+            print(f"[auto_domain]   Vin = {v:.2f} V → oscillatory")
+            if v_min_osc is None:
+                v_min_osc = v
+            v_max_osc = v
+        elif v_min_osc is not None:
+            print(f"[auto_domain]   Vin = {v:.2f} V → non-oscillatory (exiting band, stopping coarse scan)")
+            break
+        else:
+            print(f"[auto_domain]   Vin = {v:.2f} V → non-oscillatory")
+
+    return v_min_osc, v_max_osc
+
+
 def _simulate_single_neuristor(
     Vin: float | Sequence[float],
     t_end: float = 60e-6,
@@ -494,7 +578,9 @@ def _run_vin_sweep(
 ):
     """Run a Vin sweep and return a dict {Vin: SimOut}. Pass-through of parameter objects."""
     results = {}
-    for v in vins:
+    total = len(vins)
+    for idx, v in enumerate(vins, start=1):
+        print(f"[sweep] Simulating Vin = {v:.3f} V ({idx}/{total})")
         results[v] = _simulate_single_neuristor(
             Vin=v,
             t_end=t_end,
@@ -505,6 +591,7 @@ def _run_vin_sweep(
             lattice_shape=lattice_shape,
             noise_seed=None if noise_seed is None else noise_seed + int(v * 10),
         )
+    print("[sweep] Completed Vin sweep.")
     return results
 
 
@@ -533,32 +620,18 @@ if __name__ == "__main__":
     parser.add_argument(
         "--negative",
         action="store_true",
-        help="If set, use the negative of all Vin values in the sweep (e.g. 10.5–15.5 → -10.5 to -15.5).",
+        help="If set, for the default sweep include both negative and positive Vin (−15.5→−10.5 and 10.5→15.5). For an explicit --vin_list, flip all Vin values to negative.",
+    )
+    parser.add_argument(
+        "--auto_domain",
+        action="store_true",
+        help="Automatically find the oscillatory Vin band using 0.5 V steps from 0 V, then sweep that band with 0.05 V resolution.",
     )
     args = parser.parse_args()
 
     t_end = args.t_end_us * 1e-6
     dt = args.dt_ns * 1e-9
     lattice_shape = (max(1, args.nx), max(1, args.ny))
-
-    if args.vin_list.strip():
-        try:
-            vins = [float(val.strip()) for val in args.vin_list.split(",") if val.strip()]
-        except ValueError:
-            raise SystemExit("Could not parse --vin_list. Use comma-separated floats like '9,11,13'.")
-    else:
-        # Default: sweep Vin from 10.5 V to 15.5 V in 0.01 V steps.
-        v_min, v_max = 10.5, 15.5
-        step = 0.05
-        n_steps = int(round((v_max - v_min) / step))
-        vins = [v_min + step * i for i in range(n_steps + 1)]
-    # Optionally flip all Vin values to negative for reverse-bias sweep.
-    if getattr(args, "negative", False):
-        vins = [-v for v in vins]
-
-    import matplotlib.pyplot as plt
-    from matplotlib.colors import Normalize
-    import os
 
     resist_params = YuanhangResistParams()
     circuit_params = YuanhangCircuitParams()
@@ -586,6 +659,67 @@ if __name__ == "__main__":
         circuit_params.noise_strength = 0.0
         circuit_params.dimension = 1
         circuit_params.T_base_K = 325.0
+
+    if args.auto_domain:
+        # Coarse scan: 0.5 V steps from 0 V up to an upper bound (default 20 V)
+        v_start = 0.0
+        v_step_coarse = 0.5
+        v_max_scan = 50
+        v_min_osc, v_max_osc = _auto_find_oscillatory_band(
+            v_start=v_start,
+            v_step=v_step_coarse,
+            v_max=v_max_scan,
+            t_end=t_end,
+            dt=dt,
+            start_branch=args.start_branch,
+            lattice_shape=lattice_shape,
+            noise_seed=args.noise_seed,
+            resist_params=resist_params,
+            circuit_params=circuit_params,
+        )
+        if v_min_osc is None or v_max_osc is None:
+            raise SystemExit(
+                f"auto_domain: no oscillatory Vin found between {v_start:.2f} V and {v_max_scan:.2f} V. "
+                "Try increasing the scan range or adjusting circuit parameters (e.g., R_series)."
+            )
+        print(
+            f"[auto_domain] Coarse sweep done. Detected oscillatory band from "
+            f"{v_min_osc:.2f} V to {v_max_osc:.2f} V."
+        )
+        # Fine sweep within the oscillatory band using 0.05 V steps.
+        step_fine = 0.05
+        n_steps = int(round((v_max_osc - v_min_osc) / step_fine))
+        vins = [v_min_osc + step_fine * i for i in range(n_steps + 1)]
+        print(
+            f"[auto_domain] Fine sweep: {len(vins)} points from {v_min_osc:.2f} V "
+            f"to {v_max_osc:.2f} V in steps of {step_fine:.2f} V."
+        )
+    else:
+        if args.vin_list.strip():
+            # User-specified Vin list
+            try:
+                vins = [float(val.strip()) for val in args.vin_list.split(",") if val.strip()]
+            except ValueError:
+                raise SystemExit("Could not parse --vin_list. Use comma-separated floats like '9,11,13'.")
+            # For an explicit list, --negative flips all Vin values to negative.
+            if args.negative:
+                vins = [-v for v in vins]
+        else:
+            # Default: sweep Vin from 10.5 V to 15.5 V in 0.05 V steps.
+            v_min, v_max = 10.5, 17.95
+            step = 0.05
+            n_steps = int(round((v_max - v_min) / step))
+            pos_vins = [v_min + step * i for i in range(n_steps + 1)]
+            if args.negative:
+                # Build a symmetric sweep: negative from -15.5→-10.5, then positive 10.5→15.5.
+                neg_vins = list(reversed([-v for v in pos_vins]))
+                vins = neg_vins + pos_vins
+            else:
+                vins = pos_vins
+
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import Normalize
+    import os
 
     results = _run_vin_sweep(
         vins,
@@ -645,6 +779,7 @@ if __name__ == "__main__":
         vmax_global = float(max(vin_values))
         cmap = plt.cm.viridis
         norm = Normalize(vmin=vmin_global, vmax=vmax_global)
+        vin_arr = np.asarray(vin_values, dtype=float)
 
         # For each Vin, use a single bin that exactly covers that Vin's ISI range.
         # Bar width represents ISI spread; bar height is the number of intervals.
@@ -682,29 +817,73 @@ if __name__ == "__main__":
             mean_isi_us.append(float(np.mean(isi_us)))
             std_isi_us.append(float(np.std(isi_us)))
 
-        # Frequency (MHz) from mean ISI (µs): f_MHz = 1 / <ISI_µs>
-        freq_MHz = [1.0 / val for val in mean_isi_us]
+        # Convert to arrays and (optionally) split into negative and positive Vin sets.
+        mean_isi_arr = np.asarray(mean_isi_us, dtype=float)
+        std_isi_arr = np.asarray(std_isi_us, dtype=float)
 
-        fig2, ax2 = plt.subplots(figsize=(9, 5))
-        ax2.errorbar(
-            vin_values,
-            mean_isi_us,
-            yerr=std_isi_us,
-            fmt="o-",
-            capsize=3,
-        )
-        ax2.set_xlabel("Vin (V)")
-        ax2.set_ylabel("Mean inter-spike interval (µs)")
-        ax2.set_title("Mean ISI vs Vin (25–300 µs window)")
-        ax2.grid(True)
+        # Frequency (MHz) from mean ISI (µs): f_MHz = 1.0 / <ISI_µs>
+        freq_MHz_arr = 1.0 / mean_isi_arr
+
+        # When --negative is used and there are both negative and positive Vin values,
+        # show separate panels. Otherwise, show a single plot with all Vin (typically positive).
+        neg_mask = (vin_arr < 0.0)
+        pos_mask = (vin_arr > 0.0)
+
+        if getattr(args, "negative", False) and np.any(neg_mask) and np.any(pos_mask):
+            vin_neg = vin_arr[neg_mask]
+            vin_pos = vin_arr[pos_mask]
+            mean_neg = mean_isi_arr[neg_mask]
+            mean_pos = mean_isi_arr[pos_mask]
+            std_neg = std_isi_arr[neg_mask]
+            std_pos = std_isi_arr[pos_mask]
+
+            freq_neg = freq_MHz_arr[neg_mask]
+            freq_pos = freq_MHz_arr[pos_mask]
+
+            # --- Mean ISI vs Vin: negative and positive panels side by side ---
+            fig2, (ax2_neg, ax2_pos) = plt.subplots(1, 2, figsize=(11, 4.5), sharey=True)
+            ax2_neg.errorbar(vin_neg, mean_neg, yerr=std_neg, fmt="o-", capsize=3)
+            ax2_neg.set_title("Mean ISI vs Vin (negative bias)")
+            ax2_neg.set_xlabel("Vin (V)")
+            ax2_neg.set_ylabel("Mean inter-spike interval (µs)")
+            ax2_neg.grid(True)
+
+            ax2_pos.errorbar(vin_pos, mean_pos, yerr=std_pos, fmt="o-", capsize=3)
+            ax2_pos.set_title("Mean ISI vs Vin (positive bias)")
+            ax2_pos.set_xlabel("Vin (V)")
+            ax2_pos.grid(True)
+            fig2.suptitle("Mean ISI vs Vin (25–300 µs window)")
+        else:
+            # Single-panel plot (no negative sweep, or only one sign present)
+            fig2, ax2 = plt.subplots(figsize=(9, 4.5))
+            ax2.errorbar(vin_arr, mean_isi_arr, yerr=std_isi_arr, fmt="o-", capsize=3)
+            ax2.set_xlabel("Vin (V)")
+            ax2.set_ylabel("Mean inter-spike interval (µs)")
+            ax2.set_title("Mean ISI vs Vin (25–300 µs window)")
+            ax2.grid(True)
 
         # --- Frequency vs Vin ---
-        fig3, ax3 = plt.subplots(figsize=(9, 5))
-        ax3.plot(vin_values, freq_MHz, "o-")
-        ax3.set_xlabel("Vin (V)")
-        ax3.set_ylabel("Oscillation frequency (MHz)")
-        ax3.set_title("Oscillation frequency vs Vin (25–300 µs window)")
-        ax3.grid(True)
+        if getattr(args, "negative", False) and np.any(neg_mask) and np.any(pos_mask):
+            # Use the same vin_neg/vin_pos, freq_neg/freq_pos as above
+            fig3, (ax3_neg, ax3_pos) = plt.subplots(1, 2, figsize=(11, 4.5), sharey=True)
+            ax3_neg.plot(vin_neg, freq_neg, "o-")
+            ax3_neg.set_title("Frequency vs Vin (negative bias)")
+            ax3_neg.set_xlabel("Vin (V)")
+            ax3_neg.set_ylabel("Oscillation frequency (MHz)")
+            ax3_neg.grid(True)
+
+            ax3_pos.plot(vin_pos, freq_pos, "o-")
+            ax3_pos.set_title("Frequency vs Vin (positive bias)")
+            ax3_pos.set_xlabel("Vin (V)")
+            ax3_pos.grid(True)
+            fig3.suptitle("Oscillation frequency vs Vin (25–300 µs window)")
+        else:
+            fig3, ax3 = plt.subplots(figsize=(9, 4.5))
+            ax3.plot(vin_arr, freq_MHz_arr, "o-")
+            ax3.set_xlabel("Vin (V)")
+            ax3.set_ylabel("Oscillation frequency (MHz)")
+            ax3.set_title("Oscillation frequency vs Vin (25–300 µs window)")
+            ax3.grid(True)
 
         # --- Peak temperature vs Vin (steady‑state window) ---
         # For each Vin, compute the maximum temperature in the 25–300 µs window.
@@ -731,28 +910,31 @@ if __name__ == "__main__":
 
             peak_T_K.append(float(np.max(T_win)))
 
-        fig4, ax4 = plt.subplots(figsize=(9, 5))
-        ax4.plot(vin_values, peak_T_K, "o-")
-        ax4.set_xlabel("Vin (V)")
-        ax4.set_ylabel("Peak temperature (K)")
-        ax4.set_title("Peak device temperature vs Vin (25–300 µs window)")
-        ax4.grid(True)
-
-        # --- Integral of peak temperature vs Vin ---
-        # Compute cumulative integral I(V) = ∫_{V_min}^{V} T_peak(V') dV'
-        # using the trapezoidal rule on the (vin_values, peak_T_K) samples.
         peak_T_arr = np.asarray(peak_T_K, dtype=float)
-        vin_arr = np.asarray(vin_values, dtype=float)
-        integral_peak_T = [0.0]
-        for i in range(1, len(vin_arr)):
-            dV = vin_arr[i] - vin_arr[i - 1]
-            integral_peak_T.append(integral_peak_T[-1] + 0.5 * (peak_T_arr[i] + peak_T_arr[i - 1]) * dV)
 
-        fig5, ax5 = plt.subplots(figsize=(9, 5))
-        ax5.plot(vin_values, integral_peak_T, "o-")
-        ax5.set_xlabel("Vin (V)")
-        ax5.set_ylabel("∫ T_peak dV  (K·V)")
-        ax5.set_title("Numerical integral of peak temperature vs Vin")
-        ax5.grid(True)
+        if getattr(args, "negative", False) and np.any(neg_mask) and np.any(pos_mask):
+            peak_neg = peak_T_arr[neg_mask]
+            peak_pos = peak_T_arr[pos_mask]
+
+            fig4, (ax4_neg, ax4_pos) = plt.subplots(1, 2, figsize=(11, 4.5), sharey=True)
+            ax4_neg.plot(vin_neg, peak_neg, "o-")
+            ax4_neg.set_title("Peak T vs Vin (negative bias)")
+            ax4_neg.set_xlabel("Vin (V)")
+            ax4_neg.set_ylabel("Peak temperature (K)")
+            ax4_neg.grid(True)
+
+            ax4_pos.plot(vin_pos, peak_pos, "o-")
+            ax4_pos.set_title("Peak T vs Vin (positive bias)")
+            ax4_pos.set_xlabel("Vin (V)")
+            ax4_pos.grid(True)
+            fig4.suptitle("Peak device temperature vs Vin (25–300 µs window)")
+        else:
+            fig4, ax4 = plt.subplots(figsize=(9, 4.5))
+            ax4.plot(vin_arr, peak_T_arr, "o-")
+            ax4.set_xlabel("Vin (V)")
+            ax4.set_ylabel("Peak temperature (K)")
+            ax4.set_title("Peak device temperature vs Vin (25–300 µs window)")
+            ax4.grid(True)
+
 
     plt.show()
