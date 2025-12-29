@@ -1,11 +1,11 @@
 
 
-"""isi_analysis.py
+"""plots.py
 
 Post-processing / analysis utilities for the single-neuristor VO₂ simulator.
 
-Goal: Implement Amir's requested analyses without modifying `histogram.py`.
-We import the simulator and helpers from `histogram.py` and only do analysis here.
+Goal: Implement Amir's requested analyses without modifying the simulator core.
+We import the simulator and helpers from `model.py` and only do analysis here.
 
 Implements:
 1) Baselines (cycle minima) of T and V(on device) vs time.
@@ -16,7 +16,7 @@ Implements:
 6) Resistance in the insulating state vs time.
 
 NOTE: The “heater with a second heat equation” requires editing the simulator ODEs
-in `histogram.py`; we can add that once the formulation/parameters are agreed.
+in `model.py`; we can add that once the formulation/parameters are agreed.
 """
 
 from __future__ import annotations
@@ -28,14 +28,15 @@ from typing import Dict, Iterable, List, Tuple, Optional
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Import simulator + helpers from histogram.py
-from histogram import (
+# Import simulator + helpers from model.py
+from model import (
     SimOut,
     YuanhangCircuitParams,
     YuanhangResistParams,
-    _detect_spike_times,
-    _series_first,
-    _simulate_single_neuristor,
+    detect_spike_times,
+    is_oscillatory,
+    series_first,
+    simulate_yuanhang,
 )
 
 
@@ -84,6 +85,52 @@ def _cycle_extrema_stats(y: np.ndarray) -> Tuple[float, float, float, float]:
     return float(np.mean(ymax)), float(np.std(ymax)), float(np.mean(ymin)), float(np.std(ymin))
 
 
+# -----------------------------
+# Core time-trace plot (single run)
+# -----------------------------
+
+def plot_time_traces(
+    data: SimOut,
+    R_series_kohm: float,
+    title: str = "Neuristor time traces",
+) -> None:
+    """Plot V_vo2 & V_load, T_vo2, I_vo2, and P_vo2 vs time.
+
+    V_vo2 is the device voltage; V_load = I_load * R_series.
+    Assumes single-device output (uses first device if lattice).
+    """
+    t_us = np.asarray(data["time_s"], dtype=float) * 1e6
+    V_vo2 = np.asarray(series_first(data["V_node"]), dtype=float)
+    I_load = np.asarray(series_first(data["I_load"]), dtype=float)
+    I_vo2 = np.asarray(series_first(data["I_vo2"]), dtype=float)
+    T_vo2 = np.asarray(series_first(data["T_K"]), dtype=float)
+    V_load = I_load * (float(R_series_kohm) * 1e3)
+    P_vo2 = V_vo2 * I_vo2
+
+    fig, axes = plt.subplots(4, 1, figsize=(9, 9), sharex=True)
+    axes[0].plot(t_us, V_vo2, label="V_vo2 (device)")
+    axes[0].plot(t_us, V_load, label="V_load", alpha=0.8)
+    axes[0].set_ylabel("Voltage (V)")
+    axes[0].legend(loc="best")
+    axes[0].grid(True)
+
+    axes[1].plot(t_us, T_vo2, color="tab:red")
+    axes[1].set_ylabel("T_vo2 (K)")
+    axes[1].grid(True)
+
+    axes[2].plot(t_us, I_vo2, color="tab:green")
+    axes[2].set_ylabel("I_vo2 (A)")
+    axes[2].grid(True)
+
+    axes[3].plot(t_us, P_vo2, color="tab:purple")
+    axes[3].set_ylabel("P_vo2 (W)")
+    axes[3].set_xlabel("time (µs)")
+    axes[3].grid(True)
+
+    fig.suptitle(title)
+    fig.tight_layout()
+
+
 def plot_capacitance_sweep_power_extrema(
     vin: float,
     C_start_pF: float,
@@ -122,7 +169,7 @@ def plot_capacitance_sweep_power_extrema(
     for idx, C in enumerate(C_vals, start=1):
         print(f"[C_sweep] Simulating C = {C:.1f} pF ({idx}/{total})")
         cp = replace(circuit_params, C_par_pF=float(C))
-        d = _simulate_single_neuristor(
+        d = simulate_yuanhang(
             Vin=vin,
             t_end=t_end,
             dt=dt,
@@ -159,11 +206,11 @@ def _compute_isi_us(
     t_end_us: float = 300.0,
 ) -> np.ndarray:
     t = np.asarray(data["time_s"], dtype=float)
-    I = np.asarray(_series_first(data["I_vo2"]), dtype=float)
+    I = np.asarray(series_first(data["I_vo2"]), dtype=float)
     m = _window_mask(data["time_s"], t_start_us, t_end_us)
     if not np.any(m):
         return np.array([])
-    spike_times = _detect_spike_times(t[m].tolist(), I[m].tolist(), threshold_A=threshold_A)
+    spike_times = detect_spike_times(t[m].tolist(), I[m].tolist(), threshold_A=threshold_A)
     if len(spike_times) < 2:
         return np.array([])
     return np.diff(np.asarray(spike_times)) * 1e6
@@ -182,27 +229,16 @@ def _has_oscillations(
 ) -> bool:
     """True if at least `min_spikes` current spikes exist in the window.
 
-    Mirrors histogram.py logic (spike detection uses |I| via _detect_spike_times).
+    Mirrors model.py logic (spike detection uses |I| via detect_spike_times).
     min_spikes=4 corresponds to requiring ~3 consecutive cycles.
     """
-    time_s = data["time_s"]
-    I_vo2 = _series_first(data["I_vo2"])
-    if not time_s or not I_vo2:
-        return False
-
-    t_arr = np.asarray(time_s, dtype=float)
-    I_arr = np.asarray(I_vo2, dtype=float)
-    t_us = t_arr * 1e6
-    mask = (t_us >= t_start_us) & (t_us <= t_end_us)
-    if not np.any(mask):
-        return False
-
-    spike_times = _detect_spike_times(
-        t_arr[mask].tolist(),
-        I_arr[mask].tolist(),
+    return is_oscillatory(
+        data,
+        t_start_us=t_start_us,
+        t_end_us=t_end_us,
         threshold_A=threshold_A,
+        min_spikes=min_spikes,
     )
-    return len(spike_times) >= min_spikes
 
 
 def _auto_find_oscillatory_C_band(
@@ -241,7 +277,7 @@ def _auto_find_oscillatory_C_band(
     for idx, C in enumerate(C_vals, start=1):
         print(f"[auto_Cdomain]   Testing C={C:.1f} pF ({idx}/{len(C_vals)})")
         cp = replace(circuit_params, C_par_pF=float(C))
-        d = _simulate_single_neuristor(
+        d = simulate_yuanhang(
             Vin=vin,
             t_end=t_end,
             dt=dt,
@@ -286,8 +322,8 @@ def mean_frequency_mhz(
 
 def power_trace_W(data: SimOut) -> np.ndarray:
     """Instantaneous device power P(t)=V*I."""
-    V = np.asarray(_series_first(data["V_node"]), dtype=float)
-    I = np.asarray(_series_first(data["I_vo2"]), dtype=float)
+    V = np.asarray(series_first(data["V_node"]), dtype=float)
+    I = np.asarray(series_first(data["I_vo2"]), dtype=float)
     return V * I
 
 
@@ -302,8 +338,8 @@ def plot_baselines_T_and_V_vs_time(
 ) -> None:
     """Plot V(t) and T(t) in the window and mark local minima (baselines) and maxima."""
     t = np.asarray(data["time_s"], dtype=float)
-    V = np.asarray(_series_first(data["V_node"]), dtype=float)
-    T = np.asarray(_series_first(data["T_K"]), dtype=float)
+    V = np.asarray(series_first(data["V_node"]), dtype=float)
+    T = np.asarray(series_first(data["T_K"]), dtype=float)
 
     m = _window_mask(data["time_s"], t_start_us, t_end_us)
     if not np.any(m):
@@ -349,7 +385,7 @@ def plot_Vmax_vs_Vin(
     vmax_list: List[float] = []
     for v in vin_list:
         d = results[v]
-        V = np.asarray(_series_first(d["V_node"]), dtype=float)
+        V = np.asarray(series_first(d["V_node"]), dtype=float)
         m = _window_mask(d["time_s"], t_start_us, t_end_us)
         Vw = V[m] if np.any(m) else V
         vmax_list.append(float(np.max(Vw)))
@@ -418,7 +454,7 @@ def plot_capacitance_effect_on_power(
     plt.figure(figsize=(10, 4.5))
     for C in C_values_pF:
         cp = replace(circuit_params, C_par_pF=float(C))
-        d = _simulate_single_neuristor(
+        d = simulate_yuanhang(
             Vin=vin,
             t_end=t_end,
             dt=dt,
@@ -456,7 +492,7 @@ def plot_frequency_3d_vs_C_and_Rload(
     for Rk in Rload_values_kohm:
         for C in C_values_pF:
             cp = replace(circuit_params, R_series_kohm=float(Rk), C_par_pF=float(C))
-            d = _simulate_single_neuristor(
+            d = simulate_yuanhang(
                 Vin=vin,
                 t_end=t_end,
                 dt=dt,
@@ -485,8 +521,8 @@ def plot_R_insulating_vs_time(
 ) -> None:
     """Plot R(t) and highlight insulating-state parts using g(t) threshold."""
     t = np.asarray(data["time_s"], dtype=float)
-    R = np.asarray(_series_first(data["R_vo2"]), dtype=float)
-    g = np.asarray(_series_first(data["g"]), dtype=float)
+    R = np.asarray(series_first(data["R_vo2"]), dtype=float)
+    g = np.asarray(series_first(data["g"]), dtype=float)
 
     m = _window_mask(data["time_s"], t_start_us, t_end_us)
     tw = t[m] * 1e6
@@ -562,7 +598,7 @@ def main() -> None:
     circuit_params = YuanhangCircuitParams()
 
     if args.paper:
-        # Same as histogram.py 'paper' overrides
+        # Same as model.py / histogram.py 'paper' overrides
         resist_params.R0 = 5.35882879e-3
         resist_params.Ea_over_k = 5.22047417e3
         resist_params.Rm0 = 262.5
@@ -592,7 +628,7 @@ def main() -> None:
         circuit_params = replace(circuit_params, C_par_pF=float(args.Cpar_pF))
 
     # Single run for time-domain plots
-    data_single = _simulate_single_neuristor(
+    data_single = simulate_yuanhang(
         Vin=args.vin,
         t_end=t_end,
         dt=dt,
@@ -606,7 +642,7 @@ def main() -> None:
     if args.vin_list.strip():
         vin_list = _parse_csv_floats(args.vin_list)
         for v in vin_list:
-            results[v] = _simulate_single_neuristor(
+            results[v] = simulate_yuanhang(
                 Vin=v,
                 t_end=t_end,
                 dt=dt,
