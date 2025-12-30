@@ -22,8 +22,9 @@ in `model.py`; we can add that once the formulation/parameters are agreed.
 from __future__ import annotations
 
 import argparse
+import dataclasses
 from dataclasses import replace
-from typing import Dict, Iterable, List, Tuple, Optional
+from typing import Callable, Dict, Iterable, List, Tuple, Optional
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -129,6 +130,685 @@ def plot_time_traces(
 
     fig.suptitle(title)
     fig.tight_layout()
+
+
+def compute_sweep_metrics(
+    data: SimOut,
+    t_start_us: float = 25.0,
+    t_end_us: float = 300.0,
+    threshold_A: float = 1e-3,
+) -> Dict[str, float]:
+    """Compute sweep metrics in a steady-state window for a single SimOut."""
+    t = np.asarray(data["time_s"], dtype=float)
+    V = np.asarray(series_first(data["V_node"]), dtype=float)
+    I = np.asarray(series_first(data["I_vo2"]), dtype=float)
+    T = np.asarray(series_first(data["T_K"]), dtype=float)
+    P = V * I
+
+    m = _window_mask(data["time_s"], t_start_us, t_end_us)
+    if np.any(m):
+        t = t[m]
+        V = V[m]
+        I = I[m]
+        T = T[m]
+        P = P[m]
+
+    spike_times = detect_spike_times(t.tolist(), I.tolist(), threshold_A=threshold_A)
+    if len(spike_times) >= 2:
+        isi_us = np.diff(np.asarray(spike_times)) * 1e6
+        isi_mean_us = float(np.mean(isi_us)) if isi_us.size else float("nan")
+        freq_mhz = 1.0 / isi_mean_us if isi_mean_us > 0 else float("nan")
+    else:
+        isi_mean_us = float("nan")
+        freq_mhz = float("nan")
+
+    return {
+        "Vmax": float(np.max(V)),
+        "Pmax": float(np.max(P)),
+        "Pmin": float(np.min(P)),
+        "Tmax": float(np.max(T)),
+        "Tmin": float(np.min(T)),
+        "ISI_mean_us": isi_mean_us,
+        "freq_MHz": float(freq_mhz),
+        "oscillatory": bool(is_oscillatory(data, t_start_us=t_start_us, t_end_us=t_end_us, threshold_A=threshold_A)),
+    }
+
+
+def _emit_progress(message: str, progress_cb: Callable[[str], None] | None) -> None:
+    if progress_cb is not None:
+        progress_cb(message)
+    else:
+        print(message)
+
+
+def _param_value(
+    param_name: str,
+    Vin: float,
+    resist_params: YuanhangResistParams,
+    circuit_params: YuanhangCircuitParams,
+) -> float:
+    if param_name == "Vin":
+        return float(Vin)
+    if hasattr(resist_params, param_name):
+        return float(getattr(resist_params, param_name))
+    if hasattr(circuit_params, param_name):
+        return float(getattr(circuit_params, param_name))
+    raise ValueError(f"Unknown parameter: {param_name}")
+
+
+def sweep_free_variable(
+    param_name: str,
+    values: List[float],
+    Vin: float,
+    t_end: float,
+    dt: float,
+    resist_params: YuanhangResistParams,
+    circuit_params: YuanhangCircuitParams,
+    start_branch: str = "insulator",
+    lattice_shape: Tuple[int, int] = (1, 1),
+    noise_seed: int | None = None,
+    t_start_us: float = 25.0,
+    t_end_us: float = 300.0,
+    threshold_A: float = 1e-3,
+    progress_cb: Callable[[str], None] | None = None,
+    log_prefix: str = "sweep",
+    log_every: int = 1,
+) -> Dict[str, List[float]]:
+    """Sweep a single parameter and return metrics arrays vs the free variable."""
+    resist_fields = {f.name for f in dataclasses.fields(YuanhangResistParams)}
+    circuit_fields = {f.name for f in dataclasses.fields(YuanhangCircuitParams)}
+    if log_every < 1:
+        raise ValueError("log_every must be >= 1")
+
+    results = {
+        "values": [],
+        "Vmax": [],
+        "Pmax": [],
+        "Pmin": [],
+        "Tmax": [],
+        "Tmin": [],
+        "ISI_mean_us": [],
+        "freq_MHz": [],
+        "oscillatory": [],
+    }
+
+    total = len(values)
+    _emit_progress(f"[{log_prefix}] Running {total} points for {param_name}", progress_cb)
+    for idx, val in enumerate(values):
+        sim = _simulate_with_param(
+            param_name,
+            float(val),
+            Vin,
+            t_end,
+            dt,
+            resist_params,
+            circuit_params,
+            start_branch,
+            lattice_shape,
+            None if noise_seed is None else noise_seed + idx,
+            resist_fields,
+            circuit_fields,
+        )
+        metrics = compute_sweep_metrics(sim, t_start_us=t_start_us, t_end_us=t_end_us, threshold_A=threshold_A)
+        results["values"].append(val)
+        for key in ("Vmax", "Pmax", "Pmin", "Tmax", "Tmin", "ISI_mean_us", "freq_MHz"):
+            results[key].append(float(metrics[key]))
+        results["oscillatory"].append(bool(metrics["oscillatory"]))
+        if (idx + 1) % log_every == 0 or (idx + 1) == total:
+            _emit_progress(
+                f"[{log_prefix}] {idx+1}/{total}: {param_name}={val} → osc={metrics['oscillatory']}, f={metrics['freq_MHz']:.3g} MHz",
+                progress_cb,
+            )
+    return results
+
+
+def _simulate_with_param(
+    param_name: str,
+    value: float,
+    Vin: float,
+    t_end: float,
+    dt: float,
+    resist_params: YuanhangResistParams,
+    circuit_params: YuanhangCircuitParams,
+    start_branch: str,
+    lattice_shape: Tuple[int, int],
+    noise_seed: int | None,
+    resist_fields: set[str],
+    circuit_fields: set[str],
+) -> SimOut:
+    run_vin = Vin
+    resist = replace(resist_params)
+    circuit = replace(circuit_params)
+    if param_name == "Vin":
+        run_vin = value
+    elif param_name in resist_fields:
+        setattr(resist, param_name, float(value))
+    elif param_name in circuit_fields:
+        setattr(circuit, param_name, float(value))
+    else:
+        raise ValueError(f"Unknown sweep parameter: {param_name}")
+    return simulate_yuanhang(
+        Vin=run_vin,
+        t_end=t_end,
+        dt=dt,
+        resist_params=resist,
+        circuit_params=circuit,
+        start_branch=start_branch,
+        lattice_shape=lattice_shape,
+        noise_seed=noise_seed,
+    )
+
+
+def _simulate_with_params(
+    param_x: str,
+    value_x: float,
+    param_y: str,
+    value_y: float,
+    Vin: float,
+    t_end: float,
+    dt: float,
+    resist_params: YuanhangResistParams,
+    circuit_params: YuanhangCircuitParams,
+    start_branch: str,
+    lattice_shape: Tuple[int, int],
+    noise_seed: int | None,
+    resist_fields: set[str],
+    circuit_fields: set[str],
+) -> SimOut:
+    if param_x == param_y:
+        raise ValueError("param_x and param_y must be different")
+    run_vin = Vin
+    resist = replace(resist_params)
+    circuit = replace(circuit_params)
+    for param_name, value in ((param_x, value_x), (param_y, value_y)):
+        if param_name == "Vin":
+            run_vin = float(value)
+        elif param_name in resist_fields:
+            setattr(resist, param_name, float(value))
+        elif param_name in circuit_fields:
+            setattr(circuit, param_name, float(value))
+        else:
+            raise ValueError(f"Unknown sweep parameter: {param_name}")
+    return simulate_yuanhang(
+        Vin=run_vin,
+        t_end=t_end,
+        dt=dt,
+        resist_params=resist,
+        circuit_params=circuit,
+        start_branch=start_branch,
+        lattice_shape=lattice_shape,
+        noise_seed=noise_seed,
+    )
+
+
+def sweep_free_variable_coarse_fine(
+    param_name: str,
+    start: float,
+    stop: float,
+    coarse_step: float,
+    fine_step: float,
+    Vin: float,
+    t_end: float,
+    dt: float,
+    resist_params: YuanhangResistParams,
+    circuit_params: YuanhangCircuitParams,
+    start_branch: str = "insulator",
+    lattice_shape: Tuple[int, int] = (1, 1),
+    noise_seed: int | None = None,
+    t_start_us: float = 25.0,
+    t_end_us: float = 300.0,
+    threshold_A: float = 1e-3,
+    progress_cb: Callable[[str], None] | None = None,
+) -> Dict[str, object]:
+    """Coarse scan to find oscillatory band, then fine sweep to compute metrics."""
+    if coarse_step <= 0 or fine_step <= 0:
+        raise ValueError("coarse_step and fine_step must be > 0")
+
+    coarse_vals = np.arange(start, stop + 0.5 * coarse_step, coarse_step, dtype=float).tolist()
+    coarse_osc = []
+    resist_fields = {f.name for f in dataclasses.fields(YuanhangResistParams)}
+    circuit_fields = {f.name for f in dataclasses.fields(YuanhangCircuitParams)}
+
+    total = len(coarse_vals)
+    _emit_progress(f"[coarse] Running {total} points for {param_name}", progress_cb)
+    for idx, val in enumerate(coarse_vals):
+        sim = _simulate_with_param(
+            param_name,
+            float(val),
+            Vin,
+            t_end,
+            dt,
+            resist_params,
+            circuit_params,
+            start_branch,
+            lattice_shape,
+            None if noise_seed is None else noise_seed + idx,
+            resist_fields,
+            circuit_fields,
+        )
+        osc = is_oscillatory(sim, t_start_us=t_start_us, t_end_us=t_end_us, threshold_A=threshold_A)
+        coarse_osc.append(bool(osc))
+        _emit_progress(f"[coarse] {idx+1}/{total}: {param_name}={val} → osc={osc}", progress_cb)
+
+    if not any(coarse_osc):
+        _emit_progress("[coarse] No oscillatory region found.", progress_cb)
+        return {
+            "coarse_values": coarse_vals,
+            "coarse_oscillatory": coarse_osc,
+            "band_min": None,
+            "band_max": None,
+            "fine_results": None,
+        }
+
+    osc_vals = [v for v, osc in zip(coarse_vals, coarse_osc) if osc]
+    band_min = float(min(osc_vals))
+    band_max = float(max(osc_vals))
+    _emit_progress(f"[coarse] Detected band: {band_min} – {band_max}", progress_cb)
+    fine_vals = np.arange(band_min, band_max + 0.5 * fine_step, fine_step, dtype=float).tolist()
+
+    fine_results = sweep_free_variable(
+        param_name,
+        fine_vals,
+        Vin,
+        t_end,
+        dt,
+        resist_params,
+        circuit_params,
+        start_branch=start_branch,
+        lattice_shape=lattice_shape,
+        noise_seed=noise_seed,
+        t_start_us=t_start_us,
+        t_end_us=t_end_us,
+        threshold_A=threshold_A,
+        progress_cb=progress_cb,
+        log_prefix="fine",
+    )
+
+    return {
+        "coarse_values": coarse_vals,
+        "coarse_oscillatory": coarse_osc,
+        "band_min": band_min,
+        "band_max": band_max,
+        "fine_results": fine_results,
+    }
+
+
+def frequency_from_spikes(
+    data: SimOut,
+    t_start_us: float = 25.0,
+    t_end_us: float = 300.0,
+    threshold_A: float = 1e-3,
+    min_spikes: int = 4,
+) -> float:
+    """Compute frequency from spikes; return NaN if not oscillatory."""
+    time_s = data["time_s"]
+    I_vo2 = series_first(data["I_vo2"])
+    if not time_s or not I_vo2:
+        return float("nan")
+    t_arr = np.asarray(time_s, dtype=float)
+    I_arr = np.asarray(I_vo2, dtype=float)
+    t_us = t_arr * 1e6
+    mask = (t_us >= t_start_us) & (t_us <= t_end_us)
+    if not np.any(mask):
+        return float("nan")
+    spike_times = detect_spike_times(
+        t_arr[mask].tolist(),
+        I_arr[mask].tolist(),
+        threshold_A=threshold_A,
+    )
+    if len(spike_times) < min_spikes:
+        return float("nan")
+    isi_us = np.diff(np.asarray(spike_times)) * 1e6
+    if isi_us.size == 0:
+        return float("nan")
+    mean_isi = float(np.mean(isi_us))
+    return 1.0 / mean_isi if mean_isi > 0.0 else float("nan")
+
+
+def _resolve_bounds_1d(
+    param_name: str,
+    start: float | None,
+    stop: float | None,
+    step: float,
+    Vin: float,
+    t_end: float,
+    dt: float,
+    resist_params: YuanhangResistParams,
+    circuit_params: YuanhangCircuitParams,
+    start_branch: str,
+    lattice_shape: Tuple[int, int],
+    noise_seed: int | None,
+    t_start_us: float,
+    t_end_us: float,
+    threshold_A: float,
+    max_coarse_steps: int,
+    progress_cb: Callable[[str], None] | None,
+    label: str,
+) -> Tuple[float, float, List[float], List[bool]]:
+    if step <= 0:
+        raise ValueError("step must be > 0")
+    if start is None:
+        start = _param_value(param_name, Vin, resist_params, circuit_params)
+    if stop is not None:
+        values = np.arange(start, stop + 0.5 * step, step, dtype=float).tolist()
+        return float(start), float(stop), values, []
+
+    values = [float(start + i * step) for i in range(max_coarse_steps)]
+    resist_fields = {f.name for f in dataclasses.fields(YuanhangResistParams)}
+    circuit_fields = {f.name for f in dataclasses.fields(YuanhangCircuitParams)}
+    osc_flags: List[bool] = []
+    _emit_progress(f"[coarse-{label}] scanning {max_coarse_steps} steps for {param_name}", progress_cb)
+    for idx, val in enumerate(values):
+        sim = _simulate_with_param(
+            param_name,
+            float(val),
+            Vin,
+            t_end,
+            dt,
+            resist_params,
+            circuit_params,
+            start_branch,
+            lattice_shape,
+            None if noise_seed is None else noise_seed + idx,
+            resist_fields,
+            circuit_fields,
+        )
+        osc = is_oscillatory(sim, t_start_us=t_start_us, t_end_us=t_end_us, threshold_A=threshold_A)
+        osc_flags.append(bool(osc))
+        _emit_progress(f"[coarse-{label}] {idx+1}/{max_coarse_steps}: {param_name}={val} → osc={osc}", progress_cb)
+    osc_vals = [v for v, osc in zip(values, osc_flags) if osc]
+    if not osc_vals:
+        _emit_progress(f"[coarse-{label}] no oscillations found; using full coarse range", progress_cb)
+        return float(values[0]), float(values[-1]), values, osc_flags
+    band_min = float(min(osc_vals))
+    band_max = float(max(osc_vals))
+    if band_max == values[-1]:
+        _emit_progress(f"[coarse-{label}] oscillatory through limit; using full coarse range", progress_cb)
+        return float(values[0]), float(values[-1]), values, osc_flags
+    _emit_progress(f"[coarse-{label}] band detected {band_min} – {band_max}", progress_cb)
+    return band_min, band_max, values, osc_flags
+
+
+def sweep_frequency_2d(
+    param_x: str,
+    param_y: str,
+    x_start: float | None,
+    x_stop: float | None,
+    x_step: float,
+    y_start: float | None,
+    y_stop: float | None,
+    y_step: float,
+    Vin: float,
+    t_end: float,
+    dt: float,
+    resist_params: YuanhangResistParams,
+    circuit_params: YuanhangCircuitParams,
+    start_branch: str = "insulator",
+    lattice_shape: Tuple[int, int] = (1, 1),
+    noise_seed: int | None = None,
+    t_start_us: float = 25.0,
+    t_end_us: float = 300.0,
+    threshold_A: float = 1e-3,
+    min_spikes: int = 4,
+    max_coarse_steps: int = 100,
+    progress_cb: Callable[[str], None] | None = None,
+    row_early_stop: bool = True,
+    col_early_stop: bool = True,
+) -> Dict[str, object]:
+    """Sweep two parameters and return frequency grid (NaN for non-oscillatory points).
+
+    If row_early_stop is True, for each fixed X, Y scanning stops once oscillations
+    cease after at least one oscillatory point (assumes monotonicity in Y per X).
+    If col_early_stop is True, for each fixed Y, X scanning stops once oscillations
+    cease after at least one oscillatory point (assumes monotonicity in X per Y).
+    """
+    if x_step <= 0 or y_step <= 0:
+        raise ValueError("x_step and y_step must be > 0")
+    if param_x == param_y:
+        raise ValueError("param_x and param_y must be different")
+
+    x_min, x_max, x_coarse, x_osc = _resolve_bounds_1d(
+        param_x,
+        x_start,
+        x_stop,
+        x_step,
+        Vin,
+        t_end,
+        dt,
+        resist_params,
+        circuit_params,
+        start_branch,
+        lattice_shape,
+        noise_seed,
+        t_start_us,
+        t_end_us,
+        threshold_A,
+        max_coarse_steps,
+        progress_cb,
+        "x",
+    )
+    y_min, y_max, y_coarse, y_osc = _resolve_bounds_1d(
+        param_y,
+        y_start,
+        y_stop,
+        y_step,
+        Vin,
+        t_end,
+        dt,
+        resist_params,
+        circuit_params,
+        start_branch,
+        lattice_shape,
+        noise_seed,
+        t_start_us,
+        t_end_us,
+        threshold_A,
+        max_coarse_steps,
+        progress_cb,
+        "y",
+    )
+
+    x_values = np.arange(x_min, x_max + 0.5 * x_step, x_step, dtype=float).tolist()
+    y_values = np.arange(y_min, y_max + 0.5 * y_step, y_step, dtype=float).tolist()
+    freq_grid = np.full((len(y_values), len(x_values)), np.nan, dtype=float)
+
+    resist_fields = {f.name for f in dataclasses.fields(YuanhangResistParams)}
+    circuit_fields = {f.name for f in dataclasses.fields(YuanhangCircuitParams)}
+    seen_osc_y = [False] * len(y_values)
+    stop_y = [False] * len(y_values)
+    total = len(x_values) * len(y_values)
+    _emit_progress(f"[2d] sweeping {len(x_values)}×{len(y_values)} = {total} points", progress_cb)
+    count = 0
+    for xi, x_val in enumerate(x_values):
+        seen_osc = False
+        for yi, y_val in enumerate(y_values):
+            if col_early_stop and stop_y[yi]:
+                continue
+            sim = _simulate_with_params(
+                param_x,
+                float(x_val),
+                param_y,
+                float(y_val),
+                Vin,
+                t_end,
+                dt,
+                resist_params,
+                circuit_params,
+                start_branch,
+                lattice_shape,
+                None if noise_seed is None else noise_seed + count,
+                resist_fields,
+                circuit_fields,
+            )
+            freq = frequency_from_spikes(
+                sim,
+                t_start_us=t_start_us,
+                t_end_us=t_end_us,
+                threshold_A=threshold_A,
+                min_spikes=min_spikes,
+            )
+            freq_grid[yi, xi] = float(freq)
+            osc = bool(np.isfinite(freq))
+            if osc:
+                seen_osc = True
+                seen_osc_y[yi] = True
+            elif row_early_stop and seen_osc:
+                _emit_progress(
+                    f"[2d] early-stop row at {param_x}={x_val}: {param_y}={y_val} non-oscillatory",
+                    progress_cb,
+                )
+                break
+            elif col_early_stop and seen_osc_y[yi]:
+                stop_y[yi] = True
+                _emit_progress(
+                    f"[2d] early-stop column at {param_y}={y_val}: {param_x}={x_val} non-oscillatory",
+                    progress_cb,
+                )
+            count += 1
+            _emit_progress(
+                f"[2d] {count}/{total}: {param_x}={x_val}, {param_y}={y_val} → {'osc' if osc else 'non-osc'}",
+                progress_cb,
+            )
+
+    return {
+        "x_values": x_values,
+        "y_values": y_values,
+        "freq_MHz": freq_grid,
+        "x_coarse_values": x_coarse,
+        "x_coarse_oscillatory": x_osc,
+        "y_coarse_values": y_coarse,
+        "y_coarse_oscillatory": y_osc,
+    }
+
+
+def plot_frequency_2d(
+    sweep_results: Dict[str, object],
+    x_label: str,
+    y_label: str,
+    title_prefix: str | None = None,
+    log_scale: bool = False,
+    vmin: float | None = None,
+    vmax: float | None = None,
+    cmap_name: str = "viridis",
+    nan_color: str = "lightgray",
+) -> None:
+    """Plot 3D scatter and 2D heatmap of frequency vs two parameters."""
+    x_vals = np.asarray(sweep_results["x_values"], dtype=float)
+    y_vals = np.asarray(sweep_results["y_values"], dtype=float)
+    freq = np.asarray(sweep_results["freq_MHz"], dtype=float)
+    X, Y = np.meshgrid(x_vals, y_vals)
+    mask = np.isfinite(freq)
+
+    finite = freq[mask]
+    if finite.size == 0:
+        finite_min = 0.0
+        finite_max = 1.0
+    else:
+        finite_min = float(np.min(finite))
+        finite_max = float(np.max(finite))
+    if vmin is None:
+        vmin = finite_min
+    if vmax is None:
+        vmax = finite_max
+    if log_scale and (vmin <= 0.0 or not np.isfinite(vmin)):
+        log_scale = False
+
+    cmap = plt.get_cmap(cmap_name).copy()
+    cmap.set_bad(color=nan_color)
+    if log_scale:
+        from matplotlib.colors import LogNorm
+
+        norm = LogNorm(vmin=max(vmin, 1e-12), vmax=vmax)
+    else:
+        from matplotlib.colors import Normalize
+
+        norm = Normalize(vmin=vmin, vmax=vmax)
+
+    fig3d = plt.figure(figsize=(7.5, 5.5))
+    ax3d = fig3d.add_subplot(111, projection="3d")
+    sc = ax3d.scatter(X[mask], Y[mask], freq[mask], c=freq[mask], cmap=cmap, norm=norm, s=12)
+    ax3d.set_xlabel(x_label)
+    ax3d.set_ylabel(y_label)
+    ax3d.set_zlabel("Frequency (MHz)")
+    ax3d.set_title(f"{title_prefix} — Frequency (3D)" if title_prefix else "Frequency (3D)")
+    fig3d.colorbar(sc, ax=ax3d, pad=0.1, shrink=0.7, label="Frequency (MHz)")
+
+    def _edges_from_centers(values: np.ndarray) -> np.ndarray:
+        if values.size == 1:
+            return np.array([values[0] - 0.5, values[0] + 0.5], dtype=float)
+        edges = np.zeros(values.size + 1, dtype=float)
+        edges[1:-1] = 0.5 * (values[:-1] + values[1:])
+        edges[0] = values[0] - 0.5 * (values[1] - values[0])
+        edges[-1] = values[-1] + 0.5 * (values[-1] - values[-2])
+        return edges
+
+    fig2d, ax2d = plt.subplots(figsize=(6.5, 4.5))
+    masked = np.ma.array(freq, mask=~np.isfinite(freq))
+    x_edges = _edges_from_centers(x_vals)
+    y_edges = _edges_from_centers(y_vals)
+    img = ax2d.pcolormesh(
+        x_edges,
+        y_edges,
+        masked,
+        shading="auto",
+        cmap=cmap,
+        norm=norm,
+    )
+    ax2d.set_xlabel(x_label)
+    ax2d.set_ylabel(y_label)
+    ax2d.set_title(f"{title_prefix} — Frequency (heatmap)" if title_prefix else "Frequency (heatmap)")
+    fig2d.colorbar(img, ax=ax2d, label="Frequency (MHz)")
+
+
+def plot_sweep_metrics(
+    sweep_results: Dict[str, List[float]],
+    free_label: str = "Free variable",
+    title_prefix: str | None = None,
+) -> None:
+    """Plot key metrics vs the swept variable, each on its own figure."""
+    values = np.asarray(sweep_results["values"], dtype=float)
+
+    def _title(metric: str) -> str:
+        return f"{title_prefix} — {metric}" if title_prefix else metric
+
+    fig_v, ax_v = plt.subplots(figsize=(6.5, 4.0))
+    ax_v.plot(values, sweep_results["Vmax"], "o-")
+    ax_v.set_ylabel("Vmax (V)")
+    ax_v.set_xlabel(free_label)
+    ax_v.set_title(_title("Vmax vs free variable"))
+    ax_v.grid(True)
+
+    fig_p, ax_p = plt.subplots(figsize=(6.5, 4.0))
+    ax_p.plot(values, sweep_results["Pmax"], "o-", label="Pmax")
+    ax_p.plot(values, sweep_results["Pmin"], "o-", label="Pmin")
+    ax_p.set_ylabel("Power (W)")
+    ax_p.set_xlabel(free_label)
+    ax_p.set_title(_title("Pmax/Pmin vs free variable"))
+    ax_p.legend(loc="best")
+    ax_p.grid(True)
+
+    fig_t, ax_t = plt.subplots(figsize=(6.5, 4.0))
+    ax_t.plot(values, sweep_results["Tmax"], "o-", label="Tmax")
+    ax_t.plot(values, sweep_results["Tmin"], "o-", label="Tmin")
+    ax_t.set_ylabel("Temperature (K)")
+    ax_t.set_xlabel(free_label)
+    ax_t.set_title(_title("Tmax/Tmin vs free variable"))
+    ax_t.legend(loc="best")
+    ax_t.grid(True)
+
+    fig_f, ax_f = plt.subplots(figsize=(6.5, 4.0))
+    ax_f.plot(values, sweep_results["freq_MHz"], "o-")
+    ax_f.set_ylabel("Frequency (MHz)")
+    ax_f.set_xlabel(free_label)
+    ax_f.set_title(_title("Oscillation frequency vs free variable"))
+    ax_f.grid(True)
+
+    fig_isi, ax_isi = plt.subplots(figsize=(6.5, 4.0))
+    ax_isi.plot(values, sweep_results["ISI_mean_us"], "o-")
+    ax_isi.set_ylabel("Mean ISI (us)")
+    ax_isi.set_xlabel(free_label)
+    ax_isi.set_title(_title("Mean ISI vs free variable"))
+    ax_isi.grid(True)
 
 
 def plot_capacitance_sweep_power_extrema(

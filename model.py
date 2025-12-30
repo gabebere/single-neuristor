@@ -22,6 +22,11 @@ _KELVIN_OFFSET: float = 273.15
 T = TypeVar("T")
 
 
+class SimulationCancelled(Exception):
+    """Raised when a running simulation is cancelled."""
+
+
+
 def P(x: float, gamma: float) -> float:
     """Smooth proximity window P(x; γ) controlling minor-loop influence."""
     return 0.5 * (1.0 - math.sin(gamma * x)) * (1.0 + math.tanh(_PI * _PI - 2.0 * _PI * x))
@@ -287,7 +292,13 @@ class YuanhangArraySimulator:
         if Cth_factor is not None:
             self.Cth_factor = _broadcast_array(Cth_factor, self.N, "Cth_factor")
 
-    def run(self, t_end: float, dt: float, noise_seed: int | None = None) -> SimOut:
+    def run(
+        self,
+        t_end: float,
+        dt: float,
+        noise_seed: int | None = None,
+        cancel_cb: Callable[[], bool] | None = None,
+    ) -> SimOut:
         """Integrate the ODEs for t∈[0, t_end] with step dt (Euler). Returns SimOut with traces."""
         steps = int(t_end / dt)
         if steps <= 0:
@@ -311,6 +322,8 @@ class YuanhangArraySimulator:
         rng = np.random.default_rng(noise_seed)
         t = 0.0
         for idx in range(1, steps + 1):
+            if cancel_cb is not None and cancel_cb():
+                raise SimulationCancelled("cancelled")
             R_vo2, g_val = self.hysteresis.evaluate(self.T_K)
             I_load = (self.V_bias - self.Vn) / self.R_series_ohm
             I_vo2 = self.Vn / np.maximum(R_vo2, _EPS)
@@ -429,6 +442,7 @@ def simulate_yuanhang(
     start_branch: str = "insulator",
     lattice_shape: Tuple[int, int] = (1, 1),
     noise_seed: int | None = None,
+    cancel_cb: Callable[[], bool] | None = None,
 ) -> SimOut:
     """Convenience wrapper. Create a simulator and run it once; returns SimOut."""
     simulator = YuanhangArraySimulator(
@@ -439,7 +453,7 @@ def simulate_yuanhang(
         start_branch=start_branch,
         init=init,
     )
-    return simulator.run(t_end=t_end, dt=dt, noise_seed=noise_seed)
+    return simulator.run(t_end=t_end, dt=dt, noise_seed=noise_seed, cancel_cb=cancel_cb)
 
 
 def sweep_1d(run_one: Callable[[T], SimOut], values: Iterable[T]) -> Dict[T, SimOut]:
@@ -465,6 +479,7 @@ def simulate_vin_sweep(
     lattice_shape: Tuple[int, int] = (1, 1),
     noise_seed: int | None = None,
     seed_offset: int = 1,
+    cancel_cb: Callable[[], bool] | None = None,
 ) -> Dict[float, SimOut]:
     """Convenience sweep over a list of Vin values. Returns {Vin: SimOut}.
 
@@ -486,6 +501,7 @@ def simulate_vin_sweep(
             start_branch=start_branch,
             lattice_shape=lattice_shape,
             noise_seed=run_seed,
+            cancel_cb=cancel_cb,
         )
     return results
 

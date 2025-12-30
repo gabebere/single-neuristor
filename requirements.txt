@@ -1,0 +1,6 @@
+matplotlib
+numpy
+pandas
+plotly
+streamlit
+streamlit-plotly-events

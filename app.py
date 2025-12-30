@@ -1,68 +1,213 @@
 """
-Streamlit GUI for the VO₂ neuristor simulator and analyses.
+Streamlit app with job system for neuristor simulations.
 
-Implements the specification in IMPLEMENTATION_GUIDE.md:
-- Uses model.py as the single source of truth for simulation and helpers.
-- Exposes PI-requested analyses (baselines, Vmax vs Vin, power plots, C sweeps, 3D freq, R_ins).
-- Supports single runs, 1D/2D sweeps, oscillation-domain finding, exports, and progress/logging UX.
+Features:
+- Job persistence on disk (single/sweep1d/sweep2d)
+- Batch submit
+- Interactive Plotly charts with click-to-inspect values
+- Clear, human-readable parameter labels
 """
 from __future__ import annotations
 
-import dataclasses
+import csv
 import io
+import shutil
+import dataclasses
 import json
-from typing import Any, Dict, Iterable, List, Tuple
+import os
+import time
+import uuid
+import queue
+import threading
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 import streamlit as st
+import matplotlib.pyplot as plt
+from plotly.subplots import make_subplots
 
-import plots as analysis
+import plots
 from model import (
-    SimOut,
+    SimulationCancelled,
     YuanhangCircuitParams,
     YuanhangResistParams,
-    detect_spike_times,
-    find_oscillatory_band_1d,
-    is_oscillatory,
     series_first,
     simulate_yuanhang,
 )
 
+try:
+    from streamlit_plotly_events import plotly_events
 
-# ---------------------------------------------------------------------------
-# Streamlit / session setup
-# ---------------------------------------------------------------------------
-
-
-st.set_page_config(page_title="VO₂ Neuristor Simulator", layout="wide")
-
-if "logs" not in st.session_state:
-    st.session_state["logs"] = []
-if "status" not in st.session_state:
-    st.session_state["status"] = {"state": "Idle", "mode": "", "detail": ""}
-if "cancel_requested" not in st.session_state:
-    st.session_state["cancel_requested"] = False
-if "last_sim" not in st.session_state:
-    st.session_state["last_sim"] = None
-if "last_config" not in st.session_state:
-    st.session_state["last_config"] = None
-if "last_sweep_df" not in st.session_state:
-    st.session_state["last_sweep_df"] = None
-if "last_metrics" not in st.session_state:
-    st.session_state["last_metrics"] = None
-if "inputs_initialized" not in st.session_state:
-    st.session_state["inputs_initialized"] = False
+    _HAS_PLOTLY_EVENTS = True
+except Exception:
+    _HAS_PLOTLY_EVENTS = False
 
 
-# ---------------------------------------------------------------------------
-# Presets and parameter management
-# ---------------------------------------------------------------------------
+JOB_ROOT = Path(__file__).with_name("jobs")
+JOB_ROOT.mkdir(exist_ok=True)
 
+MPL_FIGSIZE_WIDE = (16, 9)
+MPL_DPI = 320
+MPL_LINEWIDTH = 1.6
+MPL_TITLE_SIZE = 16
+MPL_LABEL_SIZE = 12
+MPL_TICK_SIZE = 11
+
+
+class JobCancelled(Exception):
+    """Raised when a job is cancelled by the user."""
+
+
+PARAM_LABELS = {
+    "Vin": "Input Voltage (Vin) [V]",
+    "R_series_kohm": "Series Resistance (R_series) [kOhm]",
+    "C_par_pF": "Parasitic Capacitance (C_par) [pF]",
+    "Cth_mW_ns_per_K": "Thermal Capacitance (C_th) [mW*ns/K]",
+    "Sth_mW_per_K": "Thermal Conductance (S_th) [mW/K]",
+    "couple_factor": "Thermal Coupling Factor",
+    "Cth_factor": "Thermal Capacitance Factor",
+    "noise_strength": "Thermal Noise Strength",
+    "T_base_K": "Base Temperature (T_base) [K]",
+    "R0": "Pre-exponential Resistance (R0) [Ohm]",
+    "Ea_over_k": "Activation Energy / kB (Ea/k) [K]",
+    "Rm0": "Metallic Resistance Base (Rm0) [Ohm]",
+    "Rm_factor": "Metallic Resistance Factor (Rm_factor)",
+    "w": "Hysteresis Width (w) [K]",
+    "Tc_K": "Critical Temperature (Tc) [K]",
+    "beta": "Hysteresis Sharpness (beta) [1/K]",
+    "gamma": "Hysteresis Window (gamma)",
+    "width_factor": "Width Factor",
+    "T_min_K": "Min Temperature Clamp (T_min) [K]",
+    "T_max_K": "Max Temperature Clamp (T_max) [K]",
+    "reversal_threshold_K": "Reversal Threshold (dT) [K]",
+    "t_end_us": "Simulation Duration [us]",
+    "dt_ns": "Time Step [ns]",
+    "t_start_us": "Steady-State Start [us]",
+    "t_end_window_us": "Steady-State End [us]",
+    "threshold_A": "Spike Threshold [A]",
+    "start_branch": "Initial Branch",
+    "nx": "Lattice Nx",
+    "ny": "Lattice Ny",
+}
+
+
+def _label(name: str) -> str:
+    return PARAM_LABELS.get(name, name)
+
+
+def _xy_key(x: float, y: float, digits: int = 12) -> tuple[float, float]:
+    return (round(float(x), digits), round(float(y), digits))
+
+
+def _get_removed_store() -> Dict[str, Any]:
+    return st.session_state.setdefault("removed_points", {})
+
+
+def _get_job_removals(job_id: str) -> Dict[str, Any]:
+    store = _get_removed_store()
+    if job_id not in store:
+        store[job_id] = {"sweep1d": set(), "sweep2d": set(), "time_traces": {}}
+    return store[job_id]
+
+
+def _toggle_remove_index(indices: set[int], idx: int) -> bool:
+    if idx in indices:
+        indices.remove(idx)
+        return False
+    indices.add(idx)
+    return True
+
+
+def _toggle_remove_xy(points: set[tuple[float, float]], x: float, y: float) -> bool:
+    key = _xy_key(x, y)
+    if key in points:
+        points.remove(key)
+        return False
+    points.add(key)
+    return True
+
+
+def _apply_time_trace_removals(df: pd.DataFrame, removals: Dict[int, set[int]]) -> pd.DataFrame:
+    if not removals:
+        return df
+    df2 = df.copy()
+    col_map = {0: "V_vo2", 1: "V_load", 2: "T_K", 3: "I_vo2", 4: "P_vo2"}
+    max_idx = len(df2) - 1
+    for trace_idx, idxs in removals.items():
+        col = col_map.get(trace_idx)
+        if col is None or col not in df2.columns:
+            continue
+        safe = [i for i in idxs if 0 <= i <= max_idx]
+        if safe:
+            df2.loc[safe, col] = np.nan
+    return df2
+
+
+def _apply_sweep1d_removals(df: pd.DataFrame, removed_idx: set[int]) -> pd.DataFrame:
+    if not removed_idx:
+        return df
+    df2 = df.copy()
+    max_idx = len(df2) - 1
+    safe = [i for i in removed_idx if 0 <= i <= max_idx]
+    if not safe:
+        return df2
+    for col in ["Vmax", "Pmax", "Pmin", "Tmax", "Tmin", "freq_MHz", "ISI_mean_us"]:
+        if col in df2.columns:
+            df2.loc[safe, col] = np.nan
+    return df2
+
+
+def _apply_sweep2d_removals(df: pd.DataFrame, removed_xy: set[tuple[float, float]], x_label: str, y_label: str) -> pd.DataFrame:
+    if not removed_xy:
+        return df
+    df2 = df.copy()
+    keys = [_xy_key(x, y) for x, y in zip(df2[x_label], df2[y_label])]
+    mask = [key in removed_xy for key in keys]
+    df2.loc[mask, "freq_MHz"] = np.nan
+    return df2
+
+
+def _chunked(items: List[str], size: int) -> List[List[str]]:
+    return [items[i : i + size] for i in range(0, len(items), size)]
+
+
+def _num_input(label: str, key: str, value: float | None = None, **kwargs):
+    if key in st.session_state:
+        return st.number_input(label, key=key, **kwargs)
+    if value is None:
+        return st.number_input(label, key=key, **kwargs)
+    return st.number_input(label, key=key, value=value, **kwargs)
+
+
+def _int_input(label: str, key: str, value: int | None = None, **kwargs):
+    if key in st.session_state:
+        return st.number_input(label, key=key, step=1, **kwargs)
+    if value is None:
+        return st.number_input(label, key=key, step=1, **kwargs)
+    return st.number_input(label, key=key, value=value, step=1, **kwargs)
+
+
+def _text_input(label: str, key: str, value: str | None = None, **kwargs):
+    if key in st.session_state:
+        return st.text_input(label, key=key, **kwargs)
+    if value is None:
+        return st.text_input(label, key=key, **kwargs)
+    return st.text_input(label, key=key, value=value, **kwargs)
+
+
+def _render_input_grid(keys: List[str], input_fn, columns: int = 4) -> None:
+    for row in _chunked(keys, columns):
+        cols = st.columns(columns)
+        for col, key in zip(cols, row):
+            with col:
+                input_fn(_label(key), key=key)
 
 def _paper_params() -> tuple[YuanhangResistParams, YuanhangCircuitParams]:
-    """Return paper preset for convenience."""
     resist = YuanhangResistParams()
     circuit = YuanhangCircuitParams()
     resist.R0 = 5.35882879e-3
@@ -90,859 +235,1390 @@ def _paper_params() -> tuple[YuanhangResistParams, YuanhangCircuitParams]:
     return resist, circuit
 
 
-def _default_params() -> tuple[YuanhangResistParams, YuanhangCircuitParams]:
-    return YuanhangResistParams(), YuanhangCircuitParams()
+# -----------------------------
+# Job persistence
+# -----------------------------
 
 
-INPUT_KEYS = [
-    "vin",
-    "vin_list",
-    "example_vin",
-    "start_branch",
-    "t_end_us",
-    "dt_ns",
-    "t_start_us",
-    "t_end_window_us",
-    "threshold_A",
-    "noise_seed",
-    "nx",
-    "ny",
-    "R_series_kohm",
-    "C_par_pF",
-    "T_base_K",
-    "Cth_mW_ns_per_K",
-    "Sth_mW_per_K",
-    "Cth_factor",
-    "couple_factor",
-    "noise_strength",
-    "R0",
-    "Ea_over_k",
-    "Rm0",
-    "Rm_factor",
-    "w",
-    "Tc_K",
-    "beta",
-    "gamma",
-    "width_factor",
-    "T_min_K",
-    "T_max_K",
-    "reversal_threshold_K",
-    "c_list",
-    "c_start",
-    "c_stop",
-    "c_step",
-    "r_list",
-]
+def _job_id() -> str:
+    ts = time.strftime("%Y%m%d_%H%M%S")
+    return f"{ts}_{uuid.uuid4().hex[:8]}"
 
 
-def apply_preset(name: str) -> None:
-    """Apply preset values into session_state."""
-    if name == "Paper preset":
-        resist, circuit = _paper_params()
-    else:
-        resist, circuit = _default_params()
+def _job_dir(job_id: str) -> Path:
+    return JOB_ROOT / job_id
 
-    defaults = {
-        "vin": 14.5,
-        "vin_list": "10.5,12.5,14.5,16.5",
-        "example_vin": "14.5",
-        "start_branch": "insulator",
-        "t_end_us": 300.0,
-        "dt_ns": 10.0,
-        "t_start_us": 25.0,
-        "t_end_window_us": 300.0,
-        "threshold_A": "1e-3",
-        "noise_seed": "",
-        "nx": 1,
-        "ny": 1,
-        "R_series_kohm": circuit.R_series_kohm,
-        "C_par_pF": circuit.C_par_pF,
-        "T_base_K": circuit.T_base_K,
-        "Cth_mW_ns_per_K": circuit.Cth_mW_ns_per_K,
-        "Sth_mW_per_K": circuit.Sth_mW_per_K,
-        "Cth_factor": circuit.Cth_factor,
-        "couple_factor": circuit.couple_factor,
-        "noise_strength": circuit.noise_strength,
-        "R0": resist.R0,
-        "Ea_over_k": resist.Ea_over_k,
-        "Rm0": resist.Rm0,
-        "Rm_factor": resist.Rm_factor,
-        "w": resist.w,
-        "Tc_K": resist.Tc_K,
-        "beta": resist.beta,
-        "gamma": resist.gamma,
-        "width_factor": resist.width_factor,
-        "T_min_K": resist.T_min_K,
-        "T_max_K": resist.T_max_K,
-        "reversal_threshold_K": resist.reversal_threshold_K,
-        "c_list": "100,150,200",
-        "c_start": 80.0,
-        "c_stop": 250.0,
-        "c_step": 10.0,
-        "r_list": "10,12,14,16",
+
+def _job_path(job_id: str) -> Path:
+    return _job_dir(job_id) / "job.json"
+
+
+def _load_job(job_id: str) -> Dict[str, Any]:
+    with open(_job_path(job_id), "r") as f:
+        return json.load(f)
+
+
+def _save_job(job: Dict[str, Any]) -> None:
+    path = _job_path(job["id"])
+    tmp_path = path.with_suffix(".json.tmp")
+    with open(tmp_path, "w") as f:
+        json.dump(job, f, indent=2)
+    os.replace(tmp_path, path)
+
+
+def _append_job_log(job: Dict[str, Any], line: str) -> None:
+    log_path = Path(job["log_path"])
+    with open(log_path, "a") as f:
+        f.write(line + "\n")
+
+
+def _list_jobs() -> List[Dict[str, Any]]:
+    jobs = []
+    for job_dir in sorted(JOB_ROOT.iterdir(), reverse=True):
+        if not job_dir.is_dir():
+            continue
+        job_file = job_dir / "job.json"
+        if not job_file.exists():
+            continue
+        with open(job_file, "r") as f:
+            jobs.append(json.load(f))
+    return jobs
+
+
+def _job_status(job_id: str) -> str:
+    try:
+        return _load_job(job_id).get("status", "")
+    except Exception:
+        return ""
+
+
+def _job_cancel_requested(job_id: str) -> bool:
+    return _job_status(job_id) in {"cancel_requested", "cancelled"}
+
+
+def _recover_pending_jobs() -> List[str]:
+    pending = []
+    for job in _list_jobs():
+        if job.get("status") in {"queued", "running"}:
+            job["status"] = "queued"
+            _save_job(job)
+            pending.append(job["id"])
+    return pending
+
+
+def _job_progress_cb(job: Dict[str, Any]):
+    def _cb(msg: str) -> None:
+        _append_job_log(job, msg)
+        if _job_cancel_requested(job["id"]):
+            raise JobCancelled("cancelled")
+
+    return _cb
+
+
+def _job_worker_loop(job_queue: "queue.Queue[str]") -> None:
+    while True:
+        job_id = job_queue.get()
+        if job_id is None:
+            job_queue.task_done()
+            break
+        job_path = _job_path(job_id)
+        if not job_path.exists():
+            job_queue.task_done()
+            continue
+        try:
+            job = _load_job(job_id)
+        except Exception:
+            job_queue.task_done()
+            continue
+        if job.get("status") in {"cancel_requested", "cancelled"}:
+            job["status"] = "cancelled"
+            _append_job_log(job, "[job] cancelled before start")
+            _save_job(job)
+            job_queue.task_done()
+            continue
+        if job.get("status") not in {"queued", "running"}:
+            job_queue.task_done()
+            continue
+        job["status"] = "running"
+        _save_job(job)
+        _append_job_log(job, f"[job] starting {job['type']}")
+        try:
+            _run_job_core(job, progress_cb=_job_progress_cb(job))
+            if job.get("status") == "cancel_requested":
+                raise JobCancelled("cancelled")
+            job["status"] = "completed"
+            _append_job_log(job, f"[job] completed {job['type']}")
+        except (JobCancelled, SimulationCancelled):
+            job["status"] = "cancelled"
+            _append_job_log(job, "[job] cancelled")
+        except Exception as exc:
+            job["status"] = "error"
+            job["error"] = str(exc)
+            _append_job_log(job, f"[job] error: {exc}")
+        _save_job(job)
+        job_queue.task_done()
+
+
+@st.cache_resource(show_spinner=False)
+def _get_worker_queue() -> "queue.Queue[str]":
+    job_queue: "queue.Queue[str]" = queue.Queue()
+    worker = threading.Thread(target=_job_worker_loop, args=(job_queue,), daemon=True)
+    worker.start()
+    pending = _recover_pending_jobs()
+    for job_id in pending:
+        job_queue.put(job_id)
+    return job_queue
+
+
+def _ensure_worker() -> "queue.Queue[str]":
+    return _get_worker_queue()
+
+
+def _enqueue_job(job_id: str) -> None:
+    _ensure_worker().put(job_id)
+
+
+# -----------------------------
+# Helpers
+# -----------------------------
+
+
+def _param_names() -> List[str]:
+    resist = {f.name for f in dataclasses.fields(YuanhangResistParams)}
+    circuit = {f.name for f in dataclasses.fields(YuanhangCircuitParams)}
+    names = ["Vin"] + sorted(list(resist | circuit))
+    return names
+
+
+def _param_label_options() -> List[str]:
+    return [_label(name) for name in _param_names()]
+
+
+def _param_name_from_label(label: str) -> str:
+    for name in _param_names():
+        if _label(name) == label:
+            return name
+    return label
+
+
+def _init_defaults() -> None:
+    required_keys = {
+        "vin",
+        "vin_list",
+        "t_end_us",
+        "dt_ns",
+        "t_start_us",
+        "t_end_window_us",
+        "threshold_A",
+        "start_branch",
+        "noise_seed",
+        "nx",
+        "ny",
+        "batch_jobs",
+        "terminal_log",
+        "enable_plotly_events",
+        "jobs_autorefresh",
+        "enable_point_removal",
+        "removed_points",
+        "sweep_start",
+        "sweep_stop",
+        "coarse_step",
+        "fine_step",
+        "x_start",
+        "x_stop",
+        "x_step",
+        "y_start",
+        "y_stop",
+        "y_step",
     }
-    for key, val in defaults.items():
-        st.session_state[key] = val
-    st.session_state["inputs_initialized"] = True
+    missing = [k for k in required_keys if k not in st.session_state]
+    if st.session_state.get("_init_done") and not missing:
+        return
+    resist, circuit = _paper_params()
+    for f in dataclasses.fields(YuanhangResistParams):
+        if f.name not in st.session_state:
+            st.session_state[f.name] = getattr(resist, f.name)
+    for f in dataclasses.fields(YuanhangCircuitParams):
+        if f.name not in st.session_state:
+            st.session_state[f.name] = getattr(circuit, f.name)
+    st.session_state.setdefault("vin", 14.5)
+    st.session_state.setdefault("vin_list", "")
+    st.session_state.setdefault("t_end_us", 300.0)
+    st.session_state.setdefault("dt_ns", 10.0)
+    st.session_state.setdefault("t_start_us", 25.0)
+    st.session_state.setdefault("t_end_window_us", 300.0)
+    st.session_state.setdefault("threshold_A", 1e-3)
+    st.session_state.setdefault("start_branch", "insulator")
+    st.session_state.setdefault("noise_seed", "")
+    st.session_state.setdefault("nx", 1)
+    st.session_state.setdefault("ny", 1)
+    st.session_state.setdefault("batch_jobs", [])
+    st.session_state.setdefault("terminal_log", "")
+    st.session_state.setdefault("enable_plotly_events", False)
+    st.session_state.setdefault("jobs_autorefresh", True)
+    st.session_state.setdefault("enable_point_removal", False)
+    st.session_state.setdefault("removed_points", {})
+    st.session_state.setdefault("sweep_start", 0.0)
+    st.session_state.setdefault("sweep_stop", 20.0)
+    st.session_state.setdefault("coarse_step", 0.5)
+    st.session_state.setdefault("fine_step", 0.05)
+    st.session_state.setdefault("x_start", "")
+    st.session_state.setdefault("x_stop", "")
+    st.session_state.setdefault("x_step", 0.5)
+    st.session_state.setdefault("y_start", "")
+    st.session_state.setdefault("y_stop", "")
+    st.session_state.setdefault("y_step", 10.0)
+    st.session_state["_init_done"] = True
 
 
-def ensure_defaults_initialized() -> None:
-    if not st.session_state["inputs_initialized"]:
-        apply_preset("Default")
-
-
-# ---------------------------------------------------------------------------
-# Logging and status helpers
-# ---------------------------------------------------------------------------
-
-
-def log_line(msg: str) -> None:
-    st.session_state["logs"].append(msg)
-
-
-def reset_logs() -> None:
-    st.session_state["logs"] = []
-
-
-def update_status(state: str, mode: str, detail: str) -> None:
-    st.session_state["status"] = {"state": state, "mode": mode, "detail": detail}
-
-
-def render_status_and_logs() -> None:
-    status = st.session_state["status"]
-    with st.container():
-        st.subheader("Run Status")
-        st.info(f"State: {status['state']} | Mode: {status['mode']} | Detail: {status['detail']}")
-    with st.expander("Logs", expanded=False):
-        if st.session_state["logs"]:
-            st.text("\n".join(st.session_state["logs"]))
-        else:
-            st.text("No logs yet.")
-
-
-# ---------------------------------------------------------------------------
-# Parameter building
-# ---------------------------------------------------------------------------
-
-
-def build_resist_params_from_state() -> YuanhangResistParams:
-    return YuanhangResistParams(
-        R0=float(st.session_state["R0"]),
-        Ea_over_k=float(st.session_state["Ea_over_k"]),
-        Rm0=float(st.session_state["Rm0"]),
-        Rm_factor=float(st.session_state["Rm_factor"]),
-        w=float(st.session_state["w"]),
-        Tc_K=float(st.session_state["Tc_K"]),
-        beta=float(st.session_state["beta"]),
-        gamma=float(st.session_state["gamma"]),
-        width_factor=float(st.session_state["width_factor"]),
-        T_min_K=float(st.session_state["T_min_K"]),
-        T_max_K=float(st.session_state["T_max_K"]),
-        reversal_threshold_K=float(st.session_state["reversal_threshold_K"]),
+def _build_params() -> Tuple[YuanhangResistParams, YuanhangCircuitParams, Tuple[int, int]]:
+    resist = YuanhangResistParams(
+        **{f.name: float(st.session_state[f.name]) for f in dataclasses.fields(YuanhangResistParams)}
     )
-
-
-def build_circuit_params_from_state(nx: int, ny: int) -> YuanhangCircuitParams:
     circuit = YuanhangCircuitParams(
-        R_series_kohm=float(st.session_state["R_series_kohm"]),
-        C_par_pF=float(st.session_state["C_par_pF"]),
-        Cth_mW_ns_per_K=float(st.session_state["Cth_mW_ns_per_K"]),
-        Sth_mW_per_K=float(st.session_state["Sth_mW_per_K"]),
-        couple_factor=float(st.session_state["couple_factor"]),
-        Cth_factor=float(st.session_state["Cth_factor"]),
-        noise_strength=float(st.session_state["noise_strength"]),
-        dimension=1 if (nx == 1 or ny == 1) else 2,
-        T_base_K=float(st.session_state["T_base_K"]),
+        **{f.name: float(st.session_state[f.name]) for f in dataclasses.fields(YuanhangCircuitParams)}
     )
-    return circuit
+    nx = max(1, int(st.session_state["nx"]))
+    ny = max(1, int(st.session_state["ny"]))
+    circuit.dimension = 1 if (nx == 1 or ny == 1) else 2
+    return resist, circuit, (nx, ny)
 
 
-def to_dict(obj: Any) -> Dict[str, Any]:
-    if dataclasses.is_dataclass(obj):
-        return dataclasses.asdict(obj)
-    if isinstance(obj, dict):
-        return obj
-    raise TypeError("Unsupported type for to_dict")
+def _apply_preset(paper: bool) -> None:
+    resist, circuit = _paper_params() if paper else (YuanhangResistParams(), YuanhangCircuitParams())
+    for f in dataclasses.fields(YuanhangResistParams):
+        st.session_state[f.name] = getattr(resist, f.name)
+    for f in dataclasses.fields(YuanhangCircuitParams):
+        st.session_state[f.name] = getattr(circuit, f.name)
+    st.session_state["t_end_us"] = 300.0
+    st.session_state["dt_ns"] = 10.0
+    st.session_state["t_start_us"] = 25.0
+    st.session_state["t_end_window_us"] = 300.0
+    st.session_state["threshold_A"] = 1e-3
 
 
-# ---------------------------------------------------------------------------
-# Simulation + metrics
-# ---------------------------------------------------------------------------
+def _update_terminal(line: str, placeholder) -> None:
+    st.session_state["terminal_log"] += line + "\n"
+    placeholder.code(st.session_state["terminal_log"])
 
 
-def _local_extrema_indices(y: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    if y.size < 3:
-        return np.array([], dtype=int), np.array([], dtype=int)
-    y0 = y[:-2]
-    y1 = y[1:-1]
-    y2 = y[2:]
-    max_mask = (y0 < y1) & (y1 >= y2)
-    min_mask = (y0 > y1) & (y1 <= y2)
-    max_idx = np.where(max_mask)[0] + 1
-    min_idx = np.where(min_mask)[0] + 1
-    return min_idx, max_idx
+def _sim_to_csv(simout: Dict[str, Any], outpath: Path) -> None:
+    keys = ["time_s", "V_node", "I_load", "I_vo2", "T_K", "R_vo2", "g"]
+    series = {k: series_first(simout[k]) for k in keys if k != "time_s"}
+    with open(outpath, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(keys)
+        for i, t in enumerate(simout["time_s"]):
+            row = [t] + [series[k][i] for k in keys if k != "time_s"]
+            writer.writerow(row)
 
 
-def compute_metrics(simout: SimOut, t_start_us: float, t_end_us: float, threshold_A: float) -> Dict[str, Any]:
-    t = np.asarray(simout["time_s"], dtype=float)
-    V = np.asarray(series_first(simout["V_node"]), dtype=float)
-    I = np.asarray(series_first(simout["I_vo2"]), dtype=float)
-    T = np.asarray(series_first(simout["T_K"]), dtype=float)
-    P = V * I
-    mask = (t * 1e6 >= t_start_us) & (t * 1e6 <= t_end_us)
-    if np.any(mask):
-        tw, Vw, Iw, Pw, Tw = t[mask], V[mask], I[mask], P[mask], T[mask]
+def _csv_outputs(outputs: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    return [
+        o
+        for o in outputs
+        if o["path"].endswith(".csv") or o["path"].endswith(".pcsv")
+    ]
+
+
+# -----------------------------
+# Plotly helpers
+# -----------------------------
+
+
+def _plot_time_traces(df: pd.DataFrame, title: str) -> go.Figure:
+    fig = make_subplots(rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.05)
+    fig.add_trace(go.Scatter(x=df["time_us"], y=df["V_vo2"], name="V_vo2"), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df["time_us"], y=df["V_load"], name="V_load"), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df["time_us"], y=df["T_K"], name="T_vo2"), row=2, col=1)
+    fig.add_trace(go.Scatter(x=df["time_us"], y=df["I_vo2"], name="I_vo2"), row=3, col=1)
+    fig.add_trace(go.Scatter(x=df["time_us"], y=df["P_vo2"], name="P_vo2"), row=4, col=1)
+    fig.update_yaxes(title_text="Voltage (V)", row=1, col=1)
+    fig.update_yaxes(title_text="Temperature (K)", row=2, col=1)
+    fig.update_yaxes(title_text="Current (A)", row=3, col=1)
+    fig.update_yaxes(title_text="Power (W)", row=4, col=1)
+    fig.update_xaxes(title_text="time (us)", row=4, col=1)
+    fig.update_layout(height=800, title=title, legend=dict(orientation="h"))
+    return fig
+
+
+def _plot_sweep_metrics(df: pd.DataFrame, free_label: str) -> List[go.Figure]:
+    figs: List[go.Figure] = []
+    figs.append(go.Figure(data=[go.Scatter(x=df["value"], y=df["Vmax"], mode="lines+markers")]))
+    figs[-1].update_layout(title=f"Vmax vs {free_label}", xaxis_title=free_label, yaxis_title="Vmax (V)")
+
+    fig_p = go.Figure()
+    fig_p.add_trace(go.Scatter(x=df["value"], y=df["Pmax"], mode="lines+markers", name="Pmax"))
+    fig_p.add_trace(go.Scatter(x=df["value"], y=df["Pmin"], mode="lines+markers", name="Pmin"))
+    fig_p.update_layout(title=f"Pmax/Pmin vs {free_label}", xaxis_title=free_label, yaxis_title="Power (W)")
+    figs.append(fig_p)
+
+    fig_t = go.Figure()
+    fig_t.add_trace(go.Scatter(x=df["value"], y=df["Tmax"], mode="lines+markers", name="Tmax"))
+    fig_t.add_trace(go.Scatter(x=df["value"], y=df["Tmin"], mode="lines+markers", name="Tmin"))
+    fig_t.update_layout(title=f"Tmax/Tmin vs {free_label}", xaxis_title=free_label, yaxis_title="Temperature (K)")
+    figs.append(fig_t)
+
+    fig_f = go.Figure(data=[go.Scatter(x=df["value"], y=df["freq_MHz"], mode="lines+markers")])
+    fig_f.update_layout(title=f"Frequency vs {free_label}", xaxis_title=free_label, yaxis_title="Frequency (MHz)")
+    figs.append(fig_f)
+
+    fig_isi = go.Figure(data=[go.Scatter(x=df["value"], y=df["ISI_mean_us"], mode="lines+markers")])
+    fig_isi.update_layout(title=f"Mean ISI vs {free_label}", xaxis_title=free_label, yaxis_title="Mean ISI (us)")
+    figs.append(fig_isi)
+    return figs
+
+
+def _plot_frequency_2d(
+    df: pd.DataFrame,
+    x_label: str,
+    y_label: str,
+    removed_xy: set[tuple[float, float]] | None = None,
+) -> Tuple[go.Figure, go.Figure]:
+    pivot = df.pivot(index="y", columns="x", values="freq_MHz")
+    x_vals = pivot.columns.values
+    y_vals = pivot.index.values
+    z = pivot.values
+    if removed_xy:
+        for yi, y in enumerate(y_vals):
+            for xi, x in enumerate(x_vals):
+                if _xy_key(x, y) in removed_xy:
+                    z[yi, xi] = np.nan
+    finite = z[np.isfinite(z)]
+    if finite.size:
+        zmin = float(np.nanmin(finite))
+        zmax = float(np.nanmax(finite))
     else:
-        tw, Vw, Iw, Pw, Tw = t, V, I, P, T
-    spikes = detect_spike_times(tw.tolist(), Iw.tolist(), threshold_A=threshold_A)
-    spike_count = len(spikes)
-    if spike_count >= 2:
-        isi_us = np.diff(np.asarray(spikes)) * 1e6
-        freq_mhz = float(1.0 / float(np.mean(isi_us))) if isi_us.size > 0 else float("nan")
+        zmin, zmax = 0.0, 1.0
+    colorscale = "Viridis"
+
+    heatmap = go.Figure(
+        data=go.Heatmap(
+            x=x_vals,
+            y=y_vals,
+            z=z,
+            zmin=zmin,
+            zmax=zmax,
+            colorbar=dict(title="Frequency (MHz)"),
+            colorscale=colorscale,
+        )
+    )
+    heatmap.update_layout(
+        title=f"Frequency heatmap: {x_label} vs {y_label}",
+        xaxis_title=x_label,
+        yaxis_title=y_label,
+        height=650,
+        margin=dict(l=40, r=20, t=60, b=40),
+    )
+
+    xs, ys, zs = [], [], []
+    for yi, y in enumerate(y_vals):
+        for xi, x in enumerate(x_vals):
+            if np.isfinite(z[yi, xi]):
+                xs.append(x)
+                ys.append(y)
+                zs.append(z[yi, xi])
+
+    scatter3d = go.Figure(
+        data=[
+            go.Scatter3d(
+                x=xs,
+                y=ys,
+                z=zs,
+                mode="markers",
+                marker=dict(
+                    size=4,
+                    color=zs,
+                    colorscale=colorscale,
+                    cmin=zmin,
+                    cmax=zmax,
+                    colorbar=dict(title="Frequency (MHz)"),
+                ),
+            )
+        ]
+    )
+    scatter3d.update_layout(
+        title=f"Frequency 3D: {x_label} vs {y_label}",
+        scene=dict(xaxis_title=x_label, yaxis_title=y_label, zaxis_title="Frequency (MHz)"),
+        height=650,
+        margin=dict(l=40, r=20, t=60, b=40),
+    )
+    return heatmap, scatter3d
+
+
+def _show_plotly_with_click(
+    fig,
+    label: str,
+    key: str | None = None,
+    use_events: bool | None = None,
+    show_click: bool = True,
+) -> None:
+    if use_events is None:
+        use_events = bool(st.session_state.get("enable_plotly_events", False))
+    if use_events and _HAS_PLOTLY_EVENTS:
+        height = int(fig.layout.height) if fig.layout.height else 450
+        points = plotly_events(
+            fig,
+            click_event=True,
+            hover_event=False,
+            key=key,
+            override_height=height,
+            override_width="100%",
+        )
+        if points and show_click:
+            st.write(f"{label} click:", points[0])
+        return points
+    st.plotly_chart(fig, use_container_width=True)
+    if _HAS_PLOTLY_EVENTS:
+        st.caption("Enable click-to-inspect to view points.")
     else:
-        freq_mhz = float("nan")
-    min_idx, _ = _local_extrema_indices(Vw)
-    V_baseline = float(np.mean(Vw[min_idx])) if min_idx.size else float(np.min(Vw))
-    min_idx_T, _ = _local_extrema_indices(Tw)
-    T_baseline = float(np.mean(Tw[min_idx_T])) if min_idx_T.size else float(np.min(Tw))
-    return {
-        "oscillatory": is_oscillatory(simout, t_start_us=t_start_us, t_end_us=t_end_us, threshold_A=threshold_A),
-        "spike_count": spike_count,
-        "frequency_MHz": freq_mhz,
-        "Vmax": float(np.max(Vw)),
-        "Pmax": float(np.max(Pw)),
-        "Pmin": float(np.min(Pw)),
-        "V_baseline": V_baseline,
-        "T_baseline": T_baseline,
+        st.caption("Click-to-inspect is available if `streamlit-plotly-events` is installed.")
+    return []
+
+
+def _rerun() -> None:
+    try:
+        st.rerun()
+    except AttributeError:
+        st.experimental_rerun()
+
+
+def _fig_to_png_bytes(fig) -> bytes:
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=MPL_DPI)
+    buf.seek(0)
+    return buf.read()
+
+
+def _launch_matplotlib_viewer(csv_path: str, x_label: str, y_label: str, title: str) -> None:
+    script_path = Path(__file__).with_name("matplotlib_viewer.py")
+    if not script_path.exists():
+        raise FileNotFoundError(f"Missing matplotlib_viewer.py at {script_path}")
+    cmd = [
+        sys.executable,
+        str(script_path),
+        "--csv",
+        csv_path,
+        "--x-label",
+        x_label,
+        "--y-label",
+        y_label,
+        "--title",
+        title,
+    ]
+    subprocess.Popen(cmd, cwd=str(Path(__file__).parent))
+
+
+def _matplotlib_time_traces_figure(df: pd.DataFrame, title: str):
+    fig, axes = plt.subplots(4, 1, figsize=MPL_FIGSIZE_WIDE, sharex=True)
+    axes[0].plot(df["time_us"], df["V_vo2"], label="V_vo2", linewidth=MPL_LINEWIDTH)
+    axes[0].plot(df["time_us"], df["V_load"], label="V_load", linewidth=MPL_LINEWIDTH)
+    axes[0].set_ylabel("Voltage (V)", fontsize=MPL_LABEL_SIZE)
+    axes[0].legend(loc="best", fontsize=MPL_TICK_SIZE)
+    axes[0].grid(True, alpha=0.3)
+
+    axes[1].plot(df["time_us"], df["T_K"], color="tab:red", linewidth=MPL_LINEWIDTH)
+    axes[1].set_ylabel("T_vo2 (K)", fontsize=MPL_LABEL_SIZE)
+    axes[1].grid(True, alpha=0.3)
+
+    axes[2].plot(df["time_us"], df["I_vo2"], color="tab:green", linewidth=MPL_LINEWIDTH)
+    axes[2].set_ylabel("I_vo2 (A)", fontsize=MPL_LABEL_SIZE)
+    axes[2].grid(True, alpha=0.3)
+
+    axes[3].plot(df["time_us"], df["P_vo2"], color="tab:purple", linewidth=MPL_LINEWIDTH)
+    axes[3].set_ylabel("P_vo2 (W)", fontsize=MPL_LABEL_SIZE)
+    axes[3].set_xlabel("time (us)", fontsize=MPL_LABEL_SIZE)
+    axes[3].grid(True, alpha=0.3)
+
+    for ax in axes:
+        ax.tick_params(labelsize=MPL_TICK_SIZE)
+
+    fig.suptitle(title, fontsize=MPL_TITLE_SIZE, y=1.02)
+    fig.tight_layout(rect=[0, 0, 1, 0.97])
+    return fig
+
+
+def _matplotlib_sweep1d_figs(df: pd.DataFrame, free_label: str) -> List[Tuple[str, Any]]:
+    figs: List[Tuple[str, Any]] = []
+
+    fig_v, ax_v = plt.subplots(figsize=MPL_FIGSIZE_WIDE)
+    ax_v.plot(df["value"], df["Vmax"], "o-", linewidth=MPL_LINEWIDTH, markersize=4)
+    ax_v.set_xlabel(free_label, fontsize=MPL_LABEL_SIZE)
+    ax_v.set_ylabel("Vmax (V)", fontsize=MPL_LABEL_SIZE)
+    ax_v.set_title(f"Vmax vs {free_label}", fontsize=MPL_TITLE_SIZE)
+    ax_v.grid(True, alpha=0.3)
+    ax_v.tick_params(labelsize=MPL_TICK_SIZE)
+    fig_v.tight_layout()
+    figs.append(("vmax", fig_v))
+
+    fig_p, ax_p = plt.subplots(figsize=MPL_FIGSIZE_WIDE)
+    ax_p.plot(df["value"], df["Pmax"], "o-", label="Pmax", linewidth=MPL_LINEWIDTH, markersize=4)
+    ax_p.plot(df["value"], df["Pmin"], "o-", label="Pmin", linewidth=MPL_LINEWIDTH, markersize=4)
+    ax_p.set_xlabel(free_label, fontsize=MPL_LABEL_SIZE)
+    ax_p.set_ylabel("Power (W)", fontsize=MPL_LABEL_SIZE)
+    ax_p.set_title(f"Pmax/Pmin vs {free_label}", fontsize=MPL_TITLE_SIZE)
+    ax_p.legend(loc="best", fontsize=MPL_TICK_SIZE)
+    ax_p.grid(True, alpha=0.3)
+    ax_p.tick_params(labelsize=MPL_TICK_SIZE)
+    fig_p.tight_layout()
+    figs.append(("power", fig_p))
+
+    fig_t, ax_t = plt.subplots(figsize=MPL_FIGSIZE_WIDE)
+    ax_t.plot(df["value"], df["Tmax"], "o-", label="Tmax", linewidth=MPL_LINEWIDTH, markersize=4)
+    ax_t.plot(df["value"], df["Tmin"], "o-", label="Tmin", linewidth=MPL_LINEWIDTH, markersize=4)
+    ax_t.set_xlabel(free_label, fontsize=MPL_LABEL_SIZE)
+    ax_t.set_ylabel("Temperature (K)", fontsize=MPL_LABEL_SIZE)
+    ax_t.set_title(f"Tmax/Tmin vs {free_label}", fontsize=MPL_TITLE_SIZE)
+    ax_t.legend(loc="best", fontsize=MPL_TICK_SIZE)
+    ax_t.grid(True, alpha=0.3)
+    ax_t.tick_params(labelsize=MPL_TICK_SIZE)
+    fig_t.tight_layout()
+    figs.append(("temp", fig_t))
+
+    fig_f, ax_f = plt.subplots(figsize=MPL_FIGSIZE_WIDE)
+    ax_f.plot(df["value"], df["freq_MHz"], "o-", linewidth=MPL_LINEWIDTH, markersize=4)
+    ax_f.set_xlabel(free_label, fontsize=MPL_LABEL_SIZE)
+    ax_f.set_ylabel("Frequency (MHz)", fontsize=MPL_LABEL_SIZE)
+    ax_f.set_title(f"Frequency vs {free_label}", fontsize=MPL_TITLE_SIZE)
+    ax_f.grid(True, alpha=0.3)
+    ax_f.tick_params(labelsize=MPL_TICK_SIZE)
+    fig_f.tight_layout()
+    figs.append(("freq", fig_f))
+
+    fig_isi, ax_isi = plt.subplots(figsize=MPL_FIGSIZE_WIDE)
+    ax_isi.plot(df["value"], df["ISI_mean_us"], "o-", linewidth=MPL_LINEWIDTH, markersize=4)
+    ax_isi.set_xlabel(free_label, fontsize=MPL_LABEL_SIZE)
+    ax_isi.set_ylabel("Mean ISI (us)", fontsize=MPL_LABEL_SIZE)
+    ax_isi.set_title(f"Mean ISI vs {free_label}", fontsize=MPL_TITLE_SIZE)
+    ax_isi.grid(True, alpha=0.3)
+    ax_isi.tick_params(labelsize=MPL_TICK_SIZE)
+    fig_isi.tight_layout()
+    figs.append(("isi", fig_isi))
+
+    return figs
+
+
+def _edges_from_centers(values: np.ndarray) -> np.ndarray:
+    if values.size == 1:
+        return np.array([values[0] - 0.5, values[0] + 0.5], dtype=float)
+    edges = np.zeros(values.size + 1, dtype=float)
+    edges[1:-1] = 0.5 * (values[:-1] + values[1:])
+    edges[0] = values[0] - 0.5 * (values[1] - values[0])
+    edges[-1] = values[-1] + 0.5 * (values[-1] - values[-2])
+    return edges
+
+
+def _matplotlib_sweep2d_figs(df: pd.DataFrame, x_label: str, y_label: str) -> List[Tuple[str, Any]]:
+    pivot = df.pivot(index="y", columns="x", values="freq_MHz")
+    x_vals = pivot.columns.values
+    y_vals = pivot.index.values
+    z = pivot.values
+    mask = ~np.isfinite(z)
+    masked = np.ma.array(z, mask=mask)
+
+    cmap = plt.get_cmap("viridis").copy()
+    cmap.set_bad(color="lightgray")
+
+    fig_h, ax_h = plt.subplots(figsize=MPL_FIGSIZE_WIDE)
+    x_edges = _edges_from_centers(x_vals)
+    y_edges = _edges_from_centers(y_vals)
+    img = ax_h.pcolormesh(x_edges, y_edges, masked, shading="auto", cmap=cmap)
+    fig_h.colorbar(img, ax=ax_h, label="Frequency (MHz)")
+    ax_h.set_xlabel(x_label, fontsize=MPL_LABEL_SIZE)
+    ax_h.set_ylabel(y_label, fontsize=MPL_LABEL_SIZE)
+    ax_h.set_title(f"Frequency heatmap: {x_label} vs {y_label}", fontsize=MPL_TITLE_SIZE)
+    ax_h.tick_params(labelsize=MPL_TICK_SIZE)
+    fig_h.tight_layout()
+    figs = [("heatmap", fig_h)]
+
+    fig_3d = plt.figure(figsize=MPL_FIGSIZE_WIDE)
+    ax3d = fig_3d.add_subplot(111, projection="3d")
+    xs, ys, zs = [], [], []
+    for yi, y in enumerate(y_vals):
+        for xi, x in enumerate(x_vals):
+            if np.isfinite(z[yi, xi]):
+                xs.append(x)
+                ys.append(y)
+                zs.append(z[yi, xi])
+    ax3d.scatter(xs, ys, zs, c=zs, cmap="viridis", s=12)
+    ax3d.set_xlabel(x_label, fontsize=MPL_LABEL_SIZE)
+    ax3d.set_ylabel(y_label, fontsize=MPL_LABEL_SIZE)
+    ax3d.set_zlabel("Frequency (MHz)", fontsize=MPL_LABEL_SIZE)
+    ax3d.set_title(f"Frequency 3D: {x_label} vs {y_label}", fontsize=MPL_TITLE_SIZE)
+    fig_3d.tight_layout()
+    figs.append(("scatter3d", fig_3d))
+    return figs
+
+
+# -----------------------------
+# Job execution
+# -----------------------------
+
+
+def _create_job(config: Dict[str, Any]) -> Dict[str, Any]:
+    job_id = _job_id()
+    job_dir = _job_dir(job_id)
+    job_dir.mkdir(parents=True, exist_ok=True)
+    job = {
+        "id": job_id,
+        "name": "",
+        "type": config["type"],
+        "status": "queued",
+        "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "params": config,
+        "outputs": [],
+        "log_path": str(job_dir / "log.txt"),
     }
+    _save_job(job)
+    return job
 
 
-@st.cache_data(show_spinner=False)
-def run_sim_cached(
-    config: Dict[str, Any], resist_dict: Dict[str, Any], circuit_dict: Dict[str, Any]
-) -> SimOut:  # pragma: no cover - executed via Streamlit
-    resist = YuanhangResistParams(**resist_dict)
-    circuit = YuanhangCircuitParams(**circuit_dict)
-    return simulate_yuanhang(
-        Vin=config["Vin"],
-        t_end=config["t_end"],
-        dt=config["dt"],
-        resist_params=resist,
-        circuit_params=circuit,
-        lattice_shape=config["lattice_shape"],
-        start_branch=config["start_branch"],
-        noise_seed=config["noise_seed"],
+def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
+    config = job["params"]
+    resist = YuanhangResistParams(**config["resist_params"])
+    circuit = YuanhangCircuitParams(**config["circuit_params"])
+    lattice_shape = tuple(config.get("lattice_shape", (1, 1)))
+
+    if job["type"] == "single":
+        vins = config["vin_list"] if config["vin_list"] else [config["vin"]]
+        results = {}
+
+        counter = {"i": 0}
+
+        def cancel_cb() -> bool:
+            counter["i"] += 1
+            if counter["i"] % 200 != 0:
+                return False
+            return _job_cancel_requested(job["id"])
+
+        for v in vins:
+            if _job_cancel_requested(job["id"]):
+                raise JobCancelled("cancelled")
+            sim = simulate_yuanhang(
+                Vin=v,
+                t_end=config["t_end"],
+                dt=config["dt"],
+                resist_params=resist,
+                circuit_params=circuit,
+                start_branch=config["start_branch"],
+                lattice_shape=lattice_shape,
+                noise_seed=config["noise_seed"],
+                cancel_cb=cancel_cb,
+            )
+            results[v] = sim
+
+        for v, sim in results.items():
+            vin_label = f"{v:.3f}".replace(".", "p")
+            outpath = _job_dir(job["id"]) / f"sim_Vin_{vin_label}.csv"
+            _sim_to_csv(sim, outpath)
+            job["outputs"].append({"label": f"Simulation CSV (Vin={v})", "path": str(outpath)})
+            _append_job_log(job, f"[single] wrote {outpath.name}")
+            _save_job(job)
+        return
+
+    if job["type"] == "sweep1d":
+        cb = progress_cb
+        result = plots.sweep_free_variable_coarse_fine(
+            param_name=config["param"],
+            start=config["start"],
+            stop=config["stop"],
+            coarse_step=config["coarse_step"],
+            fine_step=config["fine_step"],
+            Vin=config["vin"],
+            t_end=config["t_end"],
+            dt=config["dt"],
+            resist_params=resist,
+            circuit_params=circuit,
+            start_branch=config["start_branch"],
+            lattice_shape=lattice_shape,
+            noise_seed=config["noise_seed"],
+            t_start_us=config["t_start_us"],
+            t_end_us=config["t_end_us"],
+            threshold_A=config["threshold_A"],
+            progress_cb=cb,
+        )
+        if result["fine_results"] is None:
+            _append_job_log(job, "[sweep1d] no oscillatory band found")
+            _save_job(job)
+            return
+
+        outpath = _job_dir(job["id"]) / "sweep1d_results.csv"
+        keys = ["values", "Vmax", "Pmax", "Pmin", "Tmax", "Tmin", "ISI_mean_us", "freq_MHz"]
+        with open(outpath, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["value"] + keys[1:])
+            for i, val in enumerate(result["fine_results"]["values"]):
+                writer.writerow([val] + [result["fine_results"][k][i] for k in keys[1:]])
+        job["outputs"].append({"label": "Sweep1D results CSV", "path": str(outpath)})
+        _append_job_log(job, f"[sweep1d] wrote {outpath.name}")
+        _save_job(job)
+        return
+
+    if job["type"] == "sweep2d":
+        cb = progress_cb
+        result = plots.sweep_frequency_2d(
+            param_x=config["param_x"],
+            param_y=config["param_y"],
+            x_start=config["x_start"],
+            x_stop=config["x_stop"],
+            x_step=config["x_step"],
+            y_start=config["y_start"],
+            y_stop=config["y_stop"],
+            y_step=config["y_step"],
+            Vin=config["vin"],
+            t_end=config["t_end"],
+            dt=config["dt"],
+            resist_params=resist,
+            circuit_params=circuit,
+            start_branch=config["start_branch"],
+            lattice_shape=lattice_shape,
+            noise_seed=config["noise_seed"],
+            t_start_us=config["t_start_us"],
+            t_end_us=config["t_end_us"],
+            threshold_A=config["threshold_A"],
+            row_early_stop=config["row_early_stop"],
+            col_early_stop=config["col_early_stop"],
+            progress_cb=cb,
+        )
+        outpath = _job_dir(job["id"]) / "sweep2d_frequency.csv"
+        with open(outpath, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([config["param_x"], config["param_y"], "freq_MHz"])
+            for yi, y in enumerate(result["y_values"]):
+                for xi, x in enumerate(result["x_values"]):
+                    writer.writerow([x, y, result["freq_MHz"][yi][xi]])
+        job["outputs"].append({"label": "Sweep2D frequency CSV", "path": str(outpath)})
+        _append_job_log(job, f"[sweep2d] wrote {outpath.name}")
+        _save_job(job)
+        return
+
+
+# -----------------------------
+# UI rendering
+# -----------------------------
+
+
+def _render_top_bar() -> None:
+    col_text, _ = st.columns([6, 1])
+    with col_text:
+        st.markdown("## Quantum Materials for Neuromorphic Computation")
+        st.markdown("VO2 Simulations")
+
+
+def _render_sidebar() -> None:
+    st.sidebar.title("Simulation Type")
+    choice = st.sidebar.radio(
+        "Select mode",
+        ["Single Simulation", "Sweep over Free Variable", "2D Frequency Sweep", "Jobs"],
     )
+    st.session_state["mode"] = choice
 
 
-def current_sim_config() -> Dict[str, Any]:
-    nx = int(st.session_state["nx"])
-    ny = int(st.session_state["ny"])
+def _render_terminal() -> None:
+    st.subheader("Job Terminal")
+    terminal_placeholder = st.empty()
+    terminal_placeholder.code(st.session_state.get("terminal_log", ""))
+
+
+def _inputs_common() -> None:
+    st.markdown("### Circuit / Thermal")
+    circuit_keys = [f.name for f in dataclasses.fields(YuanhangCircuitParams)]
+    _render_input_grid(circuit_keys, _num_input, columns=4)
+
+    with st.expander("Time / Window", expanded=False):
+        time_keys = ["t_end_us", "dt_ns", "t_start_us", "t_end_window_us", "threshold_A"]
+        _render_input_grid(time_keys, _num_input, columns=4)
+
+    with st.expander("Lattice", expanded=False):
+        _render_input_grid(["nx", "ny"], _int_input, columns=4)
+
+    with st.expander("Hysteresis / Resistance", expanded=False):
+        resist_keys = [f.name for f in dataclasses.fields(YuanhangResistParams)]
+        _render_input_grid(resist_keys, _num_input, columns=4)
+
+
+def _build_job_config_single() -> Dict[str, Any]:
+    resist, circuit, lattice = _build_params()
+    vin_list = [float(x.strip()) for x in st.session_state["vin_list"].split(",") if x.strip()]
     return {
-        "Vin": float(st.session_state["vin"]),
+        "type": "single",
+        "vin": float(st.session_state["vin"]),
+        "vin_list": vin_list,
         "t_end": float(st.session_state["t_end_us"]) * 1e-6,
         "dt": float(st.session_state["dt_ns"]) * 1e-9,
+        "t_start_us": float(st.session_state["t_start_us"]),
+        "t_end_us": float(st.session_state["t_end_window_us"]),
+        "threshold_A": float(st.session_state["threshold_A"]),
+        "noise_seed": None if st.session_state["noise_seed"] == "" else int(st.session_state["noise_seed"]),
         "start_branch": st.session_state["start_branch"],
-        "lattice_shape": (max(1, nx), max(1, ny)),
-        "noise_seed": None if str(st.session_state["noise_seed"]).strip() == "" else int(st.session_state["noise_seed"]),
+        "lattice_shape": lattice,
+        "resist_params": dataclasses.asdict(resist),
+        "circuit_params": dataclasses.asdict(circuit),
     }
 
 
-def run_single_simulation() -> SimOut:
-    config = current_sim_config()
-    resist = build_resist_params_from_state()
-    circuit = build_circuit_params_from_state(config["lattice_shape"][0], config["lattice_shape"][1])
-    simout = run_sim_cached(config, to_dict(resist), to_dict(circuit))
-    st.session_state["last_sim"] = simout
-    st.session_state["last_config"] = {"config": config, "resist": to_dict(resist), "circuit": to_dict(circuit)}
-    return simout
-
-
-def sweep_parameter(
-    base_config: Dict[str, Any],
-    resist: YuanhangResistParams,
-    circuit: YuanhangCircuitParams,
-    param_name: str,
-    values: Iterable[float],
-    t_start_us: float,
-    t_end_us: float,
-    threshold_A: float,
-    progress_placeholder,
-    table_placeholder,
-    plot_placeholder,
-) -> pd.DataFrame:
-    rows: List[Dict[str, Any]] = []
-    vals = list(values)
-    progress = progress_placeholder.progress(0.0)
-    for idx, val in enumerate(vals):
-        if st.session_state.get("cancel_requested", False):
-            log_line("Sweep cancelled by user.")
-            break
-        cfg = dict(base_config)
-        res = dataclasses.replace(resist)
-        circ = dataclasses.replace(circuit)
-        if param_name == "Vin":
-            cfg["Vin"] = val
-        elif hasattr(circ, param_name):
-            setattr(circ, param_name, val)
-        elif hasattr(res, param_name):
-            setattr(res, param_name, val)
-        else:
-            log_line(f"[sweep] Unknown parameter {param_name}, skipping.")
-            continue
-        sim = run_sim_cached(cfg, to_dict(res), to_dict(circ))
-        metrics = compute_metrics(sim, t_start_us, t_end_us, threshold_A)
-        row = {
-            "sweep_value": val,
-            "oscillatory": metrics["oscillatory"],
-            "spike_count": metrics["spike_count"],
-            "frequency_MHz": metrics["frequency_MHz"],
-            "Vmax": metrics["Vmax"],
-            "Pmax": metrics["Pmax"],
-            "Pmin": metrics["Pmin"],
-        }
-        rows.append(row)
-        df = pd.DataFrame(rows)
-        table_placeholder.dataframe(df)
-        if (idx + 1) % 3 == 0:
-            fig, ax = plt.subplots(figsize=(5, 3))
-            ax.plot(df["sweep_value"], df["frequency_MHz"], "o-")
-            ax.set_xlabel(param_name)
-            ax.set_ylabel("Frequency (MHz)")
-            ax.grid(True)
-            plot_placeholder.pyplot(fig)
-            plt.close(fig)
-        progress.progress((idx + 1) / len(vals))
-        log_line(f"[sweep] {idx+1}/{len(vals)}: {param_name}={val} → osc={metrics['oscillatory']}, f={metrics['frequency_MHz']:.3g} MHz")
-    df = pd.DataFrame(rows)
-    st.session_state["last_sweep_df"] = df
-    return df
-
-
-def domain_find(
-    param_name: str,
-    values: List[float],
-    base_config: Dict[str, Any],
-    resist: YuanhangResistParams,
-    circuit: YuanhangCircuitParams,
-    t_start_us: float,
-    t_end_us: float,
-    threshold_A: float,
-    progress_placeholder,
-    table_placeholder,
-) -> Tuple[float | None, float | None, pd.DataFrame]:
-    rows: List[Dict[str, Any]] = []
-    progress = progress_placeholder.progress(0.0)
-    for idx, val in enumerate(values):
-        if st.session_state.get("cancel_requested", False):
-            log_line("Domain finder cancelled by user.")
-            break
-        cfg = dict(base_config)
-        res = dataclasses.replace(resist)
-        circ = dataclasses.replace(circuit)
-        if param_name == "Vin":
-            cfg["Vin"] = val
-        elif hasattr(circ, param_name):
-            setattr(circ, param_name, val)
-        elif hasattr(res, param_name):
-            setattr(res, param_name, val)
-        sim = run_sim_cached(cfg, to_dict(res), to_dict(circ))
-        metrics = compute_metrics(sim, t_start_us, t_end_us, threshold_A)
-        rows.append({"value": val, "oscillatory": metrics["oscillatory"], "frequency_MHz": metrics["frequency_MHz"]})
-        progress.progress((idx + 1) / len(values))
-        table_placeholder.dataframe(pd.DataFrame(rows))
-        log_line(f"[domain] {idx+1}/{len(values)} {param_name}={val} → osc={metrics['oscillatory']}")
-    df = pd.DataFrame(rows)
-    if not df.empty and df["oscillatory"].any():
-        osc_values = df[df["oscillatory"]]["value"]
-        return float(osc_values.min()), float(osc_values.max()), df
-    return None, None, df
-
-
-def capture_new_figures(fn) -> List[plt.Figure]:
-    """Capture figures created by fn()."""
-    before = set(plt.get_fignums())
-    fn()
-    after = set(plt.get_fignums())
-    new_nums = sorted(after - before)
-    return [plt.figure(num) for num in new_nums]
-
-
-def render_figures(figs: List[plt.Figure]) -> None:
-    for fig in figs:
-        st.pyplot(fig)
-        plt.close(fig)
-
-
-# ---------------------------------------------------------------------------
-# Sidebar: inputs
-# ---------------------------------------------------------------------------
-
-
-def sidebar_inputs() -> None:
-    ensure_defaults_initialized()
-    st.sidebar.header("Simulation Setup")
-    preset = st.sidebar.selectbox("Preset", ["Default", "Paper preset"])
-    colp1, colp2 = st.sidebar.columns(2)
-    if colp1.button("Load preset"):
-        apply_preset(preset)
-    if colp2.button("Reset all"):
-        apply_preset("Default")
-
-    st.sidebar.markdown("#### Experiment mode")
-    st.sidebar.radio("Mode", ["Single run", "1D sweep", "2D sweep", "Oscillation domain"], key="exp_mode")
-
-    st.sidebar.markdown("#### Time settings")
-    st.sidebar.number_input("t_end (µs)", value=st.session_state["t_end_us"], key="t_end_us")
-    st.sidebar.number_input("dt (ns)", value=st.session_state["dt_ns"], key="dt_ns", min_value=0.001)
-    st.sidebar.number_input("Steady-state start (µs)", value=st.session_state["t_start_us"], key="t_start_us")
-    st.sidebar.number_input("Steady-state end (µs)", value=st.session_state["t_end_window_us"], key="t_end_window_us")
-    st.sidebar.text_input("Spike threshold (A)", value=str(st.session_state.get("threshold_A", "1e-3")), key="threshold_A")
-
-    st.sidebar.markdown("#### Electrical")
-    st.sidebar.number_input("Vin (V)", value=st.session_state["vin"], key="vin")
-    st.sidebar.text_input("Vin list (csv)", value=st.session_state["vin_list"], key="vin_list")
-    st.sidebar.text_input("Example Vin (for power plots)", value=st.session_state["example_vin"], key="example_vin")
-    st.sidebar.number_input("R_series (kΩ)", value=st.session_state["R_series_kohm"], key="R_series_kohm")
-    st.sidebar.number_input("C_par (pF)", value=st.session_state["C_par_pF"], key="C_par_pF")
-    st.sidebar.radio("Start branch", ["insulator", "metal"], key="start_branch")
-
-    st.sidebar.markdown("#### Thermal")
-    st.sidebar.number_input("T_base (K)", value=st.session_state["T_base_K"], key="T_base_K")
-    st.sidebar.number_input("Cth (mW*ns/K)", value=st.session_state["Cth_mW_ns_per_K"], key="Cth_mW_ns_per_K")
-    st.sidebar.number_input("Sth (mW/K)", value=st.session_state["Sth_mW_per_K"], key="Sth_mW_per_K")
-    st.sidebar.number_input("Cth_factor", value=st.session_state["Cth_factor"], key="Cth_factor")
-    st.sidebar.number_input("couple_factor", value=st.session_state["couple_factor"], key="couple_factor")
-    st.sidebar.number_input("noise_strength", value=st.session_state["noise_strength"], key="noise_strength")
-
-    st.sidebar.markdown("#### Lattice")
-    st.sidebar.number_input("Nx", value=st.session_state["nx"], key="nx", min_value=1, step=1)
-    st.sidebar.number_input("Ny", value=st.session_state["ny"], key="ny", min_value=1, step=1)
-
-    with st.sidebar.expander("Hysteresis / resistance (advanced)"):
-        st.number_input("R0 (Ω)", value=st.session_state["R0"], key="R0")
-        st.number_input("Ea_over_k (K)", value=st.session_state["Ea_over_k"], key="Ea_over_k")
-        st.number_input("Rm0 (Ω)", value=st.session_state["Rm0"], key="Rm0")
-        st.number_input("Rm_factor", value=st.session_state["Rm_factor"], key="Rm_factor")
-        st.number_input("w (K)", value=st.session_state["w"], key="w")
-        st.number_input("Tc_K (K)", value=st.session_state["Tc_K"], key="Tc_K")
-        st.number_input("beta (1/K)", value=st.session_state["beta"], key="beta")
-        st.number_input("gamma", value=st.session_state["gamma"], key="gamma")
-        st.number_input("width_factor", value=st.session_state["width_factor"], key="width_factor")
-        st.number_input("T_min_K", value=st.session_state["T_min_K"], key="T_min_K")
-        st.number_input("T_max_K", value=st.session_state["T_max_K"], key="T_max_K")
-        st.number_input("reversal_threshold_K", value=st.session_state["reversal_threshold_K"], key="reversal_threshold_K")
-
-    st.sidebar.markdown("#### Sweeps")
-    st.sidebar.text_input("C list (pF)", value=st.session_state["c_list"], key="c_list")
-    st.sidebar.number_input("C start (pF)", value=st.session_state["c_start"], key="c_start")
-    st.sidebar.number_input("C stop (pF)", value=st.session_state["c_stop"], key="c_stop")
-    st.sidebar.number_input("C step (pF)", value=st.session_state["c_step"], key="c_step")
-    st.sidebar.text_input("R_load list (kΩ)", value=st.session_state["r_list"], key="r_list")
-    st.sidebar.text_input("Noise seed (blank = none)", value=st.session_state["noise_seed"], key="noise_seed")
-
-    st.sidebar.markdown("#### Control")
-    if st.sidebar.button("Stop current run"):
-        st.session_state["cancel_requested"] = True
-        log_line("User requested cancellation.")
-
-
-# ---------------------------------------------------------------------------
-# UI Tabs
-# ---------------------------------------------------------------------------
-
-
-def render_run_tab():
-    st.header("Run")
-    col_btn, col_status = st.columns([1, 3])
-    with col_btn:
-        if st.button("Run simulation"):
-            reset_logs()
-            st.session_state["cancel_requested"] = False
-            update_status("Running", "Single", "Simulating...")
-            sim = run_single_simulation()
-            metrics = compute_metrics(
-                sim,
-                float(st.session_state["t_start_us"]),
-                float(st.session_state["t_end_window_us"]),
-                float(st.session_state.get("threshold_A", 1e-3)),
-            )
-            st.session_state["last_metrics"] = metrics
-            update_status("Completed", "Single", f"Oscillatory={metrics['oscillatory']}, f={metrics['frequency_MHz']:.3g} MHz")
-            log_line("Single simulation completed.")
-    with col_status:
-        render_status_and_logs()
-
-        if st.session_state["last_sim"]:
-            sim = st.session_state["last_sim"]
-            metrics = st.session_state.get("last_metrics", {})
-            st.subheader("Summary metrics")
-            st.write(metrics)
-
-            fig = plt.figure()
-            # Use analysis helper for legible time traces including V_load.
-            analysis.plot_time_traces(
-                sim,
-                R_series_kohm=float(st.session_state["R_series_kohm"]),
-                title="V_vo2/V_load, T_vo2, I_vo2, P_vo2 vs time",
-            )
-            st.pyplot(fig)
-            plt.close(fig)
-
-
-def render_pi_tab():
-    st.header("PI Analyses")
-    checks = {
-        "baselines": st.checkbox("Baselines of T and V vs time", value=False),
-        "vmax": st.checkbox("Vmax vs Vin", value=False),
-        "power": st.checkbox("Power vs time and power peaks vs Vin", value=False),
-        "c_overlay": st.checkbox("Capacitance sweep power overlay", value=False),
-        "freq3d": st.checkbox("3D frequency vs (C, R_load)", value=False),
-        "r_ins": st.checkbox("Resistance in insulating state vs time", value=False),
+def _build_job_config_sweep1d(param_label: str) -> Dict[str, Any]:
+    resist, circuit, lattice = _build_params()
+    return {
+        "type": "sweep1d",
+        "param": _param_name_from_label(param_label),
+        "start": float(st.session_state["sweep_start"]),
+        "stop": float(st.session_state["sweep_stop"]),
+        "coarse_step": float(st.session_state["coarse_step"]),
+        "fine_step": float(st.session_state["fine_step"]),
+        "vin": float(st.session_state["vin"]),
+        "t_end": float(st.session_state["t_end_us"]) * 1e-6,
+        "dt": float(st.session_state["dt_ns"]) * 1e-9,
+        "t_start_us": float(st.session_state["t_start_us"]),
+        "t_end_us": float(st.session_state["t_end_window_us"]),
+        "threshold_A": float(st.session_state["threshold_A"]),
+        "noise_seed": None if st.session_state["noise_seed"] == "" else int(st.session_state["noise_seed"]),
+        "start_branch": st.session_state["start_branch"],
+        "lattice_shape": lattice,
+        "resist_params": dataclasses.asdict(resist),
+        "circuit_params": dataclasses.asdict(circuit),
     }
-    if st.button("Run selected analyses"):
-        reset_logs()
-        st.session_state["cancel_requested"] = False
-        update_status("Running", "PI analyses", "Executing analyses...")
-        figs: List[plt.Figure] = []
-        config = current_sim_config()
-        resist = build_resist_params_from_state()
-        circuit = build_circuit_params_from_state(config["lattice_shape"][0], config["lattice_shape"][1])
 
-        if checks["baselines"]:
-            sim = run_single_simulation()
-            figs += capture_new_figures(
-                lambda: analysis.plot_baselines_T_and_V_vs_time(
-                    sim,
-                    t_start_us=float(st.session_state["t_start_us"]),
-                    t_end_us=float(st.session_state["t_end_window_us"]),
-                )
+
+def _parse_optional_float(text: str) -> Optional[float]:
+    if text.strip() == "":
+        return None
+    return float(text)
+
+
+def _build_job_config_sweep2d(param_x_label: str, param_y_label: str) -> Dict[str, Any]:
+    resist, circuit, lattice = _build_params()
+    return {
+        "type": "sweep2d",
+        "param_x": _param_name_from_label(param_x_label),
+        "param_y": _param_name_from_label(param_y_label),
+        "x_start": _parse_optional_float(st.session_state["x_start"]),
+        "x_stop": _parse_optional_float(st.session_state["x_stop"]),
+        "x_step": float(st.session_state["x_step"]),
+        "y_start": _parse_optional_float(st.session_state["y_start"]),
+        "y_stop": _parse_optional_float(st.session_state["y_stop"]),
+        "y_step": float(st.session_state["y_step"]),
+        "vin": float(st.session_state["vin"]),
+        "t_end": float(st.session_state["t_end_us"]) * 1e-6,
+        "dt": float(st.session_state["dt_ns"]) * 1e-9,
+        "t_start_us": float(st.session_state["t_start_us"]),
+        "t_end_us": float(st.session_state["t_end_window_us"]),
+        "threshold_A": float(st.session_state["threshold_A"]),
+        "noise_seed": None if st.session_state["noise_seed"] == "" else int(st.session_state["noise_seed"]),
+        "start_branch": st.session_state["start_branch"],
+        "lattice_shape": lattice,
+        "resist_params": dataclasses.asdict(resist),
+        "circuit_params": dataclasses.asdict(circuit),
+        "row_early_stop": True,
+        "col_early_stop": True,
+    }
+
+
+def _validate_job_config(config: Dict[str, Any]) -> List[str]:
+    errors = []
+    if config["dt"] <= 0:
+        errors.append("Time step (dt) must be > 0.")
+    if config["t_end"] <= 0:
+        errors.append("Simulation duration (t_end) must be > 0.")
+    if config["t_end"] <= config["dt"]:
+        errors.append("Simulation duration (t_end) must be larger than dt.")
+    if config["t_end_us"] <= config["t_start_us"]:
+        errors.append("Steady-state window end must be greater than start.")
+    circuit = config["circuit_params"]
+    resist = config["resist_params"]
+    if circuit["R_series_kohm"] <= 0:
+        errors.append("R_series must be > 0.")
+    if circuit["C_par_pF"] <= 0:
+        errors.append("C_par must be > 0.")
+    if circuit["Cth_mW_ns_per_K"] <= 0:
+        errors.append("C_th must be > 0.")
+    if circuit["Cth_factor"] <= 0:
+        errors.append("C_th factor must be > 0.")
+    if circuit["T_base_K"] <= 0:
+        errors.append("Base temperature must be > 0 K.")
+    if resist["R0"] <= 0:
+        errors.append("R0 must be > 0.")
+    if resist["Rm0"] <= 0:
+        errors.append("Rm0 must be > 0.")
+    if resist["w"] <= 0:
+        errors.append("Hysteresis width (w) must be > 0.")
+    if resist["beta"] == 0:
+        errors.append("Hysteresis beta must be non-zero.")
+    if resist["Tc_K"] <= 0:
+        errors.append("Critical temperature must be > 0 K.")
+    if resist["gamma"] == 0:
+        errors.append("Hysteresis gamma must be non-zero.")
+    if resist["width_factor"] <= 0:
+        errors.append("Width factor must be > 0.")
+    if resist["T_min_K"] <= 0 or resist["T_max_K"] <= 0 or resist["T_max_K"] <= resist["T_min_K"]:
+        errors.append("Temperature clamp range must be positive and T_max > T_min.")
+    if config["type"] == "sweep1d":
+        if config["coarse_step"] <= 0:
+            errors.append("Coarse step must be > 0.")
+        if config["fine_step"] <= 0:
+            errors.append("Fine step must be > 0.")
+        if config["start"] >= config["stop"]:
+            errors.append("Sweep start must be less than stop.")
+    if config["type"] == "sweep2d":
+        if config["x_step"] <= 0 or config["y_step"] <= 0:
+            errors.append("Sweep steps must be > 0.")
+    return errors
+
+
+def _process_form_actions(
+    submitted_add: bool,
+    submitted_run: bool,
+    job_config: Dict[str, Any],
+    terminal_placeholder,
+) -> None:
+    if submitted_add:
+        errors = _validate_job_config(job_config)
+        if errors:
+            st.error("Please fix these inputs before adding to batch:")
+            for msg in errors:
+                st.write(f"- {msg}")
+            return
+        st.session_state["batch_jobs"].append(job_config)
+        _update_terminal(f"[batch] added {job_config['type']} job", terminal_placeholder)
+    if submitted_run:
+        errors = _validate_job_config(job_config)
+        if errors:
+            st.error("Please fix these inputs before running:")
+            for msg in errors:
+                st.write(f"- {msg}")
+            return
+        st.session_state["terminal_log"] = ""
+        terminal_placeholder.code("")
+        job = _create_job(job_config)
+        _enqueue_job(job["id"])
+        _update_terminal(f"[job] queued {job['type']} ({job['id']})", terminal_placeholder)
+
+
+def _render_batch_runner(terminal_placeholder) -> None:
+    if not st.session_state["batch_jobs"]:
+        return
+    col1, col2 = st.columns([1, 3])
+    if col1.button("Run batch"):
+        st.session_state["terminal_log"] = ""
+        terminal_placeholder.code("")
+        for idx, cfg in enumerate(st.session_state["batch_jobs"], start=1):
+            job = _create_job(cfg)
+            _enqueue_job(job["id"])
+            _update_terminal(f"[batch] queued {idx}/{len(st.session_state['batch_jobs'])}: {cfg['type']}", terminal_placeholder)
+        st.session_state["batch_jobs"] = []
+        _update_terminal("[batch] queued", terminal_placeholder)
+    col2.markdown(f"**Batch size:** {len(st.session_state['batch_jobs'])}")
+
+
+def _render_single() -> None:
+    st.header("Single Simulation")
+    with st.form("single_form"):
+        st.markdown("### Inputs")
+        cols = st.columns(4)
+        with cols[0]:
+            _num_input(_label("Vin"), key="vin")
+        with cols[1]:
+            _text_input("Vin list (comma-separated)", key="vin_list")
+        with cols[2]:
+            st.selectbox(_label("start_branch"), ["insulator", "metal"], key="start_branch")
+        with cols[3]:
+            _text_input("Noise seed (optional)", key="noise_seed")
+
+        _inputs_common()
+
+        btn_col1, btn_col2 = st.columns(2)
+        with btn_col1:
+            submitted_add = st.form_submit_button("Add to batch")
+        with btn_col2:
+            submitted_run = st.form_submit_button("Run now")
+
+    terminal_placeholder = st.empty()
+    terminal_placeholder.code(st.session_state.get("terminal_log", ""))
+
+    if submitted_add or submitted_run:
+        job_config = _build_job_config_single()
+        _process_form_actions(submitted_add, submitted_run, job_config, terminal_placeholder)
+
+    _render_batch_runner(terminal_placeholder)
+
+
+def _render_sweep1d() -> None:
+    st.header("Sweep Over Free Variable")
+    with st.form("sweep1d_form"):
+        st.markdown("### Inputs")
+        cols = st.columns(4)
+        with cols[0]:
+            param_label = st.selectbox("Free variable", _param_label_options())
+        with cols[1]:
+            _num_input("Start", key="sweep_start")
+        with cols[2]:
+            _num_input("Stop", key="sweep_stop")
+        with cols[3]:
+            _num_input("Coarse step", key="coarse_step")
+
+        cols = st.columns(4)
+        with cols[0]:
+            _num_input("Fine step", key="fine_step")
+        with cols[1]:
+            _num_input(_label("Vin"), key="vin")
+        with cols[2]:
+            st.selectbox(_label("start_branch"), ["insulator", "metal"], key="start_branch")
+        with cols[3]:
+            _text_input("Noise seed (optional)", key="noise_seed")
+
+        _inputs_common()
+
+        btn_col1, btn_col2 = st.columns(2)
+        with btn_col1:
+            submitted_add = st.form_submit_button("Add to batch")
+        with btn_col2:
+            submitted_run = st.form_submit_button("Run now")
+
+    terminal_placeholder = st.empty()
+    terminal_placeholder.code(st.session_state.get("terminal_log", ""))
+
+    if submitted_add or submitted_run:
+        job_config = _build_job_config_sweep1d(param_label)
+        _process_form_actions(submitted_add, submitted_run, job_config, terminal_placeholder)
+
+    _render_batch_runner(terminal_placeholder)
+
+
+def _render_sweep2d() -> None:
+    st.header("2D Free Variable vs Oscillation Frequency")
+    with st.form("sweep2d_form"):
+        st.markdown("### Inputs")
+        cols = st.columns(4)
+        with cols[0]:
+            param_x_label = st.selectbox("X variable", _param_label_options(), key="param_x_label")
+        with cols[1]:
+            _text_input("X start (optional)", key="x_start")
+        with cols[2]:
+            _text_input("X stop (optional)", key="x_stop")
+        with cols[3]:
+            _num_input("X step", key="x_step")
+
+        cols = st.columns(4)
+        with cols[0]:
+            param_y_label = st.selectbox("Y variable", _param_label_options(), key="param_y_label")
+        with cols[1]:
+            _text_input("Y start (optional)", key="y_start")
+        with cols[2]:
+            _text_input("Y stop (optional)", key="y_stop")
+        with cols[3]:
+            _num_input("Y step", key="y_step")
+
+        cols = st.columns(4)
+        with cols[0]:
+            _num_input(_label("Vin"), key="vin")
+        with cols[1]:
+            st.selectbox(_label("start_branch"), ["insulator", "metal"], key="start_branch")
+        with cols[2]:
+            _text_input("Noise seed (optional)", key="noise_seed")
+
+        _inputs_common()
+
+        btn_col1, btn_col2 = st.columns(2)
+        with btn_col1:
+            submitted_add = st.form_submit_button("Add to batch")
+        with btn_col2:
+            submitted_run = st.form_submit_button("Run now")
+
+    terminal_placeholder = st.empty()
+    terminal_placeholder.code(st.session_state.get("terminal_log", ""))
+
+    if submitted_add or submitted_run:
+        job_config = _build_job_config_sweep2d(param_x_label, param_y_label)
+        _process_form_actions(submitted_add, submitted_run, job_config, terminal_placeholder)
+
+    _render_batch_runner(terminal_placeholder)
+
+
+def _render_jobs_view() -> None:
+    st.header("Jobs")
+    loading = st.progress(0.0)
+    toggle_cols = st.columns([1, 1, 2])
+    with toggle_cols[0]:
+        st.toggle(
+            "Auto-refresh",
+            value=st.session_state.get("jobs_autorefresh", True),
+            key="jobs_autorefresh",
+            help="Refresh the Jobs view while jobs are running.",
+        )
+    use_events = False
+    if _HAS_PLOTLY_EVENTS:
+        with toggle_cols[1]:
+            use_events = st.toggle(
+                "Enable click-to-inspect",
+                value=st.session_state.get("enable_plotly_events", False),
+                key="enable_plotly_events",
+                help="Plotly events render a custom component that may look different from the app theme.",
             )
-            log_line("Baselines plotted.")
+    jobs = _list_jobs()
+    if not jobs:
+        loading.empty()
+        st.info("No jobs found.")
+        return
 
-        if checks["vmax"] or checks["power"]:
-            vin_list = [float(x.strip()) for x in st.session_state["vin_list"].split(",") if x.strip()]
-            results: Dict[float, SimOut] = {}
-            progress = st.progress(0.0)
-            for idx, v in enumerate(vin_list):
-                cfg = dict(config)
-                cfg["Vin"] = v
-                results[v] = run_sim_cached(cfg, to_dict(resist), to_dict(circuit))
-                progress.progress((idx + 1) / len(vin_list))
-                log_line(f"[analysis sweep] Vin={v}")
-            if checks["vmax"]:
-                figs += capture_new_figures(
-                    lambda: analysis.plot_Vmax_vs_Vin(
-                        vin_list,
-                        results,
-                        t_start_us=float(st.session_state["t_start_us"]),
-                        t_end_us=float(st.session_state["t_end_window_us"]),
+    total = len(jobs)
+    for idx, job in enumerate(jobs, start=1):
+        loading.progress(idx / total)
+        job_name = job.get("name", "").strip()
+        display_name = job_name or job["id"]
+        with st.expander(f"{display_name} | {job['type']} | {job['status']}"):
+            job_removals = _get_job_removals(job["id"])
+            action_col, name_col = st.columns([1, 3])
+            if job.get("status") in {"queued", "running", "cancel_requested"}:
+                if action_col.button("Cancel job", key=f"cancel_{job['id']}"):
+                    job["status"] = "cancel_requested" if job.get("status") == "running" else "cancelled"
+                    _append_job_log(job, "[job] cancel requested")
+                    _save_job(job)
+                    _rerun()
+            else:
+                if action_col.button("Delete job", key=f"delete_{job['id']}"):
+                    shutil.rmtree(_job_dir(job["id"]), ignore_errors=True)
+                    _rerun()
+            name_key = f"name_{job['id']}"
+            with name_col:
+                st.text_input("Job name", value=job_name, key=name_key, placeholder="Optional label")
+                if st.button("Save name", key=f"save_name_{job['id']}"):
+                    job["name"] = st.session_state.get(name_key, "").strip()
+                    _save_job(job)
+                    _rerun()
+            st.json(job["params"], expanded=False)
+            if os.path.exists(job["log_path"]):
+                with open(job["log_path"], "r") as f:
+                    log_text = f.read().strip()
+                st.code(log_text or "(no logs)")
+
+            for out in job.get("outputs", []):
+                path = out["path"]
+                if os.path.exists(path):
+                    with open(path, "rb") as f:
+                        st.download_button(
+                            out["label"],
+                            data=f,
+                            file_name=os.path.basename(path),
+                            key=f"dl_{job['id']}_{os.path.basename(path)}",
+                        )
+
+            # Preview plots
+            if job["type"] == "single":
+                csvs = _csv_outputs(job.get("outputs", []))
+                if csvs:
+                    tabs = st.tabs([o["label"] for o in csvs])
+                    for tab, selected in zip(tabs, csvs):
+                        with tab:
+                            df = pd.read_csv(selected["path"])
+                            df["time_us"] = df["time_s"] * 1e6
+                            df["V_vo2"] = df["V_node"]
+                            df["I_vo2"] = df["I_vo2"]
+                            df["T_K"] = df["T_K"]
+                            df["P_vo2"] = df["V_node"] * df["I_vo2"]
+                            df["V_load"] = df["I_load"] * job["params"]["circuit_params"]["R_series_kohm"] * 1e3
+                            trace_key = f"time_traces:{os.path.basename(selected['path'])}"
+                            trace_removals = job_removals["time_traces"].setdefault(trace_key, {})
+                            df_filtered = _apply_time_trace_removals(df, trace_removals)
+                            remove_key = f"remove_time_{job['id']}_{os.path.basename(selected['path'])}"
+                            remove_points = bool(st.session_state.get(remove_key, False))
+                            fig = _plot_time_traces(df_filtered, "Time traces")
+                            points = _show_plotly_with_click(
+                                fig,
+                                "Time traces",
+                                key=f"plot_{job['id']}_{os.path.basename(selected['path'])}",
+                                use_events=(use_events or remove_points),
+                                show_click=not remove_points,
+                            )
+                            if remove_points and points:
+                                p0 = points[0]
+                                idx = p0.get("pointIndex")
+                                trace_idx = p0.get("curveNumber")
+                                if idx is not None and trace_idx is not None:
+                                    trace_set = trace_removals.setdefault(int(trace_idx), set())
+                                    _toggle_remove_index(trace_set, int(idx))
+                                    _rerun()
+                            st.toggle(
+                                "Remove points (click to remove/restore)",
+                                key=remove_key,
+                                value=remove_points,
+                                help="Use Plotly click events to remove points for this session.",
+                            )
+                            mat_fig = _matplotlib_time_traces_figure(df_filtered, "Time traces")
+                            png = _fig_to_png_bytes(mat_fig)
+                            plt.close(mat_fig)
+                            st.download_button(
+                                "Download PNG (matplotlib)",
+                                data=png,
+                                file_name=f"{job['id']}_time_traces.png",
+                                key=f"png_{job['id']}_{os.path.basename(selected['path'])}",
+                            )
+
+            if job["type"] == "sweep1d":
+                csvs = _csv_outputs(job.get("outputs", []))
+                if csvs:
+                    df = pd.read_csv(csvs[0]["path"])
+                    df.rename(columns={"value": "value"}, inplace=True)
+                    removed_idx = job_removals["sweep1d"]
+                    df_filtered = _apply_sweep1d_removals(df, removed_idx)
+                    figs = _plot_sweep_metrics(df_filtered, job["params"]["param"])
+                    mat_figs = _matplotlib_sweep1d_figs(df_filtered, job["params"]["param"])
+                    for idx, fig in enumerate(figs):
+                        remove_key = f"remove_sweep1d_{job['id']}_{idx}"
+                        remove_points = bool(st.session_state.get(remove_key, False))
+                        points = _show_plotly_with_click(
+                            fig,
+                            "Sweep1D",
+                            key=f"plot_{job['id']}_sweep1d_{idx}",
+                            use_events=(use_events or remove_points),
+                            show_click=not remove_points,
+                        )
+                        if remove_points and points:
+                            p0 = points[0]
+                            p_idx = p0.get("pointIndex")
+                            if p_idx is not None:
+                                _toggle_remove_index(removed_idx, int(p_idx))
+                                _rerun()
+                        st.toggle(
+                            "Remove points (click to remove/restore)",
+                            key=remove_key,
+                            value=remove_points,
+                            help="Use Plotly click events to remove points for this session.",
+                        )
+                        tag, mat_fig = mat_figs[idx]
+                        png = _fig_to_png_bytes(mat_fig)
+                        plt.close(mat_fig)
+                        st.download_button(
+                            f"Download PNG ({tag})",
+                            data=png,
+                            file_name=f"{job['id']}_sweep1d_{tag}.png",
+                            key=f"png_{job['id']}_sweep1d_{tag}",
+                        )
+
+            if job["type"] == "sweep2d":
+                csvs = _csv_outputs(job.get("outputs", []))
+                if csvs:
+                    if st.button("Open in Matplotlib (local)", key=f"mpl_{job['id']}"):
+                        try:
+                            _launch_matplotlib_viewer(
+                                csvs[0]["path"],
+                                job["params"]["param_x"],
+                                job["params"]["param_y"],
+                                job.get("name", "") or job["id"],
+                            )
+                            st.success("Opened matplotlib window.")
+                        except Exception as exc:
+                            st.error(f"Failed to launch matplotlib: {exc}")
+                    df = pd.read_csv(csvs[0]["path"])
+                    df.rename(columns={job["params"]["param_x"]: "x", job["params"]["param_y"]: "y"}, inplace=True)
+                    removed_xy = job_removals["sweep2d"]
+                    df_filtered = _apply_sweep2d_removals(df, removed_xy, "x", "y")
+                    heatmap, scatter3d = _plot_frequency_2d(
+                        df_filtered,
+                        job["params"]["param_x"],
+                        job["params"]["param_y"],
+                        removed_xy=removed_xy,
                     )
-                )
-            if checks["power"]:
-                example_v = float(st.session_state["example_vin"])
-                figs += capture_new_figures(
-                    lambda: analysis.plot_power_time_and_peaks_vs_Vin(
-                        vin_list,
-                        results,
-                        example_vin=example_v,
-                        t_start_us=float(st.session_state["t_start_us"]),
-                        t_end_us=float(st.session_state["t_end_window_us"]),
+                    remove_key_hm = f"remove_sweep2d_heatmap_{job['id']}"
+                    remove_points_hm = bool(st.session_state.get(remove_key_hm, False))
+                    points = _show_plotly_with_click(
+                        heatmap,
+                        "Heatmap",
+                        key=f"plot_{job['id']}_sweep2d_heatmap",
+                        use_events=(use_events or remove_points_hm),
+                        show_click=not remove_points_hm,
                     )
-                )
+                    if remove_points_hm and points:
+                        p0 = points[0]
+                        px = p0.get("x")
+                        py = p0.get("y")
+                        if px is not None and py is not None:
+                            _toggle_remove_xy(removed_xy, float(px), float(py))
+                            _rerun()
+                    st.toggle(
+                        "Remove points (click to remove/restore)",
+                        key=remove_key_hm,
+                        value=remove_points_hm,
+                        help="Use Plotly click events to remove points for this session.",
+                    )
+                    remove_key_3d = f"remove_sweep2d_3d_{job['id']}"
+                    remove_points_3d = bool(st.session_state.get(remove_key_3d, False))
+                    points = _show_plotly_with_click(
+                        scatter3d,
+                        "3D",
+                        key=f"plot_{job['id']}_sweep2d_3d",
+                        use_events=(use_events or remove_points_3d),
+                        show_click=not remove_points_3d,
+                    )
+                    if remove_points_3d and points:
+                        p0 = points[0]
+                        px = p0.get("x")
+                        py = p0.get("y")
+                        if px is not None and py is not None:
+                            _toggle_remove_xy(removed_xy, float(px), float(py))
+                            _rerun()
+                    st.toggle(
+                        "Remove points (click to remove/restore)",
+                        key=remove_key_3d,
+                        value=remove_points_3d,
+                        help="Use Plotly click events to remove points for this session.",
+                    )
+                    mat_figs = _matplotlib_sweep2d_figs(df_filtered, job["params"]["param_x"], job["params"]["param_y"])
+                    for tag, mat_fig in mat_figs:
+                        png = _fig_to_png_bytes(mat_fig)
+                        plt.close(mat_fig)
+                        st.download_button(
+                            f"Download PNG ({tag})",
+                            data=png,
+                            file_name=f"{job['id']}_sweep2d_{tag}.png",
+                            key=f"png_{job['id']}_sweep2d_{tag}",
+                        )
 
-        if checks["c_overlay"]:
-            C_vals = [float(x.strip()) for x in st.session_state["c_list"].split(",") if x.strip()]
-            figs += capture_new_figures(
-                lambda: analysis.plot_capacitance_effect_on_power(
-                    vin=float(st.session_state["vin"]),
-                    C_values_pF=C_vals,
-                    resist_params=resist,
-                    circuit_params=circuit,
-                    t_end=float(st.session_state["t_end_us"]) * 1e-6,
-                    dt=float(st.session_state["dt_ns"]) * 1e-9,
-                    t_start_us=float(st.session_state["t_start_us"]),
-                    t_end_us=float(st.session_state["t_end_window_us"]),
-                )
-            )
-            log_line("Capacitance overlay plotted.")
-
-        if checks["freq3d"]:
-            C_vals = [float(x.strip()) for x in st.session_state["c_list"].split(",") if x.strip()]
-            R_vals = [float(x.strip()) for x in st.session_state["r_list"].split(",") if x.strip()]
-            figs += capture_new_figures(
-                lambda: analysis.plot_frequency_3d_vs_C_and_Rload(
-                    vin=float(st.session_state["vin"]),
-                    C_values_pF=C_vals,
-                    Rload_values_kohm=R_vals,
-                    resist_params=resist,
-                    circuit_params=circuit,
-                    t_end=float(st.session_state["t_end_us"]) * 1e-6,
-                    dt=float(st.session_state["dt_ns"]) * 1e-9,
-                    threshold_A=float(st.session_state.get("threshold_A", 1e-3)),
-                )
-            )
-            log_line("Frequency 3D plotted.")
-
-        if checks["r_ins"]:
-            sim = run_single_simulation()
-            figs += capture_new_figures(
-                lambda: analysis.plot_R_insulating_vs_time(
-                    sim,
-                    t_start_us=float(st.session_state["t_start_us"]),
-                    t_end_us=float(st.session_state["t_end_window_us"]),
-                )
-            )
-            log_line("R_ins vs time plotted.")
-
-        render_figures(figs)
-        update_status("Completed", "PI analyses", "Analyses done.")
-
-
-def render_sweeps_tab():
-    st.header("Sweeps")
-    st.markdown("### 1D Sweep")
-    param_options = [
-        "Vin",
-        "R_series_kohm",
-        "C_par_pF",
-        "T_base_K",
-        "Cth_factor",
-        "noise_strength",
-        "couple_factor",
-        "Rm_factor",
-    ]
-    col1, col2, col3, col4 = st.columns(4)
-    param = col1.selectbox("Parameter", param_options)
-    start = col2.number_input("Start", value=10.0)
-    stop = col3.number_input("Stop", value=16.0)
-    step = col4.number_input("Step", value=0.5, min_value=0.001)
-    if st.button("Run 1D sweep"):
-        reset_logs()
-        st.session_state["cancel_requested"] = False
-        update_status("Running", "1D sweep", f"{param} sweep")
-        vals = np.arange(start, stop + 0.5 * step, step, dtype=float).tolist()
-        config = current_sim_config()
-        resist = build_resist_params_from_state()
-        circuit = build_circuit_params_from_state(config["lattice_shape"][0], config["lattice_shape"][1])
-        progress_placeholder = st.empty()
-        table_placeholder = st.empty()
-        plot_placeholder = st.empty()
-        df = sweep_parameter(
-            config,
-            resist,
-            circuit,
-            param,
-            vals,
-            float(st.session_state["t_start_us"]),
-            float(st.session_state["t_end_window_us"]),
-            float(st.session_state.get("threshold_A", 1e-3)),
-            progress_placeholder,
-            table_placeholder,
-            plot_placeholder,
-        )
-        st.dataframe(df)
-        update_status("Completed", "1D sweep", f"Completed {len(df)} points")
-
-    st.markdown("---")
-    st.markdown("### 2D Sweep")
-    param_a = st.selectbox("Parameter A", param_options, index=0, key="param_a")
-    param_b = st.selectbox("Parameter B", param_options, index=1, key="param_b")
-    cols = st.columns(4)
-    a_start = cols[0].number_input("A start", value=10.0, key="a_start")
-    a_stop = cols[1].number_input("A stop", value=16.0, key="a_stop")
-    a_step = cols[2].number_input("A step", value=0.5, key="a_step")
-    b_start = cols[0].number_input("B start", value=100.0, key="b_start")
-    b_stop = cols[1].number_input("B stop", value=200.0, key="b_stop")
-    b_step = cols[2].number_input("B step", value=25.0, key="b_step")
-    if st.button("Run 2D sweep"):
-        reset_logs()
-        st.session_state["cancel_requested"] = False
-        update_status("Running", "2D sweep", f"{param_a} vs {param_b}")
-        vals_a = np.arange(a_start, a_stop + 0.5 * a_step, a_step, dtype=float).tolist()
-        vals_b = np.arange(b_start, b_stop + 0.5 * b_step, b_step, dtype=float).tolist()
-        config = current_sim_config()
-        resist = build_resist_params_from_state()
-        circuit = build_circuit_params_from_state(config["lattice_shape"][0], config["lattice_shape"][1])
-        progress = st.progress(0.0)
-        rows: List[Dict[str, Any]] = []
-        total = len(vals_a) * len(vals_b)
-        count = 0
-        for va in vals_a:
-            for vb in vals_b:
-                if st.session_state.get("cancel_requested", False):
-                    log_line("2D sweep cancelled by user.")
-                    break
-                cfg = dict(config)
-                res = dataclasses.replace(resist)
-                circ = dataclasses.replace(circuit)
-                for name, value in [(param_a, va), (param_b, vb)]:
-                    if name == "Vin":
-                        cfg["Vin"] = value
-                    elif hasattr(circ, name):
-                        setattr(circ, name, value)
-                    elif hasattr(res, name):
-                        setattr(res, name, value)
-                sim = run_sim_cached(cfg, to_dict(res), to_dict(circ))
-                metrics = compute_metrics(
-                    sim,
-                    float(st.session_state["t_start_us"]),
-                    float(st.session_state["t_end_window_us"]),
-                    float(st.session_state.get("threshold_A", 1e-3)),
-                )
-                rows.append(
-                    {
-                        "param_a": va,
-                        "param_b": vb,
-                        "oscillatory": metrics["oscillatory"],
-                        "frequency_MHz": metrics["frequency_MHz"],
-                    }
-                )
-                count += 1
-                progress.progress(count / total)
-                log_line(f"[2D] {count}/{total}: {param_a}={va}, {param_b}={vb}")
-            if st.session_state.get("cancel_requested", False):
-                break
-        df = pd.DataFrame(rows)
-        st.dataframe(df)
-        if not df.empty:
-            pivot = df.pivot(index="param_a", columns="param_b", values="frequency_MHz")
-            fig, ax = plt.subplots(figsize=(6, 4))
-            c = ax.imshow(pivot, aspect="auto", origin="lower")
-            ax.set_xticks(range(len(pivot.columns)))
-            ax.set_xticklabels([f"{v:.2g}" for v in pivot.columns], rotation=45)
-            ax.set_yticks(range(len(pivot.index)))
-            ax.set_yticklabels([f"{v:.2g}" for v in pivot.index])
-            ax.set_xlabel(param_b)
-            ax.set_ylabel(param_a)
-            fig.colorbar(c, ax=ax, label="Frequency (MHz)")
-            st.pyplot(fig)
-            plt.close(fig)
-        st.session_state["last_sweep_df"] = df
-        update_status("Completed", "2D sweep", f"Completed {len(df)} points")
+    loading.empty()
+    running = any(job.get("status") in {"queued", "running"} for job in jobs)
+    if running and st.session_state.get("jobs_autorefresh", True):
+        st.caption("Auto-refreshing while jobs are running…")
+        time.sleep(1.5)
+        _rerun()
 
 
-def render_domain_tab():
-    st.header("Oscillation Domain Finder")
-    param_options = [
-        "Vin",
-        "R_series_kohm",
-        "C_par_pF",
-        "T_base_K",
-        "Cth_factor",
-        "noise_strength",
-        "couple_factor",
-    ]
-    param = st.selectbox("Parameter", param_options, key="domain_param")
-    start = st.number_input("Start", value=0.0, key="domain_start")
-    stop = st.number_input("Stop", value=20.0, key="domain_stop")
-    step = st.number_input("Step", value=0.5, min_value=0.001, key="domain_step")
-    fine_step = st.number_input("Fine step (optional)", value=0.05, min_value=0.001, key="domain_fine_step")
-    if st.button("Find oscillatory band"):
-        reset_logs()
-        st.session_state["cancel_requested"] = False
-        update_status("Running", "Domain finder", "Coarse sweep")
-        vals = np.arange(start, stop + 0.5 * step, step, dtype=float).tolist()
-        config = current_sim_config()
-        resist = build_resist_params_from_state()
-        circuit = build_circuit_params_from_state(config["lattice_shape"][0], config["lattice_shape"][1])
-        progress_placeholder = st.empty()
-        table_placeholder = st.empty()
-        vmin, vmax, df = domain_find(
-            param,
-            vals,
-            config,
-            resist,
-            circuit,
-            float(st.session_state["t_start_us"]),
-            float(st.session_state["t_end_window_us"]),
-            float(st.session_state.get("threshold_A", 1e-3)),
-            progress_placeholder,
-            table_placeholder,
-        )
-        st.dataframe(df)
-        if vmin is None or vmax is None:
-            st.warning("No oscillatory region found in coarse sweep.")
-            update_status("Completed", "Domain finder", "No oscillatory band found")
-        else:
-            st.success(f"Coarse oscillatory band: {vmin:.3g} – {vmax:.3g}")
-            log_line(f"[domain] coarse band {vmin} – {vmax}")
-            update_status("Running", "Domain finder", "Fine sweep")
-            fine_vals = np.arange(vmin, vmax + 0.5 * fine_step, fine_step, dtype=float).tolist()
-            progress_fine = st.progress(0.0)
-            table_fine = st.empty()
-            vmin_f, vmax_f, df_f = domain_find(
-                param,
-                fine_vals,
-                config,
-                resist,
-                circuit,
-                float(st.session_state["t_start_us"]),
-                float(st.session_state["t_end_window_us"]),
-                float(st.session_state.get("threshold_A", 1e-3)),
-                progress_fine,
-                table_fine,
-            )
-            st.dataframe(df_f)
-            st.success(f"Fine band: {vmin_f} – {vmax_f}")
-            update_status("Completed", "Domain finder", f"Band {vmin_f} – {vmax_f}")
-
-
-def render_export_tab():
-    st.header("Export")
-    if st.session_state["last_sim"]:
-        sim = st.session_state["last_sim"]
-        buf = io.StringIO()
-        series_keys = ["V_node", "I_load", "I_vo2", "T_K", "R_vo2", "g"]
-        series_data = {k: series_first(sim[k]) for k in series_keys}
-        header = ["time_s"] + series_keys
-        buf.write(",".join(header) + "\n")
-        n = len(sim["time_s"])
-        for i in range(n):
-            row = [sim["time_s"][i]] + [series_data[k][i] for k in series_keys]
-            buf.write(",".join(str(x) for x in row) + "\n")
-        st.download_button("Download last simulation CSV", data=buf.getvalue(), file_name="simulation.csv")
-    else:
-        st.info("Run a simulation to enable export.")
-
-    if st.session_state["last_sweep_df"] is not None:
-        df = st.session_state["last_sweep_df"]
-        st.download_button(
-            "Download last sweep CSV",
-            data=df.to_csv(index=False),
-            file_name="sweep.csv",
-            mime="text/csv",
-        )
-
-    if st.session_state["last_config"]:
-        st.download_button(
-            "Download config JSON",
-            data=json.dumps(st.session_state["last_config"], indent=2),
-            file_name="config.json",
-            mime="application/json",
-        )
-
-
-# ---------------------------------------------------------------------------
-# App entrypoint
-# ---------------------------------------------------------------------------
+# -----------------------------
+# Main
+# -----------------------------
 
 
 def main() -> None:
-    sidebar_inputs()
-    tab_run, tab_pi, tab_sweeps, tab_domain, tab_export = st.tabs(
-        ["Run", "PI Analyses", "Sweeps", "Oscillation Domain Finder", "Export"]
-    )
-    with tab_run:
-        render_run_tab()
-    with tab_pi:
-        render_pi_tab()
-    with tab_sweeps:
-        render_sweeps_tab()
-    with tab_domain:
-        render_domain_tab()
-    with tab_export:
-        render_export_tab()
+    st.set_page_config(page_title="Quantum Materials for Neuromorphic Computation", layout="wide")
+    _init_defaults()
+    _ensure_worker()
+
+    _render_top_bar()
+
+    _render_sidebar()
+
+    with st.sidebar:
+        st.markdown("---")
+        if st.button("Load paper preset"):
+            _apply_preset(True)
+
+    current_mode = st.session_state["mode"]
+    last_mode = st.session_state.get("last_mode")
+    if last_mode is None:
+        st.session_state["last_mode"] = current_mode
+    elif last_mode != current_mode:
+        _apply_preset(True)
+        st.session_state["last_mode"] = current_mode
+
+    content = st.empty()
+    mode = st.session_state["mode"]
+    with content.container():
+        if mode == "Single Simulation":
+            _render_single()
+        elif mode == "Sweep over Free Variable":
+            _render_sweep1d()
+        elif mode == "2D Frequency Sweep":
+            _render_sweep2d()
+        else:
+            _render_jobs_view()
 
 
 if __name__ == "__main__":
