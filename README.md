@@ -10,6 +10,44 @@ Created by Gabriel Berezovsky under the supervision of PhD candidate Amir Gildor
 
 This project models the electrical and thermal dynamics of a VO₂ neuristor and reproduces spiking behavior.
 
+## Installation and GUI (Streamlit)
+
+### Fork and clone
+
+1) In GitHub, open this repo and click **Fork** (top right).
+2) Clone your fork:
+```
+git clone https://github.com/<your-username>/<your-fork>.git
+cd <your-fork>
+```
+
+### Local setup
+
+1) Create a virtual environment:
+```
+python -m venv .venv
+```
+2) Activate it:
+```
+# macOS / Linux
+source .venv/bin/activate
+
+# Windows (PowerShell)
+.venv\Scripts\Activate.ps1
+```
+3) Install dependencies:
+```
+pip install -r requirements.txt
+```
+
+### Run the app
+
+From the repo root:
+```
+streamlit run app.py
+```
+Then open the URL printed in the terminal (usually `http://localhost:8501`).
+
 ## Manual CLI (manual.py)
 
 Run from the repo root:

@@ -115,6 +115,72 @@ def _get_job_removals(job_id: str) -> Dict[str, Any]:
     return store[job_id]
 
 
+def _click_signature(point: Dict[str, Any]) -> tuple:
+    return (
+        point.get("x"),
+        point.get("y"),
+        point.get("curveNumber"),
+        point.get("pointIndex"),
+        point.get("pointNumber"),
+    )
+
+
+def _consume_click(key: str, points: List[Dict[str, Any]]) -> Dict[str, Any] | None:
+    if not points:
+        return None
+    sig = _click_signature(points[0])
+    store = st.session_state.setdefault("last_click_sig", {})
+    if store.get(key) == sig:
+        return None
+    store[key] = sig
+    return points[0]
+
+
+def _build_single_job_from_params(
+    base_params: Dict[str, Any],
+    overrides: Dict[str, float],
+    name_suffix: str,
+) -> Dict[str, Any]:
+    config = {
+        "type": "single",
+        "job_name": "",
+        "vin": float(base_params.get("vin", 0.0)),
+        "vin_list": [],
+        "t_end": float(base_params["t_end"]),
+        "dt": float(base_params["dt"]),
+        "t_start_us": float(base_params["t_start_us"]),
+        "t_end_us": float(base_params["t_end_us"]),
+        "threshold_A": float(base_params["threshold_A"]),
+        "noise_seed": base_params.get("noise_seed"),
+        "start_branch": base_params.get("start_branch", "insulator"),
+        "lattice_shape": base_params.get("lattice_shape", (1, 1)),
+        "resist_params": dict(base_params["resist_params"]),
+        "circuit_params": dict(base_params["circuit_params"]),
+    }
+    for param, value in overrides.items():
+        if param == "Vin":
+            config["vin"] = float(value)
+        elif param in config["resist_params"]:
+            config["resist_params"][param] = float(value)
+        elif param in config["circuit_params"]:
+            config["circuit_params"][param] = float(value)
+        else:
+            raise ValueError(f"Unknown parameter: {param}")
+
+    base_name = base_params.get("job_name") or ""
+    job_name = base_name if base_name else "Point simulation"
+    if name_suffix:
+        job_name = f"{job_name} | {name_suffix}"
+    config["job_name"] = job_name
+    return config
+
+
+def _enqueue_single_from_click(job: Dict[str, Any], overrides: Dict[str, float], label: str) -> None:
+    config = _build_single_job_from_params(job["params"], overrides, label)
+    new_job = _create_job(config)
+    _enqueue_job(new_job["id"])
+
+
 def _toggle_remove_index(indices: set[int], idx: int) -> bool:
     if idx in indices:
         indices.remove(idx)
@@ -136,7 +202,7 @@ def _apply_time_trace_removals(df: pd.DataFrame, removals: Dict[int, set[int]]) 
     if not removals:
         return df
     df2 = df.copy()
-    col_map = {0: "V_vo2", 1: "V_load", 2: "T_K", 3: "I_vo2", 4: "P_vo2"}
+    col_map = {0: "V_vo2", 1: "V_load", 2: "T_K", 3: "I_vo2", 4: "P_vo2", 5: "R_vo2"}
     max_idx = len(df2) - 1
     for trace_idx, idxs in removals.items():
         col = col_map.get(trace_idx)
@@ -198,6 +264,12 @@ def _text_input(label: str, key: str, value: str | None = None, **kwargs):
     if value is None:
         return st.text_input(label, key=key, **kwargs)
     return st.text_input(label, key=key, value=value, **kwargs)
+
+
+def _toggle_input(label: str, key: str, value: bool = False, **kwargs):
+    if key in st.session_state:
+        return st.toggle(label, key=key, **kwargs)
+    return st.toggle(label, key=key, value=value, **kwargs)
 
 
 def _render_input_grid(keys: List[str], input_fn, columns: int = 4) -> None:
@@ -416,10 +488,12 @@ def _init_defaults() -> None:
         "ny",
         "batch_jobs",
         "terminal_log",
-        "enable_plotly_events",
-        "jobs_autorefresh",
         "enable_point_removal",
         "removed_points",
+        "last_click_sig",
+        "job_name_single",
+        "job_name_sweep1d",
+        "job_name_sweep2d",
         "sweep_start",
         "sweep_stop",
         "coarse_step",
@@ -454,10 +528,12 @@ def _init_defaults() -> None:
     st.session_state.setdefault("ny", 1)
     st.session_state.setdefault("batch_jobs", [])
     st.session_state.setdefault("terminal_log", "")
-    st.session_state.setdefault("enable_plotly_events", False)
-    st.session_state.setdefault("jobs_autorefresh", True)
     st.session_state.setdefault("enable_point_removal", False)
     st.session_state.setdefault("removed_points", {})
+    st.session_state.setdefault("last_click_sig", {})
+    st.session_state.setdefault("job_name_single", "")
+    st.session_state.setdefault("job_name_sweep1d", "")
+    st.session_state.setdefault("job_name_sweep2d", "")
     st.session_state.setdefault("sweep_start", 0.0)
     st.session_state.setdefault("sweep_stop", 20.0)
     st.session_state.setdefault("coarse_step", 0.5)
@@ -527,18 +603,21 @@ def _csv_outputs(outputs: List[Dict[str, str]]) -> List[Dict[str, str]]:
 
 
 def _plot_time_traces(df: pd.DataFrame, title: str) -> go.Figure:
-    fig = make_subplots(rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.05)
+    fig = make_subplots(rows=5, cols=1, shared_xaxes=True, vertical_spacing=0.05)
     fig.add_trace(go.Scatter(x=df["time_us"], y=df["V_vo2"], name="V_vo2"), row=1, col=1)
     fig.add_trace(go.Scatter(x=df["time_us"], y=df["V_load"], name="V_load"), row=1, col=1)
     fig.add_trace(go.Scatter(x=df["time_us"], y=df["T_K"], name="T_vo2"), row=2, col=1)
     fig.add_trace(go.Scatter(x=df["time_us"], y=df["I_vo2"], name="I_vo2"), row=3, col=1)
     fig.add_trace(go.Scatter(x=df["time_us"], y=df["P_vo2"], name="P_vo2"), row=4, col=1)
+    if "R_vo2" in df.columns:
+        fig.add_trace(go.Scatter(x=df["time_us"], y=df["R_vo2"], name="R_vo2"), row=5, col=1)
     fig.update_yaxes(title_text="Voltage (V)", row=1, col=1)
     fig.update_yaxes(title_text="Temperature (K)", row=2, col=1)
     fig.update_yaxes(title_text="Current (A)", row=3, col=1)
     fig.update_yaxes(title_text="Power (W)", row=4, col=1)
-    fig.update_xaxes(title_text="time (us)", row=4, col=1)
-    fig.update_layout(height=800, title=title, legend=dict(orientation="h"))
+    fig.update_yaxes(title_text="Resistance (Ω)", row=5, col=1)
+    fig.update_xaxes(title_text="time (us)", row=5, col=1)
+    fig.update_layout(height=980, title=title, legend=dict(orientation="h"))
     return fig
 
 
@@ -650,11 +729,9 @@ def _show_plotly_with_click(
     fig,
     label: str,
     key: str | None = None,
-    use_events: bool | None = None,
+    use_events: bool = False,
     show_click: bool = True,
 ) -> None:
-    if use_events is None:
-        use_events = bool(st.session_state.get("enable_plotly_events", False))
     if use_events and _HAS_PLOTLY_EVENTS:
         height = int(fig.layout.height) if fig.layout.height else 450
         points = plotly_events(
@@ -669,10 +746,6 @@ def _show_plotly_with_click(
             st.write(f"{label} click:", points[0])
         return points
     st.plotly_chart(fig, use_container_width=True)
-    if _HAS_PLOTLY_EVENTS:
-        st.caption("Enable click-to-inspect to view points.")
-    else:
-        st.caption("Click-to-inspect is available if `streamlit-plotly-events` is installed.")
     return []
 
 
@@ -710,7 +783,7 @@ def _launch_matplotlib_viewer(csv_path: str, x_label: str, y_label: str, title: 
 
 
 def _matplotlib_time_traces_figure(df: pd.DataFrame, title: str):
-    fig, axes = plt.subplots(4, 1, figsize=MPL_FIGSIZE_WIDE, sharex=True)
+    fig, axes = plt.subplots(5, 1, figsize=MPL_FIGSIZE_WIDE, sharex=True)
     axes[0].plot(df["time_us"], df["V_vo2"], label="V_vo2", linewidth=MPL_LINEWIDTH)
     axes[0].plot(df["time_us"], df["V_load"], label="V_load", linewidth=MPL_LINEWIDTH)
     axes[0].set_ylabel("Voltage (V)", fontsize=MPL_LABEL_SIZE)
@@ -727,8 +800,13 @@ def _matplotlib_time_traces_figure(df: pd.DataFrame, title: str):
 
     axes[3].plot(df["time_us"], df["P_vo2"], color="tab:purple", linewidth=MPL_LINEWIDTH)
     axes[3].set_ylabel("P_vo2 (W)", fontsize=MPL_LABEL_SIZE)
-    axes[3].set_xlabel("time (us)", fontsize=MPL_LABEL_SIZE)
     axes[3].grid(True, alpha=0.3)
+
+    if "R_vo2" in df.columns:
+        axes[4].plot(df["time_us"], df["R_vo2"], color="tab:orange", linewidth=MPL_LINEWIDTH)
+    axes[4].set_ylabel("R_vo2 (Ω)", fontsize=MPL_LABEL_SIZE)
+    axes[4].set_xlabel("time (us)", fontsize=MPL_LABEL_SIZE)
+    axes[4].grid(True, alpha=0.3)
 
     for ax in axes:
         ax.tick_params(labelsize=MPL_TICK_SIZE)
@@ -861,7 +939,7 @@ def _create_job(config: Dict[str, Any]) -> Dict[str, Any]:
     job_dir.mkdir(parents=True, exist_ok=True)
     job = {
         "id": job_id,
-        "name": "",
+        "name": config.get("job_name", ""),
         "type": config["type"],
         "status": "queued",
         "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -1042,6 +1120,7 @@ def _build_job_config_single() -> Dict[str, Any]:
     vin_list = [float(x.strip()) for x in st.session_state["vin_list"].split(",") if x.strip()]
     return {
         "type": "single",
+        "job_name": st.session_state.get("job_name_single", "").strip(),
         "vin": float(st.session_state["vin"]),
         "vin_list": vin_list,
         "t_end": float(st.session_state["t_end_us"]) * 1e-6,
@@ -1061,6 +1140,7 @@ def _build_job_config_sweep1d(param_label: str) -> Dict[str, Any]:
     resist, circuit, lattice = _build_params()
     return {
         "type": "sweep1d",
+        "job_name": st.session_state.get("job_name_sweep1d", "").strip(),
         "param": _param_name_from_label(param_label),
         "start": float(st.session_state["sweep_start"]),
         "stop": float(st.session_state["sweep_stop"]),
@@ -1090,6 +1170,7 @@ def _build_job_config_sweep2d(param_x_label: str, param_y_label: str) -> Dict[st
     resist, circuit, lattice = _build_params()
     return {
         "type": "sweep2d",
+        "job_name": st.session_state.get("job_name_sweep2d", "").strip(),
         "param_x": _param_name_from_label(param_x_label),
         "param_y": _param_name_from_label(param_y_label),
         "x_start": _parse_optional_float(st.session_state["x_start"]),
@@ -1213,6 +1294,7 @@ def _render_batch_runner(terminal_placeholder) -> None:
 def _render_single() -> None:
     st.header("Single Simulation")
     with st.form("single_form"):
+        _text_input("Simulation name (optional)", key="job_name_single")
         st.markdown("### Inputs")
         cols = st.columns(4)
         with cols[0]:
@@ -1245,6 +1327,7 @@ def _render_single() -> None:
 def _render_sweep1d() -> None:
     st.header("Sweep Over Free Variable")
     with st.form("sweep1d_form"):
+        _text_input("Simulation name (optional)", key="job_name_sweep1d")
         st.markdown("### Inputs")
         cols = st.columns(4)
         with cols[0]:
@@ -1287,6 +1370,7 @@ def _render_sweep1d() -> None:
 def _render_sweep2d() -> None:
     st.header("2D Free Variable vs Oscillation Frequency")
     with st.form("sweep2d_form"):
+        _text_input("Simulation name (optional)", key="job_name_sweep2d")
         st.markdown("### Inputs")
         cols = st.columns(4)
         with cols[0]:
@@ -1337,23 +1421,7 @@ def _render_sweep2d() -> None:
 def _render_jobs_view() -> None:
     st.header("Jobs")
     loading = st.progress(0.0)
-    toggle_cols = st.columns([1, 1, 2])
-    with toggle_cols[0]:
-        st.toggle(
-            "Auto-refresh",
-            value=st.session_state.get("jobs_autorefresh", True),
-            key="jobs_autorefresh",
-            help="Refresh the Jobs view while jobs are running.",
-        )
     use_events = False
-    if _HAS_PLOTLY_EVENTS:
-        with toggle_cols[1]:
-            use_events = st.toggle(
-                "Enable click-to-inspect",
-                value=st.session_state.get("enable_plotly_events", False),
-                key="enable_plotly_events",
-                help="Plotly events render a custom component that may look different from the app theme.",
-            )
     jobs = _list_jobs()
     if not jobs:
         loading.empty()
@@ -1364,218 +1432,311 @@ def _render_jobs_view() -> None:
     for idx, job in enumerate(jobs, start=1):
         loading.progress(idx / total)
         job_name = job.get("name", "").strip()
-        display_name = job_name or job["id"]
-        with st.expander(f"{display_name} | {job['type']} | {job['status']}"):
-            job_removals = _get_job_removals(job["id"])
-            action_col, name_col = st.columns([1, 3])
-            if job.get("status") in {"queued", "running", "cancel_requested"}:
-                if action_col.button("Cancel job", key=f"cancel_{job['id']}"):
-                    job["status"] = "cancel_requested" if job.get("status") == "running" else "cancelled"
-                    _append_job_log(job, "[job] cancel requested")
-                    _save_job(job)
-                    _rerun()
-            else:
-                if action_col.button("Delete job", key=f"delete_{job['id']}"):
+        summary_cols = st.columns([4, 2, 2, 1, 1])
+        name_key = f"name_{job['id']}"
+        with summary_cols[0]:
+            new_name = st.text_input(
+                "Job name",
+                value=job_name,
+                key=name_key,
+                placeholder=job["id"],
+                label_visibility="collapsed",
+            )
+            if new_name != job_name:
+                job["name"] = new_name.strip()
+                job_name = job["name"]
+                _save_job(job)
+        summary_cols[1].write(job["type"])
+        summary_cols[2].write(job["status"])
+        with summary_cols[3]:
+            open_job = st.toggle("Open", key=f"open_{job['id']}")
+        with summary_cols[4]:
+            if job.get("status") not in {"queued", "running", "cancel_requested"}:
+                if st.button("🗑", key=f"delete_{job['id']}", help="Delete job"):
                     shutil.rmtree(_job_dir(job["id"]), ignore_errors=True)
                     _rerun()
-            name_key = f"name_{job['id']}"
-            with name_col:
-                st.text_input("Job name", value=job_name, key=name_key, placeholder="Optional label")
-                if st.button("Save name", key=f"save_name_{job['id']}"):
-                    job["name"] = st.session_state.get(name_key, "").strip()
-                    _save_job(job)
-                    _rerun()
-            st.json(job["params"], expanded=False)
-            if os.path.exists(job["log_path"]):
-                with open(job["log_path"], "r") as f:
-                    log_text = f.read().strip()
+        st.caption(f"Created: {job.get('created_at', '')} | Outputs: {len(job.get('outputs', []))}")
+        if not open_job:
+            st.markdown("---")
+            continue
+
+        if job.get("status") in {"queued", "running", "cancel_requested"}:
+            if st.button("Cancel job", key=f"cancel_{job['id']}"):
+                job["status"] = "cancel_requested" if job.get("status") == "running" else "cancelled"
+                _append_job_log(job, "[job] cancel requested")
+                _save_job(job)
+                _rerun()
+
+        job_removals = _get_job_removals(job["id"])
+        st.json(job["params"], expanded=False)
+        if os.path.exists(job["log_path"]):
+            with open(job["log_path"], "r") as f:
+                log_text = f.read().strip()
+            expanded = job.get("status") in {"queued", "running", "cancel_requested"}
+            with st.expander("Job log", expanded=expanded):
                 st.code(log_text or "(no logs)")
 
-            for out in job.get("outputs", []):
-                path = out["path"]
-                if os.path.exists(path):
-                    with open(path, "rb") as f:
-                        st.download_button(
-                            out["label"],
-                            data=f,
-                            file_name=os.path.basename(path),
-                            key=f"dl_{job['id']}_{os.path.basename(path)}",
-                        )
+        for out in job.get("outputs", []):
+            path = out["path"]
+            if os.path.exists(path):
+                with open(path, "rb") as f:
+                    st.download_button(
+                        out["label"],
+                        data=f,
+                        file_name=os.path.basename(path),
+                        key=f"dl_{job['id']}_{os.path.basename(path)}",
+                    )
 
-            # Preview plots
-            if job["type"] == "single":
-                csvs = _csv_outputs(job.get("outputs", []))
-                if csvs:
-                    tabs = st.tabs([o["label"] for o in csvs])
-                    for tab, selected in zip(tabs, csvs):
-                        with tab:
-                            df = pd.read_csv(selected["path"])
-                            df["time_us"] = df["time_s"] * 1e6
-                            df["V_vo2"] = df["V_node"]
-                            df["I_vo2"] = df["I_vo2"]
-                            df["T_K"] = df["T_K"]
-                            df["P_vo2"] = df["V_node"] * df["I_vo2"]
-                            df["V_load"] = df["I_load"] * job["params"]["circuit_params"]["R_series_kohm"] * 1e3
-                            trace_key = f"time_traces:{os.path.basename(selected['path'])}"
-                            trace_removals = job_removals["time_traces"].setdefault(trace_key, {})
-                            df_filtered = _apply_time_trace_removals(df, trace_removals)
-                            remove_key = f"remove_time_{job['id']}_{os.path.basename(selected['path'])}"
-                            remove_points = bool(st.session_state.get(remove_key, False))
-                            fig = _plot_time_traces(df_filtered, "Time traces")
-                            points = _show_plotly_with_click(
-                                fig,
-                                "Time traces",
-                                key=f"plot_{job['id']}_{os.path.basename(selected['path'])}",
-                                use_events=(use_events or remove_points),
-                                show_click=not remove_points,
-                            )
-                            if remove_points and points:
-                                p0 = points[0]
-                                idx = p0.get("pointIndex")
-                                trace_idx = p0.get("curveNumber")
-                                if idx is not None and trace_idx is not None:
-                                    trace_set = trace_removals.setdefault(int(trace_idx), set())
-                                    _toggle_remove_index(trace_set, int(idx))
-                                    _rerun()
-                            st.toggle(
-                                "Remove points (click to remove/restore)",
-                                key=remove_key,
-                                value=remove_points,
-                                help="Use Plotly click events to remove points for this session.",
-                            )
-                            mat_fig = _matplotlib_time_traces_figure(df_filtered, "Time traces")
-                            png = _fig_to_png_bytes(mat_fig)
-                            plt.close(mat_fig)
-                            st.download_button(
-                                "Download PNG (matplotlib)",
-                                data=png,
-                                file_name=f"{job['id']}_time_traces.png",
-                                key=f"png_{job['id']}_{os.path.basename(selected['path'])}",
-                            )
-
-            if job["type"] == "sweep1d":
-                csvs = _csv_outputs(job.get("outputs", []))
-                if csvs:
-                    df = pd.read_csv(csvs[0]["path"])
-                    df.rename(columns={"value": "value"}, inplace=True)
-                    removed_idx = job_removals["sweep1d"]
-                    df_filtered = _apply_sweep1d_removals(df, removed_idx)
-                    figs = _plot_sweep_metrics(df_filtered, job["params"]["param"])
-                    mat_figs = _matplotlib_sweep1d_figs(df_filtered, job["params"]["param"])
-                    for idx, fig in enumerate(figs):
-                        remove_key = f"remove_sweep1d_{job['id']}_{idx}"
+        # Preview plots
+        if job["type"] == "single":
+            csvs = _csv_outputs(job.get("outputs", []))
+            if csvs:
+                tabs = st.tabs([o["label"] for o in csvs])
+                for tab, selected in zip(tabs, csvs):
+                    with tab:
+                        df = pd.read_csv(selected["path"])
+                        df["time_us"] = df["time_s"] * 1e6
+                        df["V_vo2"] = df["V_node"]
+                        df["I_vo2"] = df["I_vo2"]
+                        df["T_K"] = df["T_K"]
+                        df["P_vo2"] = df["V_node"] * df["I_vo2"]
+                        df["V_load"] = df["I_load"] * job["params"]["circuit_params"]["R_series_kohm"] * 1e3
+                        trace_key = f"time_traces:{os.path.basename(selected['path'])}"
+                        trace_removals = job_removals["time_traces"].setdefault(trace_key, {})
+                        df_filtered = _apply_time_trace_removals(df, trace_removals)
+                        remove_key = f"remove_time_{job['id']}_{os.path.basename(selected['path'])}"
                         remove_points = bool(st.session_state.get(remove_key, False))
+                        fig = _plot_time_traces(df_filtered, "Time traces")
                         points = _show_plotly_with_click(
                             fig,
-                            "Sweep1D",
-                            key=f"plot_{job['id']}_sweep1d_{idx}",
+                            "Time traces",
+                            key=f"plot_{job['id']}_{os.path.basename(selected['path'])}",
                             use_events=(use_events or remove_points),
                             show_click=not remove_points,
                         )
-                        if remove_points and points:
-                            p0 = points[0]
-                            p_idx = p0.get("pointIndex")
-                            if p_idx is not None:
-                                _toggle_remove_index(removed_idx, int(p_idx))
+                        point = _consume_click(
+                            f"click_time_{job['id']}_{os.path.basename(selected['path'])}",
+                            points,
+                        )
+                        if remove_points and point:
+                            p0 = point
+                            idx = p0.get("pointIndex")
+                            trace_idx = p0.get("curveNumber")
+                            if idx is not None and trace_idx is not None:
+                                trace_set = trace_removals.setdefault(int(trace_idx), set())
+                                _toggle_remove_index(trace_set, int(idx))
+                                st.session_state[remove_key] = False
                                 _rerun()
-                        st.toggle(
+                        _toggle_input(
                             "Remove points (click to remove/restore)",
                             key=remove_key,
-                            value=remove_points,
                             help="Use Plotly click events to remove points for this session.",
                         )
-                        tag, mat_fig = mat_figs[idx]
+                        mat_fig = _matplotlib_time_traces_figure(df_filtered, "Time traces")
                         png = _fig_to_png_bytes(mat_fig)
                         plt.close(mat_fig)
                         st.download_button(
-                            f"Download PNG ({tag})",
+                            "Download PNG (matplotlib)",
                             data=png,
-                            file_name=f"{job['id']}_sweep1d_{tag}.png",
-                            key=f"png_{job['id']}_sweep1d_{tag}",
+                            file_name=f"{job['id']}_time_traces.png",
+                            key=f"png_{job['id']}_{os.path.basename(selected['path'])}",
                         )
 
-            if job["type"] == "sweep2d":
-                csvs = _csv_outputs(job.get("outputs", []))
-                if csvs:
-                    if st.button("Open in Matplotlib (local)", key=f"mpl_{job['id']}"):
-                        try:
-                            _launch_matplotlib_viewer(
-                                csvs[0]["path"],
-                                job["params"]["param_x"],
-                                job["params"]["param_y"],
-                                job.get("name", "") or job["id"],
-                            )
-                            st.success("Opened matplotlib window.")
-                        except Exception as exc:
-                            st.error(f"Failed to launch matplotlib: {exc}")
-                    df = pd.read_csv(csvs[0]["path"])
-                    df.rename(columns={job["params"]["param_x"]: "x", job["params"]["param_y"]: "y"}, inplace=True)
-                    removed_xy = job_removals["sweep2d"]
-                    df_filtered = _apply_sweep2d_removals(df, removed_xy, "x", "y")
-                    heatmap, scatter3d = _plot_frequency_2d(
-                        df_filtered,
-                        job["params"]["param_x"],
-                        job["params"]["param_y"],
-                        removed_xy=removed_xy,
-                    )
-                    remove_key_hm = f"remove_sweep2d_heatmap_{job['id']}"
-                    remove_points_hm = bool(st.session_state.get(remove_key_hm, False))
+        if job["type"] == "sweep1d":
+            csvs = _csv_outputs(job.get("outputs", []))
+            if csvs:
+                df = pd.read_csv(csvs[0]["path"])
+                df.rename(columns={"value": "value"}, inplace=True)
+                removed_idx = job_removals["sweep1d"]
+                df_filtered = _apply_sweep1d_removals(df, removed_idx)
+                figs = _plot_sweep_metrics(df_filtered, job["params"]["param"])
+                mat_figs = _matplotlib_sweep1d_figs(df_filtered, job["params"]["param"])
+                for idx, fig in enumerate(figs):
+                    remove_key = f"remove_sweep1d_{job['id']}_{idx}"
+                    run_key = f"run_sweep1d_{job['id']}_{idx}"
+                    remove_points = bool(st.session_state.get(remove_key, False))
+                    run_points = bool(st.session_state.get(run_key, False))
+                    if run_points and remove_points:
+                        remove_points = False
+                        st.session_state[remove_key] = False
                     points = _show_plotly_with_click(
-                        heatmap,
-                        "Heatmap",
-                        key=f"plot_{job['id']}_sweep2d_heatmap",
-                        use_events=(use_events or remove_points_hm),
-                        show_click=not remove_points_hm,
+                        fig,
+                        "Sweep1D",
+                        key=f"plot_{job['id']}_sweep1d_{idx}",
+                        use_events=(use_events or remove_points or run_points),
+                        show_click=not (remove_points or run_points),
                     )
-                    if remove_points_hm and points:
-                        p0 = points[0]
-                        px = p0.get("x")
-                        py = p0.get("y")
-                        if px is not None and py is not None:
-                            _toggle_remove_xy(removed_xy, float(px), float(py))
+                    point = _consume_click(f"click_sweep1d_{job['id']}_{idx}", points)
+                    if remove_points and point:
+                        p0 = point
+                        p_idx = p0.get("pointIndex")
+                        if p_idx is not None:
+                            _toggle_remove_index(removed_idx, int(p_idx))
+                            st.session_state[remove_key] = False
                             _rerun()
-                    st.toggle(
+                        elif run_points and point:
+                            p0 = point
+                            p_idx = p0.get("pointIndex")
+                            x_val = p0.get("x")
+                            if x_val is None and p_idx is not None and 0 <= int(p_idx) < len(df):
+                                x_val = float(df["value"].iloc[int(p_idx)])
+                            if x_val is not None:
+                                param = job["params"]["param"]
+                                overrides = {param: float(x_val)}
+                                _enqueue_single_from_click(job, overrides, f"{param}={float(x_val):.4g}")
+                                st.success("Queued single simulation from clicked point.")
+                                st.session_state[run_key] = False
+                                _rerun()
+                    _toggle_input(
                         "Remove points (click to remove/restore)",
-                        key=remove_key_hm,
-                        value=remove_points_hm,
+                        key=remove_key,
                         help="Use Plotly click events to remove points for this session.",
                     )
-                    remove_key_3d = f"remove_sweep2d_3d_{job['id']}"
-                    remove_points_3d = bool(st.session_state.get(remove_key_3d, False))
-                    points = _show_plotly_with_click(
-                        scatter3d,
-                        "3D",
-                        key=f"plot_{job['id']}_sweep2d_3d",
-                        use_events=(use_events or remove_points_3d),
-                        show_click=not remove_points_3d,
+                    _toggle_input(
+                        "Run single simulation from click",
+                        key=run_key,
+                        value=run_points,
+                        help="Click a point to queue a single simulation from this selection.",
                     )
-                    if remove_points_3d and points:
-                        p0 = points[0]
-                        px = p0.get("x")
-                        py = p0.get("y")
-                        if px is not None and py is not None:
-                            _toggle_remove_xy(removed_xy, float(px), float(py))
-                            _rerun()
-                    st.toggle(
-                        "Remove points (click to remove/restore)",
-                        key=remove_key_3d,
-                        value=remove_points_3d,
-                        help="Use Plotly click events to remove points for this session.",
+                    tag, mat_fig = mat_figs[idx]
+                    png = _fig_to_png_bytes(mat_fig)
+                    plt.close(mat_fig)
+                    st.download_button(
+                        f"Download PNG ({tag})",
+                        data=png,
+                        file_name=f"{job['id']}_sweep1d_{tag}.png",
+                        key=f"png_{job['id']}_sweep1d_{tag}",
                     )
-                    mat_figs = _matplotlib_sweep2d_figs(df_filtered, job["params"]["param_x"], job["params"]["param_y"])
-                    for tag, mat_fig in mat_figs:
-                        png = _fig_to_png_bytes(mat_fig)
-                        plt.close(mat_fig)
-                        st.download_button(
-                            f"Download PNG ({tag})",
-                            data=png,
-                            file_name=f"{job['id']}_sweep2d_{tag}.png",
-                            key=f"png_{job['id']}_sweep2d_{tag}",
+
+        if job["type"] == "sweep2d":
+            csvs = _csv_outputs(job.get("outputs", []))
+            if csvs:
+                if st.button("Open in Matplotlib (local)", key=f"mpl_{job['id']}"):
+                    try:
+                        _launch_matplotlib_viewer(
+                            csvs[0]["path"],
+                            job["params"]["param_x"],
+                            job["params"]["param_y"],
+                            job.get("name", "") or job["id"],
                         )
+                        st.success("Opened matplotlib window.")
+                    except Exception as exc:
+                        st.error(f"Failed to launch matplotlib: {exc}")
+                df = pd.read_csv(csvs[0]["path"])
+                df.rename(columns={job["params"]["param_x"]: "x", job["params"]["param_y"]: "y"}, inplace=True)
+                removed_xy = job_removals["sweep2d"]
+                df_filtered = _apply_sweep2d_removals(df, removed_xy, "x", "y")
+                heatmap, scatter3d = _plot_frequency_2d(
+                    df_filtered,
+                    job["params"]["param_x"],
+                    job["params"]["param_y"],
+                    removed_xy=removed_xy,
+                )
+                remove_key_hm = f"remove_sweep2d_heatmap_{job['id']}"
+                run_key_hm = f"run_sweep2d_heatmap_{job['id']}"
+                remove_points_hm = bool(st.session_state.get(remove_key_hm, False))
+                run_points_hm = bool(st.session_state.get(run_key_hm, False))
+                if run_points_hm and remove_points_hm:
+                    remove_points_hm = False
+                    st.session_state[remove_key_hm] = False
+                points = _show_plotly_with_click(
+                    heatmap,
+                    "Heatmap",
+                    key=f"plot_{job['id']}_sweep2d_heatmap",
+                    use_events=(use_events or remove_points_hm or run_points_hm),
+                    show_click=not (remove_points_hm or run_points_hm),
+                )
+                point = _consume_click(f"click_sweep2d_heatmap_{job['id']}", points)
+                if remove_points_hm and point:
+                    p0 = point
+                    px = p0.get("x")
+                    py = p0.get("y")
+                    if px is not None and py is not None:
+                        _toggle_remove_xy(removed_xy, float(px), float(py))
+                        st.session_state[remove_key_hm] = False
+                        _rerun()
+                elif run_points_hm and point:
+                    p0 = point
+                    px = p0.get("x")
+                    py = p0.get("y")
+                    if px is not None and py is not None:
+                        overrides = {job["params"]["param_x"]: float(px), job["params"]["param_y"]: float(py)}
+                        label = f"{job['params']['param_x']}={float(px):.4g}, {job['params']['param_y']}={float(py):.4g}"
+                        _enqueue_single_from_click(job, overrides, label)
+                        st.success("Queued single simulation from clicked point.")
+                        st.session_state[run_key_hm] = False
+                        _rerun()
+                _toggle_input(
+                    "Remove points (click to remove/restore)",
+                    key=remove_key_hm,
+                    help="Use Plotly click events to remove points for this session.",
+                )
+                _toggle_input(
+                    "Run single simulation from click",
+                    key=run_key_hm,
+                    value=run_points_hm,
+                    help="Click a point to queue a single simulation from this selection.",
+                )
+                remove_key_3d = f"remove_sweep2d_3d_{job['id']}"
+                run_key_3d = f"run_sweep2d_3d_{job['id']}"
+                remove_points_3d = bool(st.session_state.get(remove_key_3d, False))
+                run_points_3d = bool(st.session_state.get(run_key_3d, False))
+                if run_points_3d and remove_points_3d:
+                    remove_points_3d = False
+                    st.session_state[remove_key_3d] = False
+                points = _show_plotly_with_click(
+                    scatter3d,
+                    "3D",
+                    key=f"plot_{job['id']}_sweep2d_3d",
+                    use_events=(use_events or remove_points_3d or run_points_3d),
+                    show_click=not (remove_points_3d or run_points_3d),
+                )
+                point = _consume_click(f"click_sweep2d_3d_{job['id']}", points)
+                if remove_points_3d and point:
+                    p0 = point
+                    px = p0.get("x")
+                    py = p0.get("y")
+                    if px is not None and py is not None:
+                        _toggle_remove_xy(removed_xy, float(px), float(py))
+                        st.session_state[remove_key_3d] = False
+                        _rerun()
+                elif run_points_3d and point:
+                    p0 = point
+                    px = p0.get("x")
+                    py = p0.get("y")
+                    if px is not None and py is not None:
+                        overrides = {job["params"]["param_x"]: float(px), job["params"]["param_y"]: float(py)}
+                        label = f"{job['params']['param_x']}={float(px):.4g}, {job['params']['param_y']}={float(py):.4g}"
+                        _enqueue_single_from_click(job, overrides, label)
+                        st.success("Queued single simulation from clicked point.")
+                        st.session_state[run_key_3d] = False
+                        _rerun()
+                _toggle_input(
+                    "Remove points (click to remove/restore)",
+                    key=remove_key_3d,
+                    help="Use Plotly click events to remove points for this session.",
+                )
+                _toggle_input(
+                    "Run single simulation from click",
+                    key=run_key_3d,
+                    value=run_points_3d,
+                    help="Click a point to queue a single simulation from this selection.",
+                )
+                mat_figs = _matplotlib_sweep2d_figs(df_filtered, job["params"]["param_x"], job["params"]["param_y"])
+                for tag, mat_fig in mat_figs:
+                    png = _fig_to_png_bytes(mat_fig)
+                    plt.close(mat_fig)
+                    st.download_button(
+                        f"Download PNG ({tag})",
+                        data=png,
+                        file_name=f"{job['id']}_sweep2d_{tag}.png",
+                        key=f"png_{job['id']}_sweep2d_{tag}",
+                    )
+        st.markdown("---")
 
     loading.empty()
     running = any(job.get("status") in {"queued", "running"} for job in jobs)
-    if running and st.session_state.get("jobs_autorefresh", True):
+    if running:
         st.caption("Auto-refreshing while jobs are running…")
         time.sleep(1.5)
         _rerun()
