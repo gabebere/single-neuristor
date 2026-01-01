@@ -175,10 +175,33 @@ def _build_single_job_from_params(
     return config
 
 
-def _enqueue_single_from_click(job: Dict[str, Any], overrides: Dict[str, float], label: str) -> None:
+def _enqueue_single_from_click(job: Dict[str, Any], overrides: Dict[str, float], label: str) -> str:
     config = _build_single_job_from_params(job["params"], overrides, label)
     new_job = _create_job(config)
     _enqueue_job(new_job["id"])
+    return new_job["id"]
+
+
+def _sweep_value_from_point(point: Dict[str, Any], values: pd.Series) -> Optional[float]:
+    x_val = point.get("x")
+    if x_val is not None:
+        try:
+            return float(x_val)
+        except (TypeError, ValueError):
+            pass
+    custom = point.get("customdata")
+    if custom is not None:
+        try:
+            return float(custom)
+        except (TypeError, ValueError):
+            pass
+    idx = point.get("pointIndex")
+    if idx is not None:
+        try:
+            return float(values.iloc[int(idx)])
+        except (IndexError, ValueError, TypeError):
+            return None
+    return None
 
 
 def _toggle_remove_index(indices: set[int], idx: int) -> bool:
@@ -623,26 +646,45 @@ def _plot_time_traces(df: pd.DataFrame, title: str) -> go.Figure:
 
 def _plot_sweep_metrics(df: pd.DataFrame, free_label: str) -> List[go.Figure]:
     figs: List[go.Figure] = []
-    figs.append(go.Figure(data=[go.Scatter(x=df["value"], y=df["Vmax"], mode="lines+markers")]))
+    figs.append(
+        go.Figure(
+            data=[
+                go.Scatter(
+                    x=df["value"],
+                    y=df["Vmax"],
+                    mode="lines+markers",
+                    customdata=df["value"],
+                )
+            ]
+        )
+    )
     figs[-1].update_layout(title=f"Vmax vs {free_label}", xaxis_title=free_label, yaxis_title="Vmax (V)")
 
     fig_p = go.Figure()
-    fig_p.add_trace(go.Scatter(x=df["value"], y=df["Pmax"], mode="lines+markers", name="Pmax"))
-    fig_p.add_trace(go.Scatter(x=df["value"], y=df["Pmin"], mode="lines+markers", name="Pmin"))
+    fig_p.add_trace(
+        go.Scatter(x=df["value"], y=df["Pmax"], mode="lines+markers", name="Pmax", customdata=df["value"])
+    )
+    fig_p.add_trace(
+        go.Scatter(x=df["value"], y=df["Pmin"], mode="lines+markers", name="Pmin", customdata=df["value"])
+    )
     fig_p.update_layout(title=f"Pmax/Pmin vs {free_label}", xaxis_title=free_label, yaxis_title="Power (W)")
     figs.append(fig_p)
 
     fig_t = go.Figure()
-    fig_t.add_trace(go.Scatter(x=df["value"], y=df["Tmax"], mode="lines+markers", name="Tmax"))
-    fig_t.add_trace(go.Scatter(x=df["value"], y=df["Tmin"], mode="lines+markers", name="Tmin"))
+    fig_t.add_trace(go.Scatter(x=df["value"], y=df["Tmax"], mode="lines+markers", name="Tmax", customdata=df["value"]))
+    fig_t.add_trace(go.Scatter(x=df["value"], y=df["Tmin"], mode="lines+markers", name="Tmin", customdata=df["value"]))
     fig_t.update_layout(title=f"Tmax/Tmin vs {free_label}", xaxis_title=free_label, yaxis_title="Temperature (K)")
     figs.append(fig_t)
 
-    fig_f = go.Figure(data=[go.Scatter(x=df["value"], y=df["freq_MHz"], mode="lines+markers")])
+    fig_f = go.Figure(
+        data=[go.Scatter(x=df["value"], y=df["freq_MHz"], mode="lines+markers", customdata=df["value"])]
+    )
     fig_f.update_layout(title=f"Frequency vs {free_label}", xaxis_title=free_label, yaxis_title="Frequency (MHz)")
     figs.append(fig_f)
 
-    fig_isi = go.Figure(data=[go.Scatter(x=df["value"], y=df["ISI_mean_us"], mode="lines+markers")])
+    fig_isi = go.Figure(
+        data=[go.Scatter(x=df["value"], y=df["ISI_mean_us"], mode="lines+markers", customdata=df["value"])]
+    )
     fig_isi.update_layout(title=f"Mean ISI vs {free_label}", xaxis_title=free_label, yaxis_title="Mean ISI (us)")
     figs.append(fig_isi)
     return figs
@@ -1084,7 +1126,7 @@ def _render_top_bar() -> None:
 
 
 def _render_sidebar() -> None:
-    st.sidebar.title("Simulation Type")
+    st.sidebar.markdown("")
     choice = st.sidebar.radio(
         "Select mode",
         ["Single Simulation", "Sweep over Free Variable", "2D Frequency Sweep", "Jobs"],
@@ -1559,6 +1601,8 @@ def _render_jobs_view() -> None:
                     if run_points and remove_points:
                         remove_points = False
                         st.session_state[remove_key] = False
+                    if run_points and not _HAS_PLOTLY_EVENTS:
+                        st.error("Click-to-run requires `streamlit-plotly-events` to be installed.")
                     points = _show_plotly_with_click(
                         fig,
                         "Sweep1D",
@@ -1574,19 +1618,25 @@ def _render_jobs_view() -> None:
                             _toggle_remove_index(removed_idx, int(p_idx))
                             st.session_state[remove_key] = False
                             _rerun()
-                        elif run_points and point:
-                            p0 = point
-                            p_idx = p0.get("pointIndex")
-                            x_val = p0.get("x")
-                            if x_val is None and p_idx is not None and 0 <= int(p_idx) < len(df):
-                                x_val = float(df["value"].iloc[int(p_idx)])
-                            if x_val is not None:
-                                param = job["params"]["param"]
-                                overrides = {param: float(x_val)}
-                                _enqueue_single_from_click(job, overrides, f"{param}={float(x_val):.4g}")
-                                st.success("Queued single simulation from clicked point.")
-                                st.session_state[run_key] = False
-                                _rerun()
+                    elif run_points and point:
+                        p0 = point
+                        try:
+                            x_val = _sweep_value_from_point(p0, df["value"])
+                            if x_val is None:
+                                raise ValueError(f"Missing x-axis value in click payload: {p0}")
+                            param = job["params"]["param"]
+                            overrides = {param: float(x_val)}
+                            new_job_id = _enqueue_single_from_click(job, overrides, f"{param}={float(x_val):.4g}")
+                            st.session_state[f"open_{new_job_id}"] = True
+                            st.success("Queued single simulation from clicked point.")
+                            st.session_state[run_key] = False
+                            _rerun()
+                        except Exception as exc:
+                            _append_job_log(job, f"[click] error: {exc}")
+                            st.error(f"Click-to-run failed: {exc}")
+                            st.session_state[run_key] = False
+                    elif run_points and not point:
+                        st.warning("Click a data point to run a single simulation.")
                     _toggle_input(
                         "Remove points (click to remove/restore)",
                         key=remove_key,
@@ -1662,7 +1712,8 @@ def _render_jobs_view() -> None:
                     if px is not None and py is not None:
                         overrides = {job["params"]["param_x"]: float(px), job["params"]["param_y"]: float(py)}
                         label = f"{job['params']['param_x']}={float(px):.4g}, {job['params']['param_y']}={float(py):.4g}"
-                        _enqueue_single_from_click(job, overrides, label)
+                        new_job_id = _enqueue_single_from_click(job, overrides, label)
+                        st.session_state[f"open_{new_job_id}"] = True
                         st.success("Queued single simulation from clicked point.")
                         st.session_state[run_key_hm] = False
                         _rerun()
@@ -1707,7 +1758,8 @@ def _render_jobs_view() -> None:
                     if px is not None and py is not None:
                         overrides = {job["params"]["param_x"]: float(px), job["params"]["param_y"]: float(py)}
                         label = f"{job['params']['param_x']}={float(px):.4g}, {job['params']['param_y']}={float(py):.4g}"
-                        _enqueue_single_from_click(job, overrides, label)
+                        new_job_id = _enqueue_single_from_click(job, overrides, label)
+                        st.session_state[f"open_{new_job_id}"] = True
                         st.success("Queued single simulation from clicked point.")
                         st.session_state[run_key_3d] = False
                         _rerun()

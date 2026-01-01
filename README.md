@@ -12,22 +12,56 @@ This project models the electrical and thermal dynamics of a VO₂ neuristor and
 
 ## Installation and GUI (Streamlit)
 
-### Fork and clone
+Below is a thorough, step-by-step guide for first-time users (PI/PhD/student).
 
-1) In GitHub, open this repo and click **Fork** (top right).
-2) Clone your fork:
+### 0) Prerequisites (one-time)
+
+You need:
+- Git (for cloning the repo)
+- Python 3.10+ (required because the code uses modern typing syntax)
+
+Check Python:
+```
+python --version
+```
+
+If Python is missing, install it from https://www.python.org/downloads/ or use Anaconda/Miniconda.
+
+Check Git:
+```
+git --version
+```
+
+### 1) Fork the repository (recommended)
+
+1) Open this repo in GitHub.
+2) Click **Fork** (top right) to create your own copy under your GitHub account.
+
+Why fork?
+- You can pull updates from the main repo but keep your own changes in your fork.
+
+### 2) Clone your fork to your computer
+
+Open a terminal and run:
 ```
 git clone https://github.com/<your-username>/<your-fork>.git
 cd <your-fork>
 ```
 
-### Local setup
+If you do not need to modify the code, you can clone the main repo directly:
+```
+git clone https://github.com/gabebere/single-neuristor.git
+cd single-neuristor
+```
 
-1) Create a virtual environment:
+### 3) Create and activate a virtual environment
+
+From the repo root:
 ```
 python -m venv .venv
 ```
-2) Activate it:
+
+Activate it:
 ```
 # macOS / Linux
 source .venv/bin/activate
@@ -35,18 +69,49 @@ source .venv/bin/activate
 # Windows (PowerShell)
 .venv\Scripts\Activate.ps1
 ```
-3) Install dependencies:
+
+You should now see the environment name in your terminal prompt (e.g., `.venv`).
+
+### 4) Install Python dependencies
+
 ```
 pip install -r requirements.txt
 ```
 
-### Run the app
+If you use Anaconda:
+```
+conda create -n neuristor python=3.11
+conda activate neuristor
+pip install -r requirements.txt
+```
+
+### 5) Run the GUI (Streamlit)
 
 From the repo root:
 ```
 streamlit run app.py
 ```
-Then open the URL printed in the terminal (usually `http://localhost:8501`).
+
+Streamlit will print a URL (usually `http://localhost:8501`). Open it in your browser.
+
+### 6) (Optional) Update your local copy later
+
+If you forked and want the latest changes:
+```
+git pull origin main
+```
+
+If you cloned the main repo directly:
+```
+git pull origin main
+```
+
+### Troubleshooting
+
+- **`ModuleNotFoundError`**: dependencies aren’t installed. Re-run `pip install -r requirements.txt`.
+- **`streamlit` not found**: your environment isn’t active. Activate `.venv`, then retry.
+- **Port already in use**: run `streamlit run app.py --server.port 8502`.
+- **Click-to-run points not working**: ensure `streamlit-plotly-events` is installed (it is included in `requirements.txt`).
 
 ## Manual CLI (manual.py)
 
