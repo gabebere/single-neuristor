@@ -93,6 +93,25 @@ PARAM_LABELS = {
     "start_branch": "Initial Branch",
     "nx": "Lattice Nx",
     "ny": "Lattice Ny",
+    "cd_i_start_uA": "Current Start [uA]",
+    "cd_i_stop_uA": "Current Stop [uA]",
+    "cd_i_step_uA": "Current Step [uA]",
+    "cd_dt_ns": "Current Sim dt [ns]",
+    "cd_t_end_ns": "Current Sim t_end [ns]",
+    "cd_t_pre_ns": "Current Sim t_pre [ns]",
+    "cd_pulse_on_ns": "Current Sim Pulse On [ns]",
+    "cd_pulse_off_ns": "Current Sim Pulse Off [ns]",
+    "cd_C_pF": "Current Sim C [pF]",
+    "cd_R_out_kohm": "Current Sim R_out [kOhm]",
+    "cd_Cth_mW_ns_per_K": "Current Sim C_th [mW*ns/K]",
+    "cd_S_e_mW_per_K": "Current Sim S_e [mW/K]",
+    "cd_T0_K": "Current Sim T0 [K]",
+    "cd_T_init_K": "Current Sim T_init [K]",
+    "cd_V_init_mV": "Current Sim V_init [mV]",
+    "cd_sigma": "Current Sim sigma [W*sqrt(s)]",
+    "cd_start_branch": "Current Sim Initial Branch",
+    "cd_frame_duration_s": "GIF Frame Duration [s]",
+    "cd_seed": "Current Sim Seed",
 }
 
 
@@ -145,6 +164,26 @@ FIELD_HELP = {
     "y_start": "Optional Y sweep start. Leave blank for automatic start behavior.",
     "y_stop": "Optional Y sweep stop. Leave blank for automatic stop behavior.",
     "y_step": "Step size for Y parameter sweep.",
+    "job_name_current_drive": "Optional name shown above the current-driven sweep results.",
+    "cd_i_start_uA": "Start of current sweep in microamps.",
+    "cd_i_stop_uA": "Stop of current sweep in microamps.",
+    "cd_i_step_uA": "Sweep increment in microamps.",
+    "cd_dt_ns": "Current-driven simulation timestep in ns.",
+    "cd_t_end_ns": "Current-driven simulation duration after the step in ns.",
+    "cd_t_pre_ns": "Optional pre-step duration in ns (I_in=0 before t=0).",
+    "cd_pulse_on_ns": "Time in ns at which the current pulse turns on (typically 0).",
+    "cd_pulse_off_ns": "Optional time in ns at which the pulse turns off. Leave blank to keep current on.",
+    "cd_C_pF": "Capacitance C used in current-driven electrical dynamics.",
+    "cd_R_out_kohm": "Finite output/shunt resistance R_out for Norton-equivalent current drive.",
+    "cd_Cth_mW_ns_per_K": "Thermal capacitance C_th for current-driven simulation.",
+    "cd_S_e_mW_per_K": "Thermal cooling coefficient S_e to ambient.",
+    "cd_T0_K": "Ambient/base temperature T0 in Kelvin.",
+    "cd_T_init_K": "Initial device temperature at simulation start.",
+    "cd_V_init_mV": "Initial device voltage across VO2 in mV.",
+    "cd_sigma": "Thermal-noise intensity sigma used in Euler-Maruyama term.",
+    "cd_start_branch": "Initial hysteresis branch for the 2582_1 model.",
+    "cd_frame_duration_s": "Frame display duration in the output GIF.",
+    "cd_seed": "Optional base RNG seed for deterministic sweep outputs.",
 }
 
 
@@ -153,11 +192,21 @@ def _label(name: str) -> str:
 
 
 def _help(name: str) -> str | None:
+    if name.startswith("cd_res_"):
+        base = name[len("cd_res_") :]
+        if base in FIELD_HELP:
+            return f"Current-driven simulation: {FIELD_HELP[base]}"
+        if base in PARAM_LABELS:
+            return f"Current-driven simulation parameter: {PARAM_LABELS[base]}."
     if name in FIELD_HELP:
         return FIELD_HELP[name]
     if name in PARAM_LABELS:
         return f"Model parameter: {PARAM_LABELS[name]}."
     return None
+
+
+def _cd_res_key(name: str) -> str:
+    return f"cd_res_{name}"
 
 
 def _xy_key(x: float, y: float, digits: int = 12) -> tuple[float, float]:
@@ -602,7 +651,30 @@ def _init_defaults() -> None:
         "y_start",
         "y_stop",
         "y_step",
+        "job_name_current_drive",
+        "cd_i_start_uA",
+        "cd_i_stop_uA",
+        "cd_i_step_uA",
+        "cd_dt_ns",
+        "cd_t_end_ns",
+        "cd_t_pre_ns",
+        "cd_pulse_on_ns",
+        "cd_pulse_off_ns",
+        "cd_C_pF",
+        "cd_R_out_kohm",
+        "cd_Cth_mW_ns_per_K",
+        "cd_S_e_mW_per_K",
+        "cd_T0_K",
+        "cd_T_init_K",
+        "cd_V_init_mV",
+        "cd_sigma",
+        "cd_start_branch",
+        "cd_frame_duration_s",
+        "cd_seed",
+        "cd_last_result",
+        "cd_last_diag",
     }
+    required_keys.update({_cd_res_key(f.name) for f in dataclasses.fields(YuanhangResistParams)})
     missing = [k for k in required_keys if k not in st.session_state]
     if st.session_state.get("_init_done") and not missing:
         return
@@ -642,6 +714,31 @@ def _init_defaults() -> None:
     st.session_state.setdefault("y_start", "")
     st.session_state.setdefault("y_stop", "")
     st.session_state.setdefault("y_step", 10.0)
+    st.session_state.setdefault("job_name_current_drive", "")
+    st.session_state.setdefault("cd_i_start_uA", 50.0)
+    st.session_state.setdefault("cd_i_stop_uA", 2000.0)
+    st.session_state.setdefault("cd_i_step_uA", 50.0)
+    st.session_state.setdefault("cd_dt_ns", 10.0)
+    st.session_state.setdefault("cd_t_end_ns", 600.0)
+    st.session_state.setdefault("cd_t_pre_ns", 0.0)
+    st.session_state.setdefault("cd_pulse_on_ns", 0.0)
+    st.session_state.setdefault("cd_pulse_off_ns", "")
+    st.session_state.setdefault("cd_C_pF", circuit.C_par_pF)
+    st.session_state.setdefault("cd_R_out_kohm", circuit.R_series_kohm)
+    st.session_state.setdefault("cd_Cth_mW_ns_per_K", circuit.Cth_mW_ns_per_K)
+    st.session_state.setdefault("cd_S_e_mW_per_K", circuit.Sth_mW_per_K)
+    st.session_state.setdefault("cd_T0_K", circuit.T_base_K)
+    st.session_state.setdefault("cd_T_init_K", circuit.T_base_K - 0.1)
+    st.session_state.setdefault("cd_V_init_mV", 0.0)
+    st.session_state.setdefault("cd_sigma", 0.0)
+    st.session_state.setdefault("cd_start_branch", "insulator")
+    st.session_state.setdefault("cd_frame_duration_s", 0.5)
+    st.session_state.setdefault("cd_seed", "")
+    st.session_state.setdefault("cd_last_result", None)
+    st.session_state.setdefault("cd_last_diag", None)
+    for f in dataclasses.fields(YuanhangResistParams):
+        key = _cd_res_key(f.name)
+        st.session_state.setdefault(key, getattr(resist, f.name))
     st.session_state["_init_done"] = True
 
 
@@ -666,6 +763,7 @@ def _apply_preset(paper: bool) -> None:
         circuit.Cth_factor = 1.0
     for f in dataclasses.fields(YuanhangResistParams):
         st.session_state[f.name] = getattr(resist, f.name)
+        st.session_state[_cd_res_key(f.name)] = getattr(resist, f.name)
     for f in dataclasses.fields(YuanhangCircuitParams):
         st.session_state[f.name] = getattr(circuit, f.name)
     # Paper runs do not require a fixed RNG seed; clear any previous manual seed.
@@ -675,6 +773,57 @@ def _apply_preset(paper: bool) -> None:
     st.session_state["t_start_us"] = 25.0
     st.session_state["t_end_window_us"] = 300.0
     st.session_state["threshold_A"] = 1e-3
+    st.session_state["cd_dt_ns"] = 10.0
+    st.session_state["cd_t_end_ns"] = 600.0
+    st.session_state["cd_t_pre_ns"] = 0.0
+    st.session_state["cd_pulse_on_ns"] = 0.0
+    st.session_state["cd_pulse_off_ns"] = ""
+    st.session_state["cd_C_pF"] = circuit.C_par_pF
+    st.session_state["cd_R_out_kohm"] = circuit.R_series_kohm
+    st.session_state["cd_Cth_mW_ns_per_K"] = circuit.Cth_mW_ns_per_K
+    st.session_state["cd_S_e_mW_per_K"] = circuit.Sth_mW_per_K
+    st.session_state["cd_T0_K"] = circuit.T_base_K
+    st.session_state["cd_T_init_K"] = circuit.T_base_K - 0.1
+    st.session_state["cd_V_init_mV"] = 0.0
+    st.session_state["cd_sigma"] = 0.0
+    st.session_state["cd_start_branch"] = "insulator"
+    st.session_state["cd_i_start_uA"] = 50.0
+    st.session_state["cd_i_stop_uA"] = 2000.0
+    st.session_state["cd_i_step_uA"] = 50.0
+    st.session_state["cd_frame_duration_s"] = 0.5
+    st.session_state["cd_seed"] = ""
+    st.session_state["cd_last_result"] = None
+    st.session_state["cd_last_diag"] = None
+
+
+def _apply_current_drive_reference_preset() -> None:
+    from current_drive_sim import reference_visual_pulse_params
+
+    p = reference_visual_pulse_params()
+    st.session_state["job_name_current_drive"] = "Reference Pulse Preset (Visual)"
+    st.session_state["cd_i_start_uA"] = 50.0
+    st.session_state["cd_i_stop_uA"] = 2000.0
+    st.session_state["cd_i_step_uA"] = 50.0
+    st.session_state["cd_dt_ns"] = p.dt_s * 1e9
+    st.session_state["cd_t_end_ns"] = p.t_end_s * 1e9
+    st.session_state["cd_t_pre_ns"] = p.t_pre_s * 1e9
+    st.session_state["cd_pulse_on_ns"] = p.pulse_on_s * 1e9
+    st.session_state["cd_pulse_off_ns"] = "" if p.pulse_off_s is None else f"{p.pulse_off_s * 1e9:.16g}"
+    st.session_state["cd_C_pF"] = p.C_F * 1e12
+    st.session_state["cd_R_out_kohm"] = p.R_out_ohm / 1e3
+    st.session_state["cd_Cth_mW_ns_per_K"] = p.C_th_J_per_K * 1e12
+    st.session_state["cd_S_e_mW_per_K"] = p.S_e_W_per_K * 1e3
+    st.session_state["cd_T0_K"] = p.T0_K
+    st.session_state["cd_T_init_K"] = p.T_init_K
+    st.session_state["cd_V_init_mV"] = p.V_init_V * 1e3
+    st.session_state["cd_sigma"] = p.sigma_W_sqrt_s
+    st.session_state["cd_start_branch"] = p.start_branch
+    st.session_state["cd_frame_duration_s"] = 0.5
+    st.session_state["cd_seed"] = "1"
+    for f in dataclasses.fields(YuanhangResistParams):
+        st.session_state[_cd_res_key(f.name)] = getattr(p.resist_params, f.name)
+    st.session_state["cd_last_result"] = None
+    st.session_state["cd_last_diag"] = None
 
 
 def _update_terminal(line: str, placeholder) -> None:
@@ -1210,7 +1359,13 @@ def _render_sidebar() -> None:
     st.sidebar.markdown("")
     choice = st.sidebar.radio(
         "Select mode",
-        ["Single Simulation", "Sweep over Free Variable", "2D Frequency Sweep", "Jobs"],
+        [
+            "Single Simulation",
+            "Sweep over Free Variable",
+            "2D Frequency Sweep",
+            "Current-Driven Sweep",
+            "Jobs",
+        ],
     )
     st.session_state["mode"] = choice
 
@@ -1594,6 +1749,226 @@ def _render_sweep2d() -> None:
     _render_batch_runner(terminal_placeholder)
 
 
+def _parse_optional_int(text: str) -> Optional[int]:
+    text = text.strip()
+    if text == "":
+        return None
+    return int(text)
+
+
+def _build_current_drive_params():
+    from current_drive_sim import CurrentDriveParams
+
+    pulse_off_ns = _parse_optional_float(str(st.session_state["cd_pulse_off_ns"]))
+    resist_kwargs = {
+        f.name: float(st.session_state[_cd_res_key(f.name)])
+        for f in dataclasses.fields(YuanhangResistParams)
+    }
+    resist_params = YuanhangResistParams(**resist_kwargs)
+    return CurrentDriveParams(
+        dt_s=float(st.session_state["cd_dt_ns"]) * 1e-9,
+        t_end_s=float(st.session_state["cd_t_end_ns"]) * 1e-9,
+        t_pre_s=float(st.session_state["cd_t_pre_ns"]) * 1e-9,
+        pulse_on_s=float(st.session_state["cd_pulse_on_ns"]) * 1e-9,
+        pulse_off_s=None if pulse_off_ns is None else float(pulse_off_ns) * 1e-9,
+        V_init_V=float(st.session_state["cd_V_init_mV"]) * 1e-3,
+        T0_K=float(st.session_state["cd_T0_K"]),
+        T_init_K=float(st.session_state["cd_T_init_K"]),
+        C_F=float(st.session_state["cd_C_pF"]) * 1e-12,
+        R_out_ohm=float(st.session_state["cd_R_out_kohm"]) * 1e3,
+        C_th_J_per_K=float(st.session_state["cd_Cth_mW_ns_per_K"]) * 1e-12,
+        S_e_W_per_K=float(st.session_state["cd_S_e_mW_per_K"]) * 1e-3,
+        sigma_W_sqrt_s=float(st.session_state["cd_sigma"]),
+        resist_params=resist_params,
+        start_branch=st.session_state["cd_start_branch"],
+    )
+
+
+def _validate_current_drive_inputs() -> List[str]:
+    errors: List[str] = []
+    i_start = float(st.session_state["cd_i_start_uA"])
+    i_stop = float(st.session_state["cd_i_stop_uA"])
+    i_step = float(st.session_state["cd_i_step_uA"])
+
+    if i_step <= 0:
+        errors.append("Current step must be > 0.")
+    if i_stop < i_start:
+        errors.append("Current stop must be >= current start.")
+    if float(st.session_state["cd_dt_ns"]) <= 0:
+        errors.append("Current-driven dt must be > 0.")
+    if float(st.session_state["cd_t_end_ns"]) <= 0:
+        errors.append("Current-driven t_end must be > 0.")
+    if float(st.session_state["cd_t_pre_ns"]) < 0:
+        errors.append("Current-driven t_pre must be >= 0.")
+    if float(st.session_state["cd_pulse_on_ns"]) < 0:
+        errors.append("Current-driven pulse-on time must be >= 0.")
+    pulse_off_text = str(st.session_state["cd_pulse_off_ns"]).strip()
+    pulse_off_ns = None
+    if pulse_off_text != "":
+        try:
+            pulse_off_ns = float(pulse_off_text)
+        except ValueError:
+            errors.append("Current-driven pulse-off time must be numeric or empty.")
+    if pulse_off_ns is not None and pulse_off_ns <= float(st.session_state["cd_pulse_on_ns"]):
+        errors.append("Pulse-off time must be greater than pulse-on time.")
+    if float(st.session_state["cd_C_pF"]) <= 0:
+        errors.append("Current-driven C must be > 0.")
+    if float(st.session_state["cd_R_out_kohm"]) <= 0:
+        errors.append("Current-driven R_out must be > 0.")
+    if float(st.session_state["cd_Cth_mW_ns_per_K"]) <= 0:
+        errors.append("Current-driven C_th must be > 0.")
+    if float(st.session_state["cd_S_e_mW_per_K"]) <= 0:
+        errors.append("Current-driven S_e must be > 0.")
+    if float(st.session_state["cd_frame_duration_s"]) <= 0:
+        errors.append("GIF frame duration must be > 0.")
+
+    seed_text = str(st.session_state["cd_seed"]).strip()
+    if seed_text != "":
+        try:
+            int(seed_text)
+        except ValueError:
+            errors.append("Current-driven seed must be an integer or empty.")
+
+    for f in dataclasses.fields(YuanhangResistParams):
+        val = float(st.session_state[_cd_res_key(f.name)])
+        if f.name in {"R0", "Rm0", "w", "width_factor"} and val <= 0:
+            errors.append(f"Current-driven resistance parameter {f.name} must be > 0.")
+        if f.name in {"beta", "gamma"} and val == 0:
+            errors.append(f"Current-driven resistance parameter {f.name} must be non-zero.")
+    return errors
+
+
+def _render_current_drive() -> None:
+    st.header("Current-Driven Sweep")
+    preset_cols = st.columns([1, 1, 2])
+    with preset_cols[0]:
+        if st.button("Load paper current preset", key="cd_load_paper_preset"):
+            _apply_preset(True)
+    with preset_cols[1]:
+        if st.button("Load reference pulse preset", key="cd_load_reference_preset"):
+            _apply_current_drive_reference_preset()
+    st.caption(
+        "Reference pulse preset is tuned for qualitative waveform matching to uploaded pulse figures. "
+        "Use Diagnostics to verify numerical stability."
+    )
+
+    with st.form("current_drive_form"):
+        _text_input("Simulation name (optional)", key="job_name_current_drive")
+
+        st.markdown("### Sweep")
+        _render_input_grid(
+            ["cd_i_start_uA", "cd_i_stop_uA", "cd_i_step_uA", "cd_frame_duration_s"],
+            _num_input,
+            columns=4,
+        )
+
+        st.markdown("### Current-Driven Model")
+        _render_input_grid(["cd_dt_ns", "cd_t_end_ns", "cd_t_pre_ns", "cd_C_pF"], _num_input, columns=4)
+        cols = st.columns(4)
+        with cols[0]:
+            _num_input(_label("cd_pulse_on_ns"), key="cd_pulse_on_ns")
+        with cols[1]:
+            _text_input("Current Sim Pulse Off [ns] (optional)", key="cd_pulse_off_ns")
+        _render_input_grid(["cd_R_out_kohm", "cd_Cth_mW_ns_per_K", "cd_S_e_mW_per_K", "cd_sigma"], _num_input, columns=4)
+        _render_input_grid(["cd_T0_K", "cd_T_init_K", "cd_V_init_mV"], _num_input, columns=4)
+
+        cols = st.columns(4)
+        with cols[0]:
+            st.selectbox(
+                _label("cd_start_branch"),
+                ["insulator", "metal"],
+                key="cd_start_branch",
+                help=_help("cd_start_branch"),
+            )
+        with cols[1]:
+            _text_input("Seed (optional)", key="cd_seed")
+
+        with st.expander("Current-Driven Resistance / Hysteresis", expanded=False):
+            resist_keys = [f.name for f in dataclasses.fields(YuanhangResistParams)]
+            for row in _chunked(resist_keys, 4):
+                cols = st.columns(4)
+                for col, name in zip(cols, row):
+                    with col:
+                        _num_input(
+                            f"Current Sim {_label(name)}",
+                            key=_cd_res_key(name),
+                            help=_help(_cd_res_key(name)),
+                        )
+
+        submitted_run = st.form_submit_button("Run current-driven sweep and build GIF")
+
+    if submitted_run:
+        errors = _validate_current_drive_inputs()
+        if errors:
+            st.error("Please fix these inputs before running:")
+            for msg in errors:
+                st.write(f"- {msg}")
+        else:
+            try:
+                from current_drive_sim import diagnose_current_step, run_sweep_make_gif
+
+                params = _build_current_drive_params()
+                seed = _parse_optional_int(str(st.session_state["cd_seed"]))
+                i_start = int(round(float(st.session_state["cd_i_start_uA"])))
+                i_stop = int(round(float(st.session_state["cd_i_stop_uA"])))
+                i_step = int(round(float(st.session_state["cd_i_step_uA"])))
+                with st.spinner("Running current-driven sweep and generating GIF..."):
+                    result = run_sweep_make_gif(
+                        params=params,
+                        I_start_uA=i_start,
+                        I_stop_uA=i_stop,
+                        I_step_uA=i_step,
+                        frame_duration_s=float(st.session_state["cd_frame_duration_s"]),
+                        frames_dir="outputs/current_sweep_frames",
+                        gif_path="outputs/current_sweep.gif",
+                        seed=seed,
+                    )
+                st.session_state["cd_last_result"] = {
+                    "name": st.session_state.get("job_name_current_drive", "").strip(),
+                    "result": result,
+                }
+                diag = diagnose_current_step(I_uA=float(i_start), params=params, seed=seed)
+                diag_no_output = {k: v for k, v in diag.items() if k != "output"}
+                st.session_state["cd_last_diag"] = diag_no_output
+                st.success("Current-driven sweep completed.")
+            except Exception as exc:
+                st.error(f"Current-driven sweep failed: {exc}")
+
+    last_payload = st.session_state.get("cd_last_result")
+    if not last_payload:
+        return
+    result = last_payload.get("result", {})
+    name = last_payload.get("name", "")
+    if name:
+        st.subheader(name)
+    gif_path = str(result.get("gif_path", ""))
+    frame_paths = result.get("frame_paths", [])
+    frames_dir = str(Path(frame_paths[0]).parent) if frame_paths else "outputs/current_sweep_frames"
+    if gif_path and os.path.exists(gif_path):
+        st.image(gif_path, caption="Current-driven sweep GIF")
+        with open(gif_path, "rb") as f:
+            st.download_button(
+                "Download current-driven GIF",
+                data=f,
+                file_name=Path(gif_path).name,
+                key="download_current_drive_gif",
+            )
+    st.code(f"Frames: {frames_dir}\nGIF: {gif_path}")
+    diag = st.session_state.get("cd_last_diag")
+    if diag:
+        with st.expander("Diagnostics (start current)", expanded=False):
+            st.json(diag.get("params", {}), expanded=False)
+            st.json(diag.get("slope_check", {}), expanded=False)
+            st.write(f"Turn count (t >= 0): {diag.get('turn_count_from_t_ge_0', 0)}")
+            warnings = diag.get("warnings", [])
+            if warnings:
+                for msg in warnings:
+                    st.warning(msg)
+            rows = diag.get("first_steps", [])
+            if rows:
+                st.dataframe(pd.DataFrame(rows), use_container_width=True)
+
+
 def _render_jobs_view() -> None:
     st.header("Jobs")
     loading = st.progress(0.0)
@@ -1965,6 +2340,8 @@ def main() -> None:
             _render_sweep1d()
         elif mode == "2D Frequency Sweep":
             _render_sweep2d()
+        elif mode == "Current-Driven Sweep":
+            _render_current_drive()
         else:
             _render_jobs_view()
 
