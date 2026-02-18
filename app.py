@@ -71,7 +71,7 @@ PARAM_LABELS = {
     "Sth_mW_per_K": "Thermal Conductance (S_th) [mW/K]",
     "couple_factor": "Thermal Coupling Factor",
     "Cth_factor": "Thermal Capacitance Factor",
-    "noise_strength": "Thermal Noise Strength",
+    "noise_strength": "Thermal Noise Strength [K/ns]",
     "T_base_K": "Base Temperature (T_base) [K]",
     "R0": "Pre-exponential Resistance (R0) [Ohm]",
     "Ea_over_k": "Activation Energy / kB (Ea/k) [K]",
@@ -96,8 +96,68 @@ PARAM_LABELS = {
 }
 
 
+FIELD_HELP = {
+    "job_name_single": "Optional name used to identify this single-simulation job in the Jobs view.",
+    "job_name_sweep1d": "Optional name used to identify this 1D sweep job in the Jobs view.",
+    "job_name_sweep2d": "Optional name used to identify this 2D sweep job in the Jobs view.",
+    "Vin": "Input bias voltage applied to the neuristor circuit (volts).",
+    "vin": "Input bias voltage applied to the neuristor circuit (volts).",
+    "vin_list": "Optional comma-separated Vin values. If provided, runs one simulation per Vin.",
+    "R_series_kohm": "Series/load resistor in kOhm. Higher values limit current and change oscillation conditions.",
+    "C_par_pF": "Parasitic/electrical capacitance in pF. Sets the electrical RC timescale.",
+    "Cth_mW_ns_per_K": "Thermal capacitance of the device. Larger values slow temperature changes.",
+    "Sth_mW_per_K": "Thermal conductance to the environment. Larger values increase cooling.",
+    "couple_factor": "Neighbor thermal-coupling factor (used for Nx×Ny lattices).",
+    "Cth_factor": "Global scaling factor on the thermal equation (including thermal noise).",
+    "noise_strength": "Additive thermal noise amplitude in K/ns (paper-style term in dT/dt).",
+    "T_base_K": "Base/environment temperature in Kelvin for cooling dynamics.",
+    "R0": "Pre-exponential resistance factor in the activated insulating-resistance term.",
+    "Ea_over_k": "Activation-energy over Boltzmann constant (K), controlling insulating resistance temperature dependence.",
+    "Rm0": "Base metallic resistance in Ohm.",
+    "Rm_factor": "Multiplier applied to Rm0 to obtain effective metallic resistance.",
+    "w": "Hysteresis width parameter (K).",
+    "Tc_K": "Critical-transition temperature center (K).",
+    "beta": "Hysteresis sharpness (1/K).",
+    "gamma": "Minor-loop window-shape parameter in the hysteresis model.",
+    "width_factor": "Scaling factor applied to hysteresis width w.",
+    "T_min_K": "Lower temperature clamp used in resistance/hysteresis evaluation.",
+    "T_max_K": "Upper temperature clamp used in resistance/hysteresis evaluation.",
+    "reversal_threshold_K": "Minimum |dT| needed to register a hysteresis branch reversal.",
+    "t_end_us": "Total simulation duration in microseconds.",
+    "dt_ns": "Integration timestep in nanoseconds.",
+    "t_start_us": "Start of the analysis window (steady-state) in microseconds.",
+    "t_end_window_us": "End of the analysis window (steady-state) in microseconds.",
+    "threshold_A": "Current spike threshold (A) for frequency/ISI detection.",
+    "start_branch": "Initial hysteresis branch at t=0: insulator (heating branch) or metal (cooling branch).",
+    "noise_seed": "Optional random seed. Same seed reproduces the same noise realization.",
+    "nx": "Number of devices along lattice X dimension.",
+    "ny": "Number of devices along lattice Y dimension.",
+    "param_label": "Parameter selected as the free variable for 1D sweep.",
+    "sweep_start": "Start value of the coarse sweep range.",
+    "sweep_stop": "Stop value of the coarse sweep range (must be > start).",
+    "coarse_step": "Step size for coarse sweep used to locate oscillatory band.",
+    "fine_step": "Step size for fine sweep inside detected oscillatory band.",
+    "param_x_label": "Parameter selected for the X axis in 2D sweep.",
+    "param_y_label": "Parameter selected for the Y axis in 2D sweep.",
+    "x_start": "Optional X sweep start. Leave blank for automatic start behavior.",
+    "x_stop": "Optional X sweep stop. Leave blank for automatic stop behavior.",
+    "x_step": "Step size for X parameter sweep.",
+    "y_start": "Optional Y sweep start. Leave blank for automatic start behavior.",
+    "y_stop": "Optional Y sweep stop. Leave blank for automatic stop behavior.",
+    "y_step": "Step size for Y parameter sweep.",
+}
+
+
 def _label(name: str) -> str:
     return PARAM_LABELS.get(name, name)
+
+
+def _help(name: str) -> str | None:
+    if name in FIELD_HELP:
+        return FIELD_HELP[name]
+    if name in PARAM_LABELS:
+        return f"Model parameter: {PARAM_LABELS[name]}."
+    return None
 
 
 def _xy_key(x: float, y: float, digits: int = 12) -> tuple[float, float]:
@@ -266,6 +326,13 @@ def _chunked(items: List[str], size: int) -> List[List[str]]:
 
 
 def _num_input(label: str, key: str, value: float | None = None, **kwargs):
+    # Allow high-precision float entry while keeping display compact (no forced trailing zeros).
+    kwargs.setdefault("format", "%.16g")
+    kwargs.setdefault("step", 1e-12)
+    if "help" not in kwargs:
+        h = _help(key)
+        if h is not None:
+            kwargs["help"] = h
     if key in st.session_state:
         return st.number_input(label, key=key, **kwargs)
     if value is None:
@@ -274,6 +341,10 @@ def _num_input(label: str, key: str, value: float | None = None, **kwargs):
 
 
 def _int_input(label: str, key: str, value: int | None = None, **kwargs):
+    if "help" not in kwargs:
+        h = _help(key)
+        if h is not None:
+            kwargs["help"] = h
     if key in st.session_state:
         return st.number_input(label, key=key, step=1, **kwargs)
     if value is None:
@@ -282,6 +353,10 @@ def _int_input(label: str, key: str, value: int | None = None, **kwargs):
 
 
 def _text_input(label: str, key: str, value: str | None = None, **kwargs):
+    if "help" not in kwargs:
+        h = _help(key)
+        if h is not None:
+            kwargs["help"] = h
     if key in st.session_state:
         return st.text_input(label, key=key, **kwargs)
     if value is None:
@@ -585,10 +660,16 @@ def _build_params() -> Tuple[YuanhangResistParams, YuanhangCircuitParams, Tuple[
 
 def _apply_preset(paper: bool) -> None:
     resist, circuit = _paper_params() if paper else (YuanhangResistParams(), YuanhangCircuitParams())
+    if paper:
+        # Paper baseline used in the original code (main.py): noise_strength = 0.001, Cth_factor = 1.0
+        circuit.noise_strength = 1e-3
+        circuit.Cth_factor = 1.0
     for f in dataclasses.fields(YuanhangResistParams):
         st.session_state[f.name] = getattr(resist, f.name)
     for f in dataclasses.fields(YuanhangCircuitParams):
         st.session_state[f.name] = getattr(circuit, f.name)
+    # Paper runs do not require a fixed RNG seed; clear any previous manual seed.
+    st.session_state["noise_seed"] = ""
     st.session_state["t_end_us"] = 300.0
     st.session_state["dt_ns"] = 10.0
     st.session_state["t_start_us"] = 25.0
@@ -1140,6 +1221,29 @@ def _render_terminal() -> None:
     terminal_placeholder.code(st.session_state.get("terminal_log", ""))
 
 
+def _inject_global_styles() -> None:
+    """Apply app-wide UI overrides."""
+    st.markdown(
+        """
+        <style>
+        /* Remove +/- stepper controls from all Streamlit number inputs. */
+        div[data-testid="stNumberInput"] button {
+            display: none !important;
+        }
+        div[data-testid="stNumberInput"] input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        div[data-testid="stNumberInput"] input[type="number"]::-webkit-outer-spin-button,
+        div[data-testid="stNumberInput"] input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def _inputs_common() -> None:
     st.markdown("### Circuit / Thermal")
     circuit_keys = [f.name for f in dataclasses.fields(YuanhangCircuitParams)]
@@ -1344,7 +1448,12 @@ def _render_single() -> None:
         with cols[1]:
             _text_input("Vin list (comma-separated)", key="vin_list")
         with cols[2]:
-            st.selectbox(_label("start_branch"), ["insulator", "metal"], key="start_branch")
+            st.selectbox(
+                _label("start_branch"),
+                ["insulator", "metal"],
+                key="start_branch",
+                help=_help("start_branch"),
+            )
         with cols[3]:
             _text_input("Noise seed (optional)", key="noise_seed")
 
@@ -1373,7 +1482,12 @@ def _render_sweep1d() -> None:
         st.markdown("### Inputs")
         cols = st.columns(4)
         with cols[0]:
-            param_label = st.selectbox("Free variable", _param_label_options())
+            param_label = st.selectbox(
+                "Free variable",
+                _param_label_options(),
+                key="param_label",
+                help=_help("param_label"),
+            )
         with cols[1]:
             _num_input("Start", key="sweep_start")
         with cols[2]:
@@ -1387,7 +1501,12 @@ def _render_sweep1d() -> None:
         with cols[1]:
             _num_input(_label("Vin"), key="vin")
         with cols[2]:
-            st.selectbox(_label("start_branch"), ["insulator", "metal"], key="start_branch")
+            st.selectbox(
+                _label("start_branch"),
+                ["insulator", "metal"],
+                key="start_branch",
+                help=_help("start_branch"),
+            )
         with cols[3]:
             _text_input("Noise seed (optional)", key="noise_seed")
 
@@ -1416,7 +1535,12 @@ def _render_sweep2d() -> None:
         st.markdown("### Inputs")
         cols = st.columns(4)
         with cols[0]:
-            param_x_label = st.selectbox("X variable", _param_label_options(), key="param_x_label")
+            param_x_label = st.selectbox(
+                "X variable",
+                _param_label_options(),
+                key="param_x_label",
+                help=_help("param_x_label"),
+            )
         with cols[1]:
             _text_input("X start (optional)", key="x_start")
         with cols[2]:
@@ -1426,7 +1550,12 @@ def _render_sweep2d() -> None:
 
         cols = st.columns(4)
         with cols[0]:
-            param_y_label = st.selectbox("Y variable", _param_label_options(), key="param_y_label")
+            param_y_label = st.selectbox(
+                "Y variable",
+                _param_label_options(),
+                key="param_y_label",
+                help=_help("param_y_label"),
+            )
         with cols[1]:
             _text_input("Y start (optional)", key="y_start")
         with cols[2]:
@@ -1438,7 +1567,12 @@ def _render_sweep2d() -> None:
         with cols[0]:
             _num_input(_label("Vin"), key="vin")
         with cols[1]:
-            st.selectbox(_label("start_branch"), ["insulator", "metal"], key="start_branch")
+            st.selectbox(
+                _label("start_branch"),
+                ["insulator", "metal"],
+                key="start_branch",
+                help=_help("start_branch"),
+            )
         with cols[2]:
             _text_input("Noise seed (optional)", key="noise_seed")
 
@@ -1801,6 +1935,7 @@ def _render_jobs_view() -> None:
 
 def main() -> None:
     st.set_page_config(page_title="Quantum Materials for Neuromorphic Computation", layout="wide")
+    _inject_global_styles()
     _init_defaults()
     _ensure_worker()
 

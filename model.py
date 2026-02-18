@@ -19,6 +19,7 @@ import numpy as np
 _EPS: float = 1e-12
 _PI: float = math.pi
 _KELVIN_OFFSET: float = 273.15
+_NS_PER_S: float = 1e9
 T = TypeVar("T")
 
 
@@ -68,6 +69,7 @@ class YuanhangCircuitParams:
     Sth_mW_per_K: float = 0.20558726
     couple_factor: float = 0.0
     Cth_factor: float = 1.0
+    # Legacy paper noise term in K/ns (converted internally to K/s for SI integration).
     noise_strength: float = 0.0
     dimension: int = 1
     T_base_K: float = 325.0
@@ -92,6 +94,12 @@ class YuanhangCircuitParams:
     @property
     def S_couple_W_per_K(self) -> float:
         return self.Sth_mW_per_K * 1e-3 * self.couple_factor
+
+    @property
+    def noise_strength_K_per_s(self) -> float:
+        # Original model integrates in ns and adds `noise_strength * randn` to dT/dt.
+        # Convert that legacy term into SI seconds so the same numeric values behave identically.
+        return self.noise_strength * _NS_PER_S
 
 
 class SimOut(TypedDict):
@@ -273,7 +281,7 @@ class YuanhangArraySimulator:
         self.hysteresis = HysteresisArray(self.resist, self.N, start_branch=start_branch)
         self.hysteresis.initialize(T_init)
         self.Cth_factor = _broadcast_array(self.circuit.Cth_factor, self.N, "Cth_factor")
-        self.noise_strength = self.circuit.noise_strength
+        self.noise_strength_K_per_s = self.circuit.noise_strength_K_per_s
         self.S_env = self.circuit.Sth_mW_per_K * 1e-3 * (1.0 - 2.0 * self.dimension * self.circuit.couple_factor)
         self.S_couple = self.circuit.Sth_mW_per_K * 1e-3 * self.circuit.couple_factor
         self.R_series_ohm = max(self.circuit.R_series_ohm, _EPS)
@@ -330,8 +338,8 @@ class YuanhangArraySimulator:
             dV_dt = (self.V_bias - self.Vn) / (self.R_series_ohm * self.C_par_F) - self.Vn / (R_vo2 * self.C_par_F)
             laplacian = _compute_laplacian(self.T_K, self.Nx, self.Ny)
             P_vo2 = (self.Vn * self.Vn) / np.maximum(R_vo2, _EPS)
-            if self.noise_strength > 0.0:
-                noise = self.noise_strength * rng.standard_normal(self.N)
+            if self.noise_strength_K_per_s > 0.0:
+                noise = self.noise_strength_K_per_s * rng.standard_normal(self.N)
             else:
                 noise = 0.0
             dT_dt = (

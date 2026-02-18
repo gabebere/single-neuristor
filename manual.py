@@ -55,7 +55,7 @@ def _paper_params() -> tuple[YuanhangResistParams, YuanhangCircuitParams]:
     circuit.Sth_mW_per_K = 0.20558726
     circuit.couple_factor = 0.0
     circuit.Cth_factor = 1.0
-    circuit.noise_strength = 0.0
+    circuit.noise_strength = 1e-3
     circuit.dimension = 1
     circuit.T_base_K = 325.0
     return resist, circuit

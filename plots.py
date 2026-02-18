@@ -1298,7 +1298,7 @@ def main() -> None:
         circuit_params.Sth_mW_per_K = 0.20558726
         circuit_params.couple_factor = 0.0
         circuit_params.Cth_factor = 1.0
-        circuit_params.noise_strength = 0.0
+        circuit_params.noise_strength = 1e-3
         circuit_params.dimension = 1
         circuit_params.T_base_K = 325.0
 
