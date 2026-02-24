@@ -33,6 +33,7 @@ from plotly.subplots import make_subplots
 
 import plots
 from model import (
+    HysteresisArray,
     SimulationCancelled,
     YuanhangCircuitParams,
     YuanhangResistParams,
@@ -57,6 +58,9 @@ MPL_LINEWIDTH = 1.6
 MPL_TITLE_SIZE = 16
 MPL_LABEL_SIZE = 12
 MPL_TICK_SIZE = 11
+_CURRENT_RF_REF_OHM = 50.0
+_CURRENT_AVG_WINDOW_NS = (100.0, 250.0)
+_CURRENT_FFT_RANGE_MHZ = (1.0, 1000.0)
 
 
 class JobCancelled(Exception):
@@ -802,7 +806,7 @@ def _apply_current_drive_reference_preset() -> None:
     p = reference_visual_pulse_params()
     st.session_state["job_name_current_drive"] = "Reference Pulse Preset (Visual)"
     st.session_state["cd_i_start_uA"] = 50.0
-    st.session_state["cd_i_stop_uA"] = 2000.0
+    st.session_state["cd_i_stop_uA"] = 800.0
     st.session_state["cd_i_step_uA"] = 50.0
     st.session_state["cd_dt_ns"] = p.dt_s * 1e9
     st.session_state["cd_t_end_ns"] = p.t_end_s * 1e9
@@ -848,6 +852,485 @@ def _csv_outputs(outputs: List[Dict[str, str]]) -> List[Dict[str, str]]:
         for o in outputs
         if o["path"].endswith(".csv") or o["path"].endswith(".pcsv")
     ]
+
+
+def _count_turns(values: np.ndarray) -> int:
+    if values.size < 3:
+        return 0
+    d = np.diff(values)
+    return int(np.sum((d[:-1] * d[1:]) < 0.0))
+
+
+def _parallel_resistance_ohm(r1_ohm: float, r2_ohm: float) -> float:
+    eps = 1e-12
+    r1 = max(float(r1_ohm), eps)
+    if np.isinf(r2_ohm):
+        return r1
+    r2 = max(float(r2_ohm), eps)
+    return 1.0 / max((1.0 / r1) + (1.0 / r2), eps)
+
+
+def _current_drive_numerics_report(
+    *,
+    dt_s: float,
+    C_F: float,
+    C_th_J_per_K: float,
+    R_out_ohm: float,
+    T_init_K: float,
+    I_peak_uA: float,
+    resist_params: YuanhangResistParams,
+    start_branch: str,
+) -> Dict[str, float]:
+    eps = 1e-12
+    dt = float(dt_s)
+    C = max(float(C_F), eps)
+    C_th = max(float(C_th_J_per_K), eps)
+    R_out = float(R_out_ohm)
+
+    # Use the same hysteresis evaluator as simulation to estimate initial branch resistance.
+    h = HysteresisArray(resist_params, size=1, start_branch=start_branch)
+    T0 = np.asarray([float(T_init_K)], dtype=float)
+    h.initialize(T0)
+    R_init = float(h.evaluate(T0)[0][0])
+
+    R_metal = max(float(resist_params.Rm), eps)
+    R_eff_init = _parallel_resistance_ohm(R_init, R_out)
+    R_eff_fast = _parallel_resistance_ohm(R_metal, R_out)
+    tau_init_s = C * R_eff_init
+    tau_fast_s = C * R_eff_fast
+
+    I_peak_A = abs(float(I_peak_uA)) * 1e-6
+    V_fast_est = I_peak_A * R_eff_fast
+    P_fast_est = (V_fast_est * V_fast_est) / max(R_metal, eps)
+    dT_step_est_K = (dt / C_th) * P_fast_est
+    reversal_thr = max(float(resist_params.reversal_threshold_K), eps)
+
+    return {
+        "R_out_ohm": R_out,
+        "R_init_ohm": R_init,
+        "R_metal_ohm": R_metal,
+        "R_eff_init_ohm": R_eff_init,
+        "R_eff_fast_ohm": R_eff_fast,
+        "tau_init_s": tau_init_s,
+        "tau_fast_s": tau_fast_s,
+        "dt_over_tau_init": dt / max(tau_init_s, eps),
+        "dt_over_tau_fast": dt / max(tau_fast_s, eps),
+        "I_peak_uA": float(I_peak_uA),
+        "dT_step_est_K": dT_step_est_K,
+        "reversal_threshold_K": reversal_thr,
+        "dT_step_over_reversal": dT_step_est_K / reversal_thr,
+    }
+
+
+def _current_drive_report_messages(report: Dict[str, float], r_load_ohm: float | None = None) -> List[str]:
+    msgs: List[str] = []
+    dt_tau_fast = float(report["dt_over_tau_fast"])
+    tau_fast_ns = float(report["tau_fast_s"]) * 1e9
+    if dt_tau_fast > 0.1:
+        target_ns = 0.1 * tau_fast_ns
+        msgs.append(
+            f"dt/tau_fast={dt_tau_fast:.3g} (>0.1). Fast RC is under-resolved; target dt <= {target_ns:.3g} ns."
+        )
+    elif dt_tau_fast > 0.03:
+        msgs.append(f"dt/tau_fast={dt_tau_fast:.3g}. This is borderline for accurate waveform shape.")
+
+    dt_tau_init = float(report["dt_over_tau_init"])
+    if dt_tau_init > 0.2:
+        msgs.append(f"dt/tau_init={dt_tau_init:.3g} (>0.2). Euler artifacts are likely.")
+
+    dT_over_rev = float(report["dT_step_over_reversal"])
+    if dT_over_rev > 1.0:
+        msgs.append(
+            f"Conservative per-step thermal jump estimate is {dT_over_rev:.3g}x reversal threshold; "
+            "minor-loop reversal points may be skipped."
+        )
+    elif dT_over_rev > 0.2:
+        msgs.append(
+            f"Conservative per-step thermal jump estimate is {dT_over_rev:.3g}x reversal threshold; "
+            "hysteresis timing may be sensitive to dt."
+        )
+
+    if r_load_ohm is not None and r_load_ohm > 0.0:
+        r_out = max(float(report["R_out_ohm"]), 1e-12)
+        r_load = max(float(r_load_ohm), 1e-12)
+        ratio = max(r_out, r_load) / min(r_out, r_load)
+        if ratio > 1.5:
+            msgs.append(
+                f"R_out ({r_out/1e3:.3g} kOhm) differs from voltage-load R_series ({r_load/1e3:.3g} kOhm); "
+                "threshold/current window can shift."
+            )
+    return msgs
+
+
+def _current_drive_recommendations(
+    report: Dict[str, float],
+    *,
+    dt_ns: float,
+    c_th_mW_ns_per_K: float,
+    r_load_ohm: float | None = None,
+) -> List[Dict[str, Any]]:
+    recs: List[Dict[str, Any]] = []
+    min_dt_ns = 1e-4
+    dt_ns = max(float(dt_ns), min_dt_ns)
+    c_th = max(float(c_th_mW_ns_per_K), 1e-12)
+
+    dt_tau_fast = float(report["dt_over_tau_fast"])
+    tau_fast_ns = float(report["tau_fast_s"]) * 1e9
+    if dt_tau_fast > 0.1:
+        target_dt_ns = max(min_dt_ns, 0.05 * tau_fast_ns)
+        recs.append(
+            {
+                "id": "dt_fast",
+                "severity": "error",
+                "title": "Fast electrical RC is under-resolved",
+                "problem": (
+                    f"`dt/tau_fast = {dt_tau_fast:.3g}` (> 0.1). "
+                    "This can suppress oscillations or produce non-physical waveforms."
+                ),
+                "change": f"Reduce `{_label('cd_dt_ns')}` to `<= {target_dt_ns:.4g}` ns.",
+                "actions": [
+                    {
+                        "label": f"Set dt = {target_dt_ns:.4g} ns",
+                        "updates": {"cd_dt_ns": float(f"{target_dt_ns:.16g}")},
+                    }
+                ],
+                "why": "Smaller dt better resolves the fastest VO2+R_out RC state.",
+            }
+        )
+    elif dt_tau_fast > 0.03:
+        target_dt_ns = max(min_dt_ns, 0.03 * tau_fast_ns)
+        recs.append(
+            {
+                "id": "dt_fast_borderline",
+                "severity": "warning",
+                "title": "Fast electrical RC is borderline",
+                "problem": f"`dt/tau_fast = {dt_tau_fast:.3g}`. Waveform shape can drift.",
+                "change": f"Try lowering `{_label('cd_dt_ns')}` toward `{target_dt_ns:.4g}` ns.",
+                "actions": [
+                    {
+                        "label": f"Set dt = {target_dt_ns:.4g} ns",
+                        "updates": {"cd_dt_ns": float(f"{target_dt_ns:.16g}")},
+                    }
+                ],
+                "why": "This helps recover peak/valley timing and oscillation amplitude.",
+            }
+        )
+
+    dt_tau_init = float(report["dt_over_tau_init"])
+    if dt_tau_init > 0.2 and dt_tau_fast <= 0.03:
+        tau_init_ns = float(report["tau_init_s"]) * 1e9
+        target_dt_ns = max(min_dt_ns, 0.1 * tau_init_ns)
+        recs.append(
+            {
+                "id": "dt_init",
+                "severity": "warning",
+                "title": "Initial electrical RC is under-resolved",
+                "problem": f"`dt/tau_init = {dt_tau_init:.3g}` (> 0.2). Euler artifacts are likely.",
+                "change": f"Reduce `{_label('cd_dt_ns')}` to `<= {target_dt_ns:.4g}` ns.",
+                "actions": [
+                    {
+                        "label": f"Set dt = {target_dt_ns:.4g} ns",
+                        "updates": {"cd_dt_ns": float(f"{target_dt_ns:.16g}")},
+                    }
+                ],
+                "why": "The pre-switch charging transient is currently too coarse.",
+            }
+        )
+
+    dT_over_rev = float(report["dT_step_over_reversal"])
+    if dT_over_rev > 0.2:
+        target_ratio = 0.2
+        target_dt_ns = max(min_dt_ns, dt_ns * (target_ratio / dT_over_rev))
+        target_c_th = c_th * (dT_over_rev / target_ratio)
+        actions: List[Dict[str, Any]] = []
+        if target_dt_ns < dt_ns * 0.98:
+            actions.append(
+                {
+                    "label": f"Set dt = {target_dt_ns:.4g} ns",
+                    "updates": {"cd_dt_ns": float(f"{target_dt_ns:.16g}")},
+                }
+            )
+        if target_c_th > c_th * 1.02:
+            actions.append(
+                {
+                    "label": f"Set C_th = {target_c_th:.4g}",
+                    "updates": {"cd_Cth_mW_ns_per_K": float(f"{target_c_th:.16g}")},
+                }
+            )
+        recs.append(
+            {
+                "id": "thermal_jump",
+                "severity": "warning" if dT_over_rev <= 1.0 else "error",
+                "title": "Thermal update is too large per step",
+                "problem": (
+                    f"`dT_step/reversal = {dT_over_rev:.3g}`. "
+                    "Hysteresis reversal points can be skipped."
+                ),
+                "change": (
+                    f"Lower `{_label('cd_dt_ns')}` and/or increase `{_label('cd_Cth_mW_ns_per_K')}` "
+                    "until this ratio is below ~0.2."
+                ),
+                "actions": actions,
+                "why": "Smaller per-step thermal jumps preserve branch switching timing.",
+            }
+        )
+
+    if r_load_ohm is not None and r_load_ohm > 0.0:
+        r_out_ohm = max(float(report["R_out_ohm"]), 1e-12)
+        r_load = max(float(r_load_ohm), 1e-12)
+        ratio = max(r_out_ohm, r_load) / min(r_out_ohm, r_load)
+        if ratio > 1.5:
+            target_r_out_kohm = r_load / 1e3
+            recs.append(
+                {
+                    "id": "rout_match",
+                    "severity": "warning",
+                    "title": "Current-drive leakage differs from voltage-drive baseline",
+                    "problem": (
+                        f"`R_out = {r_out_ohm/1e3:.4g} kOhm`, "
+                        f"`R_series = {r_load/1e3:.4g} kOhm`."
+                    ),
+                    "change": (
+                        f"Set `{_label('cd_R_out_kohm')}` near `{target_r_out_kohm:.4g}` kOhm "
+                        "to keep threshold/current window comparable."
+                    ),
+                    "actions": [
+                        {
+                            "label": f"Set R_out = {target_r_out_kohm:.4g} kOhm",
+                            "updates": {"cd_R_out_kohm": float(f"{target_r_out_kohm:.16g}")},
+                        }
+                    ],
+                    "why": "A large mismatch shifts onset current and oscillation window.",
+                }
+            )
+    return recs
+
+
+def _render_current_drive_recommendations(
+    report: Dict[str, float],
+    recommendations: List[Dict[str, Any]],
+) -> None:
+    st.markdown("### Current-Drive Diagnostics")
+    cols = st.columns(4)
+    cols[0].metric("dt/tau_fast", f"{float(report['dt_over_tau_fast']):.3g}")
+    cols[1].metric("dt/tau_init", f"{float(report['dt_over_tau_init']):.3g}")
+    cols[2].metric("dT step/reversal", f"{float(report['dT_step_over_reversal']):.3g}")
+    cols[3].metric("R_out [kOhm]", f"{float(report['R_out_ohm'])/1e3:.4g}")
+
+    if not recommendations:
+        st.success(
+            "No high-risk numerical flags. If behavior still mismatches reference, "
+            "tune current pulse shape/window and resistance hysteresis parameters."
+        )
+        return
+
+    st.markdown("### Recommended Parameter Changes")
+    for rec in recommendations:
+        severity = str(rec.get("severity", "warning"))
+        title = str(rec.get("title", "Recommendation"))
+        if severity == "error":
+            st.error(title)
+        elif severity == "info":
+            st.info(title)
+        else:
+            st.warning(title)
+        st.write(str(rec.get("problem", "")))
+        st.write(f"Change: {rec.get('change', '')}")
+        why = str(rec.get("why", "")).strip()
+        if why:
+            st.caption(why)
+        actions = rec.get("actions", [])
+        if actions:
+            action_cols = st.columns(len(actions))
+            for idx, action in enumerate(actions):
+                with action_cols[idx]:
+                    label = str(action.get("label", "Apply"))
+                    if st.button(label, key=f"cd_fix_{rec.get('id','rec')}_{idx}"):
+                        updates = action.get("updates", {})
+                        if isinstance(updates, dict):
+                            for k, v in updates.items():
+                                st.session_state[str(k)] = v
+                            st.success("Applied recommended value(s).")
+                            _rerun()
+
+
+def _render_current_drive_tuning_guide() -> None:
+    with st.expander("Symptom -> parameters to tune", expanded=False):
+        guide_rows = [
+            {
+                "Symptom": "No oscillation, smooth ramp/flat response",
+                "Change first": "cd_i_stop_uA, cd_R_out_kohm, cd_T_init_K",
+                "How to change": (
+                    "Increase current range, keep R_out close to R_series, start T_init closer to transition "
+                    "(typically high-320s to low-330s K)."
+                ),
+            },
+            {
+                "Symptom": "Sawtooth/zigzag numerical-looking waveform",
+                "Change first": "cd_dt_ns, cd_Cth_mW_ns_per_K",
+                "How to change": "Decrease dt and/or increase C_th until dt/tau_fast < 0.1 and dT_step/reversal < 0.2.",
+            },
+            {
+                "Symptom": "Oscillation appears then quickly dies",
+                "Change first": "cd_i_stop_uA, cd_S_e_mW_per_K, cd_Cth_mW_ns_per_K",
+                "How to change": (
+                    "Reduce peak current or cooling S_e if overheating dominates; increase C_th to slow thermal runaway."
+                ),
+            },
+            {
+                "Symptom": "Output too random/noisy",
+                "Change first": "cd_sigma, cd_seed, cd_dt_ns",
+                "How to change": "Lower sigma, set a fixed seed for reproducibility, and reduce dt to avoid noise magnification.",
+            },
+            {
+                "Symptom": "Current-drive window shifted vs voltage-drive baseline",
+                "Change first": "cd_R_out_kohm",
+                "How to change": "Set R_out close to voltage-mode R_series to preserve comparable threshold/leakage behavior.",
+            },
+        ]
+        st.dataframe(pd.DataFrame(guide_rows), hide_index=True, use_container_width=True)
+
+
+def _estimate_input_power_dbm(i_trace_a: np.ndarray, r_ref_ohm: float = _CURRENT_RF_REF_OHM) -> float:
+    mask = np.abs(i_trace_a) > 0.0
+    if np.any(mask):
+        i_rms = float(np.sqrt(np.mean(i_trace_a[mask] ** 2)))
+    else:
+        i_rms = float(np.sqrt(np.mean(i_trace_a**2)))
+    p_w = max((i_rms**2) * float(r_ref_ohm), 1e-18)
+    return 10.0 * np.log10(p_w / 1e-3)
+
+
+def _fft_gain_spectrum(
+    t_s: np.ndarray,
+    i_in_a: np.ndarray,
+    v_vo2_v: np.ndarray,
+    fmin_mhz: float = _CURRENT_FFT_RANGE_MHZ[0],
+    fmax_mhz: float = _CURRENT_FFT_RANGE_MHZ[1],
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    # Use full waveform so pulse edges are captured in the input spectrum.
+    if t_s.size < 4:
+        return np.array([]), np.array([]), np.array([])
+
+    dt = float(np.median(np.diff(t_s)))
+    if dt <= 0.0:
+        return np.array([]), np.array([]), np.array([])
+
+    i0 = i_in_a - float(np.mean(i_in_a))
+    v0 = v_vo2_v - float(np.mean(v_vo2_v))
+    window = np.hanning(i0.size)
+    v_fft = np.fft.rfft(v0 * window)
+    f_hz = np.fft.rfftfreq(i0.size, d=dt)
+
+    v_mag = np.abs(v_fft)
+    active = np.abs(i_in_a) > 0.0
+    i_rms = float(np.sqrt(np.mean((i_in_a[active] if np.any(active) else i_in_a) ** 2)))
+    if i_rms <= 0.0:
+        return np.array([]), np.array([]), np.array([])
+
+    # Pseudo-gain normalization for pulse-driven sweeps:
+    # normalize output spectrum by RMS input current times 50 Ohm.
+    gain_linear = v_mag / max(i_rms * _CURRENT_RF_REF_OHM, 1e-18)
+    gain_db = 20.0 * np.log10(np.maximum(gain_linear, 1e-12))
+    f_mhz = f_hz * 1e-6
+
+    mask = (f_mhz >= float(fmin_mhz)) & (f_mhz <= float(fmax_mhz))
+    return f_mhz[mask], gain_linear[mask], gain_db[mask]
+
+
+def _estimate_threshold_current_uA(df_summary: pd.DataFrame) -> Optional[float]:
+    if df_summary.empty or "I_avg_uA" not in df_summary.columns or "V_avg_mV" not in df_summary.columns:
+        return None
+    d = df_summary.sort_values("I_avg_uA").reset_index(drop=True)
+    x = d["I_avg_uA"].to_numpy(dtype=float)
+    y = d["V_avg_mV"].to_numpy(dtype=float)
+    if x.size < 3:
+        return None
+    # First local maximum before 40% of sweep range; fallback to global maximum.
+    x_lim = x[0] + 0.4 * (x[-1] - x[0])
+    for i in range(1, x.size - 1):
+        if x[i] <= x_lim and y[i] > y[i - 1] and y[i] >= y[i + 1]:
+            return float(x[i])
+    return float(x[int(np.nanargmax(y))])
+
+
+def _build_current_summary_and_spectra(
+    currents_uA: List[int],
+    traces: List[Dict[str, np.ndarray]],
+    avg_window_ns: Tuple[float, float] = _CURRENT_AVG_WINDOW_NS,
+    fft_range_mhz: Tuple[float, float] = _CURRENT_FFT_RANGE_MHZ,
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    summary_rows: List[Dict[str, float]] = []
+    trace_rows: List[Dict[str, float]] = []
+    spectra_rows: List[Dict[str, float]] = []
+
+    for i_uA, out in zip(currents_uA, traces):
+        t_ns = out["t"] * 1e9
+        i_uA_trace = out["I_in"] * 1e6
+        v_mV = out["V_vo2"] * 1e3
+        t_k = out["T"]
+        r_ohm = out["R"]
+        p_w = out["P"]
+
+        m_avg = (t_ns >= float(avg_window_ns[0])) & (t_ns <= float(avg_window_ns[1]))
+        if np.any(m_avg):
+            i_avg_uA = float(np.mean(i_uA_trace[m_avg]))
+            v_avg_mV = float(np.mean(v_mV[m_avg]))
+            v_std_mV = float(np.std(v_mV[m_avg]))
+            v_pp_mV = float(np.max(v_mV[m_avg]) - np.min(v_mV[m_avg]))
+            turn_count = _count_turns(v_mV[m_avg])
+        else:
+            i_avg_uA = float(np.mean(i_uA_trace))
+            v_avg_mV = float(np.mean(v_mV))
+            v_std_mV = float(np.std(v_mV))
+            v_pp_mV = float(np.max(v_mV) - np.min(v_mV))
+            turn_count = _count_turns(v_mV)
+
+        p_dbm = _estimate_input_power_dbm(out["I_in"])
+        summary_rows.append(
+            {
+                "I_target_uA": float(i_uA),
+                "I_avg_uA": i_avg_uA,
+                "V_avg_mV": v_avg_mV,
+                "V_std_mV": v_std_mV,
+                "V_pp_mV": v_pp_mV,
+                "turn_count": float(turn_count),
+                "input_power_dBm": p_dbm,
+            }
+        )
+
+        for idx in range(t_ns.size):
+            trace_rows.append(
+                {
+                    "I_target_uA": float(i_uA),
+                    "time_ns": float(t_ns[idx]),
+                    "I_in_uA": float(i_uA_trace[idx]),
+                    "V_vo2_mV": float(v_mV[idx]),
+                    "T_K": float(t_k[idx]),
+                    "R_ohm": float(r_ohm[idx]),
+                    "P_W": float(p_w[idx]),
+                }
+            )
+
+        f_mhz, gain_linear, gain_db = _fft_gain_spectrum(
+            out["t"],
+            out["I_in"],
+            out["V_vo2"],
+            fmin_mhz=float(fft_range_mhz[0]),
+            fmax_mhz=float(fft_range_mhz[1]),
+        )
+        for f, gl, gd in zip(f_mhz, gain_linear, gain_db):
+            spectra_rows.append(
+                {
+                    "I_target_uA": float(i_uA),
+                    "input_power_dBm": p_dbm,
+                    "freq_MHz": float(f),
+                    "gain_linear": float(gl),
+                    "gain_dB": float(gd),
+                }
+            )
+
+    return pd.DataFrame(trace_rows), pd.DataFrame(summary_rows), pd.DataFrame(spectra_rows)
 
 
 # -----------------------------
@@ -995,6 +1478,156 @@ def _plot_frequency_2d(
         margin=dict(l=40, r=20, t=60, b=40),
     )
     return heatmap, scatter3d
+
+
+def _plot_current_avg_iv(summary_df: pd.DataFrame) -> go.Figure:
+    d = summary_df.sort_values("I_avg_uA")
+    fig = go.Figure(
+        data=[
+            go.Scatter(
+                x=d["I_avg_uA"],
+                y=d["V_avg_mV"],
+                mode="markers",
+                marker=dict(size=10, color="#f28e1c"),
+                name="Sweep points",
+            )
+        ]
+    )
+    fig.update_layout(
+        title="Average I_in vs Average V_out (100-250 ns)",
+        xaxis_title="Average I_in (uA)",
+        yaxis_title="Average V_out (mV)",
+        height=560,
+    )
+    thr = _estimate_threshold_current_uA(d)
+    if thr is not None:
+        y_thr = float(d.loc[(d["I_avg_uA"] - thr).abs().idxmin(), "V_avg_mV"])
+        fig.add_annotation(
+            x=thr,
+            y=y_thr,
+            text="Threshold Current",
+            showarrow=True,
+            arrowhead=2,
+            arrowwidth=2,
+            arrowcolor="red",
+            ax=120,
+            ay=-10,
+            font=dict(color="red", size=22),
+        )
+    return fig
+
+
+def _color_for_value(value: float, vmin: float, vmax: float) -> str:
+    if vmax <= vmin:
+        ratio = 0.5
+    else:
+        ratio = (float(value) - vmin) / (vmax - vmin)
+    ratio = min(1.0, max(0.0, ratio))
+    rgba = plt.get_cmap("jet")(ratio)
+    return f"rgb({int(rgba[0]*255)},{int(rgba[1]*255)},{int(rgba[2]*255)})"
+
+
+def _plot_current_gain_spectra(
+    spectra_df: pd.DataFrame,
+    y_col: str,
+    y_title: str,
+    title: str,
+) -> go.Figure:
+    if spectra_df.empty:
+        return go.Figure()
+    d = spectra_df.sort_values(["I_target_uA", "freq_MHz"])
+    pmin = float(d["input_power_dBm"].min())
+    pmax = float(d["input_power_dBm"].max())
+
+    fig = go.Figure()
+    for i_uA, g in d.groupby("I_target_uA", sort=True):
+        p_dbm = float(g["input_power_dBm"].iloc[0])
+        color = _color_for_value(p_dbm, pmin, pmax)
+        fig.add_trace(
+            go.Scatter(
+                x=g["freq_MHz"],
+                y=g[y_col],
+                mode="lines",
+                line=dict(color=color, width=2),
+                name=f"{int(round(i_uA))} uA",
+                showlegend=False,
+                hovertemplate=(
+                    "I_target=%{meta[0]:.0f} uA<br>"
+                    "P_in=%{meta[1]:.2f} dBm<br>"
+                    "f=%{x:.2f} MHz<br>"
+                    f"{y_title}=%{{y:.3g}}<extra></extra>"
+                ),
+                meta=[float(i_uA), p_dbm],
+            )
+        )
+
+    # Dummy marker for continuous colorbar
+    fig.add_trace(
+        go.Scatter(
+            x=[None, None],
+            y=[None, None],
+            mode="markers",
+            marker=dict(
+                size=0.01,
+                color=[pmin, pmax],
+                cmin=pmin,
+                cmax=pmax,
+                colorscale="Jet",
+                showscale=True,
+                colorbar=dict(title="Input Power (dBm)"),
+            ),
+            hoverinfo="skip",
+            showlegend=False,
+        )
+    )
+
+    fig.update_layout(
+        title=title,
+        xaxis_title="Frequency (MHz)",
+        yaxis_title=y_title,
+        xaxis_type="log",
+        height=620,
+    )
+    return fig
+
+
+def _plot_current_time_trace(trace_df: pd.DataFrame, current_uA: float) -> go.Figure:
+    d = trace_df[trace_df["I_target_uA"] == current_uA].sort_values("time_ns")
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig.add_trace(
+        go.Scatter(x=d["time_ns"], y=d["I_in_uA"], name="I_in", line=dict(color="green", width=2)),
+        secondary_y=False,
+    )
+    fig.add_trace(
+        go.Scatter(x=d["time_ns"], y=d["V_vo2_mV"], name="V_vo2", line=dict(color="purple", width=2)),
+        secondary_y=True,
+    )
+    fig.update_layout(
+        title=f"Current-Driven Trace (I_target={int(round(current_uA))} uA)",
+        xaxis_title="time (ns)",
+        height=460,
+    )
+    fig.update_yaxes(title_text="I_in (uA)", secondary_y=False)
+    fig.update_yaxes(title_text="V_vo2 (mV)", secondary_y=True)
+    return fig
+
+
+def _looks_like_nyquist_zigzag(v_mV: np.ndarray) -> bool:
+    """Detect alternating sample-to-sample artifacts that render as a ribbon."""
+    if v_mV.size < 8:
+        return False
+    dv = np.diff(v_mV)
+    if dv.size < 2:
+        return False
+    sign = np.sign(dv)
+    alt_ratio = float(np.mean((sign[1:] * sign[:-1]) < 0.0))
+    return alt_ratio > 0.75 and float(np.ptp(v_mV)) > 20.0
+
+
+def _looks_numerically_unstable(v_mV: np.ndarray) -> bool:
+    if v_mV.size == 0:
+        return False
+    return float(np.nanmax(np.abs(v_mV))) > 2_000.0
 
 
 def _show_plotly_with_click(
@@ -1225,6 +1858,94 @@ def _create_job(config: Dict[str, Any]) -> Dict[str, Any]:
 
 def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
     config = job["params"]
+    if job["type"] == "current_sweep":
+        from current_drive_sim import CurrentDriveParams, run_sweep_make_gif, simulate_current_step
+
+        cp = dict(config["current_params"])
+        cp["resist_params"] = YuanhangResistParams(**cp["resist_params"])
+        params = CurrentDriveParams(**cp)
+
+        i_start = int(config["I_start_uA"])
+        i_stop = int(config["I_stop_uA"])
+        i_step = int(config["I_step_uA"])
+        seed = config.get("seed")
+        i_peak = max(abs(i_start), abs(i_stop))
+
+        report = _current_drive_numerics_report(
+            dt_s=params.dt_s,
+            C_F=params.C_F,
+            C_th_J_per_K=params.C_th_J_per_K,
+            R_out_ohm=params.R_out_ohm,
+            T_init_K=params.T_init_K,
+            I_peak_uA=float(i_peak),
+            resist_params=params.resist_params,
+            start_branch=params.start_branch,
+        )
+        _append_job_log(
+            job,
+            (
+                "[current_sweep] numerics "
+                f"dt/tau_init={report['dt_over_tau_init']:.3g}, "
+                f"dt/tau_fast={report['dt_over_tau_fast']:.3g}, "
+                f"dT_step/reversal~{report['dT_step_over_reversal']:.3g}"
+            ),
+        )
+        for msg in _current_drive_report_messages(report):
+            _append_job_log(job, f"[current_sweep][warning] {msg}")
+
+        if progress_cb:
+            progress_cb(f"[current_sweep] running {i_start}..{i_stop} uA (step {i_step})")
+
+        frame_dir = _job_dir(job["id"]) / "current_sweep_frames"
+        gif_path = _job_dir(job["id"]) / "current_sweep.gif"
+        result = run_sweep_make_gif(
+            params=params,
+            I_start_uA=i_start,
+            I_stop_uA=i_stop,
+            I_step_uA=i_step,
+            frame_duration_s=float(config["frame_duration_s"]),
+            frames_dir=frame_dir,
+            gif_path=gif_path,
+            seed=seed,
+        )
+        job["outputs"].append({"label": "Current sweep GIF", "path": str(gif_path)})
+        _append_job_log(job, f"[current_sweep] wrote {gif_path.name}")
+        _save_job(job)
+
+        if progress_cb:
+            progress_cb("[current_sweep] extracting sweep summary/spectra")
+
+        currents_uA = [int(v) for v in result["currents_uA"]]
+        traces: List[Dict[str, np.ndarray]] = []
+        for idx, i_uA in enumerate(currents_uA):
+            run_seed = None if seed is None else int(seed) + idx
+            traces.append(simulate_current_step(float(i_uA), params=params, seed=run_seed))
+
+        traces_df, summary_df, spectra_df = _build_current_summary_and_spectra(
+            currents_uA=currents_uA,
+            traces=traces,
+            avg_window_ns=_CURRENT_AVG_WINDOW_NS,
+            fft_range_mhz=_CURRENT_FFT_RANGE_MHZ,
+        )
+
+        traces_csv = _job_dir(job["id"]) / "current_sweep_traces.csv"
+        summary_csv = _job_dir(job["id"]) / "current_sweep_summary.csv"
+        spectra_csv = _job_dir(job["id"]) / "current_sweep_spectra.csv"
+        traces_df.to_csv(traces_csv, index=False)
+        summary_df.to_csv(summary_csv, index=False)
+        spectra_df.to_csv(spectra_csv, index=False)
+
+        job["outputs"].append({"label": "Current sweep traces CSV", "path": str(traces_csv)})
+        job["outputs"].append({"label": "Current sweep summary CSV", "path": str(summary_csv)})
+        job["outputs"].append({"label": "Current sweep spectra CSV", "path": str(spectra_csv)})
+        _append_job_log(job, f"[current_sweep] wrote {traces_csv.name}")
+        _append_job_log(job, f"[current_sweep] wrote {summary_csv.name}")
+        _append_job_log(job, f"[current_sweep] wrote {spectra_csv.name}")
+        _save_job(job)
+        if progress_cb:
+            progress_cb("[current_sweep] done")
+        return
+
     resist = YuanhangResistParams(**config["resist_params"])
     circuit = YuanhangCircuitParams(**config["circuit_params"])
     lattice_shape = tuple(config.get("lattice_shape", (1, 1)))
@@ -1496,6 +2217,42 @@ def _build_job_config_sweep2d(param_x_label: str, param_y_label: str) -> Dict[st
     }
 
 
+def _build_job_config_current_drive() -> Dict[str, Any]:
+    pulse_off_ns = _parse_optional_float(str(st.session_state["cd_pulse_off_ns"]))
+    resist_kwargs = {
+        f.name: float(st.session_state[_cd_res_key(f.name)])
+        for f in dataclasses.fields(YuanhangResistParams)
+    }
+    current_params = {
+        "dt_s": float(st.session_state["cd_dt_ns"]) * 1e-9,
+        "t_end_s": float(st.session_state["cd_t_end_ns"]) * 1e-9,
+        "t_pre_s": float(st.session_state["cd_t_pre_ns"]) * 1e-9,
+        "pulse_on_s": float(st.session_state["cd_pulse_on_ns"]) * 1e-9,
+        "pulse_off_s": None if pulse_off_ns is None else float(pulse_off_ns) * 1e-9,
+        "V_init_V": float(st.session_state["cd_V_init_mV"]) * 1e-3,
+        "T0_K": float(st.session_state["cd_T0_K"]),
+        "T_init_K": float(st.session_state["cd_T_init_K"]),
+        "C_F": float(st.session_state["cd_C_pF"]) * 1e-12,
+        "R_out_ohm": float(st.session_state["cd_R_out_kohm"]) * 1e3,
+        "C_th_J_per_K": float(st.session_state["cd_Cth_mW_ns_per_K"]) * 1e-12,
+        "S_e_W_per_K": float(st.session_state["cd_S_e_mW_per_K"]) * 1e-3,
+        "sigma_W_sqrt_s": float(st.session_state["cd_sigma"]),
+        "resist_params": resist_kwargs,
+        "start_branch": st.session_state["cd_start_branch"],
+    }
+    seed_text = str(st.session_state["cd_seed"]).strip()
+    return {
+        "type": "current_sweep",
+        "job_name": st.session_state.get("job_name_current_drive", "").strip(),
+        "I_start_uA": int(round(float(st.session_state["cd_i_start_uA"]))),
+        "I_stop_uA": int(round(float(st.session_state["cd_i_stop_uA"]))),
+        "I_step_uA": int(round(float(st.session_state["cd_i_step_uA"]))),
+        "frame_duration_s": float(st.session_state["cd_frame_duration_s"]),
+        "seed": None if seed_text == "" else int(seed_text),
+        "current_params": current_params,
+    }
+
+
 def _validate_job_config(config: Dict[str, Any]) -> List[str]:
     errors = []
     if config["dt"] <= 0:
@@ -1749,51 +2506,23 @@ def _render_sweep2d() -> None:
     _render_batch_runner(terminal_placeholder)
 
 
-def _parse_optional_int(text: str) -> Optional[int]:
-    text = text.strip()
-    if text == "":
-        return None
-    return int(text)
-
-
-def _build_current_drive_params():
-    from current_drive_sim import CurrentDriveParams
-
-    pulse_off_ns = _parse_optional_float(str(st.session_state["cd_pulse_off_ns"]))
-    resist_kwargs = {
-        f.name: float(st.session_state[_cd_res_key(f.name)])
-        for f in dataclasses.fields(YuanhangResistParams)
-    }
-    resist_params = YuanhangResistParams(**resist_kwargs)
-    return CurrentDriveParams(
-        dt_s=float(st.session_state["cd_dt_ns"]) * 1e-9,
-        t_end_s=float(st.session_state["cd_t_end_ns"]) * 1e-9,
-        t_pre_s=float(st.session_state["cd_t_pre_ns"]) * 1e-9,
-        pulse_on_s=float(st.session_state["cd_pulse_on_ns"]) * 1e-9,
-        pulse_off_s=None if pulse_off_ns is None else float(pulse_off_ns) * 1e-9,
-        V_init_V=float(st.session_state["cd_V_init_mV"]) * 1e-3,
-        T0_K=float(st.session_state["cd_T0_K"]),
-        T_init_K=float(st.session_state["cd_T_init_K"]),
-        C_F=float(st.session_state["cd_C_pF"]) * 1e-12,
-        R_out_ohm=float(st.session_state["cd_R_out_kohm"]) * 1e3,
-        C_th_J_per_K=float(st.session_state["cd_Cth_mW_ns_per_K"]) * 1e-12,
-        S_e_W_per_K=float(st.session_state["cd_S_e_mW_per_K"]) * 1e-3,
-        sigma_W_sqrt_s=float(st.session_state["cd_sigma"]),
-        resist_params=resist_params,
-        start_branch=st.session_state["cd_start_branch"],
-    )
-
-
 def _validate_current_drive_inputs() -> List[str]:
     errors: List[str] = []
     i_start = float(st.session_state["cd_i_start_uA"])
     i_stop = float(st.session_state["cd_i_stop_uA"])
     i_step = float(st.session_state["cd_i_step_uA"])
+    i_start_i = int(round(i_start))
+    i_stop_i = int(round(i_stop))
+    i_step_i = int(round(i_step))
 
     if i_step <= 0:
         errors.append("Current step must be > 0.")
     if i_stop < i_start:
         errors.append("Current stop must be >= current start.")
+    if i_step_i <= 0:
+        errors.append("Current step rounds to zero in integer uA units; increase step.")
+    if i_stop_i < i_start_i:
+        errors.append("Current stop must remain >= current start after integer rounding.")
     if float(st.session_state["cd_dt_ns"]) <= 0:
         errors.append("Current-driven dt must be > 0.")
     if float(st.session_state["cd_t_end_ns"]) <= 0:
@@ -1838,6 +2567,40 @@ def _validate_current_drive_inputs() -> List[str]:
     return errors
 
 
+def _current_drive_input_diagnostics() -> Optional[Dict[str, Any]]:
+    try:
+        resist = YuanhangResistParams(
+            **{f.name: float(st.session_state[_cd_res_key(f.name)]) for f in dataclasses.fields(YuanhangResistParams)}
+        )
+        i_peak_uA = max(
+            abs(float(st.session_state["cd_i_start_uA"])),
+            abs(float(st.session_state["cd_i_stop_uA"])),
+        )
+        report = _current_drive_numerics_report(
+            dt_s=float(st.session_state["cd_dt_ns"]) * 1e-9,
+            C_F=float(st.session_state["cd_C_pF"]) * 1e-12,
+            C_th_J_per_K=float(st.session_state["cd_Cth_mW_ns_per_K"]) * 1e-12,
+            R_out_ohm=float(st.session_state["cd_R_out_kohm"]) * 1e3,
+            T_init_K=float(st.session_state["cd_T_init_K"]),
+            I_peak_uA=i_peak_uA,
+            resist_params=resist,
+            start_branch=str(st.session_state["cd_start_branch"]),
+        )
+        r_load_ohm = float(st.session_state["R_series_kohm"]) * 1e3
+        return {
+            "report": report,
+            "messages": _current_drive_report_messages(report, r_load_ohm=r_load_ohm),
+            "recommendations": _current_drive_recommendations(
+                report,
+                dt_ns=float(st.session_state["cd_dt_ns"]),
+                c_th_mW_ns_per_K=float(st.session_state["cd_Cth_mW_ns_per_K"]),
+                r_load_ohm=r_load_ohm,
+            ),
+        }
+    except Exception:
+        return None
+
+
 def _render_current_drive() -> None:
     st.header("Current-Driven Sweep")
     preset_cols = st.columns([1, 1, 2])
@@ -1851,6 +2614,13 @@ def _render_current_drive() -> None:
         "Reference pulse preset is tuned for qualitative waveform matching to uploaded pulse figures. "
         "Use Diagnostics to verify numerical stability."
     )
+    diagnostics = _current_drive_input_diagnostics()
+    if diagnostics is not None:
+        st.session_state["cd_last_diag"] = diagnostics
+        for msg in diagnostics["messages"]:
+            st.warning(msg)
+        _render_current_drive_recommendations(diagnostics["report"], diagnostics["recommendations"])
+    _render_current_drive_tuning_guide()
 
     with st.form("current_drive_form"):
         _text_input("Simulation name (optional)", key="job_name_current_drive")
@@ -1895,78 +2665,35 @@ def _render_current_drive() -> None:
                             help=_help(_cd_res_key(name)),
                         )
 
-        submitted_run = st.form_submit_button("Run current-driven sweep and build GIF")
+        btn_col1, btn_col2 = st.columns(2)
+        with btn_col1:
+            submitted_add = st.form_submit_button("Add to batch")
+        with btn_col2:
+            submitted_run = st.form_submit_button("Run now")
 
-    if submitted_run:
+    terminal_placeholder = st.empty()
+    terminal_placeholder.code(st.session_state.get("terminal_log", ""))
+
+    if submitted_add or submitted_run:
         errors = _validate_current_drive_inputs()
         if errors:
-            st.error("Please fix these inputs before running:")
+            st.error("Please fix these inputs before queuing current-driven sweep:")
             for msg in errors:
                 st.write(f"- {msg}")
         else:
-            try:
-                from current_drive_sim import diagnose_current_step, run_sweep_make_gif
+            job_config = _build_job_config_current_drive()
+            if submitted_add:
+                st.session_state["batch_jobs"].append(job_config)
+                _update_terminal("[batch] added current_sweep job", terminal_placeholder)
+            if submitted_run:
+                st.session_state["terminal_log"] = ""
+                terminal_placeholder.code("")
+                job = _create_job(job_config)
+                _enqueue_job(job["id"])
+                _update_terminal(f"[job] queued {job['type']} ({job['id']})", terminal_placeholder)
 
-                params = _build_current_drive_params()
-                seed = _parse_optional_int(str(st.session_state["cd_seed"]))
-                i_start = int(round(float(st.session_state["cd_i_start_uA"])))
-                i_stop = int(round(float(st.session_state["cd_i_stop_uA"])))
-                i_step = int(round(float(st.session_state["cd_i_step_uA"])))
-                with st.spinner("Running current-driven sweep and generating GIF..."):
-                    result = run_sweep_make_gif(
-                        params=params,
-                        I_start_uA=i_start,
-                        I_stop_uA=i_stop,
-                        I_step_uA=i_step,
-                        frame_duration_s=float(st.session_state["cd_frame_duration_s"]),
-                        frames_dir="outputs/current_sweep_frames",
-                        gif_path="outputs/current_sweep.gif",
-                        seed=seed,
-                    )
-                st.session_state["cd_last_result"] = {
-                    "name": st.session_state.get("job_name_current_drive", "").strip(),
-                    "result": result,
-                }
-                diag = diagnose_current_step(I_uA=float(i_start), params=params, seed=seed)
-                diag_no_output = {k: v for k, v in diag.items() if k != "output"}
-                st.session_state["cd_last_diag"] = diag_no_output
-                st.success("Current-driven sweep completed.")
-            except Exception as exc:
-                st.error(f"Current-driven sweep failed: {exc}")
-
-    last_payload = st.session_state.get("cd_last_result")
-    if not last_payload:
-        return
-    result = last_payload.get("result", {})
-    name = last_payload.get("name", "")
-    if name:
-        st.subheader(name)
-    gif_path = str(result.get("gif_path", ""))
-    frame_paths = result.get("frame_paths", [])
-    frames_dir = str(Path(frame_paths[0]).parent) if frame_paths else "outputs/current_sweep_frames"
-    if gif_path and os.path.exists(gif_path):
-        st.image(gif_path, caption="Current-driven sweep GIF")
-        with open(gif_path, "rb") as f:
-            st.download_button(
-                "Download current-driven GIF",
-                data=f,
-                file_name=Path(gif_path).name,
-                key="download_current_drive_gif",
-            )
-    st.code(f"Frames: {frames_dir}\nGIF: {gif_path}")
-    diag = st.session_state.get("cd_last_diag")
-    if diag:
-        with st.expander("Diagnostics (start current)", expanded=False):
-            st.json(diag.get("params", {}), expanded=False)
-            st.json(diag.get("slope_check", {}), expanded=False)
-            st.write(f"Turn count (t >= 0): {diag.get('turn_count_from_t_ge_0', 0)}")
-            warnings = diag.get("warnings", [])
-            if warnings:
-                for msg in warnings:
-                    st.warning(msg)
-            rows = diag.get("first_steps", [])
-            if rows:
-                st.dataframe(pd.DataFrame(rows), use_container_width=True)
+    st.caption("Current-driven sweeps are saved and rendered in the Jobs view.")
+    _render_batch_runner(terminal_placeholder)
 
 
 def _render_jobs_view() -> None:
@@ -2293,6 +3020,70 @@ def _render_jobs_view() -> None:
                         file_name=f"{job['id']}_sweep2d_{tag}.png",
                         key=f"png_{job['id']}_sweep2d_{tag}",
                     )
+        if job["type"] == "current_sweep":
+            outputs = job.get("outputs", [])
+            summary_path = next((o["path"] for o in outputs if o["path"].endswith("current_sweep_summary.csv")), None)
+            spectra_path = next((o["path"] for o in outputs if o["path"].endswith("current_sweep_spectra.csv")), None)
+            traces_path = next((o["path"] for o in outputs if o["path"].endswith("current_sweep_traces.csv")), None)
+
+            if summary_path and os.path.exists(summary_path):
+                df_summary = pd.read_csv(summary_path)
+                fig_avg = _plot_current_avg_iv(df_summary)
+                st.plotly_chart(fig_avg, use_container_width=True)
+                thr = _estimate_threshold_current_uA(df_summary)
+                if thr is not None:
+                    st.caption(f"Estimated threshold current: {thr:.1f} uA")
+            else:
+                st.info("Current sweep summary CSV not found yet.")
+
+            if spectra_path and os.path.exists(spectra_path):
+                df_spectra = pd.read_csv(spectra_path)
+                fig_db = _plot_current_gain_spectra(
+                    df_spectra,
+                    y_col="gain_dB",
+                    y_title="Gain (dB)",
+                    title="Gain (dB) vs Frequency",
+                )
+                fig_linear = _plot_current_gain_spectra(
+                    df_spectra,
+                    y_col="gain_linear",
+                    y_title="Linear Gain",
+                    title="Linear Gain vs Frequency",
+                )
+                st.plotly_chart(fig_db, use_container_width=True)
+                st.plotly_chart(fig_linear, use_container_width=True)
+            else:
+                st.info("Current sweep spectra CSV not found yet.")
+
+            if traces_path and os.path.exists(traces_path):
+                df_traces = pd.read_csv(traces_path)
+                currents = sorted(df_traces["I_target_uA"].unique().tolist())
+                if currents:
+                    selected_current = st.select_slider(
+                        "Current trace to inspect (uA)",
+                        options=currents,
+                        value=currents[0],
+                        key=f"current_trace_slider_{job['id']}",
+                    )
+                    d_sel = df_traces[df_traces["I_target_uA"] == float(selected_current)].sort_values("time_ns")
+                    v_sel = d_sel["V_vo2_mV"].to_numpy(dtype=float)
+                    i_sel = d_sel["I_in_uA"].to_numpy(dtype=float)
+                    if _looks_numerically_unstable(v_sel):
+                        st.warning(
+                            "This trace exceeds +/-2 V equivalent range in mV units, which usually indicates "
+                            "numerical instability for this preset/current."
+                        )
+                    v_check = v_sel[np.abs(i_sel) > 0.0] if np.any(np.abs(i_sel) > 0.0) else v_sel
+                    if _looks_like_nyquist_zigzag(v_check):
+                        st.warning(
+                            "This trace looks like an alternating-sample numerical artifact "
+                            "(zigzag/Nyquist ribbon), not a physical oscillation. "
+                            "Use a smaller integration step or a different preset."
+                        )
+                    fig_trace = _plot_current_time_trace(df_traces, float(selected_current))
+                    st.plotly_chart(fig_trace, use_container_width=True)
+            else:
+                st.info("Current sweep trace CSV not found yet.")
         st.markdown("---")
 
     loading.empty()
