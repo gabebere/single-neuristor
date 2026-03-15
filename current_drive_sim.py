@@ -43,7 +43,9 @@ class CurrentDriveParams:
 
     # Electrical
     C_F: float = 145.34619293e-12
-    R_out_ohm: float = 12.0e3
+    # Legacy compatibility field. Current-drive simulation always assumes an ideal
+    # imposed source current, so this value is ignored and forced to 0 internally.
+    R_out_ohm: float = 0.0
 
     # Thermal
     C_th_J_per_K: float = 49.62776831e-12
@@ -53,6 +55,9 @@ class CurrentDriveParams:
     # Hysteresis / resistance
     resist_params: YuanhangResistParams = field(default_factory=YuanhangResistParams)
     start_branch: str = "insulator"
+
+    def __post_init__(self) -> None:
+        self.R_out_ohm = 0.0
 
 
 def reference_visual_pulse_params() -> CurrentDriveParams:
@@ -76,7 +81,7 @@ def reference_visual_pulse_params() -> CurrentDriveParams:
         T0_K=342.0,
         T_init_K=341.9,
         C_F=10e-12,
-        R_out_ohm=900.0,
+        R_out_ohm=0.0,
         C_th_J_per_K=49.62776831e-12 * 0.005,
         S_e_W_per_K=0.20558726e-3,
         sigma_W_sqrt_s=0.0,
@@ -106,13 +111,17 @@ class HysteresisSingleAdapter:
         return float(R_arr[0]), float(g_arr[0])
 
     def update(self, T_prev: float, T_new: float) -> None:
-        # Keep behavior identical to existing hysteresis logic.
-        _ = T_prev
+        # Keep behavior identical to existing hysteresis logic while honoring
+        # the explicit (T_prev, T_new) update contract from the current-drive spec.
+        T_prev_f = float(T_prev)
+        T_new_f = float(T_new)
         if hasattr(self._h, "_update_reversal"):
-            self._h._update_reversal(np.asarray([float(T_new)], dtype=float))
+            if hasattr(self._h, "T_last"):
+                self._h.T_last = np.asarray([T_prev_f], dtype=float)
+            self._h._update_reversal(np.asarray([T_new_f], dtype=float))
         else:
             # Fallback path if internals change in the future.
-            self._h.evaluate(np.asarray([float(T_new)], dtype=float))
+            self._h.evaluate(np.asarray([T_new_f], dtype=float))
 
 
 def _time_grid(dt_s: float, t_end_s: float, t_pre_s: float) -> np.ndarray:
@@ -139,7 +148,7 @@ def simulate_current_step(I_uA: float, params: CurrentDriveParams, seed: Optiona
     Simulate a single current-step experiment.
 
     Uses:
-      V_{n+1} = V_n + (dt/C)*(I_in - V*(1/R + 1/R_out))
+      V_{n+1} = V_n + (dt/C)*(I_in - V/R)
       T_{n+1} = T_n + (dt/C_th)*(V^2/R - S_e*(T-T0)) + (sigma/C_th)*sqrt(dt)*N(0,1)
     """
 
@@ -165,7 +174,6 @@ def simulate_current_step(I_uA: float, params: CurrentDriveParams, seed: Optiona
     hyst.reset(T[0])
     rng = np.random.default_rng(seed)
 
-    inv_r_out = 0.0 if np.isinf(params.R_out_ohm) else 1.0 / max(float(params.R_out_ohm), _EPS)
     C = max(float(params.C_F), _EPS)
     C_th = max(float(params.C_th_J_per_K), _EPS)
     S_e = float(params.S_e_W_per_K)
@@ -177,7 +185,7 @@ def simulate_current_step(I_uA: float, params: CurrentDriveParams, seed: Optiona
         R_k = max(R_k, _EPS)
         P_k = (V[k] * V[k]) / R_k
 
-        dV = (dt / C) * (I_in[k] - V[k] * (1.0 / R_k + inv_r_out))
+        dV = (dt / C) * (I_in[k] - V[k] / R_k)
         V_next = V[k] + dV
 
         dT_det = (dt / C_th) * (P_k - S_e * (T[k] - params.T0_K))
@@ -230,7 +238,6 @@ def diagnose_current_step(
     R = out["R"]
     I_in = out["I_in"]
     C = max(float(params.C_F), _EPS)
-    R_out = float(params.R_out_ohm)
 
     fit_mask = (t >= 0.0) & (t <= float(fit_window_ns) * 1e-9)
     if np.sum(fit_mask) >= 2:
@@ -245,9 +252,7 @@ def diagnose_current_step(
     hyster = HysteresisSingleAdapter(params.resist_params, start_branch=params.start_branch)
     hyster.reset(params.T_init_K)
     R_init, _ = hyster.evaluate(params.T_init_K)
-    inv_r_out = 0.0 if np.isinf(R_out) else 1.0 / max(R_out, _EPS)
-    inv_total = (1.0 / max(R_init, _EPS)) + inv_r_out
-    tau_init_s = (1.0 / max(inv_total, _EPS)) * C
+    tau_init_s = C * max(float(R_init), _EPS)
 
     rows: List[Dict[str, float]] = []
     n = min(int(debug_steps), len(t))
@@ -256,8 +261,8 @@ def diagnose_current_step(
         Rk = max(float(R[k]), _EPS)
         Ik = float(I_in[k])
         I_vo2 = Vk / Rk
-        I_shunt = Vk * inv_r_out
-        dVdt = (Ik - Vk * (1.0 / Rk + inv_r_out)) / C
+        I_cap = Ik - I_vo2
+        dVdt = I_cap / C
         rows.append(
             {
                 "k": float(k),
@@ -267,7 +272,7 @@ def diagnose_current_step(
                 "V_V": Vk,
                 "I_in_A": Ik,
                 "I_vo2_A": I_vo2,
-                "I_shunt_A": I_shunt,
+                "I_cap_A": I_cap,
                 "dVdt_V_per_s": dVdt,
             }
         )
@@ -284,7 +289,6 @@ def diagnose_current_step(
     return {
         "params": {
             "C_F": C,
-            "R_out_ohm": R_out,
             "R_init_ohm": float(R_init),
             "I_step_A": I_step_A,
             "pulse_on_s": float(params.pulse_on_s),

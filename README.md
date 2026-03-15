@@ -10,6 +10,35 @@ Created by Gabriel Berezovsky under the supervision of PhD candidate Amir Gildor
 
 This project models the electrical and thermal dynamics of a VO₂ neuristor and reproduces spiking behavior.
 
+## Custom Resistance Calibration (Experimental Specimen)
+
+This repo includes a specimen-fitting utility for calibrating `YuanhangResistParams` from measured `R(T)` data:
+
+```bash
+python resistance_custom_analysis.py \
+  --data data/experimental/100425_chip1_gap3.tsv \
+  --save-json presets/resistance_100425_chip1_gap3.json \
+  --save-plot outputs/resistance_fit_100425_chip1_gap3.png
+```
+
+The generated preset can be loaded in the Streamlit app via the sidebar button:
+- `Load specimen resistance preset`
+
+This button only updates resistance/hysteresis parameters (and initial branch), so it does not overwrite your circuit/time controls.
+
+For current-input runs, the app also provides a one-click combined preset in the **Current-Driven Sweep** section:
+- `Load professor preset`
+
+This applies paper current/thermal defaults plus the specimen RT-fitted resistance parameters together.
+
+Sidebar preset buttons are mode-scoped (`Paper Parameters`, `Sample Parameters`).
+In `Sample Parameters` mode, parameter inputs are color-marked:
+- green: sample-derived
+- red: assumed/not extracted
+
+Current-drive ODE assumption used in this repo: ideal current source at the VO2 node
+(`dV/dt = (I_in - V/R_vo2)/C`). External/source series resistance is not part of that reduced model. This is a separate current-source experiment, not a Thevenin/Norton rewrite of the voltage-driven circuit.
+
 ## Installation and GUI (Streamlit)
 
 Below is a thorough, step-by-step guide for first-time users (PI/PhD/student).

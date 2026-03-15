@@ -51,6 +51,7 @@ except Exception:
 
 JOB_ROOT = Path(__file__).with_name("jobs")
 JOB_ROOT.mkdir(exist_ok=True)
+SPECIMEN_RESIST_PRESET_PATH = Path(__file__).with_name("presets") / "resistance_100425_chip1_gap3.json"
 
 MPL_FIGSIZE_WIDE = (16, 9)
 MPL_DPI = 320
@@ -61,6 +62,61 @@ MPL_TICK_SIZE = 11
 _CURRENT_RF_REF_OHM = 50.0
 _CURRENT_AVG_WINDOW_NS = (100.0, 250.0)
 _CURRENT_FFT_RANGE_MHZ = (1.0, 1000.0)
+_CURRENT_DOMAIN_SCAN_PARAM_MAP: Dict[str, Tuple[str, float]] = {
+    "cd_C_pF": ("C_F", 1e-12),
+    "cd_Cth_mW_ns_per_K": ("C_th_J_per_K", 1e-12),
+    "cd_S_e_mW_per_K": ("S_e_W_per_K", 1e-3),
+    # Legacy key kept for backward compatibility with old jobs; in the
+    # ideal-current-source model, this does not affect VO2 dynamics.
+    "cd_dt_ns": ("dt_s", 1e-9),
+    "cd_T0_K": ("T0_K", 1.0),
+    "cd_T_init_K": ("T_init_K", 1.0),
+    "cd_sigma": ("sigma_W_sqrt_s", 1.0),
+}
+_CURRENT_DOMAIN_STANDARD_CRITERIA: Dict[str, float] = {
+    "cd_scan_min_turns": 6.0,
+    "cd_scan_min_vpp_mV": 20.0,
+    "cd_scan_max_vpp_mV": 700.0,
+}
+_CURRENT_DOMAIN_CRITERIA_VERSION = 1
+_SIMULATION_MODES = (
+    "Single Simulation",
+    "Sweep over Free Variable",
+    "2D Frequency Sweep",
+    "Current-Driven Sweep",
+)
+_RESIST_PARAM_KEYS = {f.name for f in dataclasses.fields(YuanhangResistParams)}
+_CIRCUIT_PARAM_KEYS = {f.name for f in dataclasses.fields(YuanhangCircuitParams)}
+_SAMPLE_DERIVED_RESIST_KEYS = {f.name for f in dataclasses.fields(YuanhangResistParams)}
+_SAMPLE_DERIVED_KEYS = set(_SAMPLE_DERIVED_RESIST_KEYS) | {"start_branch", "cd_start_branch"}
+_NEUTRAL_INPUT_KEYS = {
+    "job_name_single",
+    "job_name_sweep1d",
+    "job_name_sweep2d",
+    "job_name_current_drive",
+    "job_name_current_domain",
+    "vin_list",
+    "noise_seed",
+    "cd_seed",
+    "cd_pulse_off_ns",
+    "x_start",
+    "x_stop",
+    "y_start",
+    "y_stop",
+    "cd_scan_param_key",
+    "cd_scan_start",
+    "cd_scan_stop",
+    "cd_scan_step",
+    "cd_scan_min_turns",
+    "cd_scan_min_vpp_mV",
+    "cd_scan_max_vpp_mV",
+    "cd_frame_duration_s",
+}
+_HIGHLIGHT_COLORS = {
+    "sample_derived": "#16a34a",
+    "assumed": "#dc2626",
+    "conflict": "#facc15",
+}
 
 
 class JobCancelled(Exception):
@@ -106,7 +162,6 @@ PARAM_LABELS = {
     "cd_pulse_on_ns": "Current Sim Pulse On [ns]",
     "cd_pulse_off_ns": "Current Sim Pulse Off [ns]",
     "cd_C_pF": "Current Sim C [pF]",
-    "cd_R_out_kohm": "Current Sim R_out [kOhm]",
     "cd_Cth_mW_ns_per_K": "Current Sim C_th [mW*ns/K]",
     "cd_S_e_mW_per_K": "Current Sim S_e [mW/K]",
     "cd_T0_K": "Current Sim T0 [K]",
@@ -116,6 +171,14 @@ PARAM_LABELS = {
     "cd_start_branch": "Current Sim Initial Branch",
     "cd_frame_duration_s": "GIF Frame Duration [s]",
     "cd_seed": "Current Sim Seed",
+    "job_name_current_domain": "Current Domain Scan Name",
+    "cd_scan_param_key": "Domain Scan Parameter",
+    "cd_scan_start": "Domain Scan Start",
+    "cd_scan_stop": "Domain Scan Stop",
+    "cd_scan_step": "Domain Scan Step",
+    "cd_scan_min_turns": "Domain Min Turns",
+    "cd_scan_min_vpp_mV": "Domain Min Vpp [mV]",
+    "cd_scan_max_vpp_mV": "Domain Max Vpp [mV]",
 }
 
 
@@ -178,16 +241,23 @@ FIELD_HELP = {
     "cd_pulse_on_ns": "Time in ns at which the current pulse turns on (typically 0).",
     "cd_pulse_off_ns": "Optional time in ns at which the pulse turns off. Leave blank to keep current on.",
     "cd_C_pF": "Capacitance C used in current-driven electrical dynamics.",
-    "cd_R_out_kohm": "Finite output/shunt resistance R_out for Norton-equivalent current drive.",
     "cd_Cth_mW_ns_per_K": "Thermal capacitance C_th for current-driven simulation.",
     "cd_S_e_mW_per_K": "Thermal cooling coefficient S_e to ambient.",
     "cd_T0_K": "Ambient/base temperature T0 in Kelvin.",
     "cd_T_init_K": "Initial device temperature at simulation start.",
-    "cd_V_init_mV": "Initial device voltage across VO2 in mV.",
+    "cd_V_init_mV": "Initial device voltage across the VO2||C node in mV. This is not a source-side voltage.",
     "cd_sigma": "Thermal-noise intensity sigma used in Euler-Maruyama term.",
     "cd_start_branch": "Initial hysteresis branch for the 2582_1 model.",
     "cd_frame_duration_s": "Frame display duration in the output GIF.",
     "cd_seed": "Optional base RNG seed for deterministic sweep outputs.",
+    "job_name_current_domain": "Optional name shown above the domain-scan results in Jobs.",
+    "cd_scan_param_key": "Current-driven model input to scan over a numeric range.",
+    "cd_scan_start": "Start value for the selected domain-scan parameter.",
+    "cd_scan_stop": "Stop value for the selected domain-scan parameter (must be > start).",
+    "cd_scan_step": "Step for the selected domain-scan parameter sweep.",
+    "cd_scan_min_turns": "Minimum turning points required to count a trace as oscillatory.",
+    "cd_scan_min_vpp_mV": "Minimum peak-to-peak V_vo2 amplitude (mV) to count as oscillatory.",
+    "cd_scan_max_vpp_mV": "Maximum peak-to-peak V_vo2 amplitude (mV) allowed for oscillatory classification.",
 }
 
 
@@ -211,6 +281,83 @@ def _help(name: str) -> str | None:
 
 def _cd_res_key(name: str) -> str:
     return f"cd_res_{name}"
+
+
+def _mode_profile(mode: str | None = None) -> str:
+    m = str(mode or st.session_state.get("mode", "Single Simulation"))
+    store = st.session_state.setdefault("preset_profile_by_mode", {})
+    return str(store.get(m, "paper"))
+
+
+def _set_mode_profile(profile: str, mode: str | None = None) -> None:
+    m = str(mode or st.session_state.get("mode", "Single Simulation"))
+    store = st.session_state.setdefault("preset_profile_by_mode", {})
+    store[m] = str(profile)
+
+
+def _sample_status_for_key(key: str) -> str | None:
+    if _mode_profile() != "sample":
+        return None
+    if key in _NEUTRAL_INPUT_KEYS or key.startswith("job_name_"):
+        return None
+    base = key[len("cd_res_") :] if key.startswith("cd_res_") else key
+    if base in _SAMPLE_DERIVED_KEYS:
+        return "sample_derived"
+
+    mode = str(st.session_state.get("mode", ""))
+    if mode == "Current-Driven Sweep":
+        if key.startswith("cd_") and not key.startswith("cd_scan_"):
+            return "assumed"
+        return None
+    if mode in {"Single Simulation", "Sweep over Free Variable", "2D Frequency Sweep"}:
+        if key in {"Vin", "vin", "t_end_us", "dt_ns", "t_start_us", "t_end_window_us", "threshold_A", "nx", "ny"}:
+            return "assumed"
+        if key in _CIRCUIT_PARAM_KEYS:
+            return "assumed"
+        if key in _RESIST_PARAM_KEYS:
+            return "sample_derived" if key in _SAMPLE_DERIVED_RESIST_KEYS else "assumed"
+    return None
+
+
+def _conflict_entry_for_key(key: str) -> Dict[str, Any] | None:
+    if str(st.session_state.get("mode", "")) != "Current-Driven Sweep":
+        return None
+    conflicts = st.session_state.get("cd_diag_conflicts", {})
+    if not isinstance(conflicts, dict):
+        return None
+    entry = conflicts.get(str(key))
+    return entry if isinstance(entry, dict) else None
+
+
+def _input_visual_state(key: str) -> Dict[str, str] | None:
+    sample_status = _sample_status_for_key(key)
+    if sample_status is None:
+        return None
+    if sample_status == "sample_derived":
+        return {
+            "kind": "sample_derived",
+            "color": _HIGHLIGHT_COLORS["sample_derived"],
+            "message": "Loaded from specimen fit data.",
+        }
+    if sample_status == "assumed":
+        return {
+            "kind": "assumed",
+            "color": _HIGHLIGHT_COLORS["assumed"],
+            "message": "Assumed/default (not directly extracted from specimen fit).",
+        }
+    return None
+
+
+def _merge_help(base_help: str | None, extra_help: str | None) -> str | None:
+    b = (base_help or "").strip()
+    e = (extra_help or "").strip()
+    if b and e:
+        return f"{b}\n\n{e}"
+    if b:
+        return b
+    if e:
+        return e
+    return None
 
 
 def _xy_key(x: float, y: float, digits: int = 12) -> tuple[float, float]:
@@ -378,6 +525,17 @@ def _chunked(items: List[str], size: int) -> List[List[str]]:
     return [items[i : i + size] for i in range(0, len(items), size)]
 
 
+def _render_marker(color: str, tooltip: str | None = None) -> None:
+    tip = (tooltip or "").replace('"', "&quot;")
+    st.markdown(
+        (
+            f"<div title=\"{tip}\" "
+            f"style=\"height:2.35rem;margin-top:0.55rem;border-left:6px solid {color};\"></div>"
+        ),
+        unsafe_allow_html=True,
+    )
+
+
 def _num_input(label: str, key: str, value: float | None = None, **kwargs):
     # Allow high-precision float entry while keeping display compact (no forced trailing zeros).
     kwargs.setdefault("format", "%.16g")
@@ -386,11 +544,23 @@ def _num_input(label: str, key: str, value: float | None = None, **kwargs):
         h = _help(key)
         if h is not None:
             kwargs["help"] = h
-    if key in st.session_state:
-        return st.number_input(label, key=key, **kwargs)
-    if value is None:
-        return st.number_input(label, key=key, **kwargs)
-    return st.number_input(label, key=key, value=value, **kwargs)
+    state = _input_visual_state(key)
+    kwargs["help"] = _merge_help(kwargs.get("help"), None if state is None else state.get("message"))
+
+    def _draw() -> float:
+        if key in st.session_state:
+            return float(st.number_input(label, key=key, **kwargs))
+        if value is None:
+            return float(st.number_input(label, key=key, **kwargs))
+        return float(st.number_input(label, key=key, value=value, **kwargs))
+
+    if state is None:
+        return _draw()
+    marker_col, input_col = st.columns([0.08, 0.92], gap="small")
+    with marker_col:
+        _render_marker(state["color"], tooltip=state.get("message"))
+    with input_col:
+        return _draw()
 
 
 def _int_input(label: str, key: str, value: int | None = None, **kwargs):
@@ -398,11 +568,23 @@ def _int_input(label: str, key: str, value: int | None = None, **kwargs):
         h = _help(key)
         if h is not None:
             kwargs["help"] = h
-    if key in st.session_state:
-        return st.number_input(label, key=key, step=1, **kwargs)
-    if value is None:
-        return st.number_input(label, key=key, step=1, **kwargs)
-    return st.number_input(label, key=key, value=value, step=1, **kwargs)
+    state = _input_visual_state(key)
+    kwargs["help"] = _merge_help(kwargs.get("help"), None if state is None else state.get("message"))
+
+    def _draw() -> int:
+        if key in st.session_state:
+            return int(st.number_input(label, key=key, step=1, **kwargs))
+        if value is None:
+            return int(st.number_input(label, key=key, step=1, **kwargs))
+        return int(st.number_input(label, key=key, value=value, step=1, **kwargs))
+
+    if state is None:
+        return _draw()
+    marker_col, input_col = st.columns([0.08, 0.92], gap="small")
+    with marker_col:
+        _render_marker(state["color"], tooltip=state.get("message"))
+    with input_col:
+        return _draw()
 
 
 def _text_input(label: str, key: str, value: str | None = None, **kwargs):
@@ -410,11 +592,43 @@ def _text_input(label: str, key: str, value: str | None = None, **kwargs):
         h = _help(key)
         if h is not None:
             kwargs["help"] = h
-    if key in st.session_state:
-        return st.text_input(label, key=key, **kwargs)
-    if value is None:
-        return st.text_input(label, key=key, **kwargs)
-    return st.text_input(label, key=key, value=value, **kwargs)
+    state = _input_visual_state(key)
+    kwargs["help"] = _merge_help(kwargs.get("help"), None if state is None else state.get("message"))
+
+    def _draw() -> str:
+        if key in st.session_state:
+            return str(st.text_input(label, key=key, **kwargs))
+        if value is None:
+            return str(st.text_input(label, key=key, **kwargs))
+        return str(st.text_input(label, key=key, value=value, **kwargs))
+
+    if state is None:
+        return _draw()
+    marker_col, input_col = st.columns([0.08, 0.92], gap="small")
+    with marker_col:
+        _render_marker(state["color"], tooltip=state.get("message"))
+    with input_col:
+        return _draw()
+
+
+def _selectbox_input(label: str, options: List[str], key: str, **kwargs):
+    if "help" not in kwargs:
+        h = _help(key)
+        if h is not None:
+            kwargs["help"] = h
+    state = _input_visual_state(key)
+    kwargs["help"] = _merge_help(kwargs.get("help"), None if state is None else state.get("message"))
+
+    def _draw() -> str:
+        return str(st.selectbox(label, options, key=key, **kwargs))
+
+    if state is None:
+        return _draw()
+    marker_col, input_col = st.columns([0.08, 0.92], gap="small")
+    with marker_col:
+        _render_marker(state["color"], tooltip=state.get("message"))
+    with input_col:
+        return _draw()
 
 
 def _toggle_input(label: str, key: str, value: bool = False, **kwargs):
@@ -456,6 +670,53 @@ def _paper_params() -> tuple[YuanhangResistParams, YuanhangCircuitParams]:
     circuit.dimension = 1
     circuit.T_base_K = 325.0
     return resist, circuit
+
+
+def _load_resistance_preset(path: Path) -> tuple[YuanhangResistParams, str, Dict[str, float]]:
+    payload = json.loads(path.read_text())
+    raw = payload.get("resist_params", payload)
+    if not isinstance(raw, dict):
+        raise ValueError("Invalid resistance preset format: missing resist_params object.")
+    kwargs = {}
+    for f in dataclasses.fields(YuanhangResistParams):
+        if f.name not in raw:
+            raise ValueError(f"Invalid resistance preset format: missing field {f.name}.")
+        kwargs[f.name] = float(raw[f.name])
+    start_branch = str(payload.get("start_branch", "insulator")).strip().lower()
+    if start_branch not in {"insulator", "metal"}:
+        start_branch = "insulator"
+    metrics_raw = payload.get("fit_metrics", {})
+    metrics: Dict[str, float] = {}
+    if isinstance(metrics_raw, dict):
+        for k, v in metrics_raw.items():
+            try:
+                metrics[str(k)] = float(v)
+            except Exception:
+                pass
+    return YuanhangResistParams(**kwargs), start_branch, metrics
+
+
+def _apply_specimen_resistance_preset(path: Path = SPECIMEN_RESIST_PRESET_PATH) -> tuple[bool, str]:
+    if not path.exists():
+        return False, f"Specimen resistance preset not found: {path}"
+    try:
+        resist, start_branch, metrics = _load_resistance_preset(path)
+    except Exception as exc:
+        return False, f"Failed to load specimen resistance preset: {exc}"
+
+    for f in dataclasses.fields(YuanhangResistParams):
+        value = getattr(resist, f.name)
+        st.session_state[f.name] = value
+        st.session_state[_cd_res_key(f.name)] = value
+    st.session_state["start_branch"] = start_branch
+    st.session_state["cd_start_branch"] = start_branch
+    rmse = metrics.get("rmse_log10")
+    if rmse is not None:
+        return (
+            True,
+            f"Loaded specimen resistance preset ({path.name}), start_branch={start_branch}, rmse_log10={rmse:.4f}.",
+        )
+    return True, f"Loaded specimen resistance preset ({path.name}), start_branch={start_branch}."
 
 
 # -----------------------------
@@ -624,6 +885,141 @@ def _param_name_from_label(label: str) -> str:
     return label
 
 
+def _current_scan_param_options() -> List[str]:
+    return list(_CURRENT_DOMAIN_SCAN_PARAM_MAP.keys())
+
+
+def _inclusive_range(start: float, stop: float, step: float) -> List[float]:
+    start_f = float(start)
+    stop_f = float(stop)
+    step_f = float(step)
+    if step_f <= 0.0:
+        raise ValueError("step must be > 0")
+    if stop_f < start_f:
+        raise ValueError("stop must be >= start")
+    n = int(np.floor((stop_f - start_f) / step_f + 1e-12)) + 1
+    vals = [start_f + i * step_f for i in range(max(n, 1))]
+    if vals and vals[-1] < stop_f - 1e-12:
+        vals.append(stop_f)
+    return vals
+
+
+def _safe_float(value: Any, default: float = 0.0) -> float:
+    try:
+        return float(value)
+    except Exception:
+        return float(default)
+
+
+def _parse_optional_ns(text: str) -> Optional[float]:
+    s = str(text).strip()
+    if s == "":
+        return None
+    try:
+        return float(s)
+    except Exception:
+        return None
+
+
+def _guided_current_domain_presets() -> Dict[str, Dict[str, float]]:
+    """
+    Produce compact, physics-guided scan ranges for unknown current-drive parameters.
+
+    Returns mapping:
+      key -> {"start","stop","step","n"}
+    where key is one of current-domain scan parameter keys.
+    """
+    presets: Dict[str, Dict[str, float]] = {}
+    try:
+        resist = YuanhangResistParams(
+            **{f.name: _safe_float(st.session_state[_cd_res_key(f.name)]) for f in dataclasses.fields(YuanhangResistParams)}
+        )
+        i_peak_uA = max(
+            abs(_safe_float(st.session_state["cd_i_start_uA"])),
+            abs(_safe_float(st.session_state["cd_i_stop_uA"])),
+        )
+        report = _current_drive_numerics_report(
+            dt_s=_safe_float(st.session_state["cd_dt_ns"]) * 1e-9,
+            C_F=_safe_float(st.session_state["cd_C_pF"]) * 1e-12,
+            C_th_J_per_K=_safe_float(st.session_state["cd_Cth_mW_ns_per_K"]) * 1e-12,
+            T_init_K=_safe_float(st.session_state["cd_T_init_K"]),
+            I_peak_uA=i_peak_uA,
+            resist_params=resist,
+            start_branch=str(st.session_state["cd_start_branch"]),
+        )
+        dt_s = max(_safe_float(st.session_state["cd_dt_ns"]) * 1e-9, 1e-13)
+        c_cur_pF = max(_safe_float(st.session_state["cd_C_pF"]), 1e-9)
+        r_eff_fast = max(float(report["R_eff_fast_ohm"]), 1e-12)
+        c_min_stable_pF = (dt_s / (0.1 * r_eff_fast)) * 1e12
+        c_nom_pF = max(c_cur_pF, 1.3 * c_min_stable_pF)
+        c_start = max(1e-6, 0.55 * c_nom_pF)
+        c_stop = max(c_start * 1.2, 2.0 * c_nom_pF)
+        c_step = (c_stop - c_start) / 6.0
+        presets["cd_C_pF"] = {"start": c_start, "stop": c_stop, "step": c_step, "n": 7.0}
+
+        cth_cur = max(_safe_float(st.session_state["cd_Cth_mW_ns_per_K"]), 1e-9)
+        dT_over_rev = max(float(report["dT_step_over_reversal"]), 1e-6)
+        cth_target = max(cth_cur, cth_cur * (dT_over_rev / 0.2))
+        cth_start = max(1e-9, 0.5 * cth_target)
+        cth_stop = max(cth_start * 1.2, 2.0 * cth_target)
+        cth_step = (cth_stop - cth_start) / 5.0
+        presets["cd_Cth_mW_ns_per_K"] = {"start": cth_start, "stop": cth_stop, "step": cth_step, "n": 6.0}
+
+        se_cur = max(_safe_float(st.session_state["cd_S_e_mW_per_K"]), 1e-9)
+        t_end_ns = max(_safe_float(st.session_state["cd_t_end_ns"]), 1e-6)
+        pulse_off_ns = _parse_optional_ns(st.session_state.get("cd_pulse_off_ns", ""))
+        if pulse_off_ns is None:
+            relax_ns = max(20.0, 0.5 * t_end_ns)
+        else:
+            relax_ns = max(20.0, t_end_ns - pulse_off_ns)
+        tau_target_s = max(relax_ns * 1e-9 / 3.0, 1e-12)
+        cth_target_J = cth_target * 1e-12
+        se_from_tau_mW = (cth_target_J / tau_target_s) * 1e3
+        se_nom = float(np.sqrt(max(se_cur, 1e-12) * max(se_from_tau_mW, 1e-12)))
+        se_start = max(1e-6, 0.45 * se_nom)
+        se_stop = max(se_start * 1.2, 1.8 * se_nom)
+        se_step = (se_stop - se_start) / 5.0
+        presets["cd_S_e_mW_per_K"] = {"start": se_start, "stop": se_stop, "step": se_step, "n": 6.0}
+    except Exception:
+        return {}
+    return presets
+
+
+def _apply_current_domain_preset(param_key: str, preset: Dict[str, float]) -> None:
+    st.session_state["cd_scan_param_key"] = str(param_key)
+    st.session_state["cd_scan_start"] = float(f"{float(preset['start']):.16g}")
+    st.session_state["cd_scan_stop"] = float(f"{float(preset['stop']):.16g}")
+    st.session_state["cd_scan_step"] = float(f"{float(preset['step']):.16g}")
+
+
+def _apply_current_domain_standard_criteria(force: bool = False) -> None:
+    for key, default_value in _CURRENT_DOMAIN_STANDARD_CRITERIA.items():
+        if force:
+            st.session_state[key] = float(default_value)
+            continue
+        raw = st.session_state.get(key)
+        try:
+            value = float(raw)
+        except (TypeError, ValueError):
+            value = float("nan")
+        if raw is None or not np.isfinite(value):
+            st.session_state[key] = float(default_value)
+
+    min_turns = float(st.session_state["cd_scan_min_turns"])
+    min_vpp = float(st.session_state["cd_scan_min_vpp_mV"])
+    max_vpp = float(st.session_state["cd_scan_max_vpp_mV"])
+
+    if min_turns < 1.0:
+        st.session_state["cd_scan_min_turns"] = _CURRENT_DOMAIN_STANDARD_CRITERIA["cd_scan_min_turns"]
+    if min_vpp < 0.0:
+        st.session_state["cd_scan_min_vpp_mV"] = _CURRENT_DOMAIN_STANDARD_CRITERIA["cd_scan_min_vpp_mV"]
+    if max_vpp <= 0.0:
+        st.session_state["cd_scan_max_vpp_mV"] = _CURRENT_DOMAIN_STANDARD_CRITERIA["cd_scan_max_vpp_mV"]
+    if float(st.session_state["cd_scan_max_vpp_mV"]) <= float(st.session_state["cd_scan_min_vpp_mV"]):
+        st.session_state["cd_scan_min_vpp_mV"] = _CURRENT_DOMAIN_STANDARD_CRITERIA["cd_scan_min_vpp_mV"]
+        st.session_state["cd_scan_max_vpp_mV"] = _CURRENT_DOMAIN_STANDARD_CRITERIA["cd_scan_max_vpp_mV"]
+
+
 def _init_defaults() -> None:
     required_keys = {
         "vin",
@@ -665,7 +1061,6 @@ def _init_defaults() -> None:
         "cd_pulse_on_ns",
         "cd_pulse_off_ns",
         "cd_C_pF",
-        "cd_R_out_kohm",
         "cd_Cth_mW_ns_per_K",
         "cd_S_e_mW_per_K",
         "cd_T0_K",
@@ -677,6 +1072,17 @@ def _init_defaults() -> None:
         "cd_seed",
         "cd_last_result",
         "cd_last_diag",
+        "job_name_current_domain",
+        "cd_scan_param_key",
+        "cd_scan_start",
+        "cd_scan_stop",
+        "cd_scan_step",
+        "cd_scan_min_turns",
+        "cd_scan_min_vpp_mV",
+        "cd_scan_max_vpp_mV",
+        "_cd_scan_criteria_defaults_version",
+        "preset_profile_by_mode",
+        "cd_diag_conflicts",
     }
     required_keys.update({_cd_res_key(f.name) for f in dataclasses.fields(YuanhangResistParams)})
     missing = [k for k in required_keys if k not in st.session_state]
@@ -728,7 +1134,6 @@ def _init_defaults() -> None:
     st.session_state.setdefault("cd_pulse_on_ns", 0.0)
     st.session_state.setdefault("cd_pulse_off_ns", "")
     st.session_state.setdefault("cd_C_pF", circuit.C_par_pF)
-    st.session_state.setdefault("cd_R_out_kohm", circuit.R_series_kohm)
     st.session_state.setdefault("cd_Cth_mW_ns_per_K", circuit.Cth_mW_ns_per_K)
     st.session_state.setdefault("cd_S_e_mW_per_K", circuit.Sth_mW_per_K)
     st.session_state.setdefault("cd_T0_K", circuit.T_base_K)
@@ -740,6 +1145,37 @@ def _init_defaults() -> None:
     st.session_state.setdefault("cd_seed", "")
     st.session_state.setdefault("cd_last_result", None)
     st.session_state.setdefault("cd_last_diag", None)
+    st.session_state.setdefault("cd_diag_conflicts", {})
+    st.session_state.setdefault("preset_profile_by_mode", {m: "paper" for m in _SIMULATION_MODES})
+    for m in _SIMULATION_MODES:
+        if m not in st.session_state["preset_profile_by_mode"]:
+            st.session_state["preset_profile_by_mode"][m] = "paper"
+    st.session_state.setdefault("job_name_current_domain", "")
+    st.session_state.setdefault("cd_scan_param_key", "cd_C_pF")
+    st.session_state.setdefault("cd_scan_start", 20.0)
+    st.session_state.setdefault("cd_scan_stop", 300.0)
+    st.session_state.setdefault("cd_scan_step", 10.0)
+    st.session_state.setdefault("cd_scan_min_turns", _CURRENT_DOMAIN_STANDARD_CRITERIA["cd_scan_min_turns"])
+    st.session_state.setdefault("cd_scan_min_vpp_mV", _CURRENT_DOMAIN_STANDARD_CRITERIA["cd_scan_min_vpp_mV"])
+    st.session_state.setdefault("cd_scan_max_vpp_mV", _CURRENT_DOMAIN_STANDARD_CRITERIA["cd_scan_max_vpp_mV"])
+    if str(st.session_state.get("cd_scan_param_key")) not in _current_scan_param_options():
+        st.session_state["cd_scan_param_key"] = "cd_C_pF"
+    st.session_state.setdefault("_cd_scan_criteria_defaults_version", 0)
+    if int(st.session_state.get("_cd_scan_criteria_defaults_version", 0)) < _CURRENT_DOMAIN_CRITERIA_VERSION:
+        needs_migration = False
+        try:
+            needs_migration = (
+                float(st.session_state["cd_scan_min_turns"]) <= 0.0
+                or float(st.session_state["cd_scan_min_vpp_mV"]) <= 0.0
+                or float(st.session_state["cd_scan_max_vpp_mV"]) <= 0.0
+                or float(st.session_state["cd_scan_max_vpp_mV"]) <= float(st.session_state["cd_scan_min_vpp_mV"])
+            )
+        except Exception:
+            needs_migration = True
+        _apply_current_domain_standard_criteria(force=needs_migration)
+        st.session_state["_cd_scan_criteria_defaults_version"] = _CURRENT_DOMAIN_CRITERIA_VERSION
+    else:
+        _apply_current_domain_standard_criteria(force=False)
     for f in dataclasses.fields(YuanhangResistParams):
         key = _cd_res_key(f.name)
         st.session_state.setdefault(key, getattr(resist, f.name))
@@ -783,7 +1219,6 @@ def _apply_preset(paper: bool) -> None:
     st.session_state["cd_pulse_on_ns"] = 0.0
     st.session_state["cd_pulse_off_ns"] = ""
     st.session_state["cd_C_pF"] = circuit.C_par_pF
-    st.session_state["cd_R_out_kohm"] = circuit.R_series_kohm
     st.session_state["cd_Cth_mW_ns_per_K"] = circuit.Cth_mW_ns_per_K
     st.session_state["cd_S_e_mW_per_K"] = circuit.Sth_mW_per_K
     st.session_state["cd_T0_K"] = circuit.T_base_K
@@ -797,7 +1232,6 @@ def _apply_preset(paper: bool) -> None:
     st.session_state["cd_frame_duration_s"] = 0.5
     st.session_state["cd_seed"] = ""
     st.session_state["cd_last_result"] = None
-    st.session_state["cd_last_diag"] = None
 
 
 def _apply_current_drive_reference_preset() -> None:
@@ -814,7 +1248,6 @@ def _apply_current_drive_reference_preset() -> None:
     st.session_state["cd_pulse_on_ns"] = p.pulse_on_s * 1e9
     st.session_state["cd_pulse_off_ns"] = "" if p.pulse_off_s is None else f"{p.pulse_off_s * 1e9:.16g}"
     st.session_state["cd_C_pF"] = p.C_F * 1e12
-    st.session_state["cd_R_out_kohm"] = p.R_out_ohm / 1e3
     st.session_state["cd_Cth_mW_ns_per_K"] = p.C_th_J_per_K * 1e12
     st.session_state["cd_S_e_mW_per_K"] = p.S_e_W_per_K * 1e3
     st.session_state["cd_T0_K"] = p.T0_K
@@ -827,7 +1260,127 @@ def _apply_current_drive_reference_preset() -> None:
     for f in dataclasses.fields(YuanhangResistParams):
         st.session_state[_cd_res_key(f.name)] = getattr(p.resist_params, f.name)
     st.session_state["cd_last_result"] = None
-    st.session_state["cd_last_diag"] = None
+
+
+def _apply_current_drive_paper_preset() -> None:
+    # Keep this scoped to current-drive controls so voltage-driven workflows are unaffected.
+    resist, circuit = _paper_params()
+    st.session_state["job_name_current_drive"] = "Paper Current Preset"
+    st.session_state["cd_i_start_uA"] = 50.0
+    st.session_state["cd_i_stop_uA"] = 2000.0
+    st.session_state["cd_i_step_uA"] = 50.0
+    st.session_state["cd_dt_ns"] = 10.0
+    st.session_state["cd_t_end_ns"] = 600.0
+    st.session_state["cd_t_pre_ns"] = 0.0
+    st.session_state["cd_pulse_on_ns"] = 0.0
+    st.session_state["cd_pulse_off_ns"] = ""
+    st.session_state["cd_C_pF"] = circuit.C_par_pF
+    st.session_state["cd_Cth_mW_ns_per_K"] = circuit.Cth_mW_ns_per_K
+    st.session_state["cd_S_e_mW_per_K"] = circuit.Sth_mW_per_K
+    st.session_state["cd_T0_K"] = 298.0
+    st.session_state["cd_T_init_K"] = 297.9
+    st.session_state["cd_V_init_mV"] = 0.0
+    # From collective-dynamics table: sigma = 1 microJ * s^(-1/2).
+    st.session_state["cd_sigma"] = 1.0e-6
+    st.session_state["cd_start_branch"] = "insulator"
+    st.session_state["cd_frame_duration_s"] = 0.5
+    st.session_state["cd_seed"] = ""
+    for f in dataclasses.fields(YuanhangResistParams):
+        st.session_state[_cd_res_key(f.name)] = getattr(resist, f.name)
+    st.session_state["cd_last_result"] = None
+
+
+def _apply_current_drive_professor_preset() -> tuple[bool, str]:
+    """
+    Apply the sample-oriented current-mode baseline in one step:
+    - current/thermal settings from the paper-current preset
+    - specimen RT-fitted resistance/hysteresis preset
+    """
+
+    _apply_current_drive_paper_preset()
+    ok, msg = _apply_specimen_resistance_preset()
+    st.session_state["job_name_current_drive"] = "Sample Current + Specimen RT Preset"
+    if not ok:
+        return False, f"Loaded paper current preset, but specimen RT preset failed: {msg}"
+
+    # Auto-stabilize dt for sample preset so diagnostics do not start in a numerically invalid regime.
+    # This keeps the preset immediately runnable while preserving all other parameters.
+    dt_before_ns = float(st.session_state["cd_dt_ns"])
+    dt_after_ns = dt_before_ns
+    try:
+        resist = YuanhangResistParams(
+            **{f.name: float(st.session_state[_cd_res_key(f.name)]) for f in dataclasses.fields(YuanhangResistParams)}
+        )
+        i_peak_uA = max(
+            abs(float(st.session_state["cd_i_start_uA"])),
+            abs(float(st.session_state["cd_i_stop_uA"])),
+        )
+        report = _current_drive_numerics_report(
+            dt_s=dt_before_ns * 1e-9,
+            C_F=float(st.session_state["cd_C_pF"]) * 1e-12,
+            C_th_J_per_K=float(st.session_state["cd_Cth_mW_ns_per_K"]) * 1e-12,
+            T_init_K=float(st.session_state["cd_T_init_K"]),
+            I_peak_uA=i_peak_uA,
+            resist_params=resist,
+            start_branch=str(st.session_state["cd_start_branch"]),
+        )
+
+        min_dt_ns = 1e-4
+        targets = [dt_before_ns]
+
+        dt_tau_fast = float(report["dt_over_tau_fast"])
+        if dt_tau_fast > 0.1:
+            tau_fast_ns = float(report["tau_fast_s"]) * 1e9
+            targets.append(max(min_dt_ns, 0.05 * tau_fast_ns))
+
+        dT_over_rev = float(report["dT_step_over_reversal"])
+        if dT_over_rev > 0.2:
+            targets.append(max(min_dt_ns, dt_before_ns * (0.2 / dT_over_rev)))
+
+        dt_after_ns = min(targets)
+        if dt_after_ns < dt_before_ns * 0.98:
+            st.session_state["cd_dt_ns"] = float(f"{dt_after_ns:.16g}")
+    except Exception:
+        # If diagnostics fail for any reason, keep the loaded preset and avoid hard failure.
+        dt_after_ns = dt_before_ns
+
+    if dt_after_ns < dt_before_ns * 0.98:
+        return True, (
+            "Loaded sample preset: paper current/thermal defaults "
+            "(T0=298 K, sigma=1e-6, ideal current source) + specimen RT resistance fit, "
+            f"and auto-adjusted dt from {dt_before_ns:.4g} ns to {dt_after_ns:.4g} ns for stability."
+        )
+    return True, (
+        "Loaded sample preset: paper current/thermal defaults "
+        "(T0=298 K, sigma=1e-6, ideal current source) + specimen RT resistance fit."
+    )
+
+
+def _apply_mode_scoped_preset(kind: str) -> tuple[bool, str]:
+    mode = str(st.session_state.get("mode", "Single Simulation"))
+    if mode not in _SIMULATION_MODES:
+        return False, "Preset buttons apply to simulation modes only."
+
+    if kind == "paper":
+        if mode == "Current-Driven Sweep":
+            _apply_current_drive_paper_preset()
+        else:
+            _apply_preset(True)
+        _set_mode_profile("paper", mode=mode)
+        return True, f"Loaded paper parameters for {mode}."
+
+    if kind == "sample":
+        if mode == "Current-Driven Sweep":
+            ok, msg = _apply_current_drive_professor_preset()
+            if ok:
+                _set_mode_profile("sample", mode=mode)
+            return ok, msg
+        ok, msg = _apply_specimen_resistance_preset()
+        if ok:
+            _set_mode_profile("sample", mode=mode)
+        return ok, msg
+
+    return False, f"Unknown preset kind: {kind}"
 
 
 def _update_terminal(line: str, placeholder) -> None:
@@ -861,21 +1414,11 @@ def _count_turns(values: np.ndarray) -> int:
     return int(np.sum((d[:-1] * d[1:]) < 0.0))
 
 
-def _parallel_resistance_ohm(r1_ohm: float, r2_ohm: float) -> float:
-    eps = 1e-12
-    r1 = max(float(r1_ohm), eps)
-    if np.isinf(r2_ohm):
-        return r1
-    r2 = max(float(r2_ohm), eps)
-    return 1.0 / max((1.0 / r1) + (1.0 / r2), eps)
-
-
 def _current_drive_numerics_report(
     *,
     dt_s: float,
     C_F: float,
     C_th_J_per_K: float,
-    R_out_ohm: float,
     T_init_K: float,
     I_peak_uA: float,
     resist_params: YuanhangResistParams,
@@ -885,7 +1428,6 @@ def _current_drive_numerics_report(
     dt = float(dt_s)
     C = max(float(C_F), eps)
     C_th = max(float(C_th_J_per_K), eps)
-    R_out = float(R_out_ohm)
 
     # Use the same hysteresis evaluator as simulation to estimate initial branch resistance.
     h = HysteresisArray(resist_params, size=1, start_branch=start_branch)
@@ -894,8 +1436,8 @@ def _current_drive_numerics_report(
     R_init = float(h.evaluate(T0)[0][0])
 
     R_metal = max(float(resist_params.Rm), eps)
-    R_eff_init = _parallel_resistance_ohm(R_init, R_out)
-    R_eff_fast = _parallel_resistance_ohm(R_metal, R_out)
+    R_eff_init = max(R_init, eps)
+    R_eff_fast = max(R_metal, eps)
     tau_init_s = C * R_eff_init
     tau_fast_s = C * R_eff_fast
 
@@ -906,7 +1448,6 @@ def _current_drive_numerics_report(
     reversal_thr = max(float(resist_params.reversal_threshold_K), eps)
 
     return {
-        "R_out_ohm": R_out,
         "R_init_ohm": R_init,
         "R_metal_ohm": R_metal,
         "R_eff_init_ohm": R_eff_init,
@@ -922,7 +1463,7 @@ def _current_drive_numerics_report(
     }
 
 
-def _current_drive_report_messages(report: Dict[str, float], r_load_ohm: float | None = None) -> List[str]:
+def _current_drive_report_messages(report: Dict[str, float]) -> List[str]:
     msgs: List[str] = []
     dt_tau_fast = float(report["dt_over_tau_fast"])
     tau_fast_ns = float(report["tau_fast_s"]) * 1e9
@@ -949,16 +1490,6 @@ def _current_drive_report_messages(report: Dict[str, float], r_load_ohm: float |
             f"Conservative per-step thermal jump estimate is {dT_over_rev:.3g}x reversal threshold; "
             "hysteresis timing may be sensitive to dt."
         )
-
-    if r_load_ohm is not None and r_load_ohm > 0.0:
-        r_out = max(float(report["R_out_ohm"]), 1e-12)
-        r_load = max(float(r_load_ohm), 1e-12)
-        ratio = max(r_out, r_load) / min(r_out, r_load)
-        if ratio > 1.5:
-            msgs.append(
-                f"R_out ({r_out/1e3:.3g} kOhm) differs from voltage-load R_series ({r_load/1e3:.3g} kOhm); "
-                "threshold/current window can shift."
-            )
     return msgs
 
 
@@ -967,7 +1498,6 @@ def _current_drive_recommendations(
     *,
     dt_ns: float,
     c_th_mW_ns_per_K: float,
-    r_load_ohm: float | None = None,
 ) -> List[Dict[str, Any]]:
     recs: List[Dict[str, Any]] = []
     min_dt_ns = 1e-4
@@ -994,7 +1524,7 @@ def _current_drive_recommendations(
                         "updates": {"cd_dt_ns": float(f"{target_dt_ns:.16g}")},
                     }
                 ],
-                "why": "Smaller dt better resolves the fastest VO2+R_out RC state.",
+                "why": "Smaller dt better resolves the fastest VO2 RC state.",
             }
         )
     elif dt_tau_fast > 0.03:
@@ -1074,48 +1604,52 @@ def _current_drive_recommendations(
                 "why": "Smaller per-step thermal jumps preserve branch switching timing.",
             }
         )
-
-    if r_load_ohm is not None and r_load_ohm > 0.0:
-        r_out_ohm = max(float(report["R_out_ohm"]), 1e-12)
-        r_load = max(float(r_load_ohm), 1e-12)
-        ratio = max(r_out_ohm, r_load) / min(r_out_ohm, r_load)
-        if ratio > 1.5:
-            target_r_out_kohm = r_load / 1e3
-            recs.append(
-                {
-                    "id": "rout_match",
-                    "severity": "warning",
-                    "title": "Current-drive leakage differs from voltage-drive baseline",
-                    "problem": (
-                        f"`R_out = {r_out_ohm/1e3:.4g} kOhm`, "
-                        f"`R_series = {r_load/1e3:.4g} kOhm`."
-                    ),
-                    "change": (
-                        f"Set `{_label('cd_R_out_kohm')}` near `{target_r_out_kohm:.4g}` kOhm "
-                        "to keep threshold/current window comparable."
-                    ),
-                    "actions": [
-                        {
-                            "label": f"Set R_out = {target_r_out_kohm:.4g} kOhm",
-                            "updates": {"cd_R_out_kohm": float(f"{target_r_out_kohm:.16g}")},
-                        }
-                    ],
-                    "why": "A large mismatch shifts onset current and oscillation window.",
-                }
-            )
     return recs
+
+
+def _build_current_conflict_map(recommendations: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+    conflicts: Dict[str, Dict[str, Any]] = {}
+    for rec in recommendations:
+        title = str(rec.get("title", "Diagnostic recommendation")).strip()
+        problem = str(rec.get("problem", "")).strip()
+        change = str(rec.get("change", "")).strip()
+        msg_parts = [p for p in [title, problem, change] if p]
+        message = " ".join(msg_parts).strip()
+        actions = rec.get("actions", [])
+        if not isinstance(actions, list):
+            continue
+
+        for action in actions:
+            if not isinstance(action, dict):
+                continue
+            updates = action.get("updates", {})
+            if not isinstance(updates, dict) or not updates:
+                continue
+            for key in updates.keys():
+                k = str(key)
+                entry = conflicts.setdefault(k, {"message": message, "actions": []})
+                if message and not str(entry.get("message", "")).strip():
+                    entry["message"] = message
+                action_signature = (str(action.get("label", "")), tuple(sorted(updates.items())))
+                existing_sigs = {
+                    (str(a.get("label", "")), tuple(sorted(dict(a.get("updates", {})).items())))
+                    for a in entry["actions"]
+                    if isinstance(a, dict)
+                }
+                if action_signature not in existing_sigs:
+                    entry["actions"].append(action)
+    return conflicts
 
 
 def _render_current_drive_recommendations(
     report: Dict[str, float],
     recommendations: List[Dict[str, Any]],
 ) -> None:
-    st.markdown("### Current-Drive Diagnostics")
     cols = st.columns(4)
     cols[0].metric("dt/tau_fast", f"{float(report['dt_over_tau_fast']):.3g}")
     cols[1].metric("dt/tau_init", f"{float(report['dt_over_tau_init']):.3g}")
     cols[2].metric("dT step/reversal", f"{float(report['dT_step_over_reversal']):.3g}")
-    cols[3].metric("R_out [kOhm]", f"{float(report['R_out_ohm'])/1e3:.4g}")
+    cols[3].metric("R_fast [Ohm]", f"{float(report['R_eff_fast_ohm']):.4g}")
 
     if not recommendations:
         st.success(
@@ -1124,34 +1658,65 @@ def _render_current_drive_recommendations(
         )
         return
 
-    st.markdown("### Recommended Parameter Changes")
-    for rec in recommendations:
-        severity = str(rec.get("severity", "warning"))
-        title = str(rec.get("title", "Recommendation"))
-        if severity == "error":
-            st.error(title)
-        elif severity == "info":
-            st.info(title)
-        else:
-            st.warning(title)
-        st.write(str(rec.get("problem", "")))
-        st.write(f"Change: {rec.get('change', '')}")
-        why = str(rec.get("why", "")).strip()
-        if why:
-            st.caption(why)
-        actions = rec.get("actions", [])
-        if actions:
-            action_cols = st.columns(len(actions))
-            for idx, action in enumerate(actions):
-                with action_cols[idx]:
-                    label = str(action.get("label", "Apply"))
-                    if st.button(label, key=f"cd_fix_{rec.get('id','rec')}_{idx}"):
-                        updates = action.get("updates", {})
-                        if isinstance(updates, dict):
-                            for k, v in updates.items():
-                                st.session_state[str(k)] = v
-                            st.success("Applied recommended value(s).")
-                            _rerun()
+    conflict_map = _build_current_conflict_map(recommendations)
+    if conflict_map:
+        st.warning("Yellow-marked inputs above have active diagnostics conflicts.")
+        st.markdown("Conflict Fix Popovers")
+        keys = sorted(conflict_map.keys())
+        cols = st.columns(min(3, max(1, len(keys))))
+        for idx, key in enumerate(keys):
+            col = cols[idx % len(cols)]
+            entry = conflict_map.get(key, {})
+            label = _label(key)
+            with col:
+                with st.popover(f"⚠ {_label(key)}"):
+                    msg = str(entry.get("message", "")).strip()
+                    if msg:
+                        st.write(msg)
+                    actions = entry.get("actions", [])
+                    if isinstance(actions, list) and actions:
+                        for a_idx, action in enumerate(actions):
+                            action_label = str(action.get("label", "Apply"))
+                            if st.button(action_label, key=f"cd_conflict_fix_{key}_{a_idx}"):
+                                updates = action.get("updates", {})
+                                if isinstance(updates, dict):
+                                    for u_key, u_val in updates.items():
+                                        st.session_state[str(u_key)] = u_val
+                                    st.success(f"Applied update for {_label(key)}.")
+                                    _rerun()
+                    else:
+                        st.caption("No automatic update available for this conflict.")
+                st.caption(label)
+
+    with st.expander("Detailed Diagnostic Recommendations", expanded=False):
+        st.markdown("### Recommended Parameter Changes")
+        for rec in recommendations:
+            severity = str(rec.get("severity", "warning"))
+            title = str(rec.get("title", "Recommendation"))
+            if severity == "error":
+                st.error(title)
+            elif severity == "info":
+                st.info(title)
+            else:
+                st.warning(title)
+            st.write(str(rec.get("problem", "")))
+            st.write(f"Change: {rec.get('change', '')}")
+            why = str(rec.get("why", "")).strip()
+            if why:
+                st.caption(why)
+            actions = rec.get("actions", [])
+            if actions:
+                action_cols = st.columns(len(actions))
+                for idx, action in enumerate(actions):
+                    with action_cols[idx]:
+                        label = str(action.get("label", "Apply"))
+                        if st.button(label, key=f"cd_fix_{rec.get('id','rec')}_{idx}"):
+                            updates = action.get("updates", {})
+                            if isinstance(updates, dict):
+                                for k, v in updates.items():
+                                    st.session_state[str(k)] = v
+                                st.success("Applied recommended value(s).")
+                                _rerun()
 
 
 def _render_current_drive_tuning_guide() -> None:
@@ -1159,10 +1724,10 @@ def _render_current_drive_tuning_guide() -> None:
         guide_rows = [
             {
                 "Symptom": "No oscillation, smooth ramp/flat response",
-                "Change first": "cd_i_stop_uA, cd_R_out_kohm, cd_T_init_K",
+                "Change first": "cd_i_stop_uA, cd_C_pF, cd_T_init_K",
                 "How to change": (
-                    "Increase current range, keep R_out close to R_series, start T_init closer to transition "
-                    "(typically high-320s to low-330s K)."
+                    "Increase current range, reduce C if charge dynamics are too slow, and start T_init closer to transition "
+                    "(typically high-320s to low-330s K for paper-like parameters)."
                 ),
             },
             {
@@ -1183,9 +1748,12 @@ def _render_current_drive_tuning_guide() -> None:
                 "How to change": "Lower sigma, set a fixed seed for reproducibility, and reduce dt to avoid noise magnification.",
             },
             {
-                "Symptom": "Current-drive window shifted vs voltage-drive baseline",
-                "Change first": "cd_R_out_kohm",
-                "How to change": "Set R_out close to voltage-mode R_series to preserve comparable threshold/leakage behavior.",
+                "Symptom": "Switching window shifted vs expected experiment",
+                "Change first": "cd_C_pF, cd_Cth_mW_ns_per_K, cd_S_e_mW_per_K, resistance fit",
+                "How to change": (
+                    "Re-fit RT resistance parameters first, then tune C/C_th/S_e jointly so electrical and thermal time scales "
+                    "match the measured oscillation onset and damping."
+                ),
             },
         ]
         st.dataframe(pd.DataFrame(guide_rows), hide_index=True, use_container_width=True)
@@ -1612,6 +2180,72 @@ def _plot_current_time_trace(trace_df: pd.DataFrame, current_uA: float) -> go.Fi
     return fig
 
 
+def _plot_current_domain_summary(summary_df: pd.DataFrame, param_label: str) -> go.Figure:
+    d = summary_df.sort_values("scan_value")
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig.add_trace(
+        go.Scatter(
+            x=d["scan_value"],
+            y=100.0 * d["osc_fraction"],
+            mode="lines+markers",
+            name="Oscillatory fraction (%)",
+            line=dict(color="#16a34a", width=2),
+        ),
+        secondary_y=False,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=d["scan_value"],
+            y=d["best_current_uA"],
+            mode="lines+markers",
+            name="Best current (uA)",
+            line=dict(color="#7e22ce", width=2),
+        ),
+        secondary_y=True,
+    )
+    fig.update_layout(title=f"Current-Domain Scan: {param_label}", height=500)
+    fig.update_xaxes(title_text=param_label)
+    fig.update_yaxes(title_text="Oscillatory points (%)", secondary_y=False)
+    fig.update_yaxes(title_text="Best current (uA)", secondary_y=True)
+    return fig
+
+
+def _plot_current_domain_heatmap(detail_df: pd.DataFrame, param_label: str) -> go.Figure:
+    if detail_df.empty:
+        return go.Figure()
+    pivot = detail_df.pivot(index="I_target_uA", columns="scan_value", values="turn_count")
+    x_vals = pivot.columns.values
+    y_vals = pivot.index.values
+    z = pivot.values
+    fig = go.Figure(
+        data=go.Heatmap(
+            x=x_vals,
+            y=y_vals,
+            z=z,
+            colorscale="Viridis",
+            colorbar=dict(title="Turn count"),
+        )
+    )
+    osc = detail_df[detail_df["oscillatory"] > 0.5]
+    if not osc.empty:
+        fig.add_trace(
+            go.Scatter(
+                x=osc["scan_value"],
+                y=osc["I_target_uA"],
+                mode="markers",
+                marker=dict(color="white", size=6, line=dict(color="black", width=1)),
+                name="Oscillatory points",
+            )
+        )
+    fig.update_layout(
+        title=f"Turn-count map vs {param_label}",
+        xaxis_title=param_label,
+        yaxis_title="I_target (uA)",
+        height=560,
+    )
+    return fig
+
+
 def _looks_like_nyquist_zigzag(v_mV: np.ndarray) -> bool:
     """Detect alternating sample-to-sample artifacts that render as a ribbon."""
     if v_mV.size < 8:
@@ -1628,6 +2262,53 @@ def _looks_numerically_unstable(v_mV: np.ndarray) -> bool:
     if v_mV.size == 0:
         return False
     return float(np.nanmax(np.abs(v_mV))) > 2_000.0
+
+
+def _classify_current_trace_oscillation(
+    *,
+    t_ns: np.ndarray,
+    i_in_uA: np.ndarray,
+    v_mV: np.ndarray,
+    min_turns: int,
+    min_vpp_mV: float,
+    max_vpp_mV: float,
+) -> Dict[str, float]:
+    active = np.abs(i_in_uA) > 0.0
+    if np.any(active):
+        v_eval = v_mV[active]
+    else:
+        v_eval = v_mV
+    if v_eval.size == 0:
+        v_eval = v_mV
+    turns = _count_turns(v_eval)
+    v_pp = float(np.ptp(v_eval)) if v_eval.size else 0.0
+    v_std = float(np.std(v_eval)) if v_eval.size else 0.0
+    v_avg = float(np.mean(v_eval)) if v_eval.size else 0.0
+    unstable = _looks_numerically_unstable(v_eval)
+    zigzag = _looks_like_nyquist_zigzag(v_eval)
+    oscillatory = (
+        (not unstable)
+        and (not zigzag)
+        and (turns >= int(min_turns))
+        and (v_pp >= float(min_vpp_mV))
+        and (v_pp <= float(max_vpp_mV))
+    )
+    return {
+        "turn_count": float(turns),
+        "V_avg_mV": v_avg,
+        "V_std_mV": v_std,
+        "V_pp_mV": v_pp,
+        "unstable": float(1.0 if unstable else 0.0),
+        "zigzag": float(1.0 if zigzag else 0.0),
+        "oscillatory": float(1.0 if oscillatory else 0.0),
+    }
+
+
+def _apply_current_scan_override(current_params: Dict[str, Any], param_key: str, value: float) -> None:
+    if param_key not in _CURRENT_DOMAIN_SCAN_PARAM_MAP:
+        raise ValueError(f"Unsupported current-domain parameter key: {param_key}")
+    target_field, scale = _CURRENT_DOMAIN_SCAN_PARAM_MAP[param_key]
+    current_params[target_field] = float(value) * float(scale)
 
 
 def _show_plotly_with_click(
@@ -1858,6 +2539,118 @@ def _create_job(config: Dict[str, Any]) -> Dict[str, Any]:
 
 def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
     config = job["params"]
+    if job["type"] == "current_domain_scan":
+        from current_drive_sim import CurrentDriveParams, simulate_current_step
+
+        cp_base = dict(config["current_params"])
+        cp_base["resist_params"] = dict(cp_base["resist_params"])
+
+        scan_key = str(config["scan_param_key"])
+        scan_values = _inclusive_range(
+            float(config["scan_start"]),
+            float(config["scan_stop"]),
+            float(config["scan_step"]),
+        )
+        currents_uA = list(
+            range(
+                int(config["I_start_uA"]),
+                int(config["I_stop_uA"]) + 1,
+                int(config["I_step_uA"]),
+            )
+        )
+        min_turns = int(config.get("min_turns", 6))
+        min_vpp_mV = float(config.get("min_vpp_mV", 20.0))
+        max_vpp_mV = float(config.get("max_vpp_mV", 700.0))
+        base_seed = config.get("seed")
+
+        summary_rows: List[Dict[str, float]] = []
+        detail_rows: List[Dict[str, float]] = []
+
+        total_runs = max(1, len(scan_values) * len(currents_uA))
+        run_idx = 0
+        for s_idx, scan_val in enumerate(scan_values):
+            cp = dict(cp_base)
+            cp["resist_params"] = YuanhangResistParams(**cp_base["resist_params"])
+            _apply_current_scan_override(cp, scan_key, float(scan_val))
+            params = CurrentDriveParams(**cp)
+
+            scan_detail: List[Dict[str, float]] = []
+            for i_idx, i_uA in enumerate(currents_uA):
+                run_seed = None if base_seed is None else int(base_seed) + s_idx * 100_000 + i_idx
+                out = simulate_current_step(float(i_uA), params=params, seed=run_seed)
+                t_ns = out["t"] * 1e9
+                i_trace_uA = out["I_in"] * 1e6
+                v_trace_mV = out["V_vo2"] * 1e3
+                cls = _classify_current_trace_oscillation(
+                    t_ns=t_ns,
+                    i_in_uA=i_trace_uA,
+                    v_mV=v_trace_mV,
+                    min_turns=min_turns,
+                    min_vpp_mV=min_vpp_mV,
+                    max_vpp_mV=max_vpp_mV,
+                )
+                row = {
+                    "scan_param_key": scan_key,
+                    "scan_value": float(scan_val),
+                    "I_target_uA": float(i_uA),
+                    **cls,
+                }
+                scan_detail.append(row)
+                detail_rows.append(row)
+                run_idx += 1
+                if progress_cb and (run_idx % 10 == 0 or run_idx == total_runs):
+                    progress_cb(f"[current_domain_scan] {run_idx}/{total_runs}")
+
+            dscan = pd.DataFrame(scan_detail)
+            osc = dscan[dscan["oscillatory"] > 0.5].sort_values("I_target_uA")
+            n_osc = int(len(osc))
+            frac = float(n_osc / max(1, len(dscan)))
+            if not osc.empty:
+                score = 0.6 * osc["turn_count"] + 0.4 * (osc["V_pp_mV"] / max(min_vpp_mV, 1e-9))
+                best_idx = int(score.idxmax())
+                best_row = osc.loc[best_idx]
+                first_i = float(osc["I_target_uA"].min())
+                last_i = float(osc["I_target_uA"].max())
+                best_i = float(best_row["I_target_uA"])
+                best_turns = float(best_row["turn_count"])
+                best_vpp = float(best_row["V_pp_mV"])
+            else:
+                first_i = float("nan")
+                last_i = float("nan")
+                best_i = float("nan")
+                best_turns = 0.0
+                best_vpp = 0.0
+            summary_rows.append(
+                {
+                    "scan_param_key": scan_key,
+                    "scan_value": float(scan_val),
+                    "n_currents": float(len(dscan)),
+                    "n_oscillatory": float(n_osc),
+                    "osc_fraction": frac,
+                    "first_osc_uA": first_i,
+                    "last_osc_uA": last_i,
+                    "best_current_uA": best_i,
+                    "best_turn_count": best_turns,
+                    "best_vpp_mV": best_vpp,
+                }
+            )
+
+        summary_df = pd.DataFrame(summary_rows).sort_values("scan_value").reset_index(drop=True)
+        detail_df = pd.DataFrame(detail_rows).sort_values(["scan_value", "I_target_uA"]).reset_index(drop=True)
+
+        summary_csv = _job_dir(job["id"]) / "current_domain_scan_summary.csv"
+        detail_csv = _job_dir(job["id"]) / "current_domain_scan_detail.csv"
+        summary_df.to_csv(summary_csv, index=False)
+        detail_df.to_csv(detail_csv, index=False)
+        job["outputs"].append({"label": "Current domain scan summary CSV", "path": str(summary_csv)})
+        job["outputs"].append({"label": "Current domain scan detail CSV", "path": str(detail_csv)})
+        _append_job_log(job, f"[current_domain_scan] wrote {summary_csv.name}")
+        _append_job_log(job, f"[current_domain_scan] wrote {detail_csv.name}")
+        _save_job(job)
+        if progress_cb:
+            progress_cb("[current_domain_scan] done")
+        return
+
     if job["type"] == "current_sweep":
         from current_drive_sim import CurrentDriveParams, run_sweep_make_gif, simulate_current_step
 
@@ -1875,7 +2668,6 @@ def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
             dt_s=params.dt_s,
             C_F=params.C_F,
             C_th_J_per_K=params.C_th_J_per_K,
-            R_out_ohm=params.R_out_ohm,
             T_init_K=params.T_init_K,
             I_peak_uA=float(i_peak),
             resist_params=params.resist_params,
@@ -2080,15 +2872,45 @@ def _render_sidebar() -> None:
     st.sidebar.markdown("")
     choice = st.sidebar.radio(
         "Select mode",
-        [
-            "Single Simulation",
-            "Sweep over Free Variable",
-            "2D Frequency Sweep",
-            "Current-Driven Sweep",
-            "Jobs",
-        ],
+        [*_SIMULATION_MODES, "Jobs"],
     )
     st.session_state["mode"] = choice
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### Parameter Presets")
+    st.sidebar.caption(f"Apply to: {choice}")
+    if choice in _SIMULATION_MODES:
+        c1, c2 = st.sidebar.columns(2)
+        if c1.button("Paper Parameters", key="sidebar_paper_params", use_container_width=True):
+            ok, msg = _apply_mode_scoped_preset("paper")
+            if ok:
+                st.sidebar.success(msg)
+            else:
+                st.sidebar.error(msg)
+        if c2.button("Sample Parameters", key="sidebar_sample_params", use_container_width=True):
+            ok, msg = _apply_mode_scoped_preset("sample")
+            if ok:
+                st.sidebar.success(msg)
+            else:
+                st.sidebar.error(msg)
+
+        profile = _mode_profile(mode=choice)
+        st.sidebar.caption(f"Current preset profile: {profile}")
+        if profile == "sample":
+            st.sidebar.markdown(
+                """
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                  <div style="border-left:6px solid #16a34a;height:18px;"></div>
+                  <span>Sample-derived parameter</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                  <div style="border-left:6px solid #dc2626;height:18px;"></div>
+                  <span>Assumed / not extracted</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+    else:
+        st.sidebar.caption("Choose a simulation mode to apply presets.")
 
 
 def _render_terminal() -> None:
@@ -2233,7 +3055,6 @@ def _build_job_config_current_drive() -> Dict[str, Any]:
         "T0_K": float(st.session_state["cd_T0_K"]),
         "T_init_K": float(st.session_state["cd_T_init_K"]),
         "C_F": float(st.session_state["cd_C_pF"]) * 1e-12,
-        "R_out_ohm": float(st.session_state["cd_R_out_kohm"]) * 1e3,
         "C_th_J_per_K": float(st.session_state["cd_Cth_mW_ns_per_K"]) * 1e-12,
         "S_e_W_per_K": float(st.session_state["cd_S_e_mW_per_K"]) * 1e-3,
         "sigma_W_sqrt_s": float(st.session_state["cd_sigma"]),
@@ -2251,6 +3072,66 @@ def _build_job_config_current_drive() -> Dict[str, Any]:
         "seed": None if seed_text == "" else int(seed_text),
         "current_params": current_params,
     }
+
+
+def _build_job_config_current_domain_scan() -> Dict[str, Any]:
+    base = _build_job_config_current_drive()
+    return {
+        "type": "current_domain_scan",
+        "job_name": st.session_state.get("job_name_current_domain", "").strip(),
+        "I_start_uA": int(base["I_start_uA"]),
+        "I_stop_uA": int(base["I_stop_uA"]),
+        "I_step_uA": int(base["I_step_uA"]),
+        "seed": base["seed"],
+        "current_params": base["current_params"],
+        "scan_param_key": str(st.session_state["cd_scan_param_key"]),
+        "scan_start": float(st.session_state["cd_scan_start"]),
+        "scan_stop": float(st.session_state["cd_scan_stop"]),
+        "scan_step": float(st.session_state["cd_scan_step"]),
+        "min_turns": int(round(float(st.session_state["cd_scan_min_turns"]))),
+        "min_vpp_mV": float(st.session_state["cd_scan_min_vpp_mV"]),
+        "max_vpp_mV": float(st.session_state["cd_scan_max_vpp_mV"]),
+    }
+
+
+def _validate_current_domain_inputs() -> List[str]:
+    errors = _validate_current_drive_inputs()
+    key = str(st.session_state["cd_scan_param_key"])
+    if key not in _CURRENT_DOMAIN_SCAN_PARAM_MAP:
+        errors.append("Selected domain parameter is not supported.")
+    start = float(st.session_state["cd_scan_start"])
+    stop = float(st.session_state["cd_scan_stop"])
+    step = float(st.session_state["cd_scan_step"])
+    if step <= 0:
+        errors.append("Domain scan step must be > 0.")
+    if stop <= start:
+        errors.append("Domain scan stop must be greater than start.")
+    if float(st.session_state["cd_scan_min_turns"]) < 1:
+        errors.append("Domain min turns must be >= 1.")
+    min_vpp = float(st.session_state["cd_scan_min_vpp_mV"])
+    max_vpp = float(st.session_state["cd_scan_max_vpp_mV"])
+    if min_vpp < 0.0:
+        errors.append("Domain min Vpp must be >= 0.")
+    if max_vpp <= min_vpp:
+        errors.append("Domain max Vpp must be greater than min Vpp.")
+    try:
+        vals = _inclusive_range(start, stop, step)
+    except Exception as exc:
+        errors.append(f"Invalid domain scan range: {exc}")
+        vals = []
+    i_start = int(round(float(st.session_state["cd_i_start_uA"])))
+    i_stop = int(round(float(st.session_state["cd_i_stop_uA"])))
+    i_step = int(round(float(st.session_state["cd_i_step_uA"])))
+    n_currents = int(np.floor((i_stop - i_start) / max(i_step, 1))) + 1 if i_stop >= i_start and i_step > 0 else 0
+    n_values = len(vals)
+    n_sims = n_currents * n_values
+    if n_values > 120:
+        errors.append("Domain scan has too many parameter points (>120). Increase scan step.")
+    if n_sims > 2500:
+        errors.append(
+            f"Domain scan would run {n_sims} simulations. Reduce parameter/current range or increase step sizes."
+        )
+    return errors
 
 
 def _validate_job_config(config: Dict[str, Any]) -> List[str]:
@@ -2360,11 +3241,10 @@ def _render_single() -> None:
         with cols[1]:
             _text_input("Vin list (comma-separated)", key="vin_list")
         with cols[2]:
-            st.selectbox(
+            _selectbox_input(
                 _label("start_branch"),
                 ["insulator", "metal"],
                 key="start_branch",
-                help=_help("start_branch"),
             )
         with cols[3]:
             _text_input("Noise seed (optional)", key="noise_seed")
@@ -2413,11 +3293,10 @@ def _render_sweep1d() -> None:
         with cols[1]:
             _num_input(_label("Vin"), key="vin")
         with cols[2]:
-            st.selectbox(
+            _selectbox_input(
                 _label("start_branch"),
                 ["insulator", "metal"],
                 key="start_branch",
-                help=_help("start_branch"),
             )
         with cols[3]:
             _text_input("Noise seed (optional)", key="noise_seed")
@@ -2479,11 +3358,10 @@ def _render_sweep2d() -> None:
         with cols[0]:
             _num_input(_label("Vin"), key="vin")
         with cols[1]:
-            st.selectbox(
+            _selectbox_input(
                 _label("start_branch"),
                 ["insulator", "metal"],
                 key="start_branch",
-                help=_help("start_branch"),
             )
         with cols[2]:
             _text_input("Noise seed (optional)", key="noise_seed")
@@ -2542,8 +3420,6 @@ def _validate_current_drive_inputs() -> List[str]:
         errors.append("Pulse-off time must be greater than pulse-on time.")
     if float(st.session_state["cd_C_pF"]) <= 0:
         errors.append("Current-driven C must be > 0.")
-    if float(st.session_state["cd_R_out_kohm"]) <= 0:
-        errors.append("Current-driven R_out must be > 0.")
     if float(st.session_state["cd_Cth_mW_ns_per_K"]) <= 0:
         errors.append("Current-driven C_th must be > 0.")
     if float(st.session_state["cd_S_e_mW_per_K"]) <= 0:
@@ -2580,22 +3456,21 @@ def _current_drive_input_diagnostics() -> Optional[Dict[str, Any]]:
             dt_s=float(st.session_state["cd_dt_ns"]) * 1e-9,
             C_F=float(st.session_state["cd_C_pF"]) * 1e-12,
             C_th_J_per_K=float(st.session_state["cd_Cth_mW_ns_per_K"]) * 1e-12,
-            R_out_ohm=float(st.session_state["cd_R_out_kohm"]) * 1e3,
             T_init_K=float(st.session_state["cd_T_init_K"]),
             I_peak_uA=i_peak_uA,
             resist_params=resist,
             start_branch=str(st.session_state["cd_start_branch"]),
         )
-        r_load_ohm = float(st.session_state["R_series_kohm"]) * 1e3
+        recommendations = _current_drive_recommendations(
+            report,
+            dt_ns=float(st.session_state["cd_dt_ns"]),
+            c_th_mW_ns_per_K=float(st.session_state["cd_Cth_mW_ns_per_K"]),
+        )
         return {
             "report": report,
-            "messages": _current_drive_report_messages(report, r_load_ohm=r_load_ohm),
-            "recommendations": _current_drive_recommendations(
-                report,
-                dt_ns=float(st.session_state["cd_dt_ns"]),
-                c_th_mW_ns_per_K=float(st.session_state["cd_Cth_mW_ns_per_K"]),
-                r_load_ohm=r_load_ohm,
-            ),
+            "messages": _current_drive_report_messages(report),
+            "recommendations": recommendations,
+            "conflicts": _build_current_conflict_map(recommendations),
         }
     except Exception:
         return None
@@ -2603,52 +3478,40 @@ def _current_drive_input_diagnostics() -> Optional[Dict[str, Any]]:
 
 def _render_current_drive() -> None:
     st.header("Current-Driven Sweep")
-    preset_cols = st.columns([1, 1, 2])
-    with preset_cols[0]:
-        if st.button("Load paper current preset", key="cd_load_paper_preset"):
-            _apply_preset(True)
-    with preset_cols[1]:
-        if st.button("Load reference pulse preset", key="cd_load_reference_preset"):
-            _apply_current_drive_reference_preset()
     st.caption(
-        "Reference pulse preset is tuned for qualitative waveform matching to uploaded pulse figures. "
-        "Use Diagnostics to verify numerical stability."
+        "Current-drive model uses an ideal current source at the VO2 node: "
+        "dV/dt = (I_in - V/R_vo2)/C. External/source series resistance is not part of this model."
     )
-    diagnostics = _current_drive_input_diagnostics()
-    if diagnostics is not None:
-        st.session_state["cd_last_diag"] = diagnostics
-        for msg in diagnostics["messages"]:
-            st.warning(msg)
-        _render_current_drive_recommendations(diagnostics["report"], diagnostics["recommendations"])
-    _render_current_drive_tuning_guide()
+    st.session_state["cd_diag_conflicts"] = {}
 
     with st.form("current_drive_form"):
         _text_input("Simulation name (optional)", key="job_name_current_drive")
 
-        st.markdown("### Sweep")
+        st.markdown("### Current Sweep")
         _render_input_grid(
             ["cd_i_start_uA", "cd_i_stop_uA", "cd_i_step_uA", "cd_frame_duration_s"],
             _num_input,
             columns=4,
         )
 
-        st.markdown("### Current-Driven Model")
+        st.markdown("### Waveform and Time")
         _render_input_grid(["cd_dt_ns", "cd_t_end_ns", "cd_t_pre_ns", "cd_C_pF"], _num_input, columns=4)
         cols = st.columns(4)
         with cols[0]:
             _num_input(_label("cd_pulse_on_ns"), key="cd_pulse_on_ns")
         with cols[1]:
             _text_input("Current Sim Pulse Off [ns] (optional)", key="cd_pulse_off_ns")
-        _render_input_grid(["cd_R_out_kohm", "cd_Cth_mW_ns_per_K", "cd_S_e_mW_per_K", "cd_sigma"], _num_input, columns=4)
+
+        st.markdown("### Thermal and Initial State")
+        _render_input_grid(["cd_Cth_mW_ns_per_K", "cd_S_e_mW_per_K", "cd_sigma"], _num_input, columns=4)
         _render_input_grid(["cd_T0_K", "cd_T_init_K", "cd_V_init_mV"], _num_input, columns=4)
 
         cols = st.columns(4)
         with cols[0]:
-            st.selectbox(
+            _selectbox_input(
                 _label("cd_start_branch"),
                 ["insulator", "metal"],
                 key="cd_start_branch",
-                help=_help("cd_start_branch"),
             )
         with cols[1]:
             _text_input("Seed (optional)", key="cd_seed")
@@ -2660,7 +3523,7 @@ def _render_current_drive() -> None:
                 for col, name in zip(cols, row):
                     with col:
                         _num_input(
-                            f"Current Sim {_label(name)}",
+                            _label(name),
                             key=_cd_res_key(name),
                             help=_help(_cd_res_key(name)),
                         )
@@ -3084,6 +3947,37 @@ def _render_jobs_view() -> None:
                     st.plotly_chart(fig_trace, use_container_width=True)
             else:
                 st.info("Current sweep trace CSV not found yet.")
+        if job["type"] == "current_domain_scan":
+            outputs = job.get("outputs", [])
+            summary_path = next((o["path"] for o in outputs if o["path"].endswith("current_domain_scan_summary.csv")), None)
+            detail_path = next((o["path"] for o in outputs if o["path"].endswith("current_domain_scan_detail.csv")), None)
+            param_key = str(job["params"].get("scan_param_key", "cd_C_pF"))
+            param_label = _label(param_key)
+
+            if summary_path and os.path.exists(summary_path):
+                df_summary = pd.read_csv(summary_path)
+                if not df_summary.empty:
+                    d_rank = df_summary.sort_values(
+                        ["osc_fraction", "best_turn_count"],
+                        ascending=[False, False],
+                    ).head(12)
+                    st.dataframe(d_rank, hide_index=True, use_container_width=True)
+                    fig_summary = _plot_current_domain_summary(df_summary, param_label)
+                    st.plotly_chart(fig_summary, use_container_width=True)
+                else:
+                    st.info("Domain summary CSV is empty.")
+            else:
+                st.info("Current domain summary CSV not found yet.")
+
+            if detail_path and os.path.exists(detail_path):
+                df_detail = pd.read_csv(detail_path)
+                if not df_detail.empty:
+                    fig_map = _plot_current_domain_heatmap(df_detail, param_label)
+                    st.plotly_chart(fig_map, use_container_width=True)
+                else:
+                    st.info("Domain detail CSV is empty.")
+            else:
+                st.info("Current domain detail CSV not found yet.")
         st.markdown("---")
 
     loading.empty()
@@ -3108,19 +4002,6 @@ def main() -> None:
     _render_top_bar()
 
     _render_sidebar()
-
-    with st.sidebar:
-        st.markdown("---")
-        if st.button("Load paper preset"):
-            _apply_preset(True)
-
-    current_mode = st.session_state["mode"]
-    last_mode = st.session_state.get("last_mode")
-    if last_mode is None:
-        st.session_state["last_mode"] = current_mode
-    elif last_mode != current_mode:
-        _apply_preset(True)
-        st.session_state["last_mode"] = current_mode
 
     content = st.empty()
     mode = st.session_state["mode"]

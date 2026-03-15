@@ -1,0 +1,25 @@
+{
+  "generated_at_utc": "2026-02-24T15:59:20+00:00",
+  "source_data": "/Users/gabrielberezovsky/Documents/Projects/lab/single-neuristor/data/experimental/100425_chip1_gap3.tsv",
+  "n_samples": 264,
+  "start_branch": "metal",
+  "fit_metrics": {
+    "rmse_log10": 0.03755542516428796,
+    "rmse_log10_cooling": 0.0343179682337831,
+    "rmse_log10_heating": 0.040674227266579634
+  },
+  "resist_params": {
+    "R0": 0.529735867820277,
+    "Ea_over_k": 2658.0234291656516,
+    "Rm0": 18.197838136784316,
+    "Rm_factor": 1.0,
+    "w": 6.900330335937457,
+    "Tc_K": 333.5701800798817,
+    "beta": 0.29699146992797587,
+    "gamma": 0.956269682,
+    "width_factor": 1.0,
+    "T_min_K": 284.8545,
+    "T_max_K": 375.1625,
+    "reversal_threshold_K": 0.01
+  }
+}

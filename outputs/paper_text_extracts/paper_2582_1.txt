@@ -1,0 +1,738 @@
+# Source: /Users/gabrielberezovsky/Library/Containers/com.apple.mail/Data/Library/Mail Downloads/A59030F0-1BB6-4A62-ACD5-877D8DB6FFF2/2582_1.pdf
+# Pages: 7
+
+
+
+===== PAGE 1 =====
+Modeling of the hysteretic metal-insulator
+transition in a vanadium dioxide infrared detector
+Luiz Alberto Luz de Almeida
+Universidade Federal de Campina Grande
+Department of Electrical Engineering
+58109-970, Campina Grande, PB, Brazil
+and
+Universidade Federal da Bahia
+Department of Electrical Engineering
+40210-630, Salvador, BA, Brazil
+Gurdip Singh Deep
+Antonio Marcus Nogueira Lima
+Universidade Federal de Capina Grande
+Department of Electrical Engineering
+58109-970, Campina Grande, PB, Brazil
+E-mail: amnlima@dee.ufpb.br
+Helmut Neff
+Universidade Federal de Campina Grande
+Department of Electrical Engineering
+58109-970, Campina Grande, PB, Brazil
+and
+VIR-TECH A/S
+Kuldyssen 10
+DK-2630 Taastrup, Denmark
+Abstract. The vanadium dioxide (VO
+2) thin ﬁlm, usually employed as
+an infrared detector, exhibits hysteresis in its resistance-temperature
+characteristic. Considering a polycrystalline VO2 thin ﬁlm as a composite
+medium, containing semiconducting and metallic microcrystals, the well-
+known effective-medium approximation theory is employed to relate the
+volume fraction of the semiconducting microcrystals to the effective ﬁlm
+resistance. A phenomenological model is ﬁrst proposed for describing
+the hysteretic dependence of volume fraction on temperature. From this,
+a model for hysteresis in the resistance-temperature characteristic is
+then derived, and a procedure for estimating the model parameters is
+outlined. The model reproduces the more important hysteretic character-
+istics such as the major, minor, and nested loops, in good agreement
+with the experimental characteristics.
+© 2002 Society of Photo-Optical Instru-
+mentation Engineers. [DOI: 10.1117/1.1501095]
+Subject terms: vanadium dioxide; microbolometer; thermal hysteresis; sensor; in-
+frared imaging; hysteresis model; minor loop; major loop; accommodation pro-
+cess; metal-insulator transition; composite medium; effective-medium approxima-
+tion; percolation; phase transition.
+Paper 010227 received June 28, 2001; revised manuscript received Mar. 6, 2002;
+accepted for publication Mar. 6, 2002.
+1 Introduction
+Microbolometers, operating at room temperature and em-
+ploying vanadium dioxide (VO 2) thin ﬁlm as the heat-
+sensing material, have emerged as a promising solution for
+far-infrared imaging, providing a wide range of military,
+industrial, and commercial applications. The thermophysi-
+cal properties of VO
+2 thin ﬁlms are characterized by a mar-
+tensitic solid-state phase transformation at a temperature
+around 50°C. In this region, the material transforms from
+semiconducting at low temperatures to metallic at higher
+temperatures.
+This phase transition is associated with signiﬁcant varia-
+tion of the structural, electrical, and optical material
+properties.
+1 Recent fabrication techniques permit the depo-
+sition of vanadium dioxide ﬁlms having a temperature co-
+efﬁcient of resistance @TCR5(1/R)dR/dT# of 3% K 21 in
+the semiconducting region2 that increases to values as large
+as 200% K 21 in the hysteretic transition region. 3 Despite
+this pronounced increase of the TCR, VO 2-thin-ﬁlm mi-
+crobolometers are commonly operated outside the hyster-
+etic region, in the semiconducting part of the resistance-
+temperature ( R-T) curve. 4
+Experimental results, indicating a considerable increase
+in the sensitivity, have been recently reported for a
+VO2-thin-ﬁlm microbolometer operating in the hysteretic
+region.3 The theoretical prediction of bolometric perfor-
+mance in the transition region is quite complex, due to the
+hysteresis in the R-T characteristics. Thus, the analysis,
+design, and optimization of a VO 2 microbolometer operat-
+ing in the hysteretic region is critically dependent on the
+availability of a hysteresis model that can mathematically
+describe both the major and minor loops.
+The development of a hysteresis model, based on the
+Preisach’s theory, for describing the behavior of a VO
+2 thin
+ﬁlm has been recently proposed. 5 However, this model can
+describe only partially the R-T characteristic, which is
+quite asymmetrical. In the present work, a hysteresis model
+is proposed that describes more accurately the asymmetry
+of the hysteretic R-T characteristic of a VO2 thin ﬁlm. This
+model is expressed in the form of an algebraic equation and
+has six parameters, which can be readily determined from
+experimentally obtained major and minor R-T hysteresis
+loops.
+2 Electrical Resistance of VO 2 Thin Films
+The temperature-driven phase transition from a semicon-
+ducting to a metallic phase in a VO 2 thin ﬁlm can be at-
+tributed to two types of coexisting crystallographic struc-
+tures, or phases. 1 A typical VO 2 hysteresis curve, in the
+R-T plane, is shown in Fig. 1. During the ﬁrst-order phase
+transition, more pronounced over the range of 35 to 65°C,
+the VO2 microcrystals undergo a crystallographic transfor-
+2582 Opt. Eng. 41(10) 2582–2588 (October 2002) 0091-3286/2002/$15.00 © 2002 Society of Photo-Optical Instrumentation Engineers
+
+
+===== PAGE 2 =====
+mation, accompanied by release or absorption of energy in
+the form of latent heat. For practical purposes, it is assumed
+that the phase transformation in the microcrystals occurs at
+temperatures between 20 and 80°C. For both semiconduct-
+ing (T,20°C) and metallic ( T.80°C) regions, the depen-
+dence of resistance on temperature is fully reversible, and
+release or absorption of energy is not observed.
+2.1
+Film Resistance in Semiconducting and Metallic
+Phases
+In the semiconducting region of the R-T characteristic, the
+VO2 microcrystals in the ﬁlm behave as an intrinsic semi-
+conductor, and the ﬁlm resistance can be expressed as 6
+Rs5R0 expS
+Ea
+kT D, ~1!
+where T is the ﬁlm temperature in kelvins, Ea is the acti-
+vation energy, k58.6231025 eV K21 is the Boltzmann
+constant, and R0 is the resistance for T!‘. The tempera-
+ture coefﬁcient of resistance then can be written as
+TCR5
+1
+Rs
+dRs
+dT 52
+Ea
+kT 2 . ~2!
+For temperatures around 20°C, the activation energy Ea
+of VO 2 thin ﬁlms is about 0.22 eV , 2 which is nearly the
+same as calculated from the measured TCR 52 3
+31022 K21 ~or 23% K21!. For the samples employed in
+our experiments R0517 V, as calculated from the mea-
+sured value of the ﬁlm resistance at T520°C employing
+Eq. ~1!. Thus, the ﬁlm resistance in the semiconducting
+phase can be written as
+Rs517 expS
+2553
+T D V. ~3!
+In the metallic region ( T.80°C), all VO 2 microcrystals
+behave as a metal and the ﬁlm resistance Rm has nearly a
+constant value, almost independent of T. For the samples
+employed in our experiments, the ﬁlm resistance Rm was
+measured at 80°C to be 140 V.
+2.2 VO2 Thin Film as a Composite Medium
+AV O2 thin ﬁlm is a composite medium, formed by a large
+number of microcrystals, some of which are in the semi-
+conducting phase and the rest in the metallic phase. The
+proportion between the volume fraction of semiconducting
+and metallic microcrystals in the ﬁlm determines its elec-
+trical and optical properties.
+1 When one of the constituent
+fractions in the ﬁlm reaches a critical value, the percolation
+transition occurs.
+7 The percolation phenomenon can be ex-
+plained as follows. When the ﬁlm is heated up, many mi-
+croscopic metallic islands appear on an insulating ~semi-
+conducting! substrate. With the increase in the number of
+metallic islands, conducting bridges between them appear,
+and some islands become electrically connected to each
+other. When the volume fraction of metallic particles
+reaches a certain value, the ﬁrst conducting path is formed
+through the ﬁlm. This is referred to as the percolation
+threshold. In percolation theory, the phase transition is de-
+scribed in terms of cluster formation;
+7 in the case of com-
+posite materials, it can also be described by employing the
+effective-medium approximation ~EMA!.
+8
+In Ref. 1, the percolation phenomenon that occurs in
+VO2 thin ﬁlm and its consequences for the effective dielec-
+tric constant are explained in terms of the EMA. Employing
+the same approach, we propose to express the variation of
+electrical resistance of VO 2 thin ﬁlms with temperature.
+The EMA theory treats each particle in a randomly inho-
+mogeneous material as a particle embedded in a uniform
+medium whose effective conductivity se represents the av-
+erage conductivity of the compound. When employing the
+EMA, the resulting mathematical expressions to represent
+the effective conductivity se depends on the basic assump-
+tions concerning particle geometry and anisotropy. 9 For the
+sake of simplicity, without loss of generality, the electrical
+resistance of a VO 2 thin ﬁlm can be written as
+R5gR s1~12g!Rm , ~4!
+where g is the volume fraction of the semiconducting mi-
+crocrystals. In the case of VO 2 thin ﬁlms, the resistance in
+the semiconducting phase is much higher than that in the
+metallic phase, and Eq. ~4! may be simpliﬁed to
+R5gR s1Rm ~5!
+517g expS
+2553
+T1273D1140 V, ~6!
+where T is given in degrees Celsius.
+It is interesting to point out that the application of the
+EMA results in a single expression ~4! for the effective
+Fig. 1 Typical resistance-temperature characteristics of a VO 2 thin
+ﬁlm, including minor loops. At low temperatures, the ﬁlm resistance
+exhibits an exponential dependence on temperature. There is no
+bifurcation at low temperatures, and the behavior is fully reversible.
+At high temperatures, the ﬁlm resistance is nearly constant (with a
+low value as for a metal), also describing reversible behavior. In the
+transition region, the resistance bifurcates into two different
+branches, revealing the irreversible characteristic of the ﬁlm resis-
+tance in this region.
+de Almeida et al.: Modeling of the hysteretic metal-insulator transitio n...
+2583Optical Engineering, Vol. 41 No. 10, October 2002
+
+
+===== PAGE 3 =====
+resistance of this composite medium. However, the use of
+percolation theory for treating the phase transition in the
+composite medium would require two different scaling
+laws,
+7 one for volume fractions below the percolation
+threshold, and the other for volume fractions above it. This
+makes the mathematical formulation more complex.
+3 Thermal Hysteresis in a VO
+2 Thin Film
+During the thermal cycling of a VO2 thin ﬁlm, the tempera-
+ture at which the phase transformation of a microcrystal
+occurs is greatly affected by interfacial friction between
+neighboring grains,
+10 accounting for an irreversible compo-
+nent in the phase transition.
+In the martensitic transformations 11 observed in VO 2
+thin ﬁlms, three energy components are involved: the
+chemical contribution, related to the structural or crystallo-
+graphic change; the elastic mechanical energy; and the dis-
+sipative interfacial friction energy. The ﬁrst two are consid-
+ered reversible, while friction is responsible for the
+irreversible energy component. This irreversible component
+is the primary cause of the thermal hysteresis, which makes
+the dependence of ﬁlm resistance on temperature multival-
+ued.
+3.1
+Hysteresis Terminology
+The study of hysteresis in VO 2 thin ﬁlms requires the deﬁ-
+nition of some hysteresis terminology, as follows.
+The curve in the R-T ~or g-T) plane resulting from the
+increase of the ﬁlm temperature from 20 to 80°C is termed
+the limiting descending major curve. The curve that results
+when the temperature is reduced from 80 to 20°C is termed
+the limiting ascending major curve . The combination of
+these two curves forms the limiting major loop , which is
+the principal hysteretic feature.
+If, at any point along the descending or ascending major
+curve, d T/dt changes sign, the resulting trajectory in the
+R-T plane will approach respectively the ascending or de-
+scending major curve. This point is called reversal point,
+and the trajectory traversed is called a ﬁrst-order reversal
+curve. Similarly, if along the ﬁrst-order reversal curve an-
+other reversal point occurs, the resulting curve is called a
+second-order reversal curve, and so on. The closed trajec-
+tory that results from two consecutive higher-order curves
+is called a minor loop . The sequence of open trajectories
+formed by a sequence of higher-order curves is called a set
+of nested minor loops . When the temperature is continu-
+ously cycled back and forth between two identical end val-
+ues, the resulting minor loop slowly drifts towards a ﬁnal
+and stable equilibrium minor loop, after a few cycles. This
+phenomenon is normally observed for time-varying tem-
+perature excursions of small amplitude, and is called the
+accommodation process.
+3.2
+Dependence of Volume Fraction on
+Temperature
+In the case of a VO2 thin ﬁlm, the typical major loop of the
+R-T characteristics is quite asymmetric. The presence of
+asymmetry creates mathematical difﬁculties associated
+with hysteresis modeling, and accurate modeling of a very
+asymmetric hysteresis curve is not an easy task. This may
+be veriﬁed in Ref. 5, where a considerable discrepancy be-
+tween experimental and simulated data is observed for tem-
+peratures below 35°C.
+As mentioned before, each grain, or microcrystal, within
+a polycrystalline VO
+2 ﬁlm has a speciﬁc temperature T at
+which its individual phase transition appears. The transition
+temperature of a microcrystal is determined by its size and
+volume, and is also affected by the interfacial friction be-
+tween neighboring microcrystals. Present ﬁlm fabrication
+techniques permit the deposition of vanadium dioxide ﬁlms
+with selected grain size distribution. Consequently, associ-
+ated with a certain fabrication method, there is a speciﬁc
+dependence of volume fraction g on temperature. In accor-
+dance with Eq. ~6!, and considering that R
+s and Rm obey
+single-valued temperature dependence, the presence of hys-
+teresis in the R-T characteristics implies hysteresis in the
+g-T characteristics. From Eq. ~6!, the experimental volume
+fraction g˜ can be determined as
+g˜5
+1
+17
+R˜ 2140
+expS
+2553
+T1273D
+, ~7!
+where R˜ is the experimentally measured value ~in ohms! of
+the ﬁlm resistance at a temperature T ~in degrees Celsius !.
+The calculated volume-fraction g˜-T characteristic is pre-
+sented in Fig. 2.
+We propose to obtain a functional description g5F(T)
+for the hysteresis in the g˜-T characteristics, and then em-
+ploy F(T)i n ~6! to obtain a hysteretic model for the ﬁlm
+resistance R(T). Thus, based on ~6!, the electrical resis-
+tance of a VO 2 thin ﬁlm can be written as
+R~T!5R0 expS
+2553
+T1273D F~T!1Rm . ~8!
+Fig. 2 Experimentally determined hysteresis characteristics for the
+volume-fraction evolution (solid circles) compared with those calcu-
+lated from the model F(T) (solid line).
+de Almeida et al.: Modeling of the hysteretic metal-insulator transitio n...
+2584 Optical Engineering, Vol. 41 No. 10, October 2002
+
+
+===== PAGE 4 =====
+4 Modeling Hysteresis in Volume-Fraction
+Evolution
+It can be observed in Fig. 2 that the descending and ascend-
+ing g˜-T major curves are separated by a certain width w.
+These curves saturate at g˜51 for low temperatures and
+saturate at g˜50 for high temperatures. In addition, all hys-
+teresis trajectories are conﬁned inside the major loop,
+which is the combination of the descending and ascending
+limiting ~or major! curves. We propose the function FL(T)
+to describe the volume fraction g pertaining to the major
+descending and ascending limiting curves as
+g5FL~T!,
+1
+2 1
+1
+2 tanhFbSd
+w
+2 1Tc2T DG, ~9!
+where w is the hysteresis width, b is related to d g/dT at
+Tc , and d is a function deﬁned as
+d5H
+11 for d T/dt.0,
+21 for d T/dt,0. ~10!
+Here Tc is the critical temperature or percolation threshold,
+usually deﬁned as the temperature for which g50.5 ~Fig.
+3!. In the case of hysteretic characteristics, there are two
+values for Tc , one for the descending and other for the
+ascending limiting curve. It is assumed that Tc is the aver-
+age value of the temperatures for which g50.5, at the cen-
+ter of the hysteresis curve. The combination of the curves
+FL(T,d51 1) and FL(T,d52 1) describes the major hys-
+teresis loop in the g-T plane.
+Reversal curves, minor loops, and nested minor loops
+are not described by Eq. ~9!. This equation has to be modi-
+ﬁed to represent the dependence of g on T for any trajectory
+inside the limiting major loop. To introduce this modiﬁca-
+tion, it is particularly important to take into account the
+way in which the inner trajectories approach the major
+loop. This concept is illustrated in Fig. 3, where the change
+in sign of d T/dt that occurs at the time instant t
+r is shown.
+Hysteresis branch k21 is reversed, and branch k starts at
+the reversal point ( Tr ,gr).
+The proximity temperature T p is introduced to express
+the nearness in distance of the current point ( T0 ,g0)o n
+branch k to the corresponding point (TL ,g0) on the limiting
+curve FL(T,d), given as
+Tp,TL2T0 . ~11!
+Using ~9! we obtain the value of TL corresponding to g0
+5FL(TL ,d)a s
+TL5d
+w
+2 1Tc2
+1
+b arctanh~2g021!. ~12!
+Thus, Tp at ( T0 ,g0) is given from ~11! as
+Tp5d
+w
+2 1Tc2
+1
+b arctanh~2g021!2T0 . ~13!
+At the start of a new branch, at the reversal point ( Tr ,gr),
+Tp is termed as Tpr and can be written as
+Tpr 5d
+w
+2 1Tc2
+1
+b arctanh~2gr21!2Tr . ~14!
+To investigate the experimental behavior of Tp , the VO2
+ﬁlm was thermally cycled and its electrical resistance mea-
+sured for numerous minor and nested minor loops. These
+values of resistance were employed in ~7! to determine the
+g
+˜-T characteristics. The values of Tp were calculated em-
+ploying ~13! for the previously determined minor and
+nested minor loops in the g-T plane. It was observed from
+these experimental data that Tp exhibits almost the same
+functional dependence regardless of the reversal point
+(Tr ,gr) at which the reversal curve starts. Thus, to describe
+Tp for any hysteresis branch inside the major loop, the
+following functional dependence is proposed:
+Tp,Tpr P~x!, ~15!
+where x5(T02Tr)/ Tpr , and P(x) is an arbitrary mono-
+tonically decreasing function, with P(0) 51, called here the
+proximity function.
+Substituting ~15! in ~13! yields
+Tpr P~x!5d
+w
+2 1Tc2
+1
+b arctanh~2g021!2T0 . ~16!
+Thus, the volume fraction corresponding to the current
+point ( T0 ,g0) can be written from Eq. ~16! as
+g05
+1
+2 1
+1
+2 tanhSbHd
+w
+2 1Tc2FT01Tpr PS
+T02Tr
+Tpr
+DGJ D,
+~17!
+and, for any arbitrary point ( T,g), the hysteretic volume
+fraction is expressed as
+Fig. 3 Schematic representation of hysteresis in volume-fraction
+evolution with temperature. This geometric construction of a rever-
+sal curve illustrates the concept of proximity of a point on the rever-
+sal curve to the major loop. The major loop is formed by the combi-
+nation of the limiting curves
+FL(T,d51 1) and FL(T,d52 1).
+de Almeida et al.: Modeling of the hysteretic metal-insulator transitio n...
+2585Optical Engineering, Vol. 41 No. 10, October 2002
+
+
+===== PAGE 5 =====
+g5F~T!5
+1
+2 1
+1
+2 tanhSbHd
+w
+2 1Tc
+2FT1Tpr PS
+T2Tr
+Tpr
+DGJ D. ~18!
+The values of d, Tr , and Tpr undergo a change only at the
+reversal points, and remain unchanged until the next rever-
+sal occurs.
+Initial attempts to use a low-order polynomial for P(x)
+in Eq. ~15! to ﬁt the experimentally obtained dependence of
+Tp on T did not provide satisfactory results. Polynomials of
+higher order matched the measured data points, but exhib-
+ited highly oscillatory behavior between these points. This
+conﬂicts with the smooth hysteresis characteristics ob-
+served experimentally. On the other hand, the function 1
+2tanh kx provides a smooth characteristic, and ﬁts quite
+well to the measured data near the reversal points, but fails
+for larger values of T2T
+r . For the ﬁlm employed in this
+work, we propose the following proximity function:
+P~x!, 1
+2~12sin gx!@11tanh~p222px!#, ~19!
+where g is an arbitrary constant.
+5 Results and Discussion
+VO2 thin ﬁlms of approximately 1000-Å thickness, depos-
+ited on ~100!-oriented semi-insulating Si substrates, were
+employed in this work. The ﬁlms were fabricated by reac-
+tive Ar-ion magnetron sputtering. Samples were mounted
+on a controlled thermoelectric module. To obtain the mod-
+el’s parameters, the VO
+2 thin ﬁlm was subjected to a time-
+varying temperature excitation, composed of various mono-
+tonic segments. A digital temperature controller,
+implemented in a computer-supervised environment, was
+employed to obtain high-precision temperature ramping
+and measurement of the ﬁlm resistance.
+12
+From inspection of the calculated g˜-T characteristics
+~Fig. 2!, the values of w and Tc can be readily determined.
+It is not possible to determine b and g from inspection of
+experimentally obtained curve.
+The value of b can be obtained by ﬁtting both FL(T,
+11) and FL(T,21) to the experimental major descending
+and ascending curves, respectively. Once the values of w,
+Tc , and b have been determined, the value of g in P(x)
+can be obtained by ﬁtting Eq. ~17! to a ﬁrst-order descend-
+ing g˜-T curve. A ﬁrst-order descending curve is generated
+by ﬁrst increasing the temperature to 80°C, and then reduc-
+ing the temperature monotonically until it reaches some
+value T such that the volume fraction g˜ lies on the ascend-
+ing major curve. Subsequently, the temperature is again in-
+creased monotonically to 80°C. The choice of a descending
+curve, starting on the ascending major curve near its center
+(T’50°C), was found to be quite suitable for estimating
+g.
+For the ﬁlm employed in this work, the values obtained for
+the six parameters are: w56.5 K, Tc547.6 K, b
+50.2 K21, g50.85, R0517 V and Rm5140 V.
+In Fig. 2, we present the experimental g˜-T curves ~solid
+circles! together with the volume-fraction g-T curves ~solid
+line! calculated from F(T) employing ~18!. These two sets
+of curves were obtained for the same temperature excitation
+waveform. We observe in Fig. 2 that a discrepancy exists
+between the calculated and experimental curves in the re-
+gion delimited by volume fractions ranging from 0.8 to 1.0
+and temperatures ranging from 42 to 50°C. This discrep-
+ancy is due to a slight asymmetry of the experimental g
+˜-T
+hysteresis curve in this region. Since the proposed model
+for the hysteretic volume fraction g5F(T) is a hyperbolic-
+tangent function, which is symmetric in relation to its cen-
+ter ( T5Tc ,g50.5), this discrepancy depends on the level
+of asymmetry in the g˜-T curve obtained experimentally.
+To quantify the discrepancy between model and experi-
+mental data, we employ the normalized root-mean-square
+error, given as
+e5A
+(i51
+N ~xi2x˜i!2
+(i51
+N x˜i
+2
+3100%, ~20!
+where xi represents data from the model, x˜i represents ex-
+perimental data, and N is the number of data points. Using
+216 data points, the mean error for all the ﬁrst-order de-
+scending g-T curves ~Fig. 2! was calculated to be 2.9%.
+For evaluating microbolometric performance, we are
+particularly interested in the model for the R-T hysteresis
+loop, as given in Eq. ~8!. In Fig. 4, a set of experimentally
+obtained ﬁrst-order descending R˜ -T curves ~solid circles! is
+illustrated. It is from these curves that the g˜-T curves, as
+depicted in Fig. 2, were calculated. The discrepancy ob-
+served between the measured R˜ -T curves and those ~solid
+lines! obtained using the model given by Eq. ~8! for R(T),
+is visibly smaller than that observed in Fig. 2. In fact, the
+calculated mean error using Eq. ~20! for all the ﬁrst-order
+descending R-T curves, with a total of 539 data points, is
+2.5%.
+In Fig. 5, experimentally obtained ﬁrst-order ascending
+R-T curves ~solid circles!, for a given temperature excita-
+tion waveform, as well as those ~solid lines ! calculated
+from Eq. ~8! are presented. It is important to recall that the
+parameters of F(T) in Eq. ~8! were obtained from the ex-
+Fig. 4 Experimentally measured ﬁrst-order descending R-T curves
+for the ﬁlm resistance (solid circles) and those calculated from the
+model (8) (solid lines).
+de Almeida et al.: Modeling of the hysteretic metal-insulator transitio n...
+2586 Optical Engineering, Vol. 41 No. 10, October 2002
+
+
+===== PAGE 6 =====
+perimental major loop and ﬁrst-order descending g˜-T
+curves. The calculated mean error for all the ﬁrst-order as-
+cending R-T curves, with a total of 694 data points, is
+3.3%. The relatively good agreement observed between the
+experimental R˜ -T curves and those obtained from Eq. ~8!
+validates the model.
+The experimentally obtained higher-order reversal
+curves ~solid circles!, as well as those calculated from the
+model ~solid lines!, are shown in Fig. 6. A triangular wave-
+form with progressively decreasing amplitude is employed
+for temperature excitation. From Fig. 6 we observe the abil-
+ity of the model to represent these higher-order descending
+and ascending curves.
+The ability of the model to describe minor loops can be
+observed in Fig. 7, where three pairs of minor loops are
+presented in three different regions. Each pair is composed
+of one minor loop emanating from the ascending major
+curve and the other emanating from the descending major
+curve. All minor loops were generated using the same tem-
+perature excursion, in different regions in the R-T plane.
+The minor loops pertaining to a particular pair have similar
+shapes, which vary from region to region. We observe a
+noticeable difference between experimental minor loops
+and those obtained from the model. This can be attributed
+to the high TCR in the transition region. The sample em-
+ployed in this work exhibits a TCR of 60% K
+21 in the
+transition region, which is equivalent to d R/dT
+518 kV K21 for R530 kV, for example. With this
+dR/dT, even a small temperature measurement error of
+60.1 K can produce a difference as large as 61800 V~ 6%!
+in the measured value of resistance as from that calculated
+from the model.
+In Fig. 8 ~a!, the experimentally observed accommoda-
+tion process is depicted. The 1.0-K-wide minor loop drifts
+downwards, and after a few cycles it becomes stable. The
+accommodation phenomenon presented in Fig. 8 ~b! is as
+Fig. 5 Experimentally measured ﬁrst-order ascending R-T curves
+for the ﬁlm resistance (solid circles) and those calculated from the
+model (8) (solid lines).
+Fig. 6 Nested minor loops as calculated (solid lines) from the model
+(8) and those obtained experimentally (solid circles), using the tem-
+perature waveform shown in the inset. Temperature excitation pe-
+r i o di s2 5m i n .
+Fig. 7 Minor loops, emanating from the major descending and as-
+cending curves, as calculated (solid lines) and as obtained experi-
+mentally (solid circles).
+Fig. 8 (a) Experimentally observed accommodation process for a
+small-amplitude excursion in temperature, and (b) accommodation
+process calculated from the model (8) for the same temperature
+cycling. Temperature excitation period is 2 min.
+de Almeida et al.: Modeling of the hysteretic metal-insulator transitio n...
+2587Optical Engineering, Vol. 41 No. 10, October 2002
+
+
+===== PAGE 7 =====
+calculated from the model, using the same excitation as in
+Fig. 8~a!.
+6 Conclusion
+It has been established that it is possible to describe asym-
+metric hysteresis in the R-T characteristics in
+VO2-thin-ﬁlm sensors by using EMA theory. For the calcu-
+lation of the effective ﬁlm resistance, the EMA requires the
+knowledge of the resistance and volume fraction of semi-
+conducting and metallic phases, which depend on tempera-
+ture. From the measured hysteretic R-T characteristic, the
+hysteretic dependence of volume fraction g on temperature
+T was determined. A phenomenological model for the g-T
+characteristics was proposed. This model is expressed in
+the form of an algebraic equation that is computationally
+simple to implement. The parameters of this model were
+determined from the experimental data using a fairly simple
+and robust identiﬁcation procedure. The model was vali-
+dated against experimental data, with regard to major and
+minor loops, nested loops, and accommodation.
+This paper deals only with the static features of the R-T
+characteristics of a VO
+2 thin ﬁlm. The effect of incident
+radiation is not addressed. We have also devised a model
+that, together with thermodynamic equilibrium equation,
+can be employed for microbolometer performance analysis
+even in the hysteretic transition region. This development is
+being carried out at present.
+Acknowledgments
+The authors thank CNPq ~Conselho Nacional de Desen-
+volvimento Cientı´ﬁco e Tecnolo´gico!, CAPES ~Fundac¸a˜o
+Coordenac¸a˜o de Aperfeic¸oamento de Pessoal de Nı´vel Su-
+perior!, and DAAD ~German Academic Exchange Service!
+for the award of research and study fellowships during the
+course of these investigations. Thanks are also due to Pro-
+fessor Igor A. Khrebtov of the S. I. Vavilov State Optical
+Institute, St. Petersburg, Russia, for providing the VO
+2
+ﬁlms.
+References
+1. H. Choi, J. Ahm, J. Jung, T. Noh, and D. Kim, Phys. Rev. B 54~7!,
+4621–4628 ~1996!.
+2. H. Jerominek, F. Picard, and D. Vincent, Opt. Eng. 32~9!, 2092–2099
+~1993!.
+3. C. Reintsema, E. Grossman, and J. Koch, Eds., Infrared Technology
+and Applications XXV , Proc. SPIE 3698, 190–200 ~1999!.
+4. C. Chen, X. Yi, X. Zhao, and B. Xiong, in 25th International Confer-
+ence on Infrared and Millimeter Waves , pp. 211–212 ~2000!.
+5. L. A. L. de Almeida, G. S. Deep, A. M. N. Lima, H. Neff, and R. C.
+S. Freire, IEEE Trans. Instrum. Meas. 50~4!, 1030–1035 ~2001!.
+6. K. C. Liddiard, Infrared Phys. 26~1!,4 3 – 4 9~1986!.
+7. D. Stauffer and A. Aharony, Introduction to Percolation Theory, Tay-
+lor and Francis ~1994!.
+8. D. Stroud, Superlattices Microstruct. 23~3–4 !, 567–573 ~1998!.
+9. T. W. Noh and P. H. Song, Phys. Rev. B 44~11!, 5459–5464 ~1991!.
+10. P. Potapov, R. Gotthardt, and L. Bataillard, Phys. Status Solidi A
+165~2!, 401–408 ~1998!.
+11. K. Otsuka and C. M. Wayman, Shape Memory Materials , Cambridge
+University Press ~1998!.
+12. A. M. N. Lima, G. S. Deep, L. A. L. de Almeida, H. Neff, and M.
+Fontana, in Proc. 18th IEEE Instrumentation and Measurement Tech-
+nology Conf. 2, 919–924 ~2001!.
+Luiz Alberto Luz de Almeida received the
+MS degree in electrical engineering from
+Federal University of Bahia, Brazil, in 1995.
+He is currently a PhD student in the De-
+partment of Electrical Engineering, Federal
+University of Paraı´ba, Brazil. From 1986 to
+1993 he worked in industry, where he
+gained experience in the design of analog
+and digital electronic instrumentation and
+control systems. He joined the Department
+of Electrical Engineering, Federal Univer-
+sity of Bahia, Brazil, in 1996, where he has been an assistant pro-
+fessor for telecommunication systems. His current research inter-
+ests include signal processing and modeling of sensors and
+actuators.
+Gurdip Singh Deep received the BTech
+(Hons.) degree in electrical engineering
+from Indian Institute of Technology (I.I.T.),
+Kharagpur, in 1959, the ME degree in
+power engineering (electrical) from the In-
+dian Institute of Science, Bangalore, in
+1961, and the PhD in electrical engineering
+from I.I.T. Kanpur, India, in 1971. From
+1961 to 1965 he worked as an assistant
+professor at Guru Nanak Engineering Col-
+lege Ludhiana, and from 1965 to 1972, he
+was with the I.I.T., Kanpur, as a lecturer and assistant professor.
+Since July 1972 he has been a titular professor at the Centre of
+Science and Technology of the Federal University of Paraı ´ba in
+Campina Grande, Brazil. Presently he is the coordinator of the Elec-
+tronic Instrumentation and Control Laboratory of the university. His
+research interests are electronic instrumentation and
+microcomputer-based process control.
+Antonio Marcus Nogueira Lima received
+the bachelor’s and master’s degrees in
+electrical engineering from the Federal Uni-
+versity of Paraı ´ba, Campina Grande,
+Paraı´ba, Brazil, in 1982 and 1985, respec-
+tively. He received his doctoral degree in
+1989 from Institut National Polytechnique
+de Toulouse, Toulouse, France. Since Sep-
+tember 1983, he has been a professor in
+the Electrical Engineering Department of
+the Federal University of Paraı ´ba. His re-
+search interests are in electrical machine drives, power electronics,
+electronic instrumentation, control systems, and system identiﬁca-
+tion.
+Helmut Neff received his doctoral degree
+in physics from the University of Berlin,
+Germany, in 1981. He is a solid-state
+physicist, with long-standing research on
+microstructured transition edge devices
+and sensors. He is presently working at
+VIR-TECH, Denmark, on the development
+of biochemical sensors, using surface
+plasma resonance principles.
+de Almeida et al.: Modeling of the hysteretic metal-insulator transitio n...
+2588 Optical Engineering, Vol. 41 No. 10, October 2002

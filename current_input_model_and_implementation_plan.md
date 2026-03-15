@@ -1,4 +1,9 @@
-# Current-Input VO₂ Neuristor Simulation (di Ventra dynamics + 2582_1 hysteretic resistance)
+# Current-Input VO2 Neuristor Simulation (di Ventra dynamics + 2582_1 hysteretic resistance)
+
+Historical note:
+- An earlier draft of this plan described a Norton-style shunt resistance `R_out`.
+- That is not the model used in the current codebase or manuscript.
+- The implemented model is a separate direct current-source experiment with an ideal imposed current waveform at the VO2 node.
 
 This document specifies a separate **current-driven** simulation entrypoint that uses the same VO₂ physics as the existing voltage-driven model:
 
@@ -61,13 +66,14 @@ where \(F(T,\mathcal H)\in[0,1]\) is the 2582_1 hysteresis operator.
 
 ## 3) Electrical dynamics with current input
 
-The paper voltage-driven circuit can be written in a Norton-equivalent form. For current-drive that stays faithful to the original dynamics, include a finite output resistance \(R_{\mathrm{out}}\) (equal to the original load resistance).
+This current-driven mode is not obtained by a Thevenin/Norton conversion of the voltage-driven circuit.
+It represents a separate experiment in which the voltage source is replaced by an ideal programmed current source.
+Any external source-side series resistor is omitted from the reduced equations because the imposed current waveform is treated as ideal.
 
 ### Node KCL
 
 Currents leaving the node:
 - through VO₂: \(V/R(T,\mathcal H)\)
-- through shunt/output resistor: \(V/R_{\mathrm{out}}\)
 - through capacitor: \(C\,dV/dt\)
 
 Current entering the node:
@@ -76,20 +82,19 @@ Current entering the node:
 So:
 
 \[
-I_{\mathrm{in}}(t)=\frac{V}{R(T,\mathcal H)}+\frac{V}{R_{\mathrm{out}}}+C\frac{dV}{dt}
+I_{\mathrm{in}}(t)=\frac{V}{R(T,\mathcal H)}+C\frac{dV}{dt}
 \]
 
 Rearrange:
 
 \[
 \boxed{
-C\frac{dV}{dt}=I_{\mathrm{in}}(t)-V\left(\frac{1}{R(T,\mathcal H)}+\frac{1}{R_{\mathrm{out}}}\right)
+ C\frac{dV}{dt}=I_{\mathrm{in}}(t)-\frac{V}{R(T,\mathcal H)}
 }
 \]
 
 Notes:
-- For paper-equivalent behavior, set \(R_{\mathrm{out}} = R_{\mathrm{load}}\).
-- An ideal current source corresponds to \(R_{\mathrm{out}}\to\infty\). That can change the oscillation regime.
+- The reduced model assumes the imposed current waveform is ideal.
 
 ---
 
@@ -122,7 +127,7 @@ Let \(t_n=n\Delta t\), and \(\xi_n\sim\mathcal N(0,1)\).
 
 Electrical update (Euler):
 \[
-V_{n+1}=V_n+\frac{\Delta t}{C}\left[I_{\mathrm{in}}(t_n)-V_n\left(\frac{1}{R_n}+\frac{1}{R_{\mathrm{out}}}\right)\right]
+V_{n+1}=V_n+\frac{\Delta t}{C}\left[I_{\mathrm{in}}(t_n)-\frac{V_n}{R_n}\right]
 \]
 where \(R_n=R(T_n,\mathcal H_n)\).
 
@@ -206,7 +211,7 @@ simulate_current_step(I_uA, params) -> out_dict:
 
     for each timestep:
         R = hysteresis.evaluate(T)
-        dV_dt = (I_in - V*(1/R + 1/R_out))/C
+        dV_dt = (I_in - V/R)/C
         V_next = V + dV_dt*dt
 
         P = V^2 / R
@@ -238,8 +243,8 @@ make GIF with duration 0.5 seconds per frame
 - Start near hundreds of microamps.
 - If current is too large, temperature can blow up to a hot steady state.
 
-2) Paper-equivalent drive:
-- Keep `R_out = R_load` if you want the same qualitative behavior as the voltage-driven circuit.
+2) Current-drive interpretation:
+- This mode is a separate direct-current experiment, not a Norton-equivalent rewrite of the voltage-driven circuit.
 
 3) Voltage output:
 - `V_vo2` is simply the node voltage `V(t)` across VO₂ and the capacitor.
@@ -254,7 +259,6 @@ Simulation configuration:
 
 Circuit parameters:
 - `C`
-- `R_out`
 
 Thermal parameters:
 - `C_th`
