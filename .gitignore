@@ -2,3 +2,20 @@
 README_FOR_CODEX.md
 IMPLEMENTATION_GUIDE.md
 jobs/
+
+# OS / Python build junk
+.DS_Store
+__pycache__/
+*.pyc
+
+# Local environments
+.venv/
+
+# Generated analysis outputs
+outputs/
+
+# LaTeX build intermediates
+*.aux
+*.log
+*.out
+*.toc
