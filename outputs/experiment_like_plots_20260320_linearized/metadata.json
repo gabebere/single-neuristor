@@ -1,0 +1,19 @@
+{
+  "candidate_json": "outputs/current_domain_search_20260315_210846/best_candidate.json",
+  "resistance_preset": "presets/resistance_100425_chip1_gap3.json",
+  "representative_current_uA": 50.0,
+  "dt_ns": 0.03479883213319444,
+  "C_pF": 38.243744161808195,
+  "C_th_mW_ns_per_K": 6.116343454675203,
+  "S_e_mW_per_K": 0.09111813005416332,
+  "T0_K": 335.9478092983115,
+  "T_init_K": 335.9478092983115,
+  "sigma_W_sqrt_s": 0.0,
+  "Rm_factor_scale": 1.666722170048826,
+  "Tc_shift_K": 5.42873345346706,
+  "w_scale": 1.00355693724025,
+  "beta_scale": 1.4829983075289772,
+  "reversal_threshold_K": 0.005855943660992898,
+  "freq_method": "small_signal_linearized",
+  "freq_settle_ns": 1200.0
+}

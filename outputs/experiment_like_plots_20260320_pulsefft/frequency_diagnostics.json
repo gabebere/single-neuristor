@@ -1,0 +1,162 @@
+[
+  {
+    "I_target_uA": 50.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 100.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 150.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 200.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 250.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 300.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 350.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 400.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 450.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 500.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 550.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 600.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 650.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 700.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 750.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 800.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 850.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 900.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 950.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1000.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1050.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1100.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1150.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1200.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1250.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1300.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1350.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1400.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1450.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1500.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1550.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1600.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1650.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1700.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1750.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1800.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1850.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1900.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 1950.0,
+    "method": "pulse_fft"
+  },
+  {
+    "I_target_uA": 2000.0,
+    "method": "pulse_fft"
+  }
+]

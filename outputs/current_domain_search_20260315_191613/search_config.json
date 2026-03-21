@@ -1,0 +1,55 @@
+{
+  "config": {
+    "resistance_preset_path": "presets/resistance_100425_chip1_gap3.json",
+    "current_start_uA": 50,
+    "current_stop_uA": 2000,
+    "coarse_current_step_uA": 200,
+    "refine_current_step_uA": 50,
+    "refine_half_window_uA": 150,
+    "t_end_ns": 300.0,
+    "t_pre_ns": 0.0,
+    "pulse_on_ns": 0.0,
+    "pulse_off_ns": null,
+    "V_init_mV": 0.0,
+    "T0_K": 298.0,
+    "sigma_W_sqrt_s": 0.0,
+    "c_pF": {
+      "low": 5.0,
+      "high": 200.0,
+      "scale": "log"
+    },
+    "c_th_mW_ns_per_K": {
+      "low": 2.0,
+      "high": 200.0,
+      "scale": "log"
+    },
+    "s_e_mW_per_K": {
+      "low": 0.02,
+      "high": 2.0,
+      "scale": "log"
+    },
+    "t_init_K": {
+      "low": 298.0,
+      "high": 336.0,
+      "scale": "linear"
+    },
+    "n_random_candidates": 6,
+    "top_k_for_refine": 2,
+    "refine_samples_per_top": 2,
+    "dt_tau_target": 0.03,
+    "dT_ratio_target": 0.2,
+    "min_dt_ns": 0.005,
+    "max_dt_ns": 0.5,
+    "max_steps_per_trace": 25000,
+    "min_vpp_mV": 20.0,
+    "max_vpp_mV": 1500.0,
+    "min_cycles": 3,
+    "seed": 3
+  },
+  "fit_metrics": {
+    "rmse_log10": 0.03755542516428796,
+    "rmse_log10_cooling": 0.0343179682337831,
+    "rmse_log10_heating": 0.040674227266579634
+  },
+  "start_branch": "metal"
+}
