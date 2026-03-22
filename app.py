@@ -24,6 +24,11 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+ROOT = Path(__file__).resolve().parent
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -31,8 +36,8 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from plotly.subplots import make_subplots
 
-import plots
-from model import (
+import neuristor.plots as plots
+from neuristor.model import (
     HysteresisArray,
     SimulationCancelled,
     YuanhangCircuitParams,
@@ -49,9 +54,9 @@ except Exception:
     _HAS_PLOTLY_EVENTS = False
 
 
-JOB_ROOT = Path(__file__).with_name("jobs")
+JOB_ROOT = ROOT / "jobs"
 JOB_ROOT.mkdir(exist_ok=True)
-SPECIMEN_RESIST_PRESET_PATH = Path(__file__).with_name("presets") / "resistance_100425_chip1_gap3.json"
+SPECIMEN_RESIST_PRESET_PATH = ROOT / "presets" / "resistance_100425_chip1_gap3.json"
 
 MPL_FIGSIZE_WIDE = (16, 9)
 MPL_DPI = 320
@@ -1235,7 +1240,7 @@ def _apply_preset(paper: bool) -> None:
 
 
 def _apply_current_drive_reference_preset() -> None:
-    from current_drive_sim import reference_visual_pulse_params
+    from neuristor.current_drive_sim import reference_visual_pulse_params
 
     p = reference_visual_pulse_params()
     st.session_state["job_name_current_drive"] = "Reference Pulse Preset (Visual)"
@@ -2540,7 +2545,7 @@ def _create_job(config: Dict[str, Any]) -> Dict[str, Any]:
 def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
     config = job["params"]
     if job["type"] == "current_domain_scan":
-        from current_drive_sim import CurrentDriveParams, simulate_current_step
+        from neuristor.current_drive_sim import CurrentDriveParams, simulate_current_step
 
         cp_base = dict(config["current_params"])
         cp_base["resist_params"] = dict(cp_base["resist_params"])
@@ -2652,7 +2657,7 @@ def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
         return
 
     if job["type"] == "current_sweep":
-        from current_drive_sim import CurrentDriveParams, run_sweep_make_gif, simulate_current_step
+        from neuristor.current_drive_sim import CurrentDriveParams, run_sweep_make_gif, simulate_current_step
 
         cp = dict(config["current_params"])
         cp["resist_params"] = YuanhangResistParams(**cp["resist_params"])

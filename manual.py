@@ -11,14 +11,21 @@ from __future__ import annotations
 import argparse
 import csv
 import os
+import sys
 from dataclasses import fields
+from pathlib import Path
 from typing import Dict, List
+
+ROOT = Path(__file__).resolve().parent
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-import plots
-from model import (
+import neuristor.plots as plots
+from neuristor.model import (
     YuanhangCircuitParams,
     YuanhangResistParams,
     series_first,

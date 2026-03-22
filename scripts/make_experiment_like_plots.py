@@ -11,11 +11,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
-from current_drive_sim import CurrentDriveParams, simulate_current_step
-from model import YuanhangResistParams
+from neuristor.current_drive_sim import CurrentDriveParams, simulate_current_step
+from neuristor.model import YuanhangResistParams
 
 
 RF_REF_OHM = 50.0

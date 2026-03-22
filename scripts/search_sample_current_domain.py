@@ -7,10 +7,11 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
-from current_domain_search import DomainSearchConfig, SearchRange, save_search_results, search_current_domain
+from neuristor.current_domain_search import DomainSearchConfig, SearchRange, save_search_results, search_current_domain
 
 
 def build_parser() -> argparse.ArgumentParser:
