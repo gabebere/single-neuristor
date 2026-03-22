@@ -2355,7 +2355,7 @@ def _fig_to_png_bytes(fig) -> bytes:
 
 
 def _launch_matplotlib_viewer(csv_path: str, x_label: str, y_label: str, title: str) -> None:
-    script_path = Path(__file__).with_name("matplotlib_viewer.py")
+    script_path = Path(__file__).resolve().parent / "scripts" / "matplotlib_viewer.py"
     if not script_path.exists():
         raise FileNotFoundError(f"Missing matplotlib_viewer.py at {script_path}")
     cmd = [

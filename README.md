@@ -5,7 +5,7 @@ This repository contains simulation code for a single VO₂ neuristor, including
 - An ideal current-driven simulator in `src/neuristor/current_drive_sim.py`
 - A current-domain search backend in `src/neuristor/current_domain_search.py`
 - Analysis/plotting utilities in `src/neuristor/plots.py`
-- A manual CLI in `manual.py` (single runs, 1D sweeps, 2D frequency sweeps)
+- A manual CLI in `scripts/manual.py` (single runs, 1D sweeps, 2D frequency sweeps)
 - A Streamlit GUI in `app.py`
 - A specimen-fitting utility in `src/neuristor/resistance_custom_analysis.py`
 
@@ -22,7 +22,7 @@ These are the main files worth reading first:
 - `src/neuristor/current_drive_sim.py`: ideal current-source single-device simulator
 - `src/neuristor/current_domain_search.py`: parameter/domain search backend for current-driven runs
 - `src/neuristor/resistance_custom_analysis.py`: fit resistance/hysteresis parameters from measured `R(T)` data
-- `manual.py`: CLI entrypoint for voltage-driven runs and sweeps
+- `scripts/manual.py`: CLI entrypoint for voltage-driven runs and sweeps
 - `src/neuristor/plots.py`: post-processing and plotting helpers
 - `scripts/`: one-off analysis utilities for validation, figure generation, and current-drive studies
 - `presets/`: saved fitted/sample parameter sets
@@ -31,16 +31,15 @@ These are the main files worth reading first:
 - `references/papers/`: paper PDFs used as modeling references
 - `references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/`: upstream reference code
 
-The root-level files `model.py`, `plots.py`, `current_drive_sim.py`, `current_domain_search.py`, and
-`resistance_custom_analysis.py` are compatibility wrappers. The real implementation now lives under
-`src/neuristor/`.
+The root is intentionally minimal. `app.py` is the only top-level application entrypoint.
+Implementation code lives under `src/neuristor/`, and auxiliary command-line tools live under `scripts/`.
 
 ## Custom Resistance Calibration (Experimental Specimen)
 
 This repo includes a specimen-fitting utility for calibrating `YuanhangResistParams` from measured `R(T)` data:
 
 ```bash
-python resistance_custom_analysis.py \
+python scripts/fit_resistance.py \
   --data data/experimental/100425_chip1_gap3.tsv \
   --save-json presets/resistance_100425_chip1_gap3.json \
   --save-plot outputs/resistance_fit_100425_chip1_gap3.png
@@ -162,32 +161,32 @@ git pull origin main
 - **Port already in use**: run `streamlit run app.py --server.port 8502`.
 - **Click-to-run points not working**: ensure `streamlit-plotly-events` is installed (it is included in `requirements.txt`).
 
-## Manual CLI (manual.py)
+## Manual CLI (`scripts/manual.py`)
 
 Run from the repo root:
 ```
-python manual.py --help
+python scripts/manual.py --help
 ```
 
 ### Commands
 
 1) Single run (one Vin or Vin list)
 ```
-python manual.py single --vin 14.5
-python manual.py single --vin_list "10.5,12.5,14.5"
+python scripts/manual.py single --vin 14.5
+python scripts/manual.py single --vin_list "10.5,12.5,14.5"
 ```
 
 2) 1D sweep (coarse → fine) over any scalar parameter
 ```
-python manual.py sweep1d --param Vin --start 0 --stop 20 --coarse-step 0.5 --fine-step 0.05
-python manual.py sweep1d --param C_par_pF --start 80 --stop 250 --coarse-step 20 --fine-step 5 --vin 14.5
+python scripts/manual.py sweep1d --param Vin --start 0 --stop 20 --coarse-step 0.5 --fine-step 0.05
+python scripts/manual.py sweep1d --param C_par_pF --start 80 --stop 250 --coarse-step 20 --fine-step 5 --vin 14.5
 ```
 
 Outputs: Vmax, Pmax/Pmin, Tmax/Tmin, frequency, mean ISI vs the free variable.
 
 3) 2D sweep (frequency vs two parameters, 3D scatter + heatmap)
 ```
-python manual.py sweep2d --param-x Vin --param-y C_par_pF --x-start 0 --x-stop 20 --x-step 0.5 --y-start 80 --y-stop 250 --y-step 10
+python scripts/manual.py sweep2d --param-x Vin --param-y C_par_pF --x-start 0 --x-stop 20 --x-step 0.5 --y-start 80 --y-stop 250 --y-step 10
 ```
 
 If `x_stop` or `y_stop` is omitted, the code scans up to 100 coarse steps. If oscillations never terminate, it uses the full scanned range.
@@ -204,7 +203,7 @@ If `x_stop` or `y_stop` is omitted, the code scans up to 100 coarse steps. If os
   `--couple_factor`, `--Cth_factor`, `--noise_strength`, `--T_base_K`
 - Preset: `--paper`
 
-Use `python manual.py <command> --help` to list all flags for that command.
+Use `python scripts/manual.py <command> --help` to list all flags for that command.
 
 ### Plotting and export flags
 
@@ -215,45 +214,45 @@ Use `python manual.py <command> --help` to list all flags for that command.
 
 ### Example: fixed parameters + Vin sweep
 ```
-python manual.py sweep1d \
+python scripts/manual.py sweep1d \
   --param Vin --start 10.5 --stop 15.0 --coarse-step 0.5 --fine-step 0.05 \
   --R_series_kohm 12 --C_par_pF 145.34619293
 ```
 
-## Quick start (manual.py)
+## Quick start (`scripts/manual.py`)
 
 1) Single run + plots (default Vin=14.5 V):
 ```
-python manual.py single
+python scripts/manual.py single
 ```
 
 2) Single run + CSV export:
 ```
-python manual.py single --vin 18.85 --C_par_pF 198 --save-csv --out-dir outputs
+python scripts/manual.py single --vin 18.85 --C_par_pF 198 --save-csv --out-dir outputs
 ```
 Outputs:
 - `outputs/sim_Vin_18p850.csv`
 
 3) 1D sweep + plots (Vin sweep):
 ```
-python manual.py sweep1d --param Vin --start 10.5 --stop 15.0 --coarse-step 0.5 --fine-step 0.05
+python scripts/manual.py sweep1d --param Vin --start 10.5 --stop 15.0 --coarse-step 0.5 --fine-step 0.05
 ```
 
 4) 1D sweep + CSV export:
 ```
-python manual.py sweep1d --param C_par_pF --start 80 --stop 250 --coarse-step 20 --fine-step 5 --vin 14.5 --save-csv --out-csv sweep1d_results.csv
+python scripts/manual.py sweep1d --param C_par_pF --start 80 --stop 250 --coarse-step 20 --fine-step 5 --vin 14.5 --save-csv --out-csv sweep1d_results.csv
 ```
 Outputs:
 - `sweep1d_results.csv`
 
 5) 2D frequency sweep + plots (3D + heatmap):
 ```
-python manual.py sweep2d --param-x Vin --param-y C_par_pF --x-start 10.5 --x-stop 15.0 --x-step 0.5 --y-start 120 --y-stop 210 --y-step 10
+python scripts/manual.py sweep2d --param-x Vin --param-y C_par_pF --x-start 10.5 --x-stop 15.0 --x-step 0.5 --y-start 120 --y-stop 210 --y-step 10
 ```
 
 6) 2D sweep + CSV export:
 ```
-python manual.py sweep2d --param-x Vin --param-y C_par_pF --x-start 10.5 --x-stop 15.0 --x-step 0.5 --y-start 120 --y-stop 210 --y-step 10 --save-csv --out-csv sweep2d_frequency.csv
+python scripts/manual.py sweep2d --param-x Vin --param-y C_par_pF --x-start 10.5 --x-stop 15.0 --x-step 0.5 --y-start 120 --y-stop 210 --y-step 10 --save-csv --out-csv sweep2d_frequency.csv
 ```
 Outputs:
 - `sweep2d_frequency.csv`
