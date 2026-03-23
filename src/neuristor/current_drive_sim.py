@@ -52,6 +52,10 @@ class CurrentDriveParams:
     C_th_J_per_K: float = 49.62776831e-12
     S_e_W_per_K: float = 0.20558726e-3
     sigma_W_sqrt_s: float = 0.0
+    thermal_mode: str = "single"
+    C_sub_J_per_K: float = 49.62776831e-12
+    G_hot_sub_W_per_K: float = 0.20558726e-3
+    T_sub_init_K: Optional[float] = None
 
     # Hysteresis / resistance
     resist_params: YuanhangResistParams = field(default_factory=YuanhangResistParams)
@@ -59,6 +63,10 @@ class CurrentDriveParams:
 
     def __post_init__(self) -> None:
         self.R_out_ohm = 0.0
+        mode = self.thermal_mode.lower()
+        if mode not in {"single", "double"}:
+            raise ValueError("thermal_mode must be 'single' or 'double'.")
+        self.thermal_mode = mode
 
 
 def current_drive_numerics_report(
@@ -283,11 +291,14 @@ def _simulate_with_current_trace(
 
     V = np.zeros(n, dtype=_SIM_DTYPE)
     T = np.zeros(n, dtype=_SIM_DTYPE)
+    T_sub = np.zeros(n, dtype=_SIM_DTYPE)
     R = np.zeros(n, dtype=_SIM_DTYPE)
     P = np.zeros(n, dtype=_SIM_DTYPE)
 
     V[0] = _SIM_DTYPE(params.V_init_V)
     T[0] = _SIM_DTYPE(params.T_init_K)
+    T_sub_init = params.T0_K if params.T_sub_init_K is None else params.T_sub_init_K
+    T_sub[0] = _SIM_DTYPE(T_sub_init)
 
     hyst = HysteresisSingleAdapter(params.resist_params, start_branch=params.start_branch)
     hyst.reset(T[0])
@@ -299,6 +310,9 @@ def _simulate_with_current_trace(
     sigma = _SIM_DTYPE(params.sigma_W_sqrt_s)
     dt = _SIM_DTYPE(params.dt_s)
     T0 = _SIM_DTYPE(params.T0_K)
+    thermal_mode = params.thermal_mode
+    C_sub = _SIM_DTYPE(max(float(params.C_sub_J_per_K), _EPS))
+    G_hot_sub = _SIM_DTYPE(max(float(params.G_hot_sub_W_per_K), 0.0))
 
     for k in range(n - 1):
         R_k, _ = hyst.evaluate(T[k])
@@ -309,7 +323,14 @@ def _simulate_with_current_trace(
         dV = (dt / C) * (I_in[k] - V[k] / R_k_sim)
         V_next = V[k] + dV
 
-        dT_det = (dt / C_th) * (P_k - S_e * (T[k] - T0))
+        if thermal_mode == "double":
+            heat_flow = G_hot_sub * (T[k] - T_sub[k])
+            dT_det = (dt / C_th) * (P_k - heat_flow)
+            dT_sub_det = (dt / C_sub) * (heat_flow - S_e * (T_sub[k] - T0))
+            T_sub_next = T_sub[k] + dT_sub_det
+        else:
+            dT_det = (dt / C_th) * (P_k - S_e * (T[k] - T0))
+            T_sub_next = T_sub[k]
         dT_sto = (sigma / C_th) * np.sqrt(dt) * _SIM_DTYPE(rng.standard_normal()) if sigma > 0.0 else _SIM_DTYPE(0.0)
         T_next = T[k] + dT_det + dT_sto
 
@@ -319,6 +340,7 @@ def _simulate_with_current_trace(
         P[k] = P_k
         V[k + 1] = V_next
         T[k + 1] = T_next
+        T_sub[k + 1] = T_sub_next
 
     R_end, _ = hyst.evaluate(T[-1])
     R[-1] = _SIM_DTYPE(max(R_end, _EPS))
@@ -329,6 +351,8 @@ def _simulate_with_current_trace(
         "I_in": I_in,
         "V_vo2": V,
         "T": T,
+        "T_hot": T,
+        "T_sub": T_sub,
         "R": R,
         "P": P,
     }
