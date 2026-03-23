@@ -701,7 +701,11 @@ def _load_resistance_preset(path: Path) -> tuple[YuanhangResistParams, str, Dict
     return YuanhangResistParams(**kwargs), start_branch, metrics
 
 
-def _apply_specimen_resistance_preset(path: Path = SPECIMEN_RESIST_PRESET_PATH) -> tuple[bool, str]:
+def _apply_specimen_resistance_preset(
+    path: Path = SPECIMEN_RESIST_PRESET_PATH,
+    *,
+    apply_current_branch: bool = False,
+) -> tuple[bool, str]:
     if not path.exists():
         return False, f"Specimen resistance preset not found: {path}"
     try:
@@ -714,7 +718,8 @@ def _apply_specimen_resistance_preset(path: Path = SPECIMEN_RESIST_PRESET_PATH) 
         st.session_state[f.name] = value
         st.session_state[_cd_res_key(f.name)] = value
     st.session_state["start_branch"] = start_branch
-    st.session_state["cd_start_branch"] = start_branch
+    if apply_current_branch:
+        st.session_state["cd_start_branch"] = start_branch
     rmse = metrics.get("rmse_log10")
     if rmse is not None:
         return (
@@ -1267,6 +1272,34 @@ def _apply_current_drive_reference_preset() -> None:
     st.session_state["cd_last_result"] = None
 
 
+def _apply_current_drive_lab_pulse_preset() -> None:
+    from neuristor.current_drive_sim import lab_pulse_current_params
+
+    p = lab_pulse_current_params()
+    st.session_state["job_name_current_drive"] = "Lab Pulse Preset"
+    st.session_state["cd_i_start_uA"] = 50.0
+    st.session_state["cd_i_stop_uA"] = 2000.0
+    st.session_state["cd_i_step_uA"] = 50.0
+    st.session_state["cd_dt_ns"] = p.dt_s * 1e9
+    st.session_state["cd_t_end_ns"] = p.t_end_s * 1e9
+    st.session_state["cd_t_pre_ns"] = p.t_pre_s * 1e9
+    st.session_state["cd_pulse_on_ns"] = p.pulse_on_s * 1e9
+    st.session_state["cd_pulse_off_ns"] = "" if p.pulse_off_s is None else f"{p.pulse_off_s * 1e9:.16g}"
+    st.session_state["cd_C_pF"] = p.C_F * 1e12
+    st.session_state["cd_Cth_mW_ns_per_K"] = p.C_th_J_per_K * 1e12
+    st.session_state["cd_S_e_mW_per_K"] = p.S_e_W_per_K * 1e3
+    st.session_state["cd_T0_K"] = p.T0_K
+    st.session_state["cd_T_init_K"] = p.T_init_K
+    st.session_state["cd_V_init_mV"] = p.V_init_V * 1e3
+    st.session_state["cd_sigma"] = p.sigma_W_sqrt_s
+    st.session_state["cd_start_branch"] = p.start_branch
+    st.session_state["cd_frame_duration_s"] = 0.5
+    st.session_state["cd_seed"] = ""
+    for f in dataclasses.fields(YuanhangResistParams):
+        st.session_state[_cd_res_key(f.name)] = getattr(p.resist_params, f.name)
+    st.session_state["cd_last_result"] = None
+
+
 def _apply_current_drive_paper_preset() -> None:
     # Keep this scoped to current-drive controls so voltage-driven workflows are unaffected.
     resist, circuit = _paper_params()
@@ -1298,15 +1331,15 @@ def _apply_current_drive_paper_preset() -> None:
 def _apply_current_drive_professor_preset() -> tuple[bool, str]:
     """
     Apply the sample-oriented current-mode baseline in one step:
-    - current/thermal settings from the paper-current preset
+    - waveform/initial-state settings from the lab-pulse preset
     - specimen RT-fitted resistance/hysteresis preset
     """
 
-    _apply_current_drive_paper_preset()
-    ok, msg = _apply_specimen_resistance_preset()
+    _apply_current_drive_lab_pulse_preset()
+    ok, msg = _apply_specimen_resistance_preset(apply_current_branch=False)
     st.session_state["job_name_current_drive"] = "Sample Current + Specimen RT Preset"
     if not ok:
-        return False, f"Loaded paper current preset, but specimen RT preset failed: {msg}"
+        return False, f"Loaded lab pulse preset, but specimen RT preset failed: {msg}"
 
     # Auto-stabilize dt for sample preset so diagnostics do not start in a numerically invalid regime.
     # This keeps the preset immediately runnable while preserving all other parameters.
@@ -1351,13 +1384,15 @@ def _apply_current_drive_professor_preset() -> tuple[bool, str]:
 
     if dt_after_ns < dt_before_ns * 0.98:
         return True, (
-            "Loaded sample preset: paper current/thermal defaults "
-            "(T0=298 K, sigma=1e-6, ideal current source) + specimen RT resistance fit, "
+            "Loaded sample preset: lab pulse defaults "
+            "(t_pre=200 ns, pulse_off=300 ns, T0=325 K, start_branch=insulator, ideal current source) "
+            "+ specimen RT resistance fit, "
             f"and auto-adjusted dt from {dt_before_ns:.4g} ns to {dt_after_ns:.4g} ns for stability."
         )
     return True, (
-        "Loaded sample preset: paper current/thermal defaults "
-        "(T0=298 K, sigma=1e-6, ideal current source) + specimen RT resistance fit."
+        "Loaded sample preset: lab pulse defaults "
+        "(t_pre=200 ns, pulse_off=300 ns, T0=325 K, start_branch=insulator, ideal current source) "
+        "+ specimen RT resistance fit."
     )
 
 
@@ -1429,72 +1464,41 @@ def _current_drive_numerics_report(
     resist_params: YuanhangResistParams,
     start_branch: str,
 ) -> Dict[str, float]:
-    eps = 1e-12
-    dt = float(dt_s)
-    C = max(float(C_F), eps)
-    C_th = max(float(C_th_J_per_K), eps)
+    from neuristor.current_drive_sim import CurrentDriveParams, current_drive_numerics_report
 
-    # Use the same hysteresis evaluator as simulation to estimate initial branch resistance.
-    h = HysteresisArray(resist_params, size=1, start_branch=start_branch)
-    T0 = np.asarray([float(T_init_K)], dtype=float)
-    h.initialize(T0)
-    R_init = float(h.evaluate(T0)[0][0])
-
-    R_metal = max(float(resist_params.Rm), eps)
-    R_eff_init = max(R_init, eps)
-    R_eff_fast = max(R_metal, eps)
-    tau_init_s = C * R_eff_init
-    tau_fast_s = C * R_eff_fast
-
-    I_peak_A = abs(float(I_peak_uA)) * 1e-6
-    V_fast_est = I_peak_A * R_eff_fast
-    P_fast_est = (V_fast_est * V_fast_est) / max(R_metal, eps)
-    dT_step_est_K = (dt / C_th) * P_fast_est
-    reversal_thr = max(float(resist_params.reversal_threshold_K), eps)
-
-    return {
-        "R_init_ohm": R_init,
-        "R_metal_ohm": R_metal,
-        "R_eff_init_ohm": R_eff_init,
-        "R_eff_fast_ohm": R_eff_fast,
-        "tau_init_s": tau_init_s,
-        "tau_fast_s": tau_fast_s,
-        "dt_over_tau_init": dt / max(tau_init_s, eps),
-        "dt_over_tau_fast": dt / max(tau_fast_s, eps),
-        "I_peak_uA": float(I_peak_uA),
-        "dT_step_est_K": dT_step_est_K,
-        "reversal_threshold_K": reversal_thr,
-        "dT_step_over_reversal": dT_step_est_K / reversal_thr,
-    }
+    params = CurrentDriveParams(
+        dt_s=float(dt_s),
+        t_end_s=1e-9,
+        t_pre_s=0.0,
+        pulse_on_s=0.0,
+        pulse_off_s=None,
+        V_init_V=0.0,
+        T0_K=float(T_init_K),
+        T_init_K=float(T_init_K),
+        C_F=float(C_F),
+        C_th_J_per_K=float(C_th_J_per_K),
+        S_e_W_per_K=0.0,
+        sigma_W_sqrt_s=0.0,
+        resist_params=resist_params,
+        start_branch=start_branch,
+    )
+    return current_drive_numerics_report(params, I_peak_uA=float(I_peak_uA))
 
 
 def _current_drive_report_messages(report: Dict[str, float]) -> List[str]:
-    msgs: List[str] = []
+    from neuristor.current_drive_sim import current_drive_report_messages
+
+    msgs = current_drive_report_messages(report)
     dt_tau_fast = float(report["dt_over_tau_fast"])
-    tau_fast_ns = float(report["tau_fast_s"]) * 1e9
     if dt_tau_fast > 0.1:
+        tau_fast_ns = float(report["tau_fast_s"]) * 1e9
         target_ns = 0.1 * tau_fast_ns
-        msgs.append(
-            f"dt/tau_fast={dt_tau_fast:.3g} (>0.1). Fast RC is under-resolved; target dt <= {target_ns:.3g} ns."
-        )
-    elif dt_tau_fast > 0.03:
-        msgs.append(f"dt/tau_fast={dt_tau_fast:.3g}. This is borderline for accurate waveform shape.")
-
-    dt_tau_init = float(report["dt_over_tau_init"])
-    if dt_tau_init > 0.2:
-        msgs.append(f"dt/tau_init={dt_tau_init:.3g} (>0.2). Euler artifacts are likely.")
-
-    dT_over_rev = float(report["dT_step_over_reversal"])
-    if dT_over_rev > 1.0:
-        msgs.append(
-            f"Conservative per-step thermal jump estimate is {dT_over_rev:.3g}x reversal threshold; "
-            "minor-loop reversal points may be skipped."
-        )
-    elif dT_over_rev > 0.2:
-        msgs.append(
-            f"Conservative per-step thermal jump estimate is {dT_over_rev:.3g}x reversal threshold; "
-            "hysteresis timing may be sensitive to dt."
-        )
+        return [
+            msg.replace("Target dt <=", "Fast RC is under-resolved; target dt <=")
+            if "Target dt <=" in msg
+            else msg
+            for msg in msgs
+        ]
     return msgs
 
 
@@ -2545,7 +2549,7 @@ def _create_job(config: Dict[str, Any]) -> Dict[str, Any]:
 def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
     config = job["params"]
     if job["type"] == "current_domain_scan":
-        from neuristor.current_drive_sim import CurrentDriveParams, simulate_current_step
+        from neuristor.current_drive_sim import CurrentDriveParams, simulate_current_step, stabilize_current_drive_params
 
         cp_base = dict(config["current_params"])
         cp_base["resist_params"] = dict(cp_base["resist_params"])
@@ -2578,6 +2582,18 @@ def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
             cp["resist_params"] = YuanhangResistParams(**cp_base["resist_params"])
             _apply_current_scan_override(cp, scan_key, float(scan_val))
             params = CurrentDriveParams(**cp)
+            i_peak = max(abs(int(config["I_start_uA"])), abs(int(config["I_stop_uA"])))
+            params_before_dt = float(params.dt_s)
+            params, _ = stabilize_current_drive_params(params, I_peak_uA=float(i_peak))
+            if float(params.dt_s) < params_before_dt * 0.98:
+                _append_job_log(
+                    job,
+                    (
+                        "[current_domain_scan] auto-adjusted dt "
+                        f"from {params_before_dt * 1e9:.4g} ns to {float(params.dt_s) * 1e9:.4g} ns "
+                        f"for scan_value={float(scan_val):.6g}"
+                    ),
+                )
 
             scan_detail: List[Dict[str, float]] = []
             for i_idx, i_uA in enumerate(currents_uA):
@@ -2657,7 +2673,12 @@ def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
         return
 
     if job["type"] == "current_sweep":
-        from neuristor.current_drive_sim import CurrentDriveParams, run_sweep_make_gif, simulate_current_step
+        from neuristor.current_drive_sim import (
+            CurrentDriveParams,
+            run_sweep_make_gif,
+            simulate_current_step,
+            stabilize_current_drive_params,
+        )
 
         cp = dict(config["current_params"])
         cp["resist_params"] = YuanhangResistParams(**cp["resist_params"])
@@ -2668,6 +2689,16 @@ def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
         i_step = int(config["I_step_uA"])
         seed = config.get("seed")
         i_peak = max(abs(i_start), abs(i_stop))
+        params_before_dt = float(params.dt_s)
+        params, report = stabilize_current_drive_params(params, I_peak_uA=float(i_peak))
+        if float(params.dt_s) < params_before_dt * 0.98:
+            _append_job_log(
+                job,
+                (
+                    "[current_sweep] auto-adjusted dt "
+                    f"from {params_before_dt * 1e9:.4g} ns to {float(params.dt_s) * 1e9:.4g} ns"
+                ),
+            )
 
         report = _current_drive_numerics_report(
             dt_s=params.dt_s,

@@ -11,7 +11,7 @@ Quick start:
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -23,6 +23,7 @@ from .model import HysteresisArray, YuanhangResistParams
 
 
 _EPS = 1e-12
+_SIM_DTYPE = np.float32
 
 
 @dataclass
@@ -60,6 +61,107 @@ class CurrentDriveParams:
         self.R_out_ohm = 0.0
 
 
+def current_drive_numerics_report(
+    params: CurrentDriveParams,
+    *,
+    I_peak_uA: float,
+) -> Dict[str, float]:
+    """Estimate fast/initial electrical timescales and step safety for a current-drive run."""
+
+    h = HysteresisArray(params.resist_params, size=1, start_branch=params.start_branch)
+    T0 = np.asarray([float(params.T_init_K)], dtype=float)
+    h.initialize(T0)
+    R_init = float(h.evaluate(T0)[0][0])
+
+    R_metal = max(float(params.resist_params.Rm), _EPS)
+    R_eff_init = max(R_init, _EPS)
+    R_eff_fast = max(R_metal, _EPS)
+    tau_init_s = float(params.C_F) * R_eff_init
+    tau_fast_s = float(params.C_F) * R_eff_fast
+
+    I_peak_A = abs(float(I_peak_uA)) * 1e-6
+    V_fast_est = I_peak_A * R_eff_fast
+    P_fast_est = (V_fast_est * V_fast_est) / max(R_metal, _EPS)
+    C_th = max(float(params.C_th_J_per_K), _EPS)
+    dt_s = float(params.dt_s)
+    dT_step_est_K = (dt_s / C_th) * P_fast_est
+    reversal_thr = max(float(params.resist_params.reversal_threshold_K), _EPS)
+
+    return {
+        "R_init_ohm": float(R_init),
+        "R_metal_ohm": float(R_metal),
+        "R_eff_init_ohm": float(R_eff_init),
+        "R_eff_fast_ohm": float(R_eff_fast),
+        "tau_init_s": float(tau_init_s),
+        "tau_fast_s": float(tau_fast_s),
+        "dt_over_tau_init": float(dt_s / max(tau_init_s, _EPS)),
+        "dt_over_tau_fast": float(dt_s / max(tau_fast_s, _EPS)),
+        "I_peak_uA": float(I_peak_uA),
+        "dT_step_est_K": float(dT_step_est_K),
+        "reversal_threshold_K": float(reversal_thr),
+        "dT_step_over_reversal": float(dT_step_est_K / reversal_thr),
+    }
+
+
+def current_drive_report_messages(report: Dict[str, float]) -> List[str]:
+    """Human-readable warnings for numerically risky current-drive settings."""
+
+    msgs: List[str] = []
+    dt_tau_fast = float(report["dt_over_tau_fast"])
+    tau_fast_ns = float(report["tau_fast_s"]) * 1e9
+    if dt_tau_fast > 0.1:
+        target_ns = 0.1 * tau_fast_ns
+        msgs.append(f"dt/tau_fast={dt_tau_fast:.3g} (>0.1). Target dt <= {target_ns:.3g} ns.")
+    elif dt_tau_fast > 0.03:
+        msgs.append(f"dt/tau_fast={dt_tau_fast:.3g}. This is borderline for accurate waveform shape.")
+
+    dt_tau_init = float(report["dt_over_tau_init"])
+    if dt_tau_init > 0.2:
+        msgs.append(f"dt/tau_init={dt_tau_init:.3g} (>0.2). Euler artifacts are likely.")
+
+    dT_over_rev = float(report["dT_step_over_reversal"])
+    if dT_over_rev > 1.0:
+        msgs.append(
+            f"Estimated thermal jump per step is {dT_over_rev:.3g}x reversal threshold; "
+            "minor-loop reversals may be skipped."
+        )
+    elif dT_over_rev > 0.2:
+        msgs.append(
+            f"Estimated thermal jump per step is {dT_over_rev:.3g}x reversal threshold; "
+            "hysteresis timing may be dt-sensitive."
+        )
+    return msgs
+
+
+def stabilize_current_drive_params(
+    params: CurrentDriveParams,
+    *,
+    I_peak_uA: float,
+    dt_tau_target: float = 0.05,
+    dT_ratio_target: float = 0.2,
+    min_dt_s: float = 1e-13,
+) -> tuple[CurrentDriveParams, Dict[str, float]]:
+    """Return a copy of params with a safer dt if the current settings are under-resolved."""
+
+    report = current_drive_numerics_report(params, I_peak_uA=I_peak_uA)
+    dt_before_s = max(float(params.dt_s), min_dt_s)
+    targets = [dt_before_s]
+
+    dt_tau_fast = float(report["dt_over_tau_fast"])
+    if dt_tau_fast > dt_tau_target:
+        tau_fast_s = float(report["tau_fast_s"])
+        targets.append(max(min_dt_s, float(dt_tau_target) * tau_fast_s))
+
+    dT_over_rev = float(report["dT_step_over_reversal"])
+    if dT_over_rev > dT_ratio_target:
+        targets.append(max(min_dt_s, dt_before_s * (float(dT_ratio_target) / dT_over_rev)))
+
+    dt_after_s = min(targets)
+    if dt_after_s < dt_before_s * 0.98:
+        params = replace(params, dt_s=float(f"{dt_after_s:.16g}"))
+    return params, report
+
+
 def reference_visual_pulse_params() -> CurrentDriveParams:
     """
     Empirical pulse preset tuned for reference-like waveform shape.
@@ -90,6 +192,28 @@ def reference_visual_pulse_params() -> CurrentDriveParams:
     )
 
 
+def lab_pulse_current_params() -> CurrentDriveParams:
+    """Finite-pulse preset for comparing against lab traces of the single-device current experiment."""
+
+    return CurrentDriveParams(
+        dt_s=10e-9,
+        t_pre_s=200e-9,
+        t_end_s=600e-9,
+        pulse_on_s=0.0,
+        pulse_off_s=300e-9,
+        V_init_V=0.0,
+        T0_K=325.0,
+        T_init_K=324.9,
+        C_F=145.34619293e-12,
+        R_out_ohm=0.0,
+        C_th_J_per_K=49.62776831e-12,
+        S_e_W_per_K=0.20558726e-3,
+        sigma_W_sqrt_s=0.0,
+        resist_params=YuanhangResistParams(),
+        start_branch="insulator",
+    )
+
+
 class HysteresisSingleAdapter:
     """
     Thin scalar wrapper around existing HysteresisArray.
@@ -104,10 +228,10 @@ class HysteresisSingleAdapter:
         self._h = HysteresisArray(resist_params, size=1, start_branch=start_branch)
 
     def reset(self, T0: float) -> None:
-        self._h.initialize(np.asarray([float(T0)], dtype=float))
+        self._h.initialize(np.asarray([float(T0)], dtype=_SIM_DTYPE))
 
     def evaluate(self, T: float) -> tuple[float, float]:
-        R_arr, g_arr = self._h.evaluate(np.asarray([float(T)], dtype=float))
+        R_arr, g_arr = self._h.evaluate(np.asarray([float(T)], dtype=_SIM_DTYPE))
         return float(R_arr[0]), float(g_arr[0])
 
     def update(self, T_prev: float, T_new: float) -> None:
@@ -117,11 +241,11 @@ class HysteresisSingleAdapter:
         T_new_f = float(T_new)
         if hasattr(self._h, "_update_reversal"):
             if hasattr(self._h, "T_last"):
-                self._h.T_last = np.asarray([T_prev_f], dtype=float)
-            self._h._update_reversal(np.asarray([T_new_f], dtype=float))
+                self._h.T_last = np.asarray([T_prev_f], dtype=_SIM_DTYPE)
+            self._h._update_reversal(np.asarray([T_new_f], dtype=_SIM_DTYPE))
         else:
             # Fallback path if internals change in the future.
-            self._h.evaluate(np.asarray([T_new_f], dtype=float))
+            self._h.evaluate(np.asarray([T_new_f], dtype=_SIM_DTYPE))
 
 
 def _time_grid(dt_s: float, t_end_s: float, t_pre_s: float) -> np.ndarray:
@@ -129,7 +253,7 @@ def _time_grid(dt_s: float, t_end_s: float, t_pre_s: float) -> np.ndarray:
     if dt_s <= 0.0 or total <= 0.0:
         raise ValueError("dt_s and (t_pre_s + t_end_s) must be positive.")
     n_steps = int(np.floor(total / dt_s)) + 1
-    return np.linspace(-t_pre_s, -t_pre_s + dt_s * (n_steps - 1), n_steps)
+    return np.linspace(-t_pre_s, -t_pre_s + dt_s * (n_steps - 1), n_steps, dtype=_SIM_DTYPE)
 
 
 def _build_current_waveform(
@@ -139,8 +263,100 @@ def _build_current_waveform(
     pulse_off_s: Optional[float] = None,
 ) -> np.ndarray:
     if pulse_off_s is None:
-        return np.where(t >= pulse_on_s, I_target_A, 0.0)
-    return np.where((t >= pulse_on_s) & (t < pulse_off_s), I_target_A, 0.0)
+        return np.where(t >= pulse_on_s, I_target_A, 0.0).astype(_SIM_DTYPE, copy=False)
+    return np.where((t >= pulse_on_s) & (t < pulse_off_s), I_target_A, 0.0).astype(_SIM_DTYPE, copy=False)
+
+
+def _simulate_with_current_trace(
+    t: np.ndarray,
+    I_in: np.ndarray,
+    params: CurrentDriveParams,
+    seed: Optional[int] = None,
+) -> Dict[str, np.ndarray]:
+    """Integrate the current-drive model for an explicit source-current trace on grid `t`."""
+
+    if t.ndim != 1 or I_in.ndim != 1 or t.size != I_in.size:
+        raise ValueError("t and I_in must be 1D arrays of equal length.")
+
+    n = t.size
+    I_in = np.asarray(I_in, dtype=_SIM_DTYPE)
+
+    V = np.zeros(n, dtype=_SIM_DTYPE)
+    T = np.zeros(n, dtype=_SIM_DTYPE)
+    R = np.zeros(n, dtype=_SIM_DTYPE)
+    P = np.zeros(n, dtype=_SIM_DTYPE)
+
+    V[0] = _SIM_DTYPE(params.V_init_V)
+    T[0] = _SIM_DTYPE(params.T_init_K)
+
+    hyst = HysteresisSingleAdapter(params.resist_params, start_branch=params.start_branch)
+    hyst.reset(T[0])
+    rng = np.random.default_rng(seed)
+
+    C = _SIM_DTYPE(max(float(params.C_F), _EPS))
+    C_th = _SIM_DTYPE(max(float(params.C_th_J_per_K), _EPS))
+    S_e = _SIM_DTYPE(params.S_e_W_per_K)
+    sigma = _SIM_DTYPE(params.sigma_W_sqrt_s)
+    dt = _SIM_DTYPE(params.dt_s)
+    T0 = _SIM_DTYPE(params.T0_K)
+
+    for k in range(n - 1):
+        R_k, _ = hyst.evaluate(T[k])
+        R_k = max(R_k, _EPS)
+        R_k_sim = _SIM_DTYPE(R_k)
+        P_k = (V[k] * V[k]) / R_k_sim
+
+        dV = (dt / C) * (I_in[k] - V[k] / R_k_sim)
+        V_next = V[k] + dV
+
+        dT_det = (dt / C_th) * (P_k - S_e * (T[k] - T0))
+        dT_sto = (sigma / C_th) * np.sqrt(dt) * _SIM_DTYPE(rng.standard_normal()) if sigma > 0.0 else _SIM_DTYPE(0.0)
+        T_next = T[k] + dT_det + dT_sto
+
+        hyst.update(T_prev=T[k], T_new=T_next)
+
+        R[k] = R_k_sim
+        P[k] = P_k
+        V[k + 1] = V_next
+        T[k + 1] = T_next
+
+    R_end, _ = hyst.evaluate(T[-1])
+    R[-1] = _SIM_DTYPE(max(R_end, _EPS))
+    P[-1] = (V[-1] * V[-1]) / R[-1]
+
+    return {
+        "t": t,
+        "I_in": I_in,
+        "V_vo2": V,
+        "T": T,
+        "R": R,
+        "P": P,
+    }
+
+
+def simulate_current_waveform(
+    I_uA: np.ndarray,
+    params: CurrentDriveParams,
+    waveform_time_s: Optional[np.ndarray] = None,
+    seed: Optional[int] = None,
+) -> Dict[str, np.ndarray]:
+    """Simulate a current-drive experiment for an arbitrary source-current waveform."""
+
+    t = _time_grid(params.dt_s, params.t_end_s, params.t_pre_s)
+    I_trace_uA = np.asarray(I_uA, dtype=float).reshape(-1)
+    if waveform_time_s is None:
+        if I_trace_uA.size != t.size:
+            raise ValueError("I_uA must match the internal time-grid length when waveform_time_s is omitted.")
+        I_in = np.asarray(I_trace_uA * 1e-6, dtype=_SIM_DTYPE)
+    else:
+        t_wave = np.asarray(waveform_time_s, dtype=float).reshape(-1)
+        if t_wave.size != I_trace_uA.size:
+            raise ValueError("waveform_time_s and I_uA must have the same length.")
+        if t_wave.size < 2:
+            raise ValueError("waveform_time_s must contain at least two samples.")
+        I_interp_uA = np.interp(t.astype(float), t_wave, I_trace_uA, left=I_trace_uA[0], right=I_trace_uA[-1])
+        I_in = np.asarray(I_interp_uA * 1e-6, dtype=_SIM_DTYPE)
+    return _simulate_with_current_trace(t=t, I_in=I_in, params=params, seed=seed)
 
 
 def simulate_current_step(I_uA: float, params: CurrentDriveParams, seed: Optional[int] = None) -> Dict[str, np.ndarray]:
@@ -153,64 +369,14 @@ def simulate_current_step(I_uA: float, params: CurrentDriveParams, seed: Optiona
     """
 
     t = _time_grid(params.dt_s, params.t_end_s, params.t_pre_s)
-    n = t.size
-    I_target_A = float(I_uA) * 1e-6
+    I_target_A = _SIM_DTYPE(float(I_uA) * 1e-6)
     I_in = _build_current_waveform(
         t=t,
         I_target_A=I_target_A,
         pulse_on_s=float(params.pulse_on_s),
         pulse_off_s=params.pulse_off_s,
     )
-
-    V = np.zeros(n, dtype=float)
-    T = np.zeros(n, dtype=float)
-    R = np.zeros(n, dtype=float)
-    P = np.zeros(n, dtype=float)
-
-    V[0] = float(params.V_init_V)
-    T[0] = float(params.T_init_K)
-
-    hyst = HysteresisSingleAdapter(params.resist_params, start_branch=params.start_branch)
-    hyst.reset(T[0])
-    rng = np.random.default_rng(seed)
-
-    C = max(float(params.C_F), _EPS)
-    C_th = max(float(params.C_th_J_per_K), _EPS)
-    S_e = float(params.S_e_W_per_K)
-    sigma = float(params.sigma_W_sqrt_s)
-    dt = float(params.dt_s)
-
-    for k in range(n - 1):
-        R_k, _ = hyst.evaluate(T[k])
-        R_k = max(R_k, _EPS)
-        P_k = (V[k] * V[k]) / R_k
-
-        dV = (dt / C) * (I_in[k] - V[k] / R_k)
-        V_next = V[k] + dV
-
-        dT_det = (dt / C_th) * (P_k - S_e * (T[k] - params.T0_K))
-        dT_sto = (sigma / C_th) * np.sqrt(dt) * rng.standard_normal() if sigma > 0.0 else 0.0
-        T_next = T[k] + dT_det + dT_sto
-
-        hyst.update(T_prev=T[k], T_new=T_next)
-
-        R[k] = R_k
-        P[k] = P_k
-        V[k + 1] = V_next
-        T[k + 1] = T_next
-
-    R_end, _ = hyst.evaluate(T[-1])
-    R[-1] = max(R_end, _EPS)
-    P[-1] = (V[-1] * V[-1]) / R[-1]
-
-    return {
-        "t": t,
-        "I_in": I_in,
-        "V_vo2": V,
-        "T": T,
-        "R": R,
-        "P": P,
-    }
+    return _simulate_with_current_trace(t=t, I_in=I_in, params=params, seed=seed)
 
 
 def _count_turns(signal: np.ndarray) -> int:
@@ -353,6 +519,17 @@ def run_sweep_make_gif(
         raise ValueError("I_step_uA must be positive.")
     if I_stop_uA < I_start_uA:
         raise ValueError("I_stop_uA must be >= I_start_uA.")
+
+    params_before_dt = float(params.dt_s)
+    i_peak_uA = max(abs(int(I_start_uA)), abs(int(I_stop_uA)))
+    params, report = stabilize_current_drive_params(params, I_peak_uA=float(i_peak_uA))
+    if float(params.dt_s) < params_before_dt * 0.98:
+        print(
+            "[current_sweep] auto-adjusted dt "
+            f"from {params_before_dt * 1e9:.4g} ns to {float(params.dt_s) * 1e9:.4g} ns"
+        )
+    for msg in current_drive_report_messages(report):
+        print(f"[current_sweep][warning] {msg}")
 
     frame_dir_path = Path(frames_dir)
     gif_path = Path(gif_path)

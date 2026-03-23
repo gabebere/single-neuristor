@@ -56,6 +56,7 @@ class SearchRange:
 @dataclass(frozen=True)
 class DomainSearchConfig:
     resistance_preset_path: str
+    current_start_branch: str = "insulator"
     current_start_uA: int = 50
     current_stop_uA: int = 2000
     coarse_current_step_uA: int = 100
@@ -993,7 +994,10 @@ def _perturb_candidate(cfg: DomainSearchConfig, base: CandidatePoint, rng: np.ra
 
 
 def search_current_domain(cfg: DomainSearchConfig) -> Dict[str, Any]:
-    base_resist_params, start_branch, fit_metrics = load_resistance_preset(cfg.resistance_preset_path)
+    base_resist_params, fit_start_branch, fit_metrics = load_resistance_preset(cfg.resistance_preset_path)
+    start_branch = str(cfg.current_start_branch).strip().lower()
+    if start_branch not in {"insulator", "metal"}:
+        start_branch = fit_start_branch
     rng = np.random.default_rng(int(cfg.seed))
 
     candidate_points: List[CandidatePoint] = _seed_candidates(cfg, base_resist_params)
@@ -1024,6 +1028,7 @@ def search_current_domain(cfg: DomainSearchConfig) -> Dict[str, Any]:
             "config": asdict(cfg),
             "fit_metrics": fit_metrics,
             "start_branch": start_branch,
+            "fit_start_branch": fit_start_branch,
             "summary_df": summary_df,
             "detail_df": detail_df,
         }
@@ -1073,6 +1078,7 @@ def search_current_domain(cfg: DomainSearchConfig) -> Dict[str, Any]:
         "config": asdict(cfg),
         "fit_metrics": fit_metrics,
         "start_branch": start_branch,
+        "fit_start_branch": fit_start_branch,
         "summary_df": summary_df,
         "detail_df": detail_df,
     }
@@ -1093,6 +1099,7 @@ def save_search_results(results: Dict[str, Any], output_dir: str | Path) -> Path
         "config": results["config"],
         "fit_metrics": results.get("fit_metrics", {}),
         "start_branch": results.get("start_branch", "insulator"),
+        "fit_start_branch": results.get("fit_start_branch", "insulator"),
     }
     config_path.write_text(json.dumps(payload, indent=2))
 
