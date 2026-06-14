@@ -11,6 +11,7 @@ Quick start:
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -56,6 +57,11 @@ class CurrentDriveParams:
     C_sub_J_per_K: float = 49.62776831e-12
     G_hot_sub_W_per_K: float = 0.20558726e-3
     T_sub_init_K: Optional[float] = None
+    phase_mode: str = "quasistatic"
+    tau_g_s: float = 1e-9
+    domain_count: int = 1
+    domain_temperature_span_K: float = 0.0
+    domain_coupling_W_per_K: float = 0.0
 
     # Hysteresis / resistance
     resist_params: YuanhangResistParams = field(default_factory=YuanhangResistParams)
@@ -67,6 +73,19 @@ class CurrentDriveParams:
         if mode not in {"single", "double"}:
             raise ValueError("thermal_mode must be 'single' or 'double'.")
         self.thermal_mode = mode
+        phase_mode = self.phase_mode.lower()
+        if phase_mode not in {"quasistatic", "dynamic"}:
+            raise ValueError("phase_mode must be 'quasistatic' or 'dynamic'.")
+        self.phase_mode = phase_mode
+        self.domain_count = int(self.domain_count)
+        if self.domain_count < 1:
+            raise ValueError("domain_count must be >= 1.")
+        if self.domain_count > 1 and self.thermal_mode != "single":
+            raise ValueError("domain_count > 1 currently supports only thermal_mode='single'.")
+        if self.domain_temperature_span_K < 0.0:
+            raise ValueError("domain_temperature_span_K must be non-negative.")
+        if self.domain_coupling_W_per_K < 0.0:
+            raise ValueError("domain_coupling_W_per_K must be non-negative.")
 
 
 def current_drive_numerics_report(
@@ -288,10 +307,14 @@ def _simulate_with_current_trace(
 
     n = t.size
     I_in = np.asarray(I_in, dtype=_SIM_DTYPE)
+    if int(params.domain_count) > 1:
+        return _simulate_with_current_trace_domains(t=t, I_in=I_in, params=params, seed=seed)
 
     V = np.zeros(n, dtype=_SIM_DTYPE)
     T = np.zeros(n, dtype=_SIM_DTYPE)
     T_sub = np.zeros(n, dtype=_SIM_DTYPE)
+    g_eq = np.zeros(n, dtype=_SIM_DTYPE)
+    g_state = np.zeros(n, dtype=_SIM_DTYPE)
     R = np.zeros(n, dtype=_SIM_DTYPE)
     P = np.zeros(n, dtype=_SIM_DTYPE)
 
@@ -302,6 +325,9 @@ def _simulate_with_current_trace(
 
     hyst = HysteresisSingleAdapter(params.resist_params, start_branch=params.start_branch)
     hyst.reset(T[0])
+    _, g0 = hyst.evaluate(T[0])
+    g_eq[0] = _SIM_DTYPE(g0)
+    g_state[0] = _SIM_DTYPE(g0)
     rng = np.random.default_rng(seed)
 
     C = _SIM_DTYPE(max(float(params.C_F), _EPS))
@@ -313,11 +339,25 @@ def _simulate_with_current_trace(
     thermal_mode = params.thermal_mode
     C_sub = _SIM_DTYPE(max(float(params.C_sub_J_per_K), _EPS))
     G_hot_sub = _SIM_DTYPE(max(float(params.G_hot_sub_W_per_K), 0.0))
+    phase_mode = params.phase_mode
+    tau_g = _SIM_DTYPE(max(float(params.tau_g_s), _EPS))
+    Rm = _SIM_DTYPE(max(float(params.resist_params.Rm), _EPS))
+    R0 = _SIM_DTYPE(max(float(params.resist_params.R0), 0.0))
+    Ea_over_k = _SIM_DTYPE(max(float(params.resist_params.Ea_over_k), 0.0))
 
     for k in range(n - 1):
-        R_k, _ = hyst.evaluate(T[k])
-        R_k = max(R_k, _EPS)
-        R_k_sim = _SIM_DTYPE(R_k)
+        R_eq_k, g_eq_k = hyst.evaluate(T[k])
+        g_eq_k = float(np.clip(g_eq_k, 0.0, 1.0))
+        g_eq[k] = _SIM_DTYPE(g_eq_k)
+        if phase_mode == "dynamic":
+            g_k = float(np.clip(g_state[k], 0.0, 1.0))
+            T_safe = max(float(T[k]), _EPS)
+            Rs_k = R0 * _SIM_DTYPE(math.exp(float(Ea_over_k) / T_safe))
+            R_k_sim = _SIM_DTYPE(max(float(Rm + Rs_k * g_k), _EPS))
+        else:
+            g_k = g_eq_k
+            R_k_sim = _SIM_DTYPE(max(float(R_eq_k), _EPS))
+            g_state[k] = _SIM_DTYPE(g_k)
         P_k = (V[k] * V[k]) / R_k_sim
 
         dV = (dt / C) * (I_in[k] - V[k] / R_k_sim)
@@ -335,6 +375,12 @@ def _simulate_with_current_trace(
         T_next = T[k] + dT_det + dT_sto
 
         hyst.update(T_prev=T[k], T_new=T_next)
+        if phase_mode == "dynamic":
+            dg = (dt / tau_g) * (_SIM_DTYPE(g_eq_k) - _SIM_DTYPE(g_k))
+            g_next = float(np.clip(_SIM_DTYPE(g_k) + dg, 0.0, 1.0))
+            g_state[k + 1] = _SIM_DTYPE(g_next)
+        else:
+            g_state[k + 1] = _SIM_DTYPE(g_eq_k)
 
         R[k] = R_k_sim
         P[k] = P_k
@@ -342,8 +388,16 @@ def _simulate_with_current_trace(
         T[k + 1] = T_next
         T_sub[k + 1] = T_sub_next
 
-    R_end, _ = hyst.evaluate(T[-1])
-    R[-1] = _SIM_DTYPE(max(R_end, _EPS))
+    R_end_eq, g_end_eq = hyst.evaluate(T[-1])
+    g_eq[-1] = _SIM_DTYPE(float(np.clip(g_end_eq, 0.0, 1.0)))
+    if phase_mode == "dynamic":
+        T_safe_end = max(float(T[-1]), _EPS)
+        Rs_end = R0 * _SIM_DTYPE(math.exp(float(Ea_over_k) / T_safe_end))
+        g_state[-1] = _SIM_DTYPE(float(np.clip(g_state[-1], 0.0, 1.0)))
+        R[-1] = _SIM_DTYPE(max(float(Rm + Rs_end * g_state[-1]), _EPS))
+    else:
+        g_state[-1] = g_eq[-1]
+        R[-1] = _SIM_DTYPE(max(float(R_end_eq), _EPS))
     P[-1] = (V[-1] * V[-1]) / R[-1]
 
     return {
@@ -353,7 +407,153 @@ def _simulate_with_current_trace(
         "T": T,
         "T_hot": T,
         "T_sub": T_sub,
+        "g_eq": g_eq,
+        "g_dyn": g_state,
         "R": R,
+        "P": P,
+    }
+
+
+def _simulate_with_current_trace_domains(
+    t: np.ndarray,
+    I_in: np.ndarray,
+    params: CurrentDriveParams,
+    seed: Optional[int] = None,
+) -> Dict[str, np.ndarray]:
+    """
+    Integrate an opt-in parallel-domain current-drive model.
+
+    Each domain uses the same fitted VO2 hysteresis law, but its resistance is
+    multiplied by N so N identical domains in parallel reduce exactly to the
+    single-domain R(T). A deterministic initial-temperature spread can break
+    perfect synchrony without changing the reference path.
+    """
+
+    n = t.size
+    domain_count = int(params.domain_count)
+    V = np.zeros(n, dtype=_SIM_DTYPE)
+    T_domains = np.zeros((n, domain_count), dtype=_SIM_DTYPE)
+    g_eq_domains = np.zeros((n, domain_count), dtype=_SIM_DTYPE)
+    g_state_domains = np.zeros((n, domain_count), dtype=_SIM_DTYPE)
+    R_domains = np.zeros((n, domain_count), dtype=_SIM_DTYPE)
+    R_eq = np.zeros(n, dtype=_SIM_DTYPE)
+    P = np.zeros(n, dtype=_SIM_DTYPE)
+
+    V[0] = _SIM_DTYPE(params.V_init_V)
+    if domain_count == 1 or float(params.domain_temperature_span_K) <= 0.0:
+        offsets = np.zeros(domain_count, dtype=_SIM_DTYPE)
+    else:
+        offsets = np.linspace(
+            -0.5 * float(params.domain_temperature_span_K),
+            0.5 * float(params.domain_temperature_span_K),
+            domain_count,
+            dtype=_SIM_DTYPE,
+        )
+    T_domains[0, :] = _SIM_DTYPE(params.T_init_K) + offsets
+
+    hyst = HysteresisArray(params.resist_params, size=domain_count, start_branch=params.start_branch)
+    hyst.initialize(T_domains[0, :])
+    _, g0 = hyst.evaluate(T_domains[0, :])
+    g_eq_domains[0, :] = np.asarray(g0, dtype=_SIM_DTYPE)
+    g_state_domains[0, :] = np.asarray(g0, dtype=_SIM_DTYPE)
+    rng = np.random.default_rng(seed)
+
+    C = _SIM_DTYPE(max(float(params.C_F), _EPS))
+    C_th_domain = _SIM_DTYPE(max(float(params.C_th_J_per_K) / float(domain_count), _EPS))
+    S_domain = _SIM_DTYPE(float(params.S_e_W_per_K) / float(domain_count))
+    sigma_domain = _SIM_DTYPE(float(params.sigma_W_sqrt_s) / max(float(domain_count), 1.0))
+    dt = _SIM_DTYPE(params.dt_s)
+    T0 = _SIM_DTYPE(params.T0_K)
+    coupling = _SIM_DTYPE(float(params.domain_coupling_W_per_K))
+    phase_mode = params.phase_mode
+    tau_g = _SIM_DTYPE(max(float(params.tau_g_s), _EPS))
+    Rm = _SIM_DTYPE(max(float(params.resist_params.Rm), _EPS))
+    R0 = _SIM_DTYPE(max(float(params.resist_params.R0), 0.0))
+    Ea_over_k = _SIM_DTYPE(max(float(params.resist_params.Ea_over_k), 0.0))
+    domain_scale = _SIM_DTYPE(float(domain_count))
+
+    for k in range(n - 1):
+        R_unit_eq, g_eq_k = hyst.evaluate(T_domains[k, :])
+        g_eq_k = np.clip(np.asarray(g_eq_k, dtype=_SIM_DTYPE), 0.0, 1.0)
+        g_eq_domains[k, :] = g_eq_k
+        if phase_mode == "dynamic":
+            g_k = np.clip(g_state_domains[k, :], 0.0, 1.0).astype(_SIM_DTYPE, copy=False)
+            T_safe = np.maximum(T_domains[k, :], _SIM_DTYPE(_EPS))
+            Rs_k = R0 * np.exp(Ea_over_k / T_safe).astype(_SIM_DTYPE, copy=False)
+            R_unit_k = Rm + Rs_k * g_k
+        else:
+            g_k = g_eq_k
+            g_state_domains[k, :] = g_k
+            R_unit_k = np.asarray(R_unit_eq, dtype=_SIM_DTYPE)
+        R_domain_k = np.maximum(domain_scale * R_unit_k, _SIM_DTYPE(_EPS))
+        conductance = np.sum(1.0 / R_domain_k, dtype=_SIM_DTYPE)
+        R_eq_k = _SIM_DTYPE(1.0 / max(float(conductance), _EPS))
+        P_domain = (V[k] * V[k]) / R_domain_k
+        P_k = np.sum(P_domain, dtype=_SIM_DTYPE)
+
+        dV = (dt / C) * (I_in[k] - V[k] * conductance)
+        V_next = V[k] + dV
+
+        if coupling > 0.0:
+            T_mean = np.mean(T_domains[k, :], dtype=_SIM_DTYPE)
+            domain_exchange = coupling * (T_mean - T_domains[k, :])
+        else:
+            domain_exchange = _SIM_DTYPE(0.0)
+        dT_det = (dt / C_th_domain) * (P_domain - S_domain * (T_domains[k, :] - T0) + domain_exchange)
+        if sigma_domain > 0.0:
+            dT_sto = (sigma_domain / C_th_domain) * np.sqrt(dt) * rng.standard_normal(domain_count).astype(_SIM_DTYPE)
+        else:
+            dT_sto = _SIM_DTYPE(0.0)
+        T_next = T_domains[k, :] + dT_det + dT_sto
+
+        if hasattr(hyst, "_update_reversal"):
+            hyst.T_last = np.asarray(T_domains[k, :], dtype=_SIM_DTYPE)
+            hyst._update_reversal(np.asarray(T_next, dtype=_SIM_DTYPE))
+        else:
+            hyst.evaluate(np.asarray(T_next, dtype=_SIM_DTYPE))
+        if phase_mode == "dynamic":
+            dg = (dt / tau_g) * (g_eq_k - g_k)
+            g_state_domains[k + 1, :] = np.clip(g_k + dg, 0.0, 1.0).astype(_SIM_DTYPE, copy=False)
+        else:
+            g_state_domains[k + 1, :] = g_eq_k
+
+        R_domains[k, :] = R_domain_k
+        R_eq[k] = R_eq_k
+        P[k] = P_k
+        V[k + 1] = V_next
+        T_domains[k + 1, :] = T_next
+
+    R_unit_end, g_end_eq = hyst.evaluate(T_domains[-1, :])
+    g_eq_domains[-1, :] = np.clip(np.asarray(g_end_eq, dtype=_SIM_DTYPE), 0.0, 1.0)
+    if phase_mode == "dynamic":
+        T_safe_end = np.maximum(T_domains[-1, :], _SIM_DTYPE(_EPS))
+        Rs_end = R0 * np.exp(Ea_over_k / T_safe_end).astype(_SIM_DTYPE, copy=False)
+        g_state_domains[-1, :] = np.clip(g_state_domains[-1, :], 0.0, 1.0).astype(_SIM_DTYPE, copy=False)
+        R_unit_last = Rm + Rs_end * g_state_domains[-1, :]
+    else:
+        g_state_domains[-1, :] = g_eq_domains[-1, :]
+        R_unit_last = np.asarray(R_unit_end, dtype=_SIM_DTYPE)
+    R_domains[-1, :] = np.maximum(domain_scale * R_unit_last, _SIM_DTYPE(_EPS))
+    conductance_end = np.sum(1.0 / R_domains[-1, :], dtype=_SIM_DTYPE)
+    R_eq[-1] = _SIM_DTYPE(1.0 / max(float(conductance_end), _EPS))
+    P[-1] = np.sum((V[-1] * V[-1]) / R_domains[-1, :], dtype=_SIM_DTYPE)
+
+    T_mean = np.mean(T_domains, axis=1, dtype=_SIM_DTYPE)
+    g_eq = np.mean(g_eq_domains, axis=1, dtype=_SIM_DTYPE)
+    g_state = np.mean(g_state_domains, axis=1, dtype=_SIM_DTYPE)
+    return {
+        "t": t,
+        "I_in": I_in,
+        "V_vo2": V,
+        "T": T_mean,
+        "T_hot": T_mean,
+        "T_sub": T_mean,
+        "T_domains": T_domains,
+        "g_eq": g_eq,
+        "g_dyn": g_state,
+        "g_domains": g_state_domains,
+        "R": R_eq,
+        "R_domains": R_domains,
         "P": P,
     }
 

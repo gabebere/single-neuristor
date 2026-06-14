@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "sample_id": "dev4_gap6_1549051b",
+  "display_name": "dev4_gap6",
+  "created_at_utc": "2026-05-31T11:43:18+00:00",
+  "updated_at_utc": "2026-05-31T11:43:18+00:00",
+  "source_filename": "dev4_gap6.tsv",
+  "source_path": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/samples/data/dev4_gap6_1549051b_dev4_gap6.tsv",
+  "notes": "Initial auto-fit created during sample import.",
+  "start_branch": "metal",
+  "fit_metrics": {
+    "rmse_log10": 0.12055744898382174,
+    "rmse_log10_cooling": 0.09077975895293712,
+    "rmse_log10_heating": 0.1512442039681593,
+    "max_abs_log10_error": 0.41448185498444,
+    "n_samples": 301.0
+  },
+  "resist_params": {
+    "R0": 0.012980676998154498,
+    "Ea_over_k": 5484.71370377392,
+    "Rm0": 65.5972076031524,
+    "Rm_factor": 1.0,
+    "w": 5.67373124039667,
+    "Tc_K": 335.90998353521314,
+    "beta": 0.5266536415742379,
+    "gamma": 0.956269682,
+    "width_factor": 1.0,
+    "T_min_K": 284.804,
+    "T_max_K": 376.694,
+    "reversal_threshold_K": 0.01
+  }
+}

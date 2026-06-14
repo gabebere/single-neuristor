@@ -144,6 +144,12 @@ def _rmse_log10(pred_ohm: np.ndarray, target_ohm: np.ndarray) -> float:
     return float(np.sqrt(np.mean(e * e)))
 
 
+def _weighted_rmse_log10(pred_ohm: np.ndarray, target_ohm: np.ndarray, weights: np.ndarray) -> float:
+    e = np.log10(np.maximum(pred_ohm, _EPS)) - np.log10(np.maximum(target_ohm, _EPS))
+    w = np.maximum(np.asarray(weights, dtype=float), _EPS)
+    return float(np.sqrt(np.sum(w * e * e) / np.sum(w)))
+
+
 def _rmse(pred: np.ndarray, target: np.ndarray) -> float:
     e = pred - target
     return float(np.sqrt(np.mean(e * e)))
@@ -375,9 +381,10 @@ def fit_resistance_params(
     seed: int = 42,
     random_iters: int = 12000,
     local_passes: int = 180,
-    fit_gamma: bool = False,
+    fit_gamma: bool = True,
     gamma_fixed: float = 9.56269682e-1,
     g_weight: float = 0.2,
+    high_res_weight: float = 0.65,
 ) -> Tuple[ResistanceFitResult, np.ndarray]:
     t = df["Temperature"].to_numpy(dtype=float)
     r = df["Resistance"].to_numpy(dtype=float)
@@ -388,6 +395,12 @@ def fit_resistance_params(
     dT = np.diff(t, prepend=t[0])
     cooling_mask = dT < 0.0
     heating_mask = dT > 0.0
+    fit_weights = np.ones_like(r, dtype=float)
+    if r.size >= 8 and float(high_res_weight) > 0.0:
+        high_res_cutoff = float(np.nanquantile(r, 0.65))
+        high_res_mask = r >= high_res_cutoff
+        if np.any(high_res_mask):
+            fit_weights[high_res_mask] += float(high_res_weight)
 
     t_min_fit = float(np.min(t) - 5.0)
     t_max_fit = float(np.max(t) + 5.0)
@@ -480,7 +493,7 @@ def fit_resistance_params(
         r_pred = _predict_resistance_from_temperature(t, p, start_branch=branch)
         g_pred = _predict_g_from_temperature(t, p, start_branch=branch)
         g_exp = _compute_g_experimental(t, r, r0=p.R0, ea_over_k=p.Ea_over_k, rm=p.Rm)
-        err_r = _rmse_log10(r_pred, r)
+        err_r = _weighted_rmse_log10(r_pred, r, fit_weights)
         err_g = _rmse(g_pred, g_exp)
         penalty = 0.0
         if fit_gamma:
@@ -612,12 +625,20 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--random-iters", type=int, default=12000, help="Random search iterations.")
     parser.add_argument("--local-passes", type=int, default=180, help="Local coordinate-descent passes.")
     parser.add_argument(
-        "--fit-gamma",
-        action="store_true",
-        help="Also fit gamma. Leave off for major-loop-only datasets where gamma is weakly identifiable.",
+        "--no-fit-gamma",
+        action="store_false",
+        dest="fit_gamma",
+        help="Keep gamma fixed instead of fitting it.",
     )
+    parser.set_defaults(fit_gamma=True)
     parser.add_argument("--gamma-fixed", type=float, default=9.56269682e-1, help="Fixed gamma when --fit-gamma is off.")
     parser.add_argument("--g-weight", type=float, default=0.2, help="Weight of g(T) consistency term in fitting objective.")
+    parser.add_argument(
+        "--high-res-weight",
+        type=float,
+        default=0.65,
+        help="Extra fitting weight assigned to the high-resistance/low-temperature branch.",
+    )
     return parser.parse_args()
 
 
@@ -633,6 +654,7 @@ def main() -> None:
         fit_gamma=bool(args.fit_gamma),
         gamma_fixed=float(args.gamma_fixed),
         g_weight=float(args.g_weight),
+        high_res_weight=float(args.high_res_weight),
     )
     result.source_data = str(data_path)
     save_fit_json(result, args.save_json)

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "sample_id": "dev3_gap3_e2d81419",
+  "display_name": "dev3_gap3",
+  "created_at_utc": "2026-05-31T11:43:10+00:00",
+  "updated_at_utc": "2026-05-31T11:43:10+00:00",
+  "source_filename": "dev3_gap3.tsv",
+  "source_path": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/samples/data/dev3_gap3_e2d81419_dev3_gap3.tsv",
+  "notes": "Initial auto-fit created during sample import.",
+  "start_branch": "insulator",
+  "fit_metrics": {
+    "rmse_log10": 0.13281484126227316,
+    "rmse_log10_cooling": 0.1194681043518077,
+    "rmse_log10_heating": 0.1459858333254056,
+    "max_abs_log10_error": 0.28610922456421317,
+    "n_samples": 247.0
+  },
+  "resist_params": {
+    "R0": 0.0020092574392005106,
+    "Ea_over_k": 6074.890324088784,
+    "Rm0": 60.00536539798097,
+    "Rm_factor": 1.0,
+    "w": 7.0385687087435285,
+    "Tc_K": 339.7441359861542,
+    "beta": 0.38111327017931307,
+    "gamma": 0.956269682,
+    "width_factor": 1.0,
+    "T_min_K": 284.803,
+    "T_max_K": 374.874,
+    "reversal_threshold_K": 0.01
+  }
+}

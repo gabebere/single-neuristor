@@ -29,6 +29,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-dir", default="", help="Optional output directory.")
     parser.add_argument("--forcing-mode", choices=("ideal_step", "digitized_iin"), default="ideal_step")
     parser.add_argument("--thermal-model", choices=("single", "double"), default="single")
+    parser.add_argument("--phase-model", choices=("quasistatic", "dynamic"), default="quasistatic")
+    parser.add_argument("--domain-count", type=int, default=1, help="Opt-in parallel-domain current-drive experiment.")
+    parser.add_argument("--domain-temperature-span-K", type=float, default=0.0)
+    parser.add_argument("--domain-coupling-scale", type=float, default=0.0, help="Domain thermal coupling as a scale on S_e.")
     parser.add_argument("--fit-pulse-law", action="store_true", help="Also fit a limited pulse-side Tc shift and beta scale.")
     parser.add_argument(
         "--fit-indices",
@@ -36,6 +40,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Comma-separated frame indices to use during fitting.",
     )
     parser.add_argument("--seed", type=int, default=1)
+    parser.add_argument("--n-random", type=int, default=24)
+    parser.add_argument("--n-refine-bases", type=int, default=5)
+    parser.add_argument("--n-refine-per-base", type=int, default=4)
     return parser
 
 
@@ -65,6 +72,7 @@ def _make_candidate(
     Ea_scale: float = 1.0,
     C_sub_factor: float = 1.0,
     G_hot_sub_scale: float = 1.0,
+    tau_g_ns: float = 0.0,
 ) -> dict[str, float]:
     return {
         "C_pF": float(C_pF),
@@ -78,10 +86,11 @@ def _make_candidate(
         "Ea_scale": float(Ea_scale),
         "C_sub_factor": float(C_sub_factor),
         "G_hot_sub_scale": float(G_hot_sub_scale),
+        "tau_g_ns": float(tau_g_ns),
     }
 
 
-def _seed_candidates(*, fit_pulse_law: bool, thermal_model: str) -> list[dict[str, float]]:
+def _seed_candidates(*, fit_pulse_law: bool, thermal_model: str, phase_model: str) -> list[dict[str, float]]:
     base = [
         _make_candidate(
             C_pF=145.34619293,
@@ -174,10 +183,36 @@ def _seed_candidates(*, fit_pulse_law: bool, thermal_model: str) -> list[dict[st
                 ),
             ]
         )
+    if phase_model == "dynamic":
+        dynamic_extra: list[dict[str, float]] = []
+        for tau_g_ns in (0.1, 0.3, 1.0, 3.0, 10.0):
+            dynamic_extra.append(
+                _make_candidate(
+                    C_pF=20.0,
+                    C_th_mW_ns_per_K=6.5,
+                    S_e_mW_per_K=0.13,
+                    T0_K=338.0,
+                    T_init_K=337.3,
+                    Tc_shift_K=1.7 if fit_pulse_law else 0.0,
+                    beta_scale=1.75 if fit_pulse_law else 1.0,
+                    R0_scale=0.48 if fit_pulse_law else 1.0,
+                    Ea_scale=0.92 if fit_pulse_law else 1.0,
+                    C_sub_factor=4.5 if thermal_model == "double" else 1.0,
+                    G_hot_sub_scale=0.09 if thermal_model == "double" else 1.0,
+                    tau_g_ns=tau_g_ns,
+                )
+            )
+        base.extend(dynamic_extra)
     return base
 
 
-def _random_candidate(rng: np.random.Generator, *, fit_pulse_law: bool, thermal_model: str) -> dict[str, float]:
+def _random_candidate(
+    rng: np.random.Generator,
+    *,
+    fit_pulse_law: bool,
+    thermal_model: str,
+    phase_model: str,
+) -> dict[str, float]:
     T0_K = float(rng.uniform(320.0, 338.0))
     delta_init = float(rng.uniform(0.0, 2.5))
     return _make_candidate(
@@ -192,6 +227,7 @@ def _random_candidate(rng: np.random.Generator, *, fit_pulse_law: bool, thermal_
         Ea_scale=_loguniform(rng, 0.7, 1.45) if fit_pulse_law else 1.0,
         C_sub_factor=_loguniform(rng, 1.2, 200.0) if thermal_model == "double" else 1.0,
         G_hot_sub_scale=_loguniform(rng, 0.03, 20.0) if thermal_model == "double" else 1.0,
+        tau_g_ns=_loguniform(rng, 0.03, 20.0) if phase_model == "dynamic" else 0.0,
     )
 
 
@@ -201,6 +237,7 @@ def _perturb_candidate(
     *,
     fit_pulse_law: bool,
     thermal_model: str,
+    phase_model: str,
 ) -> dict[str, float]:
     T0_K = float(base["T0_K"] + rng.uniform(-1.5, 1.5))
     delta_init = max(0.0, float(base["T0_K"] - base["T_init_K"]) + rng.uniform(-0.5, 0.5))
@@ -254,6 +291,14 @@ def _perturb_candidate(
                 * np.exp(rng.uniform(np.log(0.65), np.log(1.6)) if thermal_model == "double" else 0.0),
             ),
         ),
+        tau_g_ns=min(
+            40.0,
+            max(
+                0.01,
+                float(base.get("tau_g_ns", 0.0))
+                * np.exp(rng.uniform(np.log(0.6), np.log(1.7)) if phase_model == "dynamic" else 0.0),
+            ),
+        ),
     )
 
 
@@ -300,11 +345,16 @@ def _simulate_trace(
     Ea_scale: float,
     C_sub_factor: float,
     G_hot_sub_scale: float,
+    tau_g_ns: float,
     dt_s: float,
     i_peak_uA: float,
     forcing_mode: str,
     thermal_model: str,
-    seed: int,
+    phase_model: str,
+    domain_count: int = 1,
+    domain_temperature_span_K: float = 0.0,
+    domain_coupling_scale: float = 0.0,
+    seed: int = 0,
 ) -> dict[str, np.ndarray]:
     resist_params = _apply_pulse_resist_adjustment(
         base_resist_params,
@@ -332,6 +382,11 @@ def _simulate_trace(
         C_sub_J_per_K=float(C_th_mW_ns_per_K) * float(C_sub_factor) * 1e-12,
         G_hot_sub_W_per_K=float(S_e_mW_per_K) * float(G_hot_sub_scale) * 1e-3,
         T_sub_init_K=float(T0_K),
+        phase_mode=phase_model,
+        tau_g_s=float(tau_g_ns) * 1e-9,
+        domain_count=int(domain_count),
+        domain_temperature_span_K=float(domain_temperature_span_K),
+        domain_coupling_W_per_K=float(S_e_mW_per_K) * 1e-3 * float(domain_coupling_scale),
         resist_params=resist_params,
         start_branch="insulator",
     )
@@ -417,6 +472,10 @@ def _evaluate_candidate(
     fit_indices: list[int],
     forcing_mode: str,
     thermal_model: str,
+    phase_model: str,
+    domain_count: int,
+    domain_temperature_span_K: float,
+    domain_coupling_scale: float,
     seed: int,
 ) -> tuple[float, list[dict[str, float]]]:
     i_peak_uA = float(summary_df["current_inferred_uA"].iloc[max(fit_indices)])
@@ -444,10 +503,15 @@ def _evaluate_candidate(
             Ea_scale=float(candidate.get("Ea_scale", 1.0)),
             C_sub_factor=float(candidate.get("C_sub_factor", 1.0)),
             G_hot_sub_scale=float(candidate.get("G_hot_sub_scale", 1.0)),
+            tau_g_ns=float(candidate.get("tau_g_ns", 0.0)),
             dt_s=0.1e-9,
             i_peak_uA=i_peak_uA,
             forcing_mode=forcing_mode,
             thermal_model=thermal_model,
+            phase_model=phase_model,
+            domain_count=domain_count,
+            domain_temperature_span_K=domain_temperature_span_K,
+            domain_coupling_scale=domain_coupling_scale,
             seed=seed + idx,
         )
         sim_t_ns = out["t"] * 1e9
@@ -477,6 +541,7 @@ def _evaluate_candidate(
                 "candidate_Ea_scale": float(candidate.get("Ea_scale", 1.0)),
                 "candidate_C_sub_factor": float(candidate.get("C_sub_factor", 1.0)),
                 "candidate_G_hot_sub_scale": float(candidate.get("G_hot_sub_scale", 1.0)),
+                "candidate_tau_g_ns": float(candidate.get("tau_g_ns", 0.0)),
                 "trace_weight": float(weight),
                 "trace_score": float(score),
                 **{f"sim_{k}": float(v) for k, v in sim_metrics.items()},
@@ -496,6 +561,10 @@ def _plot_representative_overlays(
     fit_indices: list[int],
     forcing_mode: str,
     thermal_model: str,
+    phase_model: str,
+    domain_count: int,
+    domain_temperature_span_K: float,
+    domain_coupling_scale: float,
     seed: int,
 ) -> None:
     i_peak_uA = float(summary_df["current_inferred_uA"].max())
@@ -523,10 +592,15 @@ def _plot_representative_overlays(
             Ea_scale=float(best_candidate.get("Ea_scale", 1.0)),
             C_sub_factor=float(best_candidate.get("C_sub_factor", 1.0)),
             G_hot_sub_scale=float(best_candidate.get("G_hot_sub_scale", 1.0)),
+            tau_g_ns=float(best_candidate.get("tau_g_ns", 0.0)),
             dt_s=0.1e-9,
             i_peak_uA=i_peak_uA,
             forcing_mode=forcing_mode,
             thermal_model=thermal_model,
+            phase_model=phase_model,
+            domain_count=domain_count,
+            domain_temperature_span_K=domain_temperature_span_K,
+            domain_coupling_scale=domain_coupling_scale,
             seed=seed + idx,
         )
         ax.plot(obs_t_ns, obs_v_mV, label="Digitized", linewidth=2.0)
@@ -598,10 +672,20 @@ def main() -> None:
 
     candidate_rows: list[dict[str, float]] = []
     best_score = float("inf")
-    seed_candidates = _seed_candidates(fit_pulse_law=args.fit_pulse_law, thermal_model=args.thermal_model)
+    seed_candidates = _seed_candidates(
+        fit_pulse_law=args.fit_pulse_law,
+        thermal_model=args.thermal_model,
+        phase_model=args.phase_model,
+    )
     best_candidate = seed_candidates[0]
     coarse_candidates = seed_candidates + [
-        _random_candidate(rng, fit_pulse_law=args.fit_pulse_law, thermal_model=args.thermal_model) for _ in range(24)
+        _random_candidate(
+            rng,
+            fit_pulse_law=args.fit_pulse_law,
+            thermal_model=args.thermal_model,
+            phase_model=args.phase_model,
+        )
+        for _ in range(args.n_random)
     ]
     n_coarse = len(coarse_candidates)
     for coarse_idx, candidate in enumerate(coarse_candidates, start=1):
@@ -626,6 +710,8 @@ def main() -> None:
                 f", C_sub_factor={candidate['C_sub_factor']:.3f}, "
                 f"G_hot_sub_scale={candidate['G_hot_sub_scale']:.3f}"
             )
+        if args.phase_model == "dynamic":
+            msg += f", tau_g={candidate['tau_g_ns']:.3f} ns"
         print(msg)
         score, _ = _evaluate_candidate(
             summary_df,
@@ -636,6 +722,10 @@ def main() -> None:
             fit_indices=fit_indices,
             forcing_mode=args.forcing_mode,
             thermal_model=args.thermal_model,
+            phase_model=args.phase_model,
+            domain_count=args.domain_count,
+            domain_temperature_span_K=args.domain_temperature_span_K,
+            domain_coupling_scale=args.domain_coupling_scale,
             seed=args.seed,
         )
         candidate_rows.append(
@@ -650,7 +740,7 @@ def main() -> None:
             best_candidate = candidate.copy()
 
     coarse_ranked = pd.DataFrame(candidate_rows).sort_values("score").reset_index(drop=True)
-    refine_bases = coarse_ranked.head(5)
+    refine_bases = coarse_ranked.head(args.n_refine_bases)
     refine_candidates: list[dict[str, float]] = []
     for _, row in refine_bases.iterrows():
         base = _make_candidate(
@@ -665,11 +755,18 @@ def main() -> None:
             Ea_scale=float(row.get("Ea_scale", 1.0)),
             C_sub_factor=float(row.get("C_sub_factor", 1.0)),
             G_hot_sub_scale=float(row.get("G_hot_sub_scale", 1.0)),
+            tau_g_ns=float(row.get("tau_g_ns", 0.0)),
         )
         refine_candidates.append(base)
         refine_candidates.extend(
-            _perturb_candidate(base, rng, fit_pulse_law=args.fit_pulse_law, thermal_model=args.thermal_model)
-            for _ in range(4)
+            _perturb_candidate(
+                base,
+                rng,
+                fit_pulse_law=args.fit_pulse_law,
+                thermal_model=args.thermal_model,
+                phase_model=args.phase_model,
+            )
+            for _ in range(args.n_refine_per_base)
         )
 
     n_refine = len(refine_candidates)
@@ -695,6 +792,8 @@ def main() -> None:
                 f", C_sub_factor={candidate['C_sub_factor']:.3f}, "
                 f"G_hot_sub_scale={candidate['G_hot_sub_scale']:.3f}"
             )
+        if args.phase_model == "dynamic":
+            msg += f", tau_g={candidate['tau_g_ns']:.3f} ns"
         print(msg)
         score, _ = _evaluate_candidate(
             summary_df,
@@ -705,6 +804,10 @@ def main() -> None:
             fit_indices=fit_indices,
             forcing_mode=args.forcing_mode,
             thermal_model=args.thermal_model,
+            phase_model=args.phase_model,
+            domain_count=args.domain_count,
+            domain_temperature_span_K=args.domain_temperature_span_K,
+            domain_coupling_scale=args.domain_coupling_scale,
             seed=args.seed,
         )
         candidate_rows.append(
@@ -745,10 +848,15 @@ def main() -> None:
             Ea_scale=float(best_candidate.get("Ea_scale", 1.0)),
             C_sub_factor=float(best_candidate.get("C_sub_factor", 1.0)),
             G_hot_sub_scale=float(best_candidate.get("G_hot_sub_scale", 1.0)),
+            tau_g_ns=float(best_candidate.get("tau_g_ns", 0.0)),
             dt_s=0.1e-9,
             i_peak_uA=i_peak_uA,
             forcing_mode=args.forcing_mode,
             thermal_model=args.thermal_model,
+            phase_model=args.phase_model,
+            domain_count=args.domain_count,
+            domain_temperature_span_K=args.domain_temperature_span_K,
+            domain_coupling_scale=args.domain_coupling_scale,
             seed=args.seed + idx,
         )
         sim_t_ns = out["t"] * 1e9
@@ -784,10 +892,15 @@ def main() -> None:
         "best_Ea_scale": float(best_candidate.get("Ea_scale", 1.0)),
         "best_C_sub_factor": float(best_candidate.get("C_sub_factor", 1.0)),
         "best_G_hot_sub_scale": float(best_candidate.get("G_hot_sub_scale", 1.0)),
+        "best_tau_g_ns": float(best_candidate.get("tau_g_ns", 0.0)),
         "best_score": best_score,
         "fixed_start_branch": "insulator",
         "forcing_mode": args.forcing_mode,
         "thermal_model": args.thermal_model,
+        "phase_model": args.phase_model,
+        "domain_count": int(args.domain_count),
+        "domain_temperature_span_K": float(args.domain_temperature_span_K),
+        "domain_coupling_scale": float(args.domain_coupling_scale),
         "fit_pulse_law": bool(args.fit_pulse_law),
         "notes": [
             "Current sweep inferred from visible green plateaus and extrapolated linearly after clipping.",
@@ -807,6 +920,10 @@ def main() -> None:
         fit_indices=fit_indices,
         forcing_mode=args.forcing_mode,
         thermal_model=args.thermal_model,
+        phase_model=args.phase_model,
+        domain_count=args.domain_count,
+        domain_temperature_span_K=args.domain_temperature_span_K,
+        domain_coupling_scale=args.domain_coupling_scale,
         seed=args.seed,
     )
     _plot_family_summary(out_dir, summary_df, comparison_df)
@@ -825,6 +942,7 @@ def main() -> None:
         f"Ea_scale = {best_candidate.get('Ea_scale', 1.0):.3f}, "
         f"C_sub_factor = {best_candidate.get('C_sub_factor', 1.0):.3f}, "
         f"G_hot_sub_scale = {best_candidate.get('G_hot_sub_scale', 1.0):.3f}, "
+        f"tau_g = {best_candidate.get('tau_g_ns', 0.0):.3f} ns, "
         f"score = {best_score:.6f}"
     )
     print(f"Fit traces: {fit_indices}")

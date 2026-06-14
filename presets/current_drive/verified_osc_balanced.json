@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "preset_type": "current_drive",
+  "display_name": "Verified current oscillation - balanced",
+  "description": "Moderate-power sustained dynamic-phase oscillation.",
+  "sample_id": "100425_chip1_gap3",
+  "sample_name": "100425 chip1 gap3 - lab fitted R-T",
+  "sample_source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/data/experimental/100425_chip1_gap3.tsv",
+  "source_model": "Current Source with Dynamic VO2 Phase",
+  "I_target_uA": 1500.0,
+  "current_params": {
+    "dt_s": 2.5e-11,
+    "t_end_s": 5e-06,
+    "t_pre_s": 0.0,
+    "pulse_on_s": 0.0,
+    "pulse_off_s": null,
+    "V_init_V": 0.0,
+    "T0_K": 325.0,
+    "T_init_K": 325.0,
+    "C_F": 8e-11,
+    "R_out_ohm": 0.0,
+    "C_th_J_per_K": 3e-12,
+    "S_e_W_per_K": 5.2838000000000005e-05,
+    "sigma_W_sqrt_s": 0.0,
+    "thermal_mode": "single",
+    "C_sub_J_per_K": 4.962776831e-11,
+    "G_hot_sub_W_per_K": 0.00020558726,
+    "T_sub_init_K": null,
+    "phase_mode": "dynamic",
+    "tau_g_s": 1e-08,
+    "domain_count": 1,
+    "domain_temperature_span_K": 0.0,
+    "domain_coupling_W_per_K": 0.0,
+    "resist_params": {
+      "R0": 0.529735867820277,
+      "Ea_over_k": 2658.0234291656516,
+      "Rm0": 18.197838136784316,
+      "Rm_factor": 1.0,
+      "w": 6.900330335937457,
+      "Tc_K": 333.5701800798817,
+      "beta": 0.29699146992797587,
+      "gamma": 0.956269682,
+      "width_factor": 1.0,
+      "T_min_K": 284.8545,
+      "T_max_K": 375.1625,
+      "reversal_threshold_K": 0.01
+    },
+    "start_branch": "insulator"
+  },
+  "verification": {
+    "original_mechanism_note": "Uses dynamic VO2 phase lag: phase_mode=dynamic and tau_g_s.",
+    "verified_dt_ns": [
+      0.05,
+      0.025
+    ],
+    "registration_dt_ns": 0.025
+  }
+}

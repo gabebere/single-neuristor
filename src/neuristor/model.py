@@ -207,7 +207,10 @@ class HysteresisArray:
         """Compute T_pr at reversal from (δ, g_r, T_r) per the paper’s formula."""
         params = self.params
         delta_arr = np.asarray(delta, dtype=_SIM_DTYPE)
-        gr_arr = np.asarray(gr, dtype=_SIM_DTYPE)
+        # Float32 tanh can saturate exactly to 0 or 1 at the ends of the
+        # hysteresis loop; arctanh(2g-1) is singular there, so keep the
+        # algebraic model on its open physical interval.
+        gr_arr = np.clip(np.asarray(gr, dtype=_SIM_DTYPE), 1e-6, 1.0 - 1e-6).astype(_SIM_DTYPE, copy=False)
         Tr_arr = np.asarray(Tr, dtype=_SIM_DTYPE)
         if _TORCH_HYSTERESIS_AVAILABLE:
             delta_t = _torch_tensor(delta_arr)

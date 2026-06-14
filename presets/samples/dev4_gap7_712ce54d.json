@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "sample_id": "dev4_gap7_712ce54d",
+  "display_name": "dev4_gap7",
+  "created_at_utc": "2026-05-31T11:43:29+00:00",
+  "updated_at_utc": "2026-05-31T11:43:29+00:00",
+  "source_filename": "dev4_gap7.tsv",
+  "source_path": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/samples/data/dev4_gap7_712ce54d_dev4_gap7.tsv",
+  "notes": "Initial auto-fit created during sample import.",
+  "start_branch": "metal",
+  "fit_metrics": {
+    "rmse_log10": 0.11871611743375672,
+    "rmse_log10_cooling": 0.08779879487194,
+    "rmse_log10_heating": 0.14288015347404023,
+    "max_abs_log10_error": 0.46846158853739484,
+    "n_samples": 357.0
+  },
+  "resist_params": {
+    "R0": 0.10697354149092803,
+    "Ea_over_k": 4781.621212515731,
+    "Rm0": 64.03355088731378,
+    "Rm_factor": 1.0,
+    "w": 6.167583013484625,
+    "Tc_K": 336.57074871325074,
+    "beta": 0.5327587941513386,
+    "gamma": 0.956269682,
+    "width_factor": 1.0,
+    "T_min_K": 282.8595,
+    "T_max_K": 376.684,
+    "reversal_threshold_K": 0.01
+  }
+}

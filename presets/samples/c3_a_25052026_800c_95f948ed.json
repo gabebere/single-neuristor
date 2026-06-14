@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "sample_id": "c3_a_25052026_800c_95f948ed",
+  "display_name": "C3_a_25052026_800C",
+  "created_at_utc": "2026-05-31T11:42:52+00:00",
+  "updated_at_utc": "2026-05-31T11:42:52+00:00",
+  "source_filename": "C3_a_25052026_800C.tsv",
+  "source_path": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/samples/data/c3_a_25052026_800c_95f948ed_C3_a_25052026_800C.tsv",
+  "notes": "Initial auto-fit created during sample import.",
+  "start_branch": "insulator",
+  "fit_metrics": {
+    "rmse_log10": 0.18231400947296605,
+    "rmse_log10_cooling": 0.15078290392742139,
+    "rmse_log10_heating": 0.21007790070409815,
+    "max_abs_log10_error": 0.48181335654430946,
+    "n_samples": 330.0
+  },
+  "resist_params": {
+    "R0": 0.0029424926072191557,
+    "Ea_over_k": 6392.341608834939,
+    "Rm0": 212.18164439080752,
+    "Rm_factor": 1.0,
+    "w": 6.798820464666074,
+    "Tc_K": 340.72727437726434,
+    "beta": 0.47433816744788987,
+    "gamma": 0.956269682,
+    "width_factor": 1.0,
+    "T_min_K": 284.847,
+    "T_max_K": 375.1945,
+    "reversal_threshold_K": 0.01
+  }
+}

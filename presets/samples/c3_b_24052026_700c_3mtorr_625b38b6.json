@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "sample_id": "c3_b_24052026_700c_3mtorr_625b38b6",
+  "display_name": "c3_b_24052026_700C_3mTorr",
+  "created_at_utc": "2026-05-31T11:43:02+00:00",
+  "updated_at_utc": "2026-05-31T11:43:02+00:00",
+  "source_filename": "c3_b_24052026_700C_3mTorr.tsv",
+  "source_path": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/samples/data/c3_b_24052026_700c_3mtorr_625b38b6_c3_b_24052026_700C_3mTorr.tsv",
+  "notes": "Initial auto-fit created during sample import.",
+  "start_branch": "metal",
+  "fit_metrics": {
+    "rmse_log10": 0.20266235270629568,
+    "rmse_log10_cooling": 0.17979882242958312,
+    "rmse_log10_heating": 0.2242381768984124,
+    "max_abs_log10_error": 0.7081274895341343,
+    "n_samples": 331.0
+  },
+  "resist_params": {
+    "R0": 0.011339502400011041,
+    "Ea_over_k": 5797.932548071904,
+    "Rm0": 90.11189934272137,
+    "Rm_factor": 1.0,
+    "w": 8.405043180150944,
+    "Tc_K": 340.74617983720754,
+    "beta": 0.5530441006839795,
+    "gamma": 0.956269682,
+    "width_factor": 1.0,
+    "T_min_K": 284.826,
+    "T_max_K": 375.11,
+    "reversal_threshold_K": 0.01
+  }
+}
