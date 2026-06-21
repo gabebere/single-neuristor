@@ -167,8 +167,16 @@ def _P_vec(x: np.ndarray, gamma: float) -> np.ndarray:
 class HysteresisArray:
     """Evaluate g(T) with Almeida hysteresis (major branches + minor-loop proximity)."""
 
-    def __init__(self, params: YuanhangResistParams, size: int, start_branch: str = "insulator") -> None:
+    def __init__(
+        self,
+        params: YuanhangResistParams,
+        size: int,
+        start_branch: str = "insulator",
+        *,
+        independent_anchors: bool = False,
+    ) -> None:
         self.params = params
+        self.independent_anchors = bool(independent_anchors)
         branch = start_branch.lower()
         delta0 = 1.0 if branch == "insulator" else -1.0
         self.delta = np.full(size, delta0, dtype=_SIM_DTYPE)
@@ -207,10 +215,9 @@ class HysteresisArray:
         """Compute T_pr at reversal from (δ, g_r, T_r) per the paper’s formula."""
         params = self.params
         delta_arr = np.asarray(delta, dtype=_SIM_DTYPE)
-        # Float32 tanh can saturate exactly to 0 or 1 at the ends of the
-        # hysteresis loop; arctanh(2g-1) is singular there, so keep the
-        # algebraic model on its open physical interval.
-        gr_arr = np.clip(np.asarray(gr, dtype=_SIM_DTYPE), 1e-6, 1.0 - 1e-6).astype(_SIM_DTYPE, copy=False)
+        # Preserve upstream arithmetic exactly, including its possible +/-inf
+        # at fully saturated g=0 or g=1 endpoints.
+        gr_arr = np.asarray(gr, dtype=_SIM_DTYPE)
         Tr_arr = np.asarray(Tr, dtype=_SIM_DTYPE)
         if _TORCH_HYSTERESIS_AVAILABLE:
             delta_t = _torch_tensor(delta_arr)
@@ -225,57 +232,87 @@ class HysteresisArray:
         """Evaluate g(T) with the current reversal window: g_major(T + T_p), where T_p=T_pr*P(...)."""
         params = self.params
         T_arr = np.asarray(T, dtype=_SIM_DTYPE)
+        if _TORCH_HYSTERESIS_AVAILABLE:
+            return np.asarray(self._g_torch(T_arr).numpy(), dtype=_SIM_DTYPE)
         if np.any(self.reversed):
             Tp = self.Tpr * _P_vec((T_arr - self.Tr) / (self.Tpr + 1e-6), params.gamma) * self.reversed
         else:
             Tp = _SIM_DTYPE(0.0)
-        if _TORCH_HYSTERESIS_AVAILABLE:
-            T_t = _torch_tensor(T_arr)
-            Tp_t = _torch_tensor(np.asarray(Tp, dtype=_SIM_DTYPE))
-            delta_t = _torch_tensor(self.delta)
-            out_t = 0.5 + 0.5 * torch.tanh(params.beta * (delta_t * params.w_eff / 2.0 + params.Tc_K - (T_t + Tp_t)))
-            return np.asarray(out_t.cpu().numpy(), dtype=_SIM_DTYPE)
         arg = params.beta * (self.delta * params.w_eff / 2.0 + params.Tc_K - (T_arr + Tp))
         return np.asarray(0.5 + 0.5 * np.tanh(arg), dtype=_SIM_DTYPE)
+
+    def _g_torch(self, T_arr: np.ndarray, T_t: "torch.Tensor | None" = None) -> "torch.Tensor":
+        """Evaluate g while keeping intermediate values in Torch float32."""
+        if torch is None:  # pragma: no cover - guarded by _TORCH_HYSTERESIS_AVAILABLE
+            raise RuntimeError("torch is not available")
+        params = self.params
+        if T_t is None:
+            T_t = _torch_tensor(T_arr)
+        if np.any(self.reversed):
+            Tpr_t = _torch_tensor(self.Tpr)
+            x_t = (T_t - _torch_tensor(self.Tr)) / (Tpr_t + 1e-6)
+            proximity_t = 0.5 * (1.0 - torch.sin(params.gamma * x_t)) * (
+                1.0 + torch.tanh(_PI * _PI - 2.0 * _PI * x_t)
+            )
+            Tp_t = Tpr_t * proximity_t * _torch_tensor(self.reversed)
+        else:
+            Tp_t = 0.0
+        delta_t = _torch_tensor(self.delta)
+        return 0.5 + 0.5 * torch.tanh(
+            params.beta * (delta_t * params.w_eff / 2.0 + params.Tc_K - (T_t + Tp_t))
+        )
 
     def evaluate(self, T: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """Return (R_vo2, g) at temperature T. Updates reversal state before evaluating g."""
         params = self.params
         T_clamped = _clamp_temperature_array(np.asarray(T, dtype=_SIM_DTYPE), params)
         self._update_reversal(T_clamped)
-        g_val = self.g(T_clamped)
-        self.g_last = g_val.copy()
         if _TORCH_HYSTERESIS_AVAILABLE:
             T_t = _torch_tensor(T_clamped)
-            g_t = _torch_tensor(g_val)
+            g_t = self._g_torch(T_clamped, T_t=T_t)
             Rs_t = params.R0 * torch.exp(params.Ea_over_k / T_t) * g_t
+            g_val = np.asarray(g_t.numpy(), dtype=_SIM_DTYPE)
             Rs = np.asarray(Rs_t.cpu().numpy(), dtype=_SIM_DTYPE)
         else:
+            g_val = self.g(T_clamped)
             exp_arg = params.Ea_over_k / T_clamped
             Rs = np.asarray(params.R0 * np.exp(exp_arg) * g_val, dtype=_SIM_DTYPE)
+        self.g_last = g_val.copy()
         return np.asarray(Rs + params.Rm, dtype=_SIM_DTYPE), g_val
 
     def _update_reversal(self, T_clamped: np.ndarray) -> None:
-        """Detect heating/cooling changes (δ flip) when |ΔT| exceeds threshold; update minor-loop state."""
+        """Faithful port of Yuanhang Zhang's accumulated-displacement detector.
+
+        Crucially, ``T_last`` is not updated for sub-threshold motion. The
+        0.01 K test therefore measures displacement from the last accepted
+        anchor, not displacement in one numerical timestep.
+        """
         params = self.params
-        dT = T_clamped - self.T_last
-        mask = np.abs(dT) > params.reversal_threshold_K
-        if not np.any(mask):
-            self.T_last = T_clamped
+        T_arr = np.asarray(T_clamped, dtype=_SIM_DTYPE)
+        dT = T_arr - self.T_last
+        accepted = np.abs(dT) > float(params.reversal_threshold_K)
+        if not np.any(accepted):
             return
-        delta_new = np.sign(dT)
-        delta_new[delta_new == 0.0] = self.delta[delta_new == 0.0]
-        reversal_mask = mask & (delta_new != self.delta)
+
+        delta_new = np.sign(dT).astype(_SIM_DTYPE, copy=False)
+        reversal_mask = accepted & (delta_new != self.delta) & (delta_new != 0.0)
         if np.any(reversal_mask):
-            g_at_T = self.g(T_clamped)
-            self.gr[reversal_mask] = g_at_T[reversal_mask]
+            g_at_detection = self.g(T_arr)
+            self.gr[reversal_mask] = g_at_detection[reversal_mask]
             self.delta[reversal_mask] = delta_new[reversal_mask]
             self.reversed[reversal_mask] = _SIM_DTYPE(1.0)
-            self.Tr[reversal_mask] = T_clamped[reversal_mask]
+            self.Tr[reversal_mask] = T_arr[reversal_mask]
             self.Tpr[reversal_mask] = self._solve_Tpr(
                 self.delta[reversal_mask], self.gr[reversal_mask], self.Tr[reversal_mask]
             )
-        self.T_last = T_clamped
+        if self.independent_anchors:
+            # Batched parameter sweeps represent independent single-device
+            # simulations, so each column advances its own accepted anchor.
+            self.T_last[accepted] = T_arr[accepted]
+        else:
+            # Match the upstream vector implementation: once any element
+            # exceeds the deadband, every element receives the new anchor.
+            self.T_last = T_arr.copy()
 
 
 def _compute_laplacian(T: np.ndarray, Nx: int, Ny: int) -> np.ndarray:
@@ -462,8 +499,8 @@ def detect_spike_times(
     if n < 3:
         return []
     t = np.asarray(time_s, dtype=float)
-    I = np.asarray(I_vo2, dtype=float)
-    mag = np.abs(I)
+    current = np.asarray(I_vo2, dtype=float)
+    mag = np.abs(current)
     spikes: List[float] = []
     for i in range(1, n - 1):
         if mag[i] > threshold_A and mag[i] > mag[i - 1] and mag[i] >= mag[i + 1]:
@@ -551,7 +588,6 @@ def simulate_vin_sweep(
     """
     results: Dict[float, SimOut] = {}
     vins_list = list(vins)
-    total = len(vins_list)
     for idx, v in enumerate(vins_list):
         run_seed = None if noise_seed is None else noise_seed + seed_offset * idx
         results[v] = simulate_yuanhang(

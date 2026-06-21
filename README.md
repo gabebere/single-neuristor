@@ -30,6 +30,7 @@ These are the main files worth reading first:
 - `docs/manuscript/`: manuscript source, compiled PDF, and manuscript figures
 - `references/papers/`: paper PDFs used as modeling references
 - `references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/`: upstream reference code
+- `docs/HYSTERESIS_IMPLEMENTATION_AUDIT.md`: hysteresis implementation, branch conventions, provenance, and validation rules
 
 The root is intentionally minimal. `app.py` is the only top-level application entrypoint.
 Implementation code lives under `src/neuristor/`, and auxiliary command-line tools live under `scripts/`.
@@ -57,6 +58,14 @@ This applies paper current/thermal defaults plus the specimen RT-fitted resistan
 
 Current-drive ODE assumption used in this repo: ideal current source at the VO2 node
 (`dV/dt = (I_in - V/R_vo2)/C`). External/source series resistance is not part of that reduced model.
+
+## Performance and fidelity
+
+- The executable hysteresis path is the upstream-faithful Yuanhang float32 implementation.
+- Torch evaluates the hysteresis transcendental functions; NumPy stores and integrates simulation state.
+- Deterministic quasistatic current sweeps are vectorized across current amplitudes and are tested for exact equality with serial traces.
+- Stochastic, dynamic-phase, and multidomain sweeps retain the serial path to preserve their existing semantics.
+- Streamlit caches unchanged sample presets and completed job CSVs. Cache keys include file timestamps and sizes, so edited files invalidate automatically.
 
 ## Installation and GUI (Streamlit)
 

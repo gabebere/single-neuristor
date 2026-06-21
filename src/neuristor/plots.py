@@ -24,7 +24,7 @@ from __future__ import annotations
 import argparse
 import dataclasses
 from dataclasses import replace
-from typing import Callable, Dict, Iterable, List, Tuple, Optional
+from typing import Callable, Dict, List, Tuple, Optional
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -141,19 +141,19 @@ def compute_sweep_metrics(
     """Compute sweep metrics in a steady-state window for a single SimOut."""
     t = np.asarray(data["time_s"], dtype=float)
     V = np.asarray(series_first(data["V_node"]), dtype=float)
-    I = np.asarray(series_first(data["I_vo2"]), dtype=float)
+    current = np.asarray(series_first(data["I_vo2"]), dtype=float)
     T = np.asarray(series_first(data["T_K"]), dtype=float)
-    P = V * I
+    P = V * current
 
     m = _window_mask(data["time_s"], t_start_us, t_end_us)
     if np.any(m):
         t = t[m]
         V = V[m]
-        I = I[m]
+        current = current[m]
         T = T[m]
         P = P[m]
 
-    spike_times = detect_spike_times(t.tolist(), I.tolist(), threshold_A=threshold_A)
+    spike_times = detect_spike_times(t.tolist(), current.tolist(), threshold_A=threshold_A)
     if len(spike_times) >= 2:
         isi_us = np.diff(np.asarray(spike_times)) * 1e6
         isi_mean_us = float(np.mean(isi_us)) if isi_us.size else float("nan")
@@ -886,11 +886,11 @@ def _compute_isi_us(
     t_end_us: float = 300.0,
 ) -> np.ndarray:
     t = np.asarray(data["time_s"], dtype=float)
-    I = np.asarray(series_first(data["I_vo2"]), dtype=float)
+    current = np.asarray(series_first(data["I_vo2"]), dtype=float)
     m = _window_mask(data["time_s"], t_start_us, t_end_us)
     if not np.any(m):
         return np.array([])
-    spike_times = detect_spike_times(t[m].tolist(), I[m].tolist(), threshold_A=threshold_A)
+    spike_times = detect_spike_times(t[m].tolist(), current[m].tolist(), threshold_A=threshold_A)
     if len(spike_times) < 2:
         return np.array([])
     return np.diff(np.asarray(spike_times)) * 1e6
@@ -1003,8 +1003,8 @@ def mean_frequency_mhz(
 def power_trace_W(data: SimOut) -> np.ndarray:
     """Instantaneous device power P(t)=V*I."""
     V = np.asarray(series_first(data["V_node"]), dtype=float)
-    I = np.asarray(series_first(data["I_vo2"]), dtype=float)
-    return V * I
+    current = np.asarray(series_first(data["I_vo2"]), dtype=float)
+    return V * current
 
 
 # -----------------------------

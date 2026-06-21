@@ -6,8 +6,10 @@ YuanhangResistParams hysteresis preset that downstream simulations can reuse.
 """
 from __future__ import annotations
 
+import copy
 import dataclasses
 import datetime as dt
+import functools
 import io
 import json
 import re
@@ -127,10 +129,15 @@ def compute_rt_fit_metrics(
             return float("nan")
         return float(np.sqrt(np.mean(vals * vals)))
 
+    target_log = np.log10(target)
+    ss_res = float(np.sum(err * err))
+    ss_tot = float(np.sum((target_log - float(np.mean(target_log))) ** 2))
     metrics = {
         "rmse_log10": _rmse(),
         "rmse_log10_cooling": _rmse(cooling),
         "rmse_log10_heating": _rmse(heating),
+        "r2_log10": float(1.0 - ss_res / ss_tot) if ss_tot > _EPS else float("nan"),
+        "mean_log10_error": float(np.mean(err)) if err.size else float("nan"),
         "max_abs_log10_error": float(np.max(np.abs(err))) if err.size else float("nan"),
         "n_samples": float(len(df)),
     }
@@ -211,15 +218,31 @@ def load_sample_json(path: str | Path, *, legacy: bool = False) -> Dict[str, Any
     return normalize_sample_payload(json.loads(p.read_text()), path=p, legacy=legacy)
 
 
-def list_samples() -> List[Dict[str, Any]]:
+def _sample_library_signature() -> Tuple[Tuple[str, int, int], ...]:
+    """Return a cheap cache key that changes whenever a sample file changes."""
     SAMPLE_LIBRARY_DIR.mkdir(parents=True, exist_ok=True)
+    return tuple(
+        (path.name, path.stat().st_mtime_ns, path.stat().st_size)
+        for path in sorted(SAMPLE_LIBRARY_DIR.glob("*.json"))
+    )
+
+
+@functools.lru_cache(maxsize=4)
+def _list_samples_cached(signature: Tuple[Tuple[str, int, int], ...]) -> Tuple[Dict[str, Any], ...]:
     samples: List[Dict[str, Any]] = []
-    for path in sorted(SAMPLE_LIBRARY_DIR.glob("*.json")):
+    for name, _, _ in signature:
+        path = SAMPLE_LIBRARY_DIR / name
         try:
             samples.append(load_sample_json(path))
         except Exception:
             continue
-    return sorted(samples, key=lambda s: (bool(s.get("_legacy", False)), str(s.get("display_name", "")).lower()))
+    ordered = sorted(samples, key=lambda s: (bool(s.get("_legacy", False)), str(s.get("display_name", "")).lower()))
+    return tuple(ordered)
+
+
+def list_samples() -> List[Dict[str, Any]]:
+    """List sample presets without reparsing unchanged JSON files on every rerun."""
+    return copy.deepcopy(list(_list_samples_cached(_sample_library_signature())))
 
 
 def get_sample(sample_id: str) -> Dict[str, Any] | None:

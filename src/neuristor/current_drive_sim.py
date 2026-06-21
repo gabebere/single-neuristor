@@ -95,7 +95,11 @@ def current_drive_numerics_report(
 ) -> Dict[str, float]:
     """Estimate fast/initial electrical timescales and step safety for a current-drive run."""
 
-    h = HysteresisArray(params.resist_params, size=1, start_branch=params.start_branch)
+    h = HysteresisArray(
+        params.resist_params,
+        size=1,
+        start_branch=params.start_branch,
+    )
     T0 = np.asarray([float(params.T_init_K)], dtype=float)
     h.initialize(T0)
     R_init = float(h.evaluate(T0)[0][0])
@@ -149,13 +153,13 @@ def current_drive_report_messages(report: Dict[str, float]) -> List[str]:
     dT_over_rev = float(report["dT_step_over_reversal"])
     if dT_over_rev > 1.0:
         msgs.append(
-            f"Estimated thermal jump per step is {dT_over_rev:.3g}x reversal threshold; "
-            "minor-loop reversals may be skipped."
+            f"Estimated thermal jump per step is {dT_over_rev:.3g}x the hysteresis deadband; "
+            "transition timing may be under-resolved."
         )
     elif dT_over_rev > 0.2:
         msgs.append(
-            f"Estimated thermal jump per step is {dT_over_rev:.3g}x reversal threshold; "
-            "hysteresis timing may be dt-sensitive."
+            f"Estimated thermal jump per step is {dT_over_rev:.3g}x the hysteresis deadband; "
+            "use a smaller dt for accurate transition timing."
         )
     return msgs
 
@@ -248,11 +252,18 @@ class HysteresisSingleAdapter:
     Provides the required interface:
     - reset(T0)
     - evaluate(T) -> (R_ohm, g)
-    - update(T_prev, T_new)
     """
 
-    def __init__(self, resist_params: YuanhangResistParams, start_branch: str = "insulator") -> None:
-        self._h = HysteresisArray(resist_params, size=1, start_branch=start_branch)
+    def __init__(
+        self,
+        resist_params: YuanhangResistParams,
+        start_branch: str = "insulator",
+    ) -> None:
+        self._h = HysteresisArray(
+            resist_params,
+            size=1,
+            start_branch=start_branch,
+        )
 
     def reset(self, T0: float) -> None:
         self._h.initialize(np.asarray([float(T0)], dtype=_SIM_DTYPE))
@@ -260,19 +271,6 @@ class HysteresisSingleAdapter:
     def evaluate(self, T: float) -> tuple[float, float]:
         R_arr, g_arr = self._h.evaluate(np.asarray([float(T)], dtype=_SIM_DTYPE))
         return float(R_arr[0]), float(g_arr[0])
-
-    def update(self, T_prev: float, T_new: float) -> None:
-        # Keep behavior identical to existing hysteresis logic while honoring
-        # the explicit (T_prev, T_new) update contract from the current-drive spec.
-        T_prev_f = float(T_prev)
-        T_new_f = float(T_new)
-        if hasattr(self._h, "_update_reversal"):
-            if hasattr(self._h, "T_last"):
-                self._h.T_last = np.asarray([T_prev_f], dtype=_SIM_DTYPE)
-            self._h._update_reversal(np.asarray([T_new_f], dtype=_SIM_DTYPE))
-        else:
-            # Fallback path if internals change in the future.
-            self._h.evaluate(np.asarray([T_new_f], dtype=_SIM_DTYPE))
 
 
 def _time_grid(dt_s: float, t_end_s: float, t_pre_s: float) -> np.ndarray:
@@ -323,7 +321,10 @@ def _simulate_with_current_trace(
     T_sub_init = params.T0_K if params.T_sub_init_K is None else params.T_sub_init_K
     T_sub[0] = _SIM_DTYPE(T_sub_init)
 
-    hyst = HysteresisSingleAdapter(params.resist_params, start_branch=params.start_branch)
+    hyst = HysteresisSingleAdapter(
+        params.resist_params,
+        start_branch=params.start_branch,
+    )
     hyst.reset(T[0])
     _, g0 = hyst.evaluate(T[0])
     g_eq[0] = _SIM_DTYPE(g0)
@@ -374,7 +375,6 @@ def _simulate_with_current_trace(
         dT_sto = (sigma / C_th) * np.sqrt(dt) * _SIM_DTYPE(rng.standard_normal()) if sigma > 0.0 else _SIM_DTYPE(0.0)
         T_next = T[k] + dT_det + dT_sto
 
-        hyst.update(T_prev=T[k], T_new=T_next)
         if phase_mode == "dynamic":
             dg = (dt / tau_g) * (_SIM_DTYPE(g_eq_k) - _SIM_DTYPE(g_k))
             g_next = float(np.clip(_SIM_DTYPE(g_k) + dg, 0.0, 1.0))
@@ -451,7 +451,11 @@ def _simulate_with_current_trace_domains(
         )
     T_domains[0, :] = _SIM_DTYPE(params.T_init_K) + offsets
 
-    hyst = HysteresisArray(params.resist_params, size=domain_count, start_branch=params.start_branch)
+    hyst = HysteresisArray(
+        params.resist_params,
+        size=domain_count,
+        start_branch=params.start_branch,
+    )
     hyst.initialize(T_domains[0, :])
     _, g0 = hyst.evaluate(T_domains[0, :])
     g_eq_domains[0, :] = np.asarray(g0, dtype=_SIM_DTYPE)
@@ -506,11 +510,6 @@ def _simulate_with_current_trace_domains(
             dT_sto = _SIM_DTYPE(0.0)
         T_next = T_domains[k, :] + dT_det + dT_sto
 
-        if hasattr(hyst, "_update_reversal"):
-            hyst.T_last = np.asarray(T_domains[k, :], dtype=_SIM_DTYPE)
-            hyst._update_reversal(np.asarray(T_next, dtype=_SIM_DTYPE))
-        else:
-            hyst.evaluate(np.asarray(T_next, dtype=_SIM_DTYPE))
         if phase_mode == "dynamic":
             dg = (dt / tau_g) * (g_eq_k - g_k)
             g_state_domains[k + 1, :] = np.clip(g_k + dg, 0.0, 1.0).astype(_SIM_DTYPE, copy=False)
@@ -601,6 +600,117 @@ def simulate_current_step(I_uA: float, params: CurrentDriveParams, seed: Optiona
         pulse_off_s=params.pulse_off_s,
     )
     return _simulate_with_current_trace(t=t, I_in=I_in, params=params, seed=seed)
+
+
+def simulate_current_steps(
+    currents_uA: List[float],
+    params: CurrentDriveParams,
+    seed: Optional[int] = None,
+) -> List[Dict[str, np.ndarray]]:
+    """Simulate an independent quasistatic current sweep in one vectorized pass.
+
+    Stochastic, dynamic-phase, and multidomain configurations retain the
+    serial path so their existing random streams and state semantics remain
+    unchanged.
+    """
+
+    currents = np.asarray(currents_uA, dtype=float).reshape(-1)
+    if currents.size == 0:
+        return []
+    can_batch = (
+        int(params.domain_count) == 1
+        and params.phase_mode == "quasistatic"
+        and float(params.sigma_W_sqrt_s) == 0.0
+    )
+    if not can_batch:
+        return [
+            simulate_current_step(
+                float(current),
+                params=params,
+                seed=None if seed is None else int(seed) + idx,
+            )
+            for idx, current in enumerate(currents)
+        ]
+
+    t = _time_grid(params.dt_s, params.t_end_s, params.t_pre_s)
+    n_steps = t.size
+    n_currents = currents.size
+    active = t >= float(params.pulse_on_s)
+    if params.pulse_off_s is not None:
+        active &= t < float(params.pulse_off_s)
+    I_in = np.zeros((n_steps, n_currents), dtype=_SIM_DTYPE)
+    currents_A = np.asarray(currents * 1e-6, dtype=_SIM_DTYPE)
+    I_in[active, :] = currents_A[np.newaxis, :]
+
+    shape = (n_steps, n_currents)
+    V = np.zeros(shape, dtype=_SIM_DTYPE)
+    T = np.zeros(shape, dtype=_SIM_DTYPE)
+    T_sub = np.zeros(shape, dtype=_SIM_DTYPE)
+    g_eq = np.zeros(shape, dtype=_SIM_DTYPE)
+    R = np.zeros(shape, dtype=_SIM_DTYPE)
+    P = np.zeros(shape, dtype=_SIM_DTYPE)
+    V[0, :] = _SIM_DTYPE(params.V_init_V)
+    T[0, :] = _SIM_DTYPE(params.T_init_K)
+    T_sub_init = params.T0_K if params.T_sub_init_K is None else params.T_sub_init_K
+    T_sub[0, :] = _SIM_DTYPE(T_sub_init)
+
+    hyst = HysteresisArray(
+        params.resist_params,
+        size=n_currents,
+        start_branch=params.start_branch,
+        independent_anchors=True,
+    )
+    hyst.initialize(T[0, :])
+
+    C = _SIM_DTYPE(max(float(params.C_F), _EPS))
+    C_th = _SIM_DTYPE(max(float(params.C_th_J_per_K), _EPS))
+    S_e = _SIM_DTYPE(params.S_e_W_per_K)
+    dt = _SIM_DTYPE(params.dt_s)
+    T0 = _SIM_DTYPE(params.T0_K)
+    C_sub = _SIM_DTYPE(max(float(params.C_sub_J_per_K), _EPS))
+    G_hot_sub = _SIM_DTYPE(max(float(params.G_hot_sub_W_per_K), 0.0))
+
+    for k in range(n_steps - 1):
+        R_k, g_k = hyst.evaluate(T[k, :])
+        R_k = np.maximum(np.asarray(R_k, dtype=_SIM_DTYPE), _SIM_DTYPE(_EPS))
+        g_k = np.clip(np.asarray(g_k, dtype=_SIM_DTYPE), 0.0, 1.0)
+        P_k = (V[k, :] * V[k, :]) / R_k
+        V[k + 1, :] = V[k, :] + (dt / C) * (I_in[k, :] - V[k, :] / R_k)
+
+        if params.thermal_mode == "double":
+            heat_flow = G_hot_sub * (T[k, :] - T_sub[k, :])
+            T[k + 1, :] = T[k, :] + (dt / C_th) * (P_k - heat_flow)
+            T_sub[k + 1, :] = T_sub[k, :] + (dt / C_sub) * (
+                heat_flow - S_e * (T_sub[k, :] - T0)
+            )
+        else:
+            T[k + 1, :] = T[k, :] + (dt / C_th) * (P_k - S_e * (T[k, :] - T0))
+            T_sub[k + 1, :] = T_sub[k, :]
+
+        g_eq[k, :] = g_k
+        R[k, :] = R_k
+        P[k, :] = P_k
+
+    R_end, g_end = hyst.evaluate(T[-1, :])
+    g_eq[-1, :] = np.clip(np.asarray(g_end, dtype=_SIM_DTYPE), 0.0, 1.0)
+    R[-1, :] = np.maximum(np.asarray(R_end, dtype=_SIM_DTYPE), _SIM_DTYPE(_EPS))
+    P[-1, :] = (V[-1, :] * V[-1, :]) / R[-1, :]
+
+    return [
+        {
+            "t": t,
+            "I_in": I_in[:, idx].copy(),
+            "V_vo2": V[:, idx].copy(),
+            "T": T[:, idx].copy(),
+            "T_hot": T[:, idx].copy(),
+            "T_sub": T_sub[:, idx].copy(),
+            "g_eq": g_eq[:, idx].copy(),
+            "g_dyn": g_eq[:, idx].copy(),
+            "R": R[:, idx].copy(),
+            "P": P[:, idx].copy(),
+        }
+        for idx in range(n_currents)
+    ]
 
 
 def _count_turns(signal: np.ndarray) -> int:
@@ -763,10 +873,9 @@ def run_sweep_make_gif(
     currents = list(range(int(I_start_uA), int(I_stop_uA) + 1, int(I_step_uA)))
     frame_paths: List[Path] = []
     turn_counts: List[int] = []
+    traces = simulate_current_steps([float(current) for current in currents], params=params, seed=seed)
 
-    for idx, i_uA in enumerate(currents):
-        run_seed = None if seed is None else int(seed) + idx
-        out = simulate_current_step(float(i_uA), params=params, seed=run_seed)
+    for idx, (i_uA, out) in enumerate(zip(currents, traces)):
         frame_path = frame_dir_path / f"frame_{idx:03d}_I{i_uA:04d}uA.png"
         _plot_current_step(out, float(i_uA), frame_path)
         frame_paths.append(frame_path)
@@ -783,6 +892,7 @@ def run_sweep_make_gif(
         "frame_paths": [str(p) for p in frame_paths],
         "gif_path": str(gif_path),
         "turn_counts": np.asarray(turn_counts, dtype=int),
+        "traces": traces,
     }
 
 

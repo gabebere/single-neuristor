@@ -22,7 +22,6 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 import neuristor.plots as plots
 from neuristor.model import (

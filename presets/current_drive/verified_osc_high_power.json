@@ -5,7 +5,7 @@
   "description": "High-power, large-amplitude dynamic-phase oscillation.",
   "sample_id": "100425_chip1_gap3",
   "sample_name": "100425 chip1 gap3 - lab fitted R-T",
-  "sample_source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/data/experimental/100425_chip1_gap3.tsv",
+  "sample_source": "data/experimental/100425_chip1_gap3.tsv",
   "source_model": "Current Source with Dynamic VO2 Phase",
   "I_target_uA": 2364.046908,
   "current_params": {
@@ -45,7 +45,8 @@
       "T_max_K": 375.1625,
       "reversal_threshold_K": 0.01
     },
-    "start_branch": "insulator"
+    "start_branch": "insulator",
+    "hysteresis_reversal_mode": "ported_per_step"
   },
   "verification": {
     "original_mechanism_note": "Uses dynamic VO2 phase lag: phase_mode=dynamic and tau_g_s.",
@@ -53,6 +54,9 @@
       0.05,
       0.025
     ],
-    "registration_dt_ns": 0.025
+    "registration_dt_ns": 0.025,
+    "status": "legacy pre-correction result",
+    "warning": "Historical artifact generated with the timestep-dependent ported_per_step bug, not Yuanhang Zhang's accumulated-displacement detector. Do not use for new physical claims.",
+    "hysteresis_reversal_mode": "ported_per_step"
   }
 }

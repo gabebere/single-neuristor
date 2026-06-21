@@ -16,11 +16,6 @@ if str(ROOT) not in sys.path:
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-# Keep this analysis pass fast. The model class still uses the same equations.
-import neuristor.model as model
-
-model._TORCH_HYSTERESIS_AVAILABLE = False
-
 from neuristor.current_results_digitizer import digitize_directory, reconstruct_current_waveform
 from neuristor.model import YuanhangResistParams
 from scripts.fit_current_results_dynamic import _simulate_trace, _trace_metrics

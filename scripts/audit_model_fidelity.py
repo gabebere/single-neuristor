@@ -58,7 +58,11 @@ def _reference_hysteresis_trace(ref_module, temperatures_K: Iterable[float], dty
 
 
 def _local_hysteresis_trace(temperatures_K: Iterable[float]) -> np.ndarray:
-    h = HysteresisArray(YuanhangResistParams(), size=1, start_branch="insulator")
+    h = HysteresisArray(
+        YuanhangResistParams(),
+        size=1,
+        start_branch="insulator",
+    )
     h.initialize(np.asarray([324.9], dtype=float))
     out = []
     for temp in temperatures_K:
@@ -69,16 +73,16 @@ def _local_hysteresis_trace(temperatures_K: Iterable[float]) -> np.ndarray:
 
 def compare_hysteresis(ref_module) -> list[HysteresisComparison]:
     temps = np.asarray([324.9, 325.0, 360.0, 325.0, 360.0, 330.0, 360.0, 335.0, 360.0], dtype=float)
-    local = _local_hysteresis_trace(temps)
     results: list[HysteresisComparison] = []
-    for label, dtype in (("reference_float32", torch.float32), ("reference_float64", torch.float64)):
+    local = _local_hysteresis_trace(temps)
+    for dtype_label, dtype in (("float32", torch.float32), ("float64", torch.float64)):
         reference = _reference_hysteresis_trace(ref_module, temps, dtype)
         diff = np.abs(local - reference)
         rel = diff / np.maximum(np.abs(reference), 1e-12)
         worst = int(np.argmax(diff))
         results.append(
             HysteresisComparison(
-                label=label,
+                label=f"reference_{dtype_label}",
                 max_abs_diff_ohm=float(np.max(diff)),
                 max_rel_diff=float(np.max(rel)),
                 worst_step=worst,
@@ -299,7 +303,7 @@ def main() -> None:
     )
 
     print("== Interpreting This Audit ==")
-    print("- If local vs reference_float64 is tiny but local vs reference_float32 is large, the adaptation preserved equations but not upstream default precision behavior.")
+    print("- local vs reference_float32 should be nearly exact; this is the only supported hysteresis implementation.")
     print("- A large dt/tau_fast means current-drive results are dominated by Euler-step artifacts when the device enters the metallic branch.")
     print("- A large positive Tc - T0 means the device starts far below transition and will look RC-like unless pulse/thermal parameters compensate.")
     print("- If plateau_mean_mV keeps scaling with current instead of flattening near ~200 mV, the reduced ideal-current model and/or dynamic parameter set is not reproducing the lab pulse family.")

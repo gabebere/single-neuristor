@@ -510,14 +510,12 @@ def fit_resistance_params(
     best_score = float("inf")
     best_x = x_seed.copy()
     best_branch = start_branch_hint
-    best_r_pred = np.zeros_like(r)
     for x, br in candidates:
-        s, _, _, r_pred = _score(x, br)
+        s, _, _, _ = _score(x, br)
         if s < best_score:
             best_score = s
             best_x = x.copy()
             best_branch = br
-            best_r_pred = r_pred
 
     for i in range(int(random_iters)):
         if i % 3 == 0:
@@ -527,12 +525,11 @@ def fit_resistance_params(
         else:
             x = lb + rng.random(lb.shape) * (ub - lb)
         br = best_branch if rng.random() < 0.65 else ("metal" if best_branch == "insulator" else "insulator")
-        s, _, _, r_pred = _score(x, br)
+        s, _, _, _ = _score(x, br)
         if s < best_score:
             best_score = s
             best_x = x.copy()
             best_branch = br
-            best_r_pred = r_pred
 
     for _ in range(int(local_passes)):
         improved = False
@@ -540,11 +537,10 @@ def fit_resistance_params(
             for direction in (-1.0, 1.0):
                 cand = best_x.copy()
                 cand[j] = np.clip(cand[j] + direction * step[j], lb[j], ub[j])
-                s, _, _, r_pred = _score(cand, best_branch)
+                s, _, _, _ = _score(cand, best_branch)
                 if s < best_score:
                     best_score = s
                     best_x = cand
-                    best_r_pred = r_pred
                     improved = True
         if not improved:
             step *= 0.72

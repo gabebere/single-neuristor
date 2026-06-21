@@ -11,7 +11,7 @@ import json
 import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
@@ -216,6 +216,17 @@ def _extrema_indices(values: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     return peaks.astype(int), troughs.astype(int)
 
 
+def _threshold_crossing_indices(values: np.ndarray) -> np.ndarray:
+    """Count full relaxation cycles even when a reset is nearly vertical."""
+    if values.size < 8 or not np.all(np.isfinite(values)):
+        return np.array([], dtype=int)
+    low, high = np.quantile(values, [0.1, 0.9])
+    if high - low <= _EPS:
+        return np.array([], dtype=int)
+    threshold = 0.5 * (low + high)
+    return (np.flatnonzero((values[:-1] < threshold) & (values[1:] >= threshold)) + 1).astype(int)
+
+
 def _spectral_purity(t_ns: np.ndarray, values_mV: np.ndarray) -> Tuple[float, float]:
     if values_mV.size < 8:
         return 0.0, 0.0
@@ -357,20 +368,23 @@ def analyze_current_trace(
             "trace_score": 0.0,
         }
 
-    unstable = float(np.max(np.abs(v_mV)) > 2_000.0)
+    unstable = float((not np.all(np.isfinite(v_mV))) or np.max(np.abs(v_mV)) > 50_000.0)
     zigzag = float(_looks_like_zigzag(v_mV))
     turns = float(_count_turns(v_mV))
     peaks, troughs = _extrema_indices(v_mV)
-    n_cycles = float(max(0, min(len(peaks), len(troughs))))
+    crossings = _threshold_crossing_indices(v_mV)
+    n_cycles = float(max(0, min(len(peaks), len(troughs)), len(crossings)))
     v_pp = float(np.ptp(v_mV))
     v_std = float(np.std(v_mV))
 
     spectral_purity, dominant_freq = _spectral_purity(t_ns, v_mV)
 
     periods: List[float] = []
-    if len(peaks) >= 2:
+    if len(crossings) >= 2:
+        periods.extend(np.diff(t_ns[crossings]).tolist())
+    elif len(peaks) >= 2:
         periods.extend(np.diff(t_ns[peaks]).tolist())
-    if len(troughs) >= 2:
+    if len(crossings) < 2 and len(troughs) >= 2:
         periods.extend(np.diff(t_ns[troughs]).tolist())
     if periods:
         period_arr = np.asarray(periods, dtype=float)

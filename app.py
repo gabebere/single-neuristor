@@ -39,7 +39,6 @@ from plotly.subplots import make_subplots
 
 import neuristor.plots as plots
 from neuristor.model import (
-    HysteresisArray,
     SimulationCancelled,
     YuanhangCircuitParams,
     YuanhangResistParams,
@@ -111,8 +110,8 @@ _SOURCE_MODELS = ("Voltage Source", "Current Source")
 _VOLTAGE_EXPERIMENTS = ("Single Simulation", "Sweep over Free Variable", "2D Frequency Sweep")
 _RT_CORE_KEYS = ("R0", "Ea_over_k", "Rm", "w", "Tc_K", "beta", "gamma", "T_min_K", "T_max_K")
 _HIDDEN_EXPERIMENT_CIRCUIT_KEYS = {"couple_factor", "dimension"}
-_IMPORT_FIT_RANDOM_ITERS = 250
-_IMPORT_FIT_LOCAL_PASSES = 30
+_IMPORT_FIT_RANDOM_ITERS = 1000
+_IMPORT_FIT_LOCAL_PASSES = 60
 _IMPORT_FIT_GAMMA = 9.56269682e-1
 _IMPORT_FIT_HIGH_RES_WEIGHT = 0.65
 _RESIST_PARAM_KEYS = {f.name for f in dataclasses.fields(YuanhangResistParams)}
@@ -1257,6 +1256,19 @@ def _enqueue_job(job_id: str) -> None:
 # -----------------------------
 
 
+@st.cache_data(show_spinner=False, max_entries=32)
+def _read_csv_cached(path: str, mtime_ns: int, size: int) -> pd.DataFrame:
+    """Cache immutable job outputs while invalidating on file replacement."""
+    del mtime_ns, size
+    return pd.read_csv(path)
+
+
+def _read_job_csv(path: str | Path) -> pd.DataFrame:
+    csv_path = Path(path)
+    stat = csv_path.stat()
+    return _read_csv_cached(str(csv_path), stat.st_mtime_ns, stat.st_size)
+
+
 def _param_names() -> List[str]:
     circuit = {f.name for f in dataclasses.fields(YuanhangCircuitParams)} - _HIDDEN_EXPERIMENT_CIRCUIT_KEYS
     names = ["Vin"] + sorted(list(circuit))
@@ -1917,8 +1929,6 @@ def _current_drive_report_messages(report: Dict[str, float]) -> List[str]:
     msgs = current_drive_report_messages(report)
     dt_tau_fast = float(report["dt_over_tau_fast"])
     if dt_tau_fast > 0.1:
-        tau_fast_ns = float(report["tau_fast_s"]) * 1e9
-        target_ns = 0.1 * tau_fast_ns
         return [
             msg.replace("Target dt <=", "Fast RC is under-resolved; target dt <=")
             if "Target dt <=" in msg
@@ -3270,6 +3280,10 @@ def _render_sample_editor_page() -> None:
                 [
                     ("RMSE log10", f"{metrics['rmse_log10']:.4f}"),
                     (
+                        "R² log10",
+                        "n/a" if not np.isfinite(metrics["r2_log10"]) else f"{metrics['r2_log10']:.4f}",
+                    ),
+                    (
                         "Cooling RMSE",
                         "n/a"
                         if not np.isfinite(metrics["rmse_log10_cooling"])
@@ -3283,7 +3297,7 @@ def _render_sample_editor_page() -> None:
                     ),
                     ("Max |log err|", f"{metrics['max_abs_log10_error']:.4f}"),
                 ],
-                columns=4,
+                columns=5,
             )
             st.plotly_chart(_plot_rt_resistance(df, pred), width="stretch")
             with st.expander("Fit diagnostics", expanded=False):
@@ -3489,7 +3503,18 @@ def _looks_like_nyquist_zigzag(v_mV: np.ndarray) -> bool:
 def _looks_numerically_unstable(v_mV: np.ndarray) -> bool:
     if v_mV.size == 0:
         return False
-    return float(np.nanmax(np.abs(v_mV))) > 2_000.0
+    return (not np.all(np.isfinite(v_mV))) or float(np.nanmax(np.abs(v_mV))) > 50_000.0
+
+
+def _threshold_crossing_cycle_count(v_mV: np.ndarray) -> int:
+    """Count relaxation cycles without relying on resolved local extrema."""
+    if v_mV.size < 8 or not np.all(np.isfinite(v_mV)):
+        return 0
+    low, high = np.quantile(v_mV, [0.1, 0.9])
+    if high - low <= 1e-12:
+        return 0
+    threshold = 0.5 * (low + high)
+    return int(np.sum((v_mV[:-1] < threshold) & (v_mV[1:] >= threshold)))
 
 
 def _classify_current_trace_oscillation(
@@ -3509,6 +3534,8 @@ def _classify_current_trace_oscillation(
     if v_eval.size == 0:
         v_eval = v_mV
     turns = _count_turns(v_eval)
+    crossing_cycles = _threshold_crossing_cycle_count(v_eval)
+    effective_turns = max(turns, 2 * crossing_cycles)
     v_pp = float(np.ptp(v_eval)) if v_eval.size else 0.0
     v_std = float(np.std(v_eval)) if v_eval.size else 0.0
     v_avg = float(np.mean(v_eval)) if v_eval.size else 0.0
@@ -3517,12 +3544,13 @@ def _classify_current_trace_oscillation(
     oscillatory = (
         (not unstable)
         and (not zigzag)
-        and (turns >= int(min_turns))
+        and (effective_turns >= int(min_turns))
         and (v_pp >= float(min_vpp_mV))
         and (v_pp <= float(max_vpp_mV))
     )
     return {
-        "turn_count": float(turns),
+        "turn_count": float(effective_turns),
+        "threshold_crossing_cycles": float(crossing_cycles),
         "V_avg_mV": v_avg,
         "V_std_mV": v_std,
         "V_pp_mV": v_pp,
@@ -3774,6 +3802,7 @@ def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
         from neuristor.current_drive_sim import CurrentDriveParams, simulate_current_step, stabilize_current_drive_params
 
         cp_base = dict(config["current_params"])
+        cp_base.pop("hysteresis_reversal_mode", None)
         cp_base["resist_params"] = dict(cp_base["resist_params"])
 
         scan_key = str(config["scan_param_key"])
@@ -3898,11 +3927,11 @@ def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
         from neuristor.current_drive_sim import (
             CurrentDriveParams,
             run_sweep_make_gif,
-            simulate_current_step,
             stabilize_current_drive_params,
         )
 
         cp = dict(config["current_params"])
+        cp.pop("hysteresis_reversal_mode", None)
         cp["resist_params"] = YuanhangResistParams(**cp["resist_params"])
         params = CurrentDriveParams(**cp)
 
@@ -3966,10 +3995,7 @@ def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
             progress_cb("[current_sweep] extracting sweep summary/spectra")
 
         currents_uA = [int(v) for v in result["currents_uA"]]
-        traces: List[Dict[str, np.ndarray]] = []
-        for idx, i_uA in enumerate(currents_uA):
-            run_seed = None if seed is None else int(seed) + idx
-            traces.append(simulate_current_step(float(i_uA), params=params, seed=run_seed))
+        traces = result["traces"]
 
         traces_df, summary_df, spectra_df = _build_current_summary_and_spectra(
             currents_uA=currents_uA,
@@ -5085,7 +5111,12 @@ def _render_current_drive() -> None:
         cols = st.columns(4)
         with cols[0]:
             _text_input("Seed (optional)", key="cd_seed")
-
+        with cols[1]:
+            st.selectbox(
+                "Initial hysteresis branch",
+                ["insulator", "metal"],
+                key="cd_start_branch",
+            )
         btn_col1, btn_col2 = st.columns(2)
         with btn_col1:
             submitted_add = st.form_submit_button("Add to batch")
@@ -5228,6 +5259,9 @@ def _render_jobs_view() -> None:
 
         job_removals = _get_job_removals(job["id"])
         st.json(job["params"], expanded=False)
+        conclusion = str(job.get("params", {}).get("conclusion", "")).strip()
+        if conclusion:
+            st.warning(conclusion)
         if os.path.exists(job["log_path"]):
             with open(job["log_path"], "r") as f:
                 log_text = f.read().strip()
@@ -5253,7 +5287,7 @@ def _render_jobs_view() -> None:
                 tabs = st.tabs([o["label"] for o in csvs])
                 for tab, selected in zip(tabs, csvs):
                     with tab:
-                        df = pd.read_csv(selected["path"])
+                        df = _read_job_csv(selected["path"])
                         df["time_us"] = df["time_s"] * 1e6
                         df["V_vo2"] = df["V_node"]
                         df["I_vo2"] = df["I_vo2"]
@@ -5304,7 +5338,7 @@ def _render_jobs_view() -> None:
         if job["type"] == "sweep1d":
             csvs = _csv_outputs(job.get("outputs", []))
             if csvs:
-                df = pd.read_csv(csvs[0]["path"])
+                df = _read_job_csv(csvs[0]["path"])
                 df.rename(columns={"value": "value"}, inplace=True)
                 removed_idx = job_removals["sweep1d"]
                 df_filtered = _apply_sweep1d_removals(df, removed_idx)
@@ -5389,7 +5423,7 @@ def _render_jobs_view() -> None:
                         st.success("Opened matplotlib window.")
                     except Exception as exc:
                         st.error(f"Failed to launch matplotlib: {exc}")
-                df = pd.read_csv(csvs[0]["path"])
+                df = _read_job_csv(csvs[0]["path"])
                 df.rename(columns={job["params"]["param_x"]: "x", job["params"]["param_y"]: "y"}, inplace=True)
                 removed_xy = job_removals["sweep2d"]
                 df_filtered = _apply_sweep2d_removals(df, removed_xy, "x", "y")
@@ -5508,7 +5542,7 @@ def _render_jobs_view() -> None:
             traces_path = next((o["path"] for o in outputs if o["path"].endswith("current_sweep_traces.csv")), None)
 
             if summary_path and os.path.exists(summary_path):
-                df_summary = pd.read_csv(summary_path)
+                df_summary = _read_job_csv(summary_path)
                 fig_avg = _plot_current_avg_iv(df_summary)
                 st.plotly_chart(fig_avg, width="stretch")
                 thr = _estimate_threshold_current_uA(df_summary)
@@ -5518,7 +5552,7 @@ def _render_jobs_view() -> None:
                 st.info("Current sweep summary CSV not found yet.")
 
             if spectra_path and os.path.exists(spectra_path):
-                df_spectra = pd.read_csv(spectra_path)
+                df_spectra = _read_job_csv(spectra_path)
                 fig_db = _plot_current_gain_spectra(
                     df_spectra,
                     y_col="gain_dB",
@@ -5537,7 +5571,7 @@ def _render_jobs_view() -> None:
                 st.info("Current sweep spectra CSV not found yet.")
 
             if traces_path and os.path.exists(traces_path):
-                df_traces = pd.read_csv(traces_path)
+                df_traces = _read_job_csv(traces_path)
                 currents = sorted(df_traces["I_target_uA"].unique().tolist())
                 if currents:
                     if len(currents) == 1:
@@ -5555,8 +5589,8 @@ def _render_jobs_view() -> None:
                     i_sel = d_sel["I_in_uA"].to_numpy(dtype=float)
                     if _looks_numerically_unstable(v_sel):
                         st.warning(
-                            "This trace exceeds +/-2 V equivalent range in mV units, which usually indicates "
-                            "numerical instability for this preset/current."
+                            "This trace is non-finite or exceeds +/-50 V, which indicates numerical instability "
+                            "for this preset/current."
                         )
                     v_check = v_sel[np.abs(i_sel) > 0.0] if np.any(np.abs(i_sel) > 0.0) else v_sel
                     if _looks_like_nyquist_zigzag(v_check):
@@ -5569,6 +5603,7 @@ def _render_jobs_view() -> None:
                     st.plotly_chart(fig_trace, width="stretch")
             else:
                 st.info("Current sweep trace CSV not found yet.")
+
         if job["type"] == "current_domain_scan":
             outputs = job.get("outputs", [])
             summary_path = next((o["path"] for o in outputs if o["path"].endswith("current_domain_scan_summary.csv")), None)
@@ -5577,7 +5612,7 @@ def _render_jobs_view() -> None:
             param_label = _label(param_key)
 
             if summary_path and os.path.exists(summary_path):
-                df_summary = pd.read_csv(summary_path)
+                df_summary = _read_job_csv(summary_path)
                 if not df_summary.empty:
                     d_rank = df_summary.sort_values(
                         ["osc_fraction", "best_turn_count"],
@@ -5592,7 +5627,7 @@ def _render_jobs_view() -> None:
                 st.info("Current domain summary CSV not found yet.")
 
             if detail_path and os.path.exists(detail_path):
-                df_detail = pd.read_csv(detail_path)
+                df_detail = _read_job_csv(detail_path)
                 if not df_detail.empty:
                     fig_map = _plot_current_domain_heatmap(df_detail, param_label)
                     st.plotly_chart(fig_map, width="stretch")
