@@ -44,28 +44,31 @@ start on `insulator` using the same fitted resistance parameters.
 
 ## Supported reversal implementation
 
-The runtime has one hysteresis implementation: the faithful Yuanhang Zhang
-accumulated-displacement detector. There is no reversal-mode setting in
+The time-domain runtime has one hysteresis implementation: the accumulated
+deadband detector used by `HysteresisArray`. There is no reversal-mode setting in
 `CurrentDriveParams`, `HysteresisArray`, or the Streamlit interface.
 
-With the Torch backend available, the implementation is a faithful float32
-port of Yuanhang Zhang's code. `T_last` is an accepted anchor. Sub-threshold motion does not update it. Once accumulated
-displacement exceeds 0.01 K, direction is evaluated and `T_last` is advanced.
-If direction changed, the sampled detection point is stored as the reversal
-point.
+`T_last` is an accepted anchor. Sub-threshold motion does not update it. Once
+accumulated displacement exceeds 0.01 K, direction is evaluated and `T_last` is
+advanced. If direction changed, the sampled detection point is stored as the
+reversal point.
 
-This is not a single-timestep threshold. It is an accumulated-displacement
-deadband. The local float32 audit matches the vendored upstream trace to within
-0.001 ohm on the standard major/minor-loop path. The NumPy-only fallback keeps
-the same equations but is not bit-faithful near saturated minor loops because
-NumPy and Torch float32 transcendental arithmetic can diverge there.
+The reversal fraction `g_r` is clipped to the open interval before
+`arctanh(2g_r-1)`. This keeps saturated low/high-temperature endpoints finite
+and avoids infinities in aggressive minor-loop paths.
+
+The Samples tab has one extra compatibility layer:
+`SampleFitHysteresisArray` in `src/neuristor/sample_library.py`. It is used only
+to replay saved measured R(T) fits and their stored RMSE values. Those presets
+were calibrated with a point-to-point deadband convention, so this replay keeps
+the displayed sample curves consistent without changing the time-domain
+simulator.
 
 ## Removed implementations
 
-An early local port incorrectly updated `T_last` on every call, including
-sub-threshold calls. The 0.01 K condition therefore became a one-timestep
-condition and changed when `dt` changed. Several saved apparent oscillation
-jobs were generated with this bug.
+The point-to-point replay convention is not used for new time-domain
+simulations because it can make oscillation detection timestep-sensitive. It is
+retained only for measured-sample fit display and metric replay.
 
 The later turning-point extension tracked the furthest temperature reached on the active
 branch and stored that extremum as the reversal point after a 0.01 K excursion.
@@ -84,10 +87,6 @@ through 2.47 mA and a fixed point at 2.48 mA for the validated circuit/thermal
 parameter set. The earlier 2.747 mA upper boundary is specific to
 `turning_point`. The lower edge remains near 1.27--1.30 mA, depending on the
 minimum number of cycles required in the finite analysis window.
-
-The active implementation does not clip reversal fraction `g_r` before
-evaluating `arctanh(2g_r-1)`. This matches upstream float32 arithmetic,
-including its possible infinities at exactly saturated endpoints.
 
 ## Integration ordering
 

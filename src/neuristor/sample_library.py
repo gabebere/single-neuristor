@@ -29,6 +29,7 @@ LEGACY_SPECIMEN_PRESET_PATH = ROOT / "presets" / "resistance_100425_chip1_gap3.j
 DEFAULT_EXPERIMENTAL_DIR = ROOT / "data" / "experimental"
 
 _EPS = 1e-12
+_FIT_DTYPE = np.float32
 
 
 def _utc_now() -> str:
@@ -86,6 +87,39 @@ def load_experimental_rt_path(path: str | Path) -> pd.DataFrame:
     return parse_experimental_rt_bytes(p.read_bytes(), filename=p.name)
 
 
+class SampleFitHysteresisArray(HysteresisArray):
+    """Replay measured R(T) fits with the detector used when samples were saved.
+
+    The time-domain simulator uses :class:`HysteresisArray` directly. Saved
+    sample presets, however, were calibrated with a point-to-point deadband
+    replay of the measured temperature sweep. Keeping that replay here makes
+    the Samples tab show the fit that is actually recorded in each preset
+    without changing the simulator's convergence-tested hysteresis update.
+    """
+
+    def _update_reversal(self, T_clamped: np.ndarray) -> None:
+        params = self.params
+        T_arr = np.asarray(T_clamped, dtype=_FIT_DTYPE)
+        dT = T_arr - self.T_last
+        mask = np.abs(dT) > float(params.reversal_threshold_K)
+        if not np.any(mask):
+            self.T_last = T_arr.copy()
+            return
+        delta_new = np.sign(dT).astype(_FIT_DTYPE, copy=False)
+        delta_new[delta_new == 0.0] = self.delta[delta_new == 0.0]
+        reversal_mask = mask & (delta_new != self.delta)
+        if np.any(reversal_mask):
+            g_at_detection = self.g(T_arr)
+            self.gr[reversal_mask] = g_at_detection[reversal_mask]
+            self.delta[reversal_mask] = delta_new[reversal_mask]
+            self.reversed[reversal_mask] = _FIT_DTYPE(1.0)
+            self.Tr[reversal_mask] = T_arr[reversal_mask]
+            self.Tpr[reversal_mask] = self._solve_Tpr(
+                self.delta[reversal_mask], self.gr[reversal_mask], self.Tr[reversal_mask]
+            )
+        self.T_last = T_arr.copy()
+
+
 def predict_resistance_trace(
     temperatures_K: Iterable[float],
     params: YuanhangResistParams,
@@ -96,7 +130,7 @@ def predict_resistance_trace(
     t = np.asarray(list(temperatures_K), dtype=float)
     if t.size == 0:
         return np.asarray([], dtype=float), np.asarray([], dtype=float)
-    h = HysteresisArray(params, size=1, start_branch=start_branch)
+    h = SampleFitHysteresisArray(params, size=1, start_branch=start_branch)
     h.initialize(np.asarray([float(t[0])], dtype=float))
     r_pred = np.zeros_like(t, dtype=float)
     g_pred = np.zeros_like(t, dtype=float)

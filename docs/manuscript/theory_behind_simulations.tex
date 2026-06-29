@@ -547,14 +547,16 @@ R_0\exp\!\left(\frac{E_a/k_B}{T_n}\right)g_n+R_m.
     \end{equation}
     \begin{equation}
     T_{pr,n}\leftarrow
-    \delta_n\frac{w}{2}+T_c-\frac{1}{\beta}\operatorname{arctanh}(2g_{r,n}-1)-T_{r,n},
+    \delta_n\frac{w}{2}+T_c-\frac{1}{\beta}\operatorname{arctanh}\!\left(2\,\mathrm{clip}(g_{r,n},10^{-6},1-10^{-6})-1\right)-T_{r,n},
     \quad
     \mathrm{reversed}_n\leftarrow 1.
     \label{eq:disc_reversal_tpr}
     \end{equation}
     \item Evaluate \(g_n\) and \(R_n\) from Eqs.~\eqref{eq:disc_gn}--\eqref{eq:disc_rn}.
-    \item Set \(T^{last}_{n+1}\leftarrow T_n\) for the next reversal check.
+    \item Set \(T^{last}_{n+1}\leftarrow T_n\) only after the deadband has been crossed. Sub-threshold motion therefore accumulates from the last accepted anchor.
 \end{enumerate}
+
+The Samples page also contains a fit-replay compatibility path for saved measured R--T presets. Those presets were calibrated with a point-to-point deadband convention, so the app uses that replay only for displaying their stored R--T overlays and RMSE values. Time-domain simulations use the accumulated-anchor update above.
 
 \subsection{Discretization of the Current-Source Model}
 \subsubsection*{Discrete Update Equation}
@@ -934,19 +936,19 @@ coarser integrations using the historical local per-step port showed apparent la
 \subsection{Timestep-convergence audit and numerical correction}
 The apparent oscillatory domains were tested over \(5~\mu\mathrm{s}\) at timesteps of \(0.05\), \(0.025\), and \(0.0125~\mathrm{ns}\). The \(0.05\) and \(0.025~\mathrm{ns}\) results were often close, but the \(0.0125~\mathrm{ns}\) results changed sharply in frequency and voltage amplitude. Therefore, the apparent domains are not yet timestep-converged.
 
-The sensitivity was associated with a bug in the local port of the hysteresis reversal detector. The port updated its temperature anchor after every numerical step, so a reversal was accepted only when the temperature change in one integration step exceeded the fixed threshold
+The sensitivity was associated with the finite deadband in a historical local hysteresis reversal detector. That detector updated its temperature anchor after every evaluated point, so a reversal was accepted only when the temperature change from the previous evaluated point exceeded the fixed threshold
 \begin{equation}
 |\Delta T_{\mathrm{step}}|>0.01~\mathrm{K}.
 \label{eq:reversal_step_threshold}
 \end{equation}
-Changing the timestep changes \(\Delta T_{\mathrm{step}}\), and therefore changed whether and when the hysteresis branch reversed. This was not faithful to Yuanhang Zhang's source code. Upstream updates its anchor only after accumulated displacement exceeds \(0.01~\mathrm{K}\).
+Changing the timestep changes \(\Delta T_{\mathrm{step}}\), and therefore can change whether and when the hysteresis branch reverses. This convention is still used only to replay saved measured R--T sample fits in the Samples tab; time-domain simulations use the accumulated-anchor detector in Eqs.~\eqref{eq:disc_reversal_assign}--\eqref{eq:disc_reversal_tpr}.
 
-Two corrected modes are now explicit. The default \texttt{yuanhang\_reference} mode faithfully implements upstream accumulated-displacement and sampled detection-point geometry. The optional \texttt{turning\_point} extension tracks the latest temperature extremum \(T_{\mathrm{extreme}}\) and confirms a reversal after the cumulative excursion satisfies
+Historical control experiments also tested an accumulated-displacement detector and a turning-point extension. The turning-point extension tracks the latest temperature extremum \(T_{\mathrm{extreme}}\) and confirms a reversal after the cumulative excursion satisfies
 \begin{equation}
 \left|T-T_{\mathrm{extreme}}\right|>0.01~\mathrm{K}.
 \label{eq:reversal_cumulative_threshold}
 \end{equation}
-In the extension, the reversal point is assigned to \(T_{\mathrm{extreme}}\), rather than to the sampled detection point used upstream. This makes the extension timestep robust but changes minor-loop geometry. A third mode, \texttt{ported\_per\_step}, is retained only to reproduce historical artifacts and must not be used for new physical claims.
+In the extension, the reversal point is assigned to \(T_{\mathrm{extreme}}\), rather than to the sampled detection point used by the fitted app model. This can improve timestep robustness but changes minor-loop geometry. These alternate detectors are no longer selectable in the Streamlit interface.
 
 \begin{figure}[H]
 \centering

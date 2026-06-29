@@ -215,9 +215,11 @@ class HysteresisArray:
         """Compute T_pr at reversal from (δ, g_r, T_r) per the paper’s formula."""
         params = self.params
         delta_arr = np.asarray(delta, dtype=_SIM_DTYPE)
-        # Preserve upstream arithmetic exactly, including its possible +/-inf
-        # at fully saturated g=0 or g=1 endpoints.
-        gr_arr = np.asarray(gr, dtype=_SIM_DTYPE)
+        # Keep saturated reversal endpoints on the open arctanh interval.
+        # The measured R(T) sample presets were calibrated with this finite
+        # endpoint handling; without it, low/high-T reversals can throw the
+        # minor-loop shift to infinity and destroy the fitted branch overlay.
+        gr_arr = np.clip(np.asarray(gr, dtype=_SIM_DTYPE), 1e-6, 1.0 - 1e-6).astype(_SIM_DTYPE, copy=False)
         Tr_arr = np.asarray(Tr, dtype=_SIM_DTYPE)
         if _TORCH_HYSTERESIS_AVAILABLE:
             delta_t = _torch_tensor(delta_arr)
@@ -281,12 +283,7 @@ class HysteresisArray:
         return np.asarray(Rs + params.Rm, dtype=_SIM_DTYPE), g_val
 
     def _update_reversal(self, T_clamped: np.ndarray) -> None:
-        """Faithful port of Yuanhang Zhang's accumulated-displacement detector.
-
-        Crucially, ``T_last`` is not updated for sub-threshold motion. The
-        0.01 K test therefore measures displacement from the last accepted
-        anchor, not displacement in one numerical timestep.
-        """
+        """Detect heating/cooling changes after accumulated displacement crosses the deadband."""
         params = self.params
         T_arr = np.asarray(T_clamped, dtype=_SIM_DTYPE)
         dT = T_arr - self.T_last
@@ -306,12 +303,8 @@ class HysteresisArray:
                 self.delta[reversal_mask], self.gr[reversal_mask], self.Tr[reversal_mask]
             )
         if self.independent_anchors:
-            # Batched parameter sweeps represent independent single-device
-            # simulations, so each column advances its own accepted anchor.
             self.T_last[accepted] = T_arr[accepted]
         else:
-            # Match the upstream vector implementation: once any element
-            # exceeds the deadband, every element receives the new anchor.
             self.T_last = T_arr.copy()
 
 
