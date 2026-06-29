@@ -70,7 +70,13 @@ except Exception:
 
 
 JOB_ROOT = ROOT / "jobs"
+PROFESSOR_JOB_ROOT = ROOT / "professor_jobs"
+JOB_STORAGE_ROOTS = {
+    "local": JOB_ROOT,
+    "professor": PROFESSOR_JOB_ROOT,
+}
 JOB_ROOT.mkdir(exist_ok=True)
+PROFESSOR_JOB_ROOT.mkdir(exist_ok=True)
 SPECIMEN_RESIST_PRESET_PATH = ROOT / "presets" / "resistance_100425_chip1_gap3.json"
 
 MPL_FIGSIZE_WIDE = (16, 9)
@@ -733,6 +739,7 @@ def _build_single_job_from_params(
     config = {
         "type": "single",
         "job_name": "",
+        "job_storage": _normalize_job_storage(base_params.get("job_storage", st.session_state.get("job_storage", "local"))),
         "sample_id": base_params.get("sample_id", ""),
         "sample_name": base_params.get("sample_name", ""),
         "sample_source": base_params.get("sample_source", ""),
@@ -1118,21 +1125,45 @@ def _job_id() -> str:
     return f"{ts}_{uuid.uuid4().hex[:8]}"
 
 
-def _job_dir(job_id: str) -> Path:
-    return JOB_ROOT / job_id
+def _normalize_job_storage(storage: Any) -> str:
+    return "professor" if str(storage).strip().lower() == "professor" else "local"
 
 
-def _job_path(job_id: str) -> Path:
-    return _job_dir(job_id) / "job.json"
+def _job_storage_label(storage: str) -> str:
+    return "Professor-visible" if _normalize_job_storage(storage) == "professor" else "Local/private"
+
+
+def _job_root_for_storage(storage: Any) -> Path:
+    return JOB_STORAGE_ROOTS[_normalize_job_storage(storage)]
+
+
+def _infer_job_storage(job_id: str) -> str:
+    for storage, root in JOB_STORAGE_ROOTS.items():
+        if (root / job_id / "job.json").exists():
+            return storage
+    return "local"
+
+
+def _job_dir(job_id: str, storage: Any | None = None) -> Path:
+    if storage is None:
+        storage = _infer_job_storage(job_id)
+    return _job_root_for_storage(storage) / job_id
+
+
+def _job_path(job_id: str, storage: Any | None = None) -> Path:
+    return _job_dir(job_id, storage=storage) / "job.json"
 
 
 def _load_job(job_id: str) -> Dict[str, Any]:
     with open(_job_path(job_id), "r") as f:
-        return json.load(f)
+        job = json.load(f)
+    job.setdefault("job_storage", _infer_job_storage(job_id))
+    return job
 
 
 def _save_job(job: Dict[str, Any]) -> None:
-    path = _job_path(job["id"])
+    job["job_storage"] = _normalize_job_storage(job.get("job_storage"))
+    path = _job_path(job["id"], storage=job["job_storage"])
     tmp_path = path.with_suffix(".json.tmp")
     with open(tmp_path, "w") as f:
         json.dump(job, f, indent=2)
@@ -1147,15 +1178,20 @@ def _append_job_log(job: Dict[str, Any], line: str) -> None:
 
 def _list_jobs() -> List[Dict[str, Any]]:
     jobs = []
-    for job_dir in sorted(JOB_ROOT.iterdir(), reverse=True):
-        if not job_dir.is_dir():
+    for storage, root in JOB_STORAGE_ROOTS.items():
+        if not root.exists():
             continue
-        job_file = job_dir / "job.json"
-        if not job_file.exists():
-            continue
-        with open(job_file, "r") as f:
-            jobs.append(json.load(f))
-    return jobs
+        for job_dir in sorted(root.iterdir(), reverse=True):
+            if not job_dir.is_dir():
+                continue
+            job_file = job_dir / "job.json"
+            if not job_file.exists():
+                continue
+            with open(job_file, "r") as f:
+                job = json.load(f)
+            job.setdefault("job_storage", storage)
+            jobs.append(job)
+    return sorted(jobs, key=lambda j: str(j.get("created_at", "")), reverse=True)
 
 
 def _job_status(job_id: str) -> str:
@@ -1500,6 +1536,7 @@ def _init_defaults() -> None:
         "_rt_editor_version",
         "sample_editor_mode",
         "sample_editor_sample_id",
+        "job_storage",
     }
     required_keys.update({_cd_res_key(f.name) for f in dataclasses.fields(YuanhangResistParams)})
     required_keys.update({_rt_key(name) for name in _RT_CORE_KEYS})
@@ -1580,6 +1617,7 @@ def _init_defaults() -> None:
     st.session_state.setdefault("_rt_editor_version", 0)
     st.session_state.setdefault("sample_editor_mode", "list")
     st.session_state.setdefault("sample_editor_sample_id", "")
+    st.session_state.setdefault("job_storage", "local")
     st.session_state.setdefault("preset_profile_by_mode", {m: "paper" for m in _SIMULATION_MODES})
     for m in _SIMULATION_MODES:
         if m not in st.session_state["preset_profile_by_mode"]:
@@ -1641,6 +1679,22 @@ def _build_params() -> Tuple[YuanhangResistParams, YuanhangCircuitParams, Tuple[
     ny = max(1, int(st.session_state["ny"]))
     circuit.dimension = 1 if (nx == 1 or ny == 1) else 2
     return resist, circuit, (nx, ny)
+
+
+def _current_job_storage() -> str:
+    return _normalize_job_storage(st.session_state.get("job_storage", "local"))
+
+
+def _render_job_storage_control() -> None:
+    share = st.toggle(
+        "Save in professor-visible history",
+        value=_current_job_storage() == "professor",
+        help=(
+            "Off saves under ignored local jobs/. On saves under professor_jobs/, "
+            "which is intentionally available for GitHub sharing."
+        ),
+    )
+    st.session_state["job_storage"] = "professor" if share else "local"
 
 
 def _apply_preset(paper: bool) -> None:
@@ -3777,11 +3831,14 @@ def _matplotlib_sweep2d_figs(df: pd.DataFrame, x_label: str, y_label: str) -> Li
 
 def _create_job(config: Dict[str, Any]) -> Dict[str, Any]:
     job_id = _job_id()
-    job_dir = _job_dir(job_id)
+    job_storage = _normalize_job_storage(config.get("job_storage", "local"))
+    job_dir = _job_dir(job_id, storage=job_storage)
     job_dir.mkdir(parents=True, exist_ok=True)
+    config["job_storage"] = job_storage
     job = {
         "id": job_id,
         "name": config.get("job_name", ""),
+        "job_storage": job_storage,
         "type": config["type"],
         "sample_id": config.get("sample_id", ""),
         "sample_name": config.get("sample_name", ""),
@@ -4566,6 +4623,7 @@ def _build_job_config_single() -> Dict[str, Any]:
     return {
         "type": "single",
         "job_name": st.session_state.get("job_name_single", "").strip(),
+        "job_storage": _current_job_storage(),
         **_sample_meta(sample),
         "source_model": "Voltage Source",
         "vin": float(st.session_state["vin"]),
@@ -4589,6 +4647,7 @@ def _build_job_config_sweep1d(param_label: str) -> Dict[str, Any]:
     return {
         "type": "sweep1d",
         "job_name": st.session_state.get("job_name_sweep1d", "").strip(),
+        "job_storage": _current_job_storage(),
         **_sample_meta(sample),
         "source_model": "Voltage Source",
         "param": _param_name_from_label(param_label),
@@ -4622,6 +4681,7 @@ def _build_job_config_sweep2d(param_x_label: str, param_y_label: str) -> Dict[st
     return {
         "type": "sweep2d",
         "job_name": st.session_state.get("job_name_sweep2d", "").strip(),
+        "job_storage": _current_job_storage(),
         **_sample_meta(sample),
         "source_model": "Voltage Source",
         "param_x": _param_name_from_label(param_x_label),
@@ -4675,6 +4735,7 @@ def _build_job_config_current_drive() -> Dict[str, Any]:
     return {
         "type": "current_sweep",
         "job_name": st.session_state.get("job_name_current_drive", "").strip(),
+        "job_storage": _current_job_storage(),
         **_sample_meta(sample),
         "source_model": "Current Source",
         "I_start_uA": int(round(float(st.session_state["cd_i_start_uA"]))),
@@ -4691,6 +4752,7 @@ def _build_job_config_current_domain_scan() -> Dict[str, Any]:
     return {
         "type": "current_domain_scan",
         "job_name": st.session_state.get("job_name_current_domain", "").strip(),
+        "job_storage": base.get("job_storage", _current_job_storage()),
         "sample_id": base.get("sample_id", ""),
         "sample_name": base.get("sample_name", ""),
         "sample_source": base.get("sample_source", ""),
@@ -4861,6 +4923,7 @@ def _render_single() -> None:
             _text_input("Noise seed (optional)", key="noise_seed")
 
         _inputs_common()
+        _render_job_storage_control()
 
         btn_col1, btn_col2 = st.columns(2)
         with btn_col1:
@@ -4908,6 +4971,7 @@ def _render_sweep1d() -> None:
             _text_input("Noise seed (optional)", key="noise_seed")
 
         _inputs_common()
+        _render_job_storage_control()
 
         btn_col1, btn_col2 = st.columns(2)
         with btn_col1:
@@ -4968,6 +5032,7 @@ def _render_sweep2d() -> None:
             _text_input("Noise seed (optional)", key="noise_seed")
 
         _inputs_common()
+        _render_job_storage_control()
 
         btn_col1, btn_col2 = st.columns(2)
         with btn_col1:
@@ -5117,6 +5182,7 @@ def _render_current_drive() -> None:
                 ["insulator", "metal"],
                 key="cd_start_branch",
             )
+        _render_job_storage_control()
         btn_col1, btn_col2 = st.columns(2)
         with btn_col1:
             submitted_add = st.form_submit_button("Add to batch")
@@ -5208,6 +5274,15 @@ def _render_jobs_view() -> None:
     loading = st.progress(0.0)
     use_events = False
     jobs = _list_jobs()
+    filter_choice = st.radio(
+        "History storage",
+        ["All", "Local/private", "Professor-visible"],
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+    if filter_choice != "All":
+        wanted = "professor" if filter_choice == "Professor-visible" else "local"
+        jobs = [job for job in jobs if _normalize_job_storage(job.get("job_storage")) == wanted]
     if not jobs:
         loading.empty()
         st.info("No jobs found.")
@@ -5242,9 +5317,10 @@ def _render_jobs_view() -> None:
                     shutil.rmtree(_job_dir(job["id"]), ignore_errors=True)
                     _rerun()
         source_model = job.get("source_model", "") or job.get("params", {}).get("source_model", "")
+        storage = _normalize_job_storage(job.get("job_storage"))
         st.caption(
             f"Created: {job.get('created_at', '')} | Source: {source_model or 'n/a'} | "
-            f"Outputs: {len(job.get('outputs', []))}"
+            f"Storage: {_job_storage_label(storage)} | Outputs: {len(job.get('outputs', []))}"
         )
         if not open_job:
             st.markdown("---")

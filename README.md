@@ -31,9 +31,20 @@ These are the main files worth reading first:
 - `references/papers/`: paper PDFs used as modeling references
 - `references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/`: upstream reference code
 - `docs/HYSTERESIS_IMPLEMENTATION_AUDIT.md`: hysteresis implementation, branch conventions, provenance, and validation rules
+- `jobs/`: local-only Streamlit run history, ignored by Git
+- `professor_jobs/`: curated Streamlit run history that can be committed and shared
 
 The root is intentionally minimal. `app.py` is the only top-level application entrypoint.
 Implementation code lives under `src/neuristor/`, and auxiliary command-line tools live under `scripts/`.
+
+## Job History Storage
+
+Streamlit run history is split into two lanes:
+
+- Local/private jobs are saved under `jobs/`; this folder is ignored and should be used for exploratory sweeps.
+- Professor-visible jobs are saved under `professor_jobs/`; this folder is intentionally not ignored so selected runs can be reviewed through GitHub.
+
+Use the **Save in professor-visible history** toggle in the experiment forms only for runs that should be shared. The History tab can filter between both lanes.
 
 ## Custom Resistance Calibration (Experimental Specimen)
 

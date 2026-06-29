@@ -3,6 +3,9 @@ README_FOR_CODEX.md
 IMPLEMENTATION_GUIDE.md
 jobs/
 
+# Curated professor-facing jobs live in professor_jobs/ and are intentionally
+# not ignored. Use the Streamlit export toggle when a run should be shareable.
+
 # OS / Python build junk
 .DS_Store
 __pycache__/
