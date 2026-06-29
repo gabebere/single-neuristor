@@ -1,8 +1,8 @@
-# Professor-visible Jobs
+# Public Jobs
 
 This folder is intentionally not ignored by Git.
 
-Use the Streamlit **Save in professor-visible history** toggle when a run should
+Use the Streamlit **Save in public history** toggle when a run should
 be shareable with collaborators through GitHub. Ordinary exploratory jobs should
 stay in `jobs/`, which is ignored and local-only.
 

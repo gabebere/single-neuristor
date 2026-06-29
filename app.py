@@ -70,13 +70,13 @@ except Exception:
 
 
 JOB_ROOT = ROOT / "jobs"
-PROFESSOR_JOB_ROOT = ROOT / "professor_jobs"
+PUBLIC_JOB_ROOT = ROOT / "public_jobs"
 JOB_STORAGE_ROOTS = {
     "local": JOB_ROOT,
-    "professor": PROFESSOR_JOB_ROOT,
+    "public": PUBLIC_JOB_ROOT,
 }
 JOB_ROOT.mkdir(exist_ok=True)
-PROFESSOR_JOB_ROOT.mkdir(exist_ok=True)
+PUBLIC_JOB_ROOT.mkdir(exist_ok=True)
 SPECIMEN_RESIST_PRESET_PATH = ROOT / "presets" / "resistance_100425_chip1_gap3.json"
 
 MPL_FIGSIZE_WIDE = (16, 9)
@@ -1126,11 +1126,14 @@ def _job_id() -> str:
 
 
 def _normalize_job_storage(storage: Any) -> str:
-    return "professor" if str(storage).strip().lower() == "professor" else "local"
+    storage_text = str(storage).strip().lower()
+    if storage_text in {"public", "professor"}:
+        return "public"
+    return "local"
 
 
 def _job_storage_label(storage: str) -> str:
-    return "Professor-visible" if _normalize_job_storage(storage) == "professor" else "Local/private"
+    return "Public" if _normalize_job_storage(storage) == "public" else "Local/private"
 
 
 def _job_root_for_storage(storage: Any) -> Path:
@@ -1687,14 +1690,14 @@ def _current_job_storage() -> str:
 
 def _render_job_storage_control() -> None:
     share = st.toggle(
-        "Save in professor-visible history",
-        value=_current_job_storage() == "professor",
+        "Save in public history",
+        value=_current_job_storage() == "public",
         help=(
-            "Off saves under ignored local jobs/. On saves under professor_jobs/, "
+            "Off saves under ignored local jobs/. On saves under public_jobs/, "
             "which is intentionally available for GitHub sharing."
         ),
     )
-    st.session_state["job_storage"] = "professor" if share else "local"
+    st.session_state["job_storage"] = "public" if share else "local"
 
 
 def _apply_preset(paper: bool) -> None:
@@ -5276,12 +5279,12 @@ def _render_jobs_view() -> None:
     jobs = _list_jobs()
     filter_choice = st.radio(
         "History storage",
-        ["All", "Local/private", "Professor-visible"],
+        ["All", "Local/private", "Public"],
         horizontal=True,
         label_visibility="collapsed",
     )
     if filter_choice != "All":
-        wanted = "professor" if filter_choice == "Professor-visible" else "local"
+        wanted = "public" if filter_choice == "Public" else "local"
         jobs = [job for job in jobs if _normalize_job_storage(job.get("job_storage")) == wanted]
     if not jobs:
         loading.empty()
