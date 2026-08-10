@@ -1,0 +1,21 @@
+{
+  "ambient_temperatures_K": [
+    298.0,
+    325.0,
+    330.0,
+    333.0
+  ],
+  "kind": "analysis",
+  "model": "lab-parameter-estimates",
+  "name": "Lab current-trace parameter estimates",
+  "resistance_preset": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/resistance_100425_chip1_gap3.json",
+  "ripple_threshold_mV": 20.0,
+  "schema_version": 1,
+  "summary_source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/data/Current Results",
+  "thermal_times_ns": [
+    10.0,
+    20.0,
+    50.0,
+    100.0
+  ]
+}

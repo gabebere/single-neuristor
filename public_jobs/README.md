@@ -20,6 +20,18 @@ whose reports explain the changed assumption or implementation.
 
 ## Historical records
 
+Current `run.json` evidence, generated from clean commit `af4638c`:
+
+- `20260810_170502_current-step-with-a-nonzero-metallic-voltage-val_b05d39`:
+  600 uA Yuanhang-centered oscillation with a 0.906 V measured valley and 0.772 V
+  metallic fixed-point floor.
+- `20260810_170512_yuanhang-voltage-driven-relaxation-oscillator_b997e9`:
+  upstream-style voltage-source oscillator, including a validity warning where its
+  temperature slightly exceeds the configured R(T) range.
+- `20260810_170515_lab-current-trace-parameter-estimates_7c7f1d`:
+  digitized electrical-capacitance estimate, ambient/conductance scenarios,
+  thermal-capacitance scenarios, and metallic voltage-floor comparison.
+
 Historical `job.json` evidence:
 
 - `20260707_145140_paper_frequency_f881d2`: fitted-specimen paper-frequency analog,

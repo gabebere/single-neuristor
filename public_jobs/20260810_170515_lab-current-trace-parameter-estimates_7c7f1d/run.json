@@ -1,0 +1,74 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Electrical capacitance estimates",
+      "media_type": "text/csv",
+      "path": "electrical_capacitance.csv"
+    },
+    {
+      "label": "Thermal conductance scenarios",
+      "media_type": "text/csv",
+      "path": "thermal_conductance.csv"
+    },
+    {
+      "label": "Thermal capacitance scenarios",
+      "media_type": "text/csv",
+      "path": "thermal_capacitance.csv"
+    },
+    {
+      "label": "Effective plateau resistance",
+      "media_type": "text/csv",
+      "path": "effective_resistance.csv"
+    },
+    {
+      "label": "Parameter estimates",
+      "media_type": "image/png",
+      "path": "figures/parameter_estimates.png"
+    },
+    {
+      "label": "Metallic voltage-floor comparison",
+      "media_type": "image/png",
+      "path": "figures/voltage_floor.png"
+    },
+    {
+      "label": "Estimate summary",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Scientific report",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor analyze estimates --images 'data/Current Results' --resistance-preset presets/resistance_100425_chip1_gap3.json",
+  "created_at": "2026-08-10T17:05:15.818394+00:00",
+  "id": "20260810_170515_lab-current-trace-parameter-estimates_7c7f1d",
+  "kind": "analysis",
+  "model": "lab-parameter-estimates",
+  "name": "Lab current-trace parameter estimates",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "af4638c74fe2e866d3775bb4ea824b6aa0e2e3bb",
+    "dirty": false
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "electrical_capacitance_max_pF": 24.982886184032,
+    "electrical_capacitance_median_pF": 22.729917227427833,
+    "electrical_capacitance_min_pF": 20.864590092654897,
+    "high_current_effective_resistance_max_ohm": 471.9542542079824,
+    "high_current_effective_resistance_min_ohm": 135.04746181159035,
+    "specimen_metallic_resistance_ohm": 18.302541190786375,
+    "switching_lower_current_uA": 194.64872889229736,
+    "switching_upper_current_uA": 233.40563608278865
+  },
+  "updated_at": "2026-08-10T17:05:16.995342+00:00"
+}

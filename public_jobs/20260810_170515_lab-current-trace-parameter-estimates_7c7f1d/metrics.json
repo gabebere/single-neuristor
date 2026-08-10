@@ -1,0 +1,10 @@
+{
+  "electrical_capacitance_max_pF": 24.982886184032,
+  "electrical_capacitance_median_pF": 22.729917227427833,
+  "electrical_capacitance_min_pF": 20.864590092654897,
+  "high_current_effective_resistance_max_ohm": 471.9542542079824,
+  "high_current_effective_resistance_min_ohm": 135.04746181159035,
+  "specimen_metallic_resistance_ohm": 18.302541190786375,
+  "switching_lower_current_uA": 194.64872889229736,
+  "switching_upper_current_uA": 233.40563608278865
+}
