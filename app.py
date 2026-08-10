@@ -10,6 +10,7 @@ Features:
 from __future__ import annotations
 
 import csv
+import html
 import io
 import shutil
 import dataclasses
@@ -38,12 +39,26 @@ from plotly.subplots import make_subplots
 
 import neuristor.plots as plots
 from neuristor.model import (
-    HysteresisArray,
     SimulationCancelled,
     YuanhangCircuitParams,
     YuanhangResistParams,
     series_first,
     simulate_yuanhang,
+)
+from neuristor.sample_library import (
+    build_sample_payload,
+    compute_rt_fit_metrics,
+    delete_sample,
+    duplicate_sample,
+    get_sample,
+    list_samples,
+    load_experimental_rt_path,
+    make_sample_id,
+    params_from_dict,
+    parse_experimental_rt_bytes,
+    predict_resistance_trace,
+    rename_sample,
+    save_sample,
 )
 
 try:
@@ -55,7 +70,13 @@ except Exception:
 
 
 JOB_ROOT = ROOT / "jobs"
+PUBLIC_JOB_ROOT = ROOT / "public_jobs"
+JOB_STORAGE_ROOTS = {
+    "local": JOB_ROOT,
+    "public": PUBLIC_JOB_ROOT,
+}
 JOB_ROOT.mkdir(exist_ok=True)
+PUBLIC_JOB_ROOT.mkdir(exist_ok=True)
 SPECIMEN_RESIST_PRESET_PATH = ROOT / "presets" / "resistance_100425_chip1_gap3.json"
 
 MPL_FIGSIZE_WIDE = (16, 9)
@@ -90,6 +111,15 @@ _SIMULATION_MODES = (
     "2D Frequency Sweep",
     "Current-Driven Sweep",
 )
+_APP_PAGES = ("Samples", "Experiment", "History")
+_SOURCE_MODELS = ("Voltage Source", "Current Source")
+_VOLTAGE_EXPERIMENTS = ("Single Simulation", "Sweep over Free Variable", "2D Frequency Sweep")
+_RT_CORE_KEYS = ("R0", "Ea_over_k", "Rm", "w", "Tc_K", "beta", "gamma", "T_min_K", "T_max_K")
+_HIDDEN_EXPERIMENT_CIRCUIT_KEYS = {"couple_factor", "dimension"}
+_IMPORT_FIT_RANDOM_ITERS = 1000
+_IMPORT_FIT_LOCAL_PASSES = 60
+_IMPORT_FIT_GAMMA = 9.56269682e-1
+_IMPORT_FIT_HIGH_RES_WEIGHT = 0.65
 _RESIST_PARAM_KEYS = {f.name for f in dataclasses.fields(YuanhangResistParams)}
 _CIRCUIT_PARAM_KEYS = {f.name for f in dataclasses.fields(YuanhangCircuitParams)}
 _SAMPLE_DERIVED_RESIST_KEYS = {f.name for f in dataclasses.fields(YuanhangResistParams)}
@@ -118,9 +148,26 @@ _NEUTRAL_INPUT_KEYS = {
     "cd_frame_duration_s",
 }
 _HIGHLIGHT_COLORS = {
-    "sample_derived": "#16a34a",
-    "assumed": "#dc2626",
-    "conflict": "#facc15",
+    "sample_derived": "#007AFF",
+    "assumed": "#FF9500",
+    "conflict": "#FFCC00",
+}
+_UI = {
+    "bg": "#f5f5f7",
+    "panel": "#ffffff",
+    "panel_alt": "#f2f2f7",
+    "ink": "#1d1d1f",
+    "muted": "#6e6e73",
+    "line": "rgba(0, 0, 0, 0.12)",
+    "accent": "#007AFF",
+    "accent_dark": "#0056B3",
+    "accent_soft": "#E5F1FF",
+    "cooling": "#007AFF",
+    "heating": "#FF3B30",
+    "model": "#1d1d1f",
+    "residual": "#FF9500",
+    "phase": "#5856D6",
+    "grid": "rgba(0, 0, 0, 0.08)",
 }
 
 
@@ -142,6 +189,7 @@ PARAM_LABELS = {
     "Ea_over_k": "Activation Energy / kB (Ea/k) [K]",
     "Rm0": "Metallic Resistance Base (Rm0) [Ohm]",
     "Rm_factor": "Metallic Resistance Factor (Rm_factor)",
+    "Rm": "Effective Metallic Resistance (Rm) [Ohm]",
     "w": "Hysteresis Width (w) [K]",
     "Tc_K": "Critical Temperature (Tc) [K]",
     "beta": "Hysteresis Sharpness (beta) [1/K]",
@@ -206,6 +254,7 @@ FIELD_HELP = {
     "Ea_over_k": "Activation-energy over Boltzmann constant (K), controlling insulating resistance temperature dependence.",
     "Rm0": "Base metallic resistance in Ohm.",
     "Rm_factor": "Multiplier applied to Rm0 to obtain effective metallic resistance.",
+    "Rm": "Effective metallic resistance floor used by the R-T model. Saved as Rm0 with Rm_factor=1 for custom samples.",
     "w": "Hysteresis width parameter (K).",
     "Tc_K": "Critical-transition temperature center (K).",
     "beta": "Hysteresis sharpness (1/K).",
@@ -245,7 +294,10 @@ FIELD_HELP = {
     "cd_t_pre_ns": "Optional pre-step duration in ns (I_in=0 before t=0).",
     "cd_pulse_on_ns": "Time in ns at which the current pulse turns on (typically 0).",
     "cd_pulse_off_ns": "Optional time in ns at which the pulse turns off. Leave blank to keep current on.",
-    "cd_C_pF": "Capacitance C used in current-driven electrical dynamics.",
+    "cd_C_pF": (
+        "Capacitance C used in current-driven electrical dynamics. Set C=0 for the algebraic "
+        "limit V=I_in R(T); lowering C speeds the voltage drop but does not raise its metallic-state floor."
+    ),
     "cd_Cth_mW_ns_per_K": "Thermal capacitance C_th for current-driven simulation.",
     "cd_S_e_mW_per_K": "Thermal cooling coefficient S_e to ambient.",
     "cd_T0_K": "Ambient/base temperature T0 in Kelvin.",
@@ -265,27 +317,308 @@ FIELD_HELP = {
     "cd_scan_max_vpp_mV": "Maximum peak-to-peak V_vo2 amplitude (mV) allowed for oscillatory classification.",
 }
 
+FIELD_REFERENCE_HINTS = {
+    "vin": "Yuanhang reference: 14.5 V.",
+    "Vin": "Yuanhang reference: 14.5 V.",
+    "vin_list": "Example: 12, 14.5, 17 V.",
+    "R_series_kohm": "Yuanhang reference: 12 kOhm.",
+    "C_par_pF": "Yuanhang reference: 145 pF.",
+    "Cth_mW_ns_per_K": "Yuanhang reference: 49.6 mW*ns/K.",
+    "Sth_mW_per_K": "Yuanhang reference: 0.206 mW/K.",
+    "Cth_factor": "Yuanhang reference: 1.",
+    "noise_strength": "Yuanhang deterministic reference: 0 K/ns; paper-noise runs often use 0.001 K/ns.",
+    "T_base_K": "Yuanhang reference: 325 K.",
+    "t_end_us": "Quick voltage-run default: 300 us.",
+    "dt_ns": "Quick voltage-run default: 10 ns.",
+    "t_start_us": "Quick analysis-window default: 25 us.",
+    "t_end_window_us": "Quick analysis-window default: 300 us.",
+    "threshold_A": "Quick spike-detection default: 1e-3 A.",
+    "sweep_start": "For C sweeps, a useful first range is roughly 80 to 250 pF.",
+    "sweep_stop": "For C sweeps, a useful first range is roughly 80 to 250 pF.",
+    "coarse_step": "Quick coarse sweep default: 0.5 in the selected parameter units.",
+    "fine_step": "Quick fine sweep default: 0.05 in the selected parameter units.",
+    "x_start": "Leave blank for automatic range, or use a paper-scale C range such as 80 pF.",
+    "x_stop": "Leave blank for automatic range, or use a paper-scale C range such as 250 pF.",
+    "x_step": "Quick 2D step default: 0.5 in the selected X parameter units.",
+    "y_start": "Leave blank for automatic range, or use paper-scale load resistance around 12 kOhm.",
+    "y_stop": "Leave blank for automatic range, or use paper-scale load resistance around 12 kOhm.",
+    "y_step": "Quick 2D step default: 10 in the selected Y parameter units.",
+    "cd_i_start_uA": "Quick current sweep default: 50 uA.",
+    "cd_i_stop_uA": "Quick current sweep default: 2000 uA.",
+    "cd_i_step_uA": "Quick current sweep default: 50 uA.",
+    "cd_dt_ns": "Quick current-run default: 10 ns.",
+    "cd_t_end_ns": "Quick current-run default: 600 ns.",
+    "cd_t_pre_ns": "Finite-pulse quick default: 200 ns.",
+    "cd_pulse_on_ns": "Finite-pulse quick default: 0 ns.",
+    "cd_pulse_off_ns": "Finite-pulse quick default: 300 ns; leave blank for a DC step.",
+    "cd_C_pF": "Yuanhang reference: 145 pF.",
+    "cd_Cth_mW_ns_per_K": "Yuanhang reference: 49.6 mW*ns/K.",
+    "cd_S_e_mW_per_K": "Yuanhang reference: 0.206 mW/K.",
+    "cd_T0_K": "Yuanhang reference: 325 K.",
+    "cd_T_init_K": "Quick current-run default: 324.9 K.",
+    "cd_V_init_mV": "Quick current-run default: 0 mV.",
+    "cd_sigma": "Quick deterministic default: 0 W*sqrt(s).",
+    "cd_frame_duration_s": "Quick GIF preview default: 0.5 s.",
+}
+
+FIELD_PLACEHOLDERS = {
+    "vin": "14.5",
+    "vin_list": "12, 14.5, 17",
+    "R_series_kohm": "12",
+    "C_par_pF": "145",
+    "Cth_mW_ns_per_K": "49.6",
+    "Sth_mW_per_K": "0.206",
+    "Cth_factor": "1",
+    "noise_strength": "0",
+    "T_base_K": "325",
+    "t_end_us": "300",
+    "dt_ns": "10",
+    "t_start_us": "25",
+    "t_end_window_us": "300",
+    "threshold_A": "1e-3",
+    "sweep_start": "80",
+    "sweep_stop": "250",
+    "coarse_step": "0.5",
+    "fine_step": "0.05",
+    "x_start": "auto / 80",
+    "x_stop": "auto / 250",
+    "x_step": "0.5",
+    "y_start": "auto / 8",
+    "y_stop": "auto / 20",
+    "y_step": "10",
+    "cd_i_start_uA": "50",
+    "cd_i_stop_uA": "2000",
+    "cd_i_step_uA": "50",
+    "cd_dt_ns": "10",
+    "cd_t_end_ns": "600",
+    "cd_t_pre_ns": "200",
+    "cd_pulse_on_ns": "0",
+    "cd_pulse_off_ns": "300",
+    "cd_C_pF": "145",
+    "cd_Cth_mW_ns_per_K": "49.6",
+    "cd_S_e_mW_per_K": "0.206",
+    "cd_T0_K": "325",
+    "cd_T_init_K": "324.9",
+    "cd_V_init_mV": "0",
+    "cd_sigma": "0",
+    "cd_frame_duration_s": "0.5",
+}
+
+HYSTERESIS_PARAMETER_NOTES = [
+    ("R0", "Scale factor for the activated insulating resistance term. It mainly raises or lowers the high-resistance branch."),
+    (
+        "Ea_over_k",
+        "Activation energy divided by Boltzmann constant. It controls how strongly the insulating resistance changes with temperature.",
+    ),
+    ("Rm", "Effective metallic resistance floor. It mainly sets the low-resistance branch after the transition."),
+    ("w", "Hysteresis width in Kelvin. It separates the heating and cooling transition branches."),
+    ("Tc_K", "Transition center temperature. It shifts the hysteresis loop left or right along the temperature axis."),
+    ("beta", "Transition sharpness. Larger values make each branch switch more abruptly with temperature."),
+    ("gamma", "Minor-loop shape parameter. It matters most after the temperature trajectory reverses direction inside the loop."),
+    ("T_min_K", "Lower temperature clamp used before evaluating the resistance law."),
+    ("T_max_K", "Upper temperature clamp used before evaluating the resistance law."),
+    ("width_factor", "Dimensionless multiplier applied to w. It is another way to widen or narrow the hysteresis loop."),
+    (
+        "reversal_threshold_K",
+        "Minimum temperature change needed before the model records a heating/cooling branch reversal.",
+    ),
+    (
+        "Initial branch",
+        "Starting hysteresis memory state. Insulator starts on the heating branch; metal starts on the cooling branch.",
+    ),
+]
 
 def _label(name: str) -> str:
     return PARAM_LABELS.get(name, name)
+
+
+def _reference_hint(name: str) -> str | None:
+    if name.startswith("cd_res_"):
+        name = name[len("cd_res_") :]
+    return FIELD_REFERENCE_HINTS.get(name)
+
+
+def _placeholder(name: str) -> str | None:
+    if name.startswith("cd_res_"):
+        name = name[len("cd_res_") :]
+    return FIELD_PLACEHOLDERS.get(name)
 
 
 def _help(name: str) -> str | None:
     if name.startswith("cd_res_"):
         base = name[len("cd_res_") :]
         if base in FIELD_HELP:
-            return f"Current-driven simulation: {FIELD_HELP[base]}"
+            return _merge_help(f"Current-driven simulation: {FIELD_HELP[base]}", _reference_hint(name))
         if base in PARAM_LABELS:
-            return f"Current-driven simulation parameter: {PARAM_LABELS[base]}."
+            return _merge_help(f"Current-driven simulation parameter: {PARAM_LABELS[base]}.", _reference_hint(name))
     if name in FIELD_HELP:
-        return FIELD_HELP[name]
+        return _merge_help(FIELD_HELP[name], _reference_hint(name))
     if name in PARAM_LABELS:
-        return f"Model parameter: {PARAM_LABELS[name]}."
-    return None
+        return _merge_help(f"Model parameter: {PARAM_LABELS[name]}.", _reference_hint(name))
+    return _reference_hint(name)
 
 
 def _cd_res_key(name: str) -> str:
     return f"cd_res_{name}"
+
+
+def _rt_key(name: str) -> str:
+    return f"rt_{name}"
+
+
+def _sample_display(sample: Dict[str, Any]) -> str:
+    name = str(sample.get("display_name", sample.get("sample_id", "Sample")))
+    if sample.get("_legacy"):
+        return f"{name} · legacy"
+    return name
+
+
+def _sample_by_label(samples: List[Dict[str, Any]], label: str) -> Dict[str, Any] | None:
+    for sample in samples:
+        if _sample_display(sample) == label:
+            return sample
+    return None
+
+
+def _sample_meta(sample: Dict[str, Any] | None) -> Dict[str, Any]:
+    if not sample:
+        return {"sample_id": "", "sample_name": "No sample selected"}
+    return {
+        "sample_id": str(sample.get("sample_id", "")),
+        "sample_name": str(sample.get("display_name", "")),
+        "sample_source": str(sample.get("source_filename", "")),
+    }
+
+
+def _selected_sample() -> Dict[str, Any] | None:
+    sid = str(st.session_state.get("selected_sample_id", "")).strip()
+    sample = get_sample(sid) if sid else None
+    if sample is not None:
+        return sample
+    samples = list_samples()
+    if not samples:
+        return None
+    st.session_state["selected_sample_id"] = str(samples[0]["sample_id"])
+    return samples[0]
+
+
+def _apply_sample_to_sim_state(sample: Dict[str, Any] | None) -> None:
+    """Copy selected sample resistance/hysteresis parameters into both source-model forms."""
+    if not sample:
+        return
+    resist = params_from_dict(dict(sample["resist_params"]))
+    branch = str(sample.get("start_branch", "insulator")).lower()
+    if branch not in {"insulator", "metal"}:
+        branch = "insulator"
+    for f in dataclasses.fields(YuanhangResistParams):
+        value = float(getattr(resist, f.name))
+        st.session_state[f.name] = value
+        st.session_state[_cd_res_key(f.name)] = value
+    st.session_state["start_branch"] = branch
+    st.session_state["cd_start_branch"] = branch
+    for mode in _SIMULATION_MODES:
+        _set_mode_profile("sample", mode=mode)
+
+
+def _set_rt_state_from_params(params: YuanhangResistParams, *, start_branch: str) -> None:
+    st.session_state[_rt_key("R0")] = float(params.R0)
+    st.session_state[_rt_key("Ea_over_k")] = float(params.Ea_over_k)
+    st.session_state[_rt_key("Rm")] = float(params.Rm)
+    st.session_state[_rt_key("w")] = float(params.w)
+    st.session_state[_rt_key("Tc_K")] = float(params.Tc_K)
+    st.session_state[_rt_key("beta")] = float(params.beta)
+    st.session_state[_rt_key("gamma")] = float(params.gamma)
+    st.session_state[_rt_key("T_min_K")] = float(params.T_min_K)
+    st.session_state[_rt_key("T_max_K")] = float(params.T_max_K)
+    st.session_state[_rt_key("width_factor")] = float(params.width_factor)
+    st.session_state[_rt_key("reversal_threshold_K")] = float(params.reversal_threshold_K)
+    branch = str(start_branch).lower()
+    st.session_state["rt_start_branch"] = branch if branch in {"insulator", "metal"} else "insulator"
+    st.session_state["_rt_editor_version"] = int(st.session_state.get("_rt_editor_version", 0)) + 1
+
+
+def _rt_params_from_state() -> YuanhangResistParams:
+    params = YuanhangResistParams()
+    params.R0 = float(st.session_state[_rt_key("R0")])
+    params.Ea_over_k = float(st.session_state[_rt_key("Ea_over_k")])
+    params.Rm0 = float(st.session_state[_rt_key("Rm")])
+    params.Rm_factor = 1.0
+    params.w = float(st.session_state[_rt_key("w")])
+    params.Tc_K = float(st.session_state[_rt_key("Tc_K")])
+    params.beta = float(st.session_state[_rt_key("beta")])
+    params.gamma = float(st.session_state[_rt_key("gamma")])
+    params.T_min_K = float(st.session_state[_rt_key("T_min_K")])
+    params.T_max_K = float(st.session_state[_rt_key("T_max_K")])
+    params.width_factor = float(st.session_state.get(_rt_key("width_factor"), 1.0))
+    params.reversal_threshold_K = float(st.session_state.get(_rt_key("reversal_threshold_K"), 0.01))
+    return params
+
+
+def _load_rt_data_for_sample(sample: Dict[str, Any] | None) -> pd.DataFrame | None:
+    if not sample:
+        return None
+    source_path = str(sample.get("source_path", "")).strip()
+    if not source_path:
+        return None
+    try:
+        path = Path(source_path)
+        if path.exists():
+            return load_experimental_rt_path(path)
+    except Exception:
+        return None
+    return None
+
+
+def _sync_selected_sample_state(force: bool = False) -> None:
+    if (
+        not force
+        and st.session_state.get("app_page") == "Samples"
+        and st.session_state.get("sample_editor_mode") == "new"
+    ):
+        return
+    sample = _selected_sample()
+    if not sample:
+        return
+    current_sid = str(sample["sample_id"])
+    previous_sid = str(st.session_state.get("_loaded_sample_id", ""))
+    if force or previous_sid != current_sid:
+        params = params_from_dict(dict(sample["resist_params"]))
+        _set_rt_state_from_params(params, start_branch=str(sample.get("start_branch", "insulator")))
+        st.session_state["sample_display_name"] = str(sample.get("display_name", ""))
+        st.session_state["sample_notes"] = str(sample.get("notes", ""))
+        st.session_state["rt_source_filename"] = str(sample.get("source_filename", ""))
+        st.session_state["rt_source_path"] = str(sample.get("source_path", ""))
+        df = _load_rt_data_for_sample(sample)
+        if df is not None:
+            st.session_state["rt_df"] = df
+            st.session_state["rt_df_source"] = current_sid
+        else:
+            st.session_state["rt_df"] = None
+            st.session_state["rt_df_source"] = current_sid
+        _apply_sample_to_sim_state(sample)
+        st.session_state["_loaded_sample_id"] = current_sid
+
+
+def _open_sample_editor(sample_id: str) -> None:
+    st.session_state["sample_editor_mode"] = "edit"
+    st.session_state["sample_editor_sample_id"] = str(sample_id)
+    st.session_state["selected_sample_id"] = str(sample_id)
+    st.session_state["_loaded_sample_id"] = ""
+    _sync_selected_sample_state(force=True)
+
+
+def _start_new_sample_editor() -> None:
+    st.session_state["sample_editor_mode"] = "new"
+    st.session_state["sample_editor_sample_id"] = ""
+    st.session_state["_loaded_sample_id"] = "__new_sample__"
+    st.session_state["sample_display_name"] = "Untitled sample"
+    st.session_state["sample_notes"] = ""
+    st.session_state["rt_source_filename"] = ""
+    st.session_state["rt_source_path"] = ""
+    st.session_state["rt_upload_bytes"] = b""
+    st.session_state["rt_df"] = None
+    st.session_state["rt_df_source"] = "new"
+    _set_rt_state_from_params(YuanhangResistParams(), start_branch="insulator")
 
 
 def _mode_profile(mode: str | None = None) -> str:
@@ -409,6 +742,11 @@ def _build_single_job_from_params(
     config = {
         "type": "single",
         "job_name": "",
+        "job_storage": _normalize_job_storage(base_params.get("job_storage", st.session_state.get("job_storage", "local"))),
+        "sample_id": base_params.get("sample_id", ""),
+        "sample_name": base_params.get("sample_name", ""),
+        "sample_source": base_params.get("sample_source", ""),
+        "source_model": base_params.get("source_model", "Voltage Source"),
         "vin": float(base_params.get("vin", 0.0)),
         "vin_list": [],
         "t_end": float(base_params["t_end"]),
@@ -545,6 +883,10 @@ def _num_input(label: str, key: str, value: float | None = None, **kwargs):
     # Allow high-precision float entry while keeping display compact (no forced trailing zeros).
     kwargs.setdefault("format", "%.16g")
     kwargs.setdefault("step", 1e-12)
+    if "placeholder" not in kwargs:
+        ph = _placeholder(key)
+        if ph is not None:
+            kwargs["placeholder"] = ph
     if "help" not in kwargs:
         h = _help(key)
         if h is not None:
@@ -593,6 +935,10 @@ def _int_input(label: str, key: str, value: int | None = None, **kwargs):
 
 
 def _text_input(label: str, key: str, value: str | None = None, **kwargs):
+    if "placeholder" not in kwargs:
+        ph = _placeholder(key)
+        if ph is not None:
+            kwargs["placeholder"] = ph
     if "help" not in kwargs:
         h = _help(key)
         if h is not None:
@@ -677,6 +1023,49 @@ def _paper_params() -> tuple[YuanhangResistParams, YuanhangCircuitParams]:
     return resist, circuit
 
 
+def _apply_voltage_yuanhang_quick_config() -> None:
+    """Reset voltage-source simulation controls to the paper-scale reference values."""
+    _, circuit = _paper_params()
+    for f in dataclasses.fields(YuanhangCircuitParams):
+        st.session_state[f.name] = getattr(circuit, f.name)
+    st.session_state["vin"] = 14.5
+    st.session_state["vin_list"] = ""
+    st.session_state["t_end_us"] = 300.0
+    st.session_state["dt_ns"] = 10.0
+    st.session_state["t_start_us"] = 25.0
+    st.session_state["t_end_window_us"] = 300.0
+    st.session_state["threshold_A"] = 1e-3
+    st.session_state["noise_seed"] = ""
+    st.session_state["nx"] = 1
+    st.session_state["ny"] = 1
+
+
+def _apply_current_yuanhang_quick_config() -> None:
+    """Reset current-source controls to a fast finite-pulse configuration."""
+    from neuristor.current_drive_sim import lab_pulse_current_params
+
+    p = lab_pulse_current_params()
+    st.session_state["job_name_current_drive"] = ""
+    st.session_state["cd_i_start_uA"] = 50.0
+    st.session_state["cd_i_stop_uA"] = 2000.0
+    st.session_state["cd_i_step_uA"] = 50.0
+    st.session_state["cd_dt_ns"] = p.dt_s * 1e9
+    st.session_state["cd_t_end_ns"] = p.t_end_s * 1e9
+    st.session_state["cd_t_pre_ns"] = p.t_pre_s * 1e9
+    st.session_state["cd_pulse_on_ns"] = p.pulse_on_s * 1e9
+    st.session_state["cd_pulse_off_ns"] = "" if p.pulse_off_s is None else f"{p.pulse_off_s * 1e9:.16g}"
+    st.session_state["cd_C_pF"] = p.C_F * 1e12
+    st.session_state["cd_Cth_mW_ns_per_K"] = p.C_th_J_per_K * 1e12
+    st.session_state["cd_S_e_mW_per_K"] = p.S_e_W_per_K * 1e3
+    st.session_state["cd_T0_K"] = p.T0_K
+    st.session_state["cd_T_init_K"] = p.T_init_K
+    st.session_state["cd_V_init_mV"] = p.V_init_V * 1e3
+    st.session_state["cd_sigma"] = p.sigma_W_sqrt_s
+    st.session_state["cd_frame_duration_s"] = 0.5
+    st.session_state["cd_seed"] = ""
+    st.session_state["cd_last_result"] = None
+
+
 def _load_resistance_preset(path: Path) -> tuple[YuanhangResistParams, str, Dict[str, float]]:
     payload = json.loads(path.read_text())
     raw = payload.get("resist_params", payload)
@@ -701,7 +1090,11 @@ def _load_resistance_preset(path: Path) -> tuple[YuanhangResistParams, str, Dict
     return YuanhangResistParams(**kwargs), start_branch, metrics
 
 
-def _apply_specimen_resistance_preset(path: Path = SPECIMEN_RESIST_PRESET_PATH) -> tuple[bool, str]:
+def _apply_specimen_resistance_preset(
+    path: Path = SPECIMEN_RESIST_PRESET_PATH,
+    *,
+    apply_current_branch: bool = False,
+) -> tuple[bool, str]:
     if not path.exists():
         return False, f"Specimen resistance preset not found: {path}"
     try:
@@ -714,7 +1107,8 @@ def _apply_specimen_resistance_preset(path: Path = SPECIMEN_RESIST_PRESET_PATH) 
         st.session_state[f.name] = value
         st.session_state[_cd_res_key(f.name)] = value
     st.session_state["start_branch"] = start_branch
-    st.session_state["cd_start_branch"] = start_branch
+    if apply_current_branch:
+        st.session_state["cd_start_branch"] = start_branch
     rmse = metrics.get("rmse_log10")
     if rmse is not None:
         return (
@@ -734,24 +1128,86 @@ def _job_id() -> str:
     return f"{ts}_{uuid.uuid4().hex[:8]}"
 
 
-def _job_dir(job_id: str) -> Path:
-    return JOB_ROOT / job_id
+def _normalize_job_storage(storage: Any) -> str:
+    storage_text = str(storage).strip().lower()
+    if storage_text in {"public", "professor"}:
+        return "public"
+    return "local"
 
 
-def _job_path(job_id: str) -> Path:
-    return _job_dir(job_id) / "job.json"
+def _job_storage_label(storage: str) -> str:
+    return "Public" if _normalize_job_storage(storage) == "public" else "Local/private"
+
+
+def _job_root_for_storage(storage: Any) -> Path:
+    return JOB_STORAGE_ROOTS[_normalize_job_storage(storage)]
+
+
+def _infer_job_storage(job_id: str) -> str:
+    for storage, root in JOB_STORAGE_ROOTS.items():
+        if (root / job_id / "job.json").exists():
+            return storage
+    return "local"
+
+
+def _job_dir(job_id: str, storage: Any | None = None) -> Path:
+    if storage is None:
+        storage = _infer_job_storage(job_id)
+    return _job_root_for_storage(storage) / job_id
+
+
+def _job_path(job_id: str, storage: Any | None = None) -> Path:
+    return _job_dir(job_id, storage=storage) / "job.json"
+
+
+def _portable_public_job_value(value: Any) -> Any:
+    """Convert repo-local absolute paths to portable paths in public job JSON."""
+
+    if isinstance(value, dict):
+        return {key: _portable_public_job_value(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_portable_public_job_value(item) for item in value]
+    if isinstance(value, tuple):
+        return [_portable_public_job_value(item) for item in value]
+    if isinstance(value, Path):
+        value = str(value)
+    if isinstance(value, str):
+        candidate = Path(value)
+        if candidate.is_absolute():
+            try:
+                return candidate.resolve().relative_to(ROOT.resolve()).as_posix()
+            except ValueError:
+                return value
+    return value
+
+
+def _resolve_job_artifact_paths(job: Dict[str, Any]) -> Dict[str, Any]:
+    """Resolve portable public artifact paths for runtime file access."""
+
+    log_path = job.get("log_path")
+    if isinstance(log_path, str) and log_path and not Path(log_path).is_absolute():
+        job["log_path"] = str(ROOT / log_path)
+    for output in job.get("outputs", []):
+        output_path = output.get("path")
+        if isinstance(output_path, str) and output_path and not Path(output_path).is_absolute():
+            output["path"] = str(ROOT / output_path)
+    return job
 
 
 def _load_job(job_id: str) -> Dict[str, Any]:
     with open(_job_path(job_id), "r") as f:
-        return json.load(f)
+        job = json.load(f)
+    job.setdefault("job_storage", _infer_job_storage(job_id))
+    return _resolve_job_artifact_paths(job)
 
 
 def _save_job(job: Dict[str, Any]) -> None:
-    path = _job_path(job["id"])
+    job["job_storage"] = _normalize_job_storage(job.get("job_storage"))
+    path = _job_path(job["id"], storage=job["job_storage"])
     tmp_path = path.with_suffix(".json.tmp")
+    serialized = _portable_public_job_value(job) if job["job_storage"] == "public" else job
     with open(tmp_path, "w") as f:
-        json.dump(job, f, indent=2)
+        json.dump(serialized, f, indent=2)
     os.replace(tmp_path, path)
 
 
@@ -763,15 +1219,20 @@ def _append_job_log(job: Dict[str, Any], line: str) -> None:
 
 def _list_jobs() -> List[Dict[str, Any]]:
     jobs = []
-    for job_dir in sorted(JOB_ROOT.iterdir(), reverse=True):
-        if not job_dir.is_dir():
+    for storage, root in JOB_STORAGE_ROOTS.items():
+        if not root.exists():
             continue
-        job_file = job_dir / "job.json"
-        if not job_file.exists():
-            continue
-        with open(job_file, "r") as f:
-            jobs.append(json.load(f))
-    return jobs
+        for job_dir in sorted(root.iterdir(), reverse=True):
+            if not job_dir.is_dir():
+                continue
+            job_file = job_dir / "job.json"
+            if not job_file.exists():
+                continue
+            with open(job_file, "r") as f:
+                job = json.load(f)
+            job.setdefault("job_storage", storage)
+            jobs.append(_resolve_job_artifact_paths(job))
+    return sorted(jobs, key=lambda j: str(j.get("created_at", "")), reverse=True)
 
 
 def _job_status(job_id: str) -> str:
@@ -872,10 +1333,22 @@ def _enqueue_job(job_id: str) -> None:
 # -----------------------------
 
 
+@st.cache_data(show_spinner=False, max_entries=32)
+def _read_csv_cached(path: str, mtime_ns: int, size: int) -> pd.DataFrame:
+    """Cache immutable job outputs while invalidating on file replacement."""
+    del mtime_ns, size
+    return pd.read_csv(path)
+
+
+def _read_job_csv(path: str | Path) -> pd.DataFrame:
+    csv_path = Path(path)
+    stat = csv_path.stat()
+    return _read_csv_cached(str(csv_path), stat.st_mtime_ns, stat.st_size)
+
+
 def _param_names() -> List[str]:
-    resist = {f.name for f in dataclasses.fields(YuanhangResistParams)}
-    circuit = {f.name for f in dataclasses.fields(YuanhangCircuitParams)}
-    names = ["Vin"] + sorted(list(resist | circuit))
+    circuit = {f.name for f in dataclasses.fields(YuanhangCircuitParams)} - _HIDDEN_EXPERIMENT_CIRCUIT_KEYS
+    names = ["Vin"] + sorted(list(circuit))
     return names
 
 
@@ -1040,6 +1513,7 @@ def _init_defaults() -> None:
         "ny",
         "batch_jobs",
         "terminal_log",
+        "mode",
         "enable_point_removal",
         "removed_points",
         "last_click_sig",
@@ -1088,8 +1562,26 @@ def _init_defaults() -> None:
         "_cd_scan_criteria_defaults_version",
         "preset_profile_by_mode",
         "cd_diag_conflicts",
+        "app_page",
+        "selected_sample_id",
+        "source_model",
+        "voltage_experiment_type",
+        "sample_display_name",
+        "sample_notes",
+        "rt_start_branch",
+        "rt_source_filename",
+        "rt_source_path",
+        "rt_df",
+        "rt_df_source",
+        "_loaded_sample_id",
+        "_rt_editor_version",
+        "sample_editor_mode",
+        "sample_editor_sample_id",
+        "job_storage",
     }
     required_keys.update({_cd_res_key(f.name) for f in dataclasses.fields(YuanhangResistParams)})
+    required_keys.update({_rt_key(name) for name in _RT_CORE_KEYS})
+    required_keys.update({_rt_key("width_factor"), _rt_key("reversal_threshold_K")})
     missing = [k for k in required_keys if k not in st.session_state]
     if st.session_state.get("_init_done") and not missing:
         return
@@ -1113,6 +1605,7 @@ def _init_defaults() -> None:
     st.session_state.setdefault("ny", 1)
     st.session_state.setdefault("batch_jobs", [])
     st.session_state.setdefault("terminal_log", "")
+    st.session_state.setdefault("mode", "Single Simulation")
     st.session_state.setdefault("enable_point_removal", False)
     st.session_state.setdefault("removed_points", {})
     st.session_state.setdefault("last_click_sig", {})
@@ -1151,6 +1644,21 @@ def _init_defaults() -> None:
     st.session_state.setdefault("cd_last_result", None)
     st.session_state.setdefault("cd_last_diag", None)
     st.session_state.setdefault("cd_diag_conflicts", {})
+    st.session_state.setdefault("app_page", "Samples")
+    st.session_state.setdefault("source_model", "Voltage Source")
+    st.session_state.setdefault("voltage_experiment_type", "Single Simulation")
+    st.session_state.setdefault("sample_display_name", "")
+    st.session_state.setdefault("sample_notes", "")
+    st.session_state.setdefault("rt_start_branch", "insulator")
+    st.session_state.setdefault("rt_source_filename", "")
+    st.session_state.setdefault("rt_source_path", "")
+    st.session_state.setdefault("rt_df", None)
+    st.session_state.setdefault("rt_df_source", "")
+    st.session_state.setdefault("_loaded_sample_id", "")
+    st.session_state.setdefault("_rt_editor_version", 0)
+    st.session_state.setdefault("sample_editor_mode", "list")
+    st.session_state.setdefault("sample_editor_sample_id", "")
+    st.session_state.setdefault("job_storage", "local")
     st.session_state.setdefault("preset_profile_by_mode", {m: "paper" for m in _SIMULATION_MODES})
     for m in _SIMULATION_MODES:
         if m not in st.session_state["preset_profile_by_mode"]:
@@ -1184,7 +1692,21 @@ def _init_defaults() -> None:
     for f in dataclasses.fields(YuanhangResistParams):
         key = _cd_res_key(f.name)
         st.session_state.setdefault(key, getattr(resist, f.name))
+    if "selected_sample_id" not in st.session_state:
+        samples = list_samples()
+        st.session_state["selected_sample_id"] = str(samples[0]["sample_id"]) if samples else ""
+    if not st.session_state.get(_rt_key("R0")):
+        _set_rt_state_from_params(resist, start_branch="insulator")
+    for name in _RT_CORE_KEYS:
+        if _rt_key(name) not in st.session_state:
+            if name == "Rm":
+                st.session_state[_rt_key(name)] = float(resist.Rm)
+            else:
+                st.session_state[_rt_key(name)] = float(getattr(resist, name))
+    st.session_state.setdefault(_rt_key("width_factor"), float(resist.width_factor))
+    st.session_state.setdefault(_rt_key("reversal_threshold_K"), float(resist.reversal_threshold_K))
     st.session_state["_init_done"] = True
+    _sync_selected_sample_state(force=not bool(st.session_state.get("_loaded_sample_id")))
 
 
 def _build_params() -> Tuple[YuanhangResistParams, YuanhangCircuitParams, Tuple[int, int]]:
@@ -1198,6 +1720,22 @@ def _build_params() -> Tuple[YuanhangResistParams, YuanhangCircuitParams, Tuple[
     ny = max(1, int(st.session_state["ny"]))
     circuit.dimension = 1 if (nx == 1 or ny == 1) else 2
     return resist, circuit, (nx, ny)
+
+
+def _current_job_storage() -> str:
+    return _normalize_job_storage(st.session_state.get("job_storage", "local"))
+
+
+def _render_job_storage_control() -> None:
+    share = st.toggle(
+        "Save in public history",
+        value=_current_job_storage() == "public",
+        help=(
+            "Off saves under ignored local jobs/. On saves under public_jobs/, "
+            "which is intentionally available for GitHub sharing."
+        ),
+    )
+    st.session_state["job_storage"] = "public" if share else "local"
 
 
 def _apply_preset(paper: bool) -> None:
@@ -1267,6 +1805,34 @@ def _apply_current_drive_reference_preset() -> None:
     st.session_state["cd_last_result"] = None
 
 
+def _apply_current_drive_lab_pulse_preset() -> None:
+    from neuristor.current_drive_sim import lab_pulse_current_params
+
+    p = lab_pulse_current_params()
+    st.session_state["job_name_current_drive"] = "Lab Pulse Preset"
+    st.session_state["cd_i_start_uA"] = 50.0
+    st.session_state["cd_i_stop_uA"] = 2000.0
+    st.session_state["cd_i_step_uA"] = 50.0
+    st.session_state["cd_dt_ns"] = p.dt_s * 1e9
+    st.session_state["cd_t_end_ns"] = p.t_end_s * 1e9
+    st.session_state["cd_t_pre_ns"] = p.t_pre_s * 1e9
+    st.session_state["cd_pulse_on_ns"] = p.pulse_on_s * 1e9
+    st.session_state["cd_pulse_off_ns"] = "" if p.pulse_off_s is None else f"{p.pulse_off_s * 1e9:.16g}"
+    st.session_state["cd_C_pF"] = p.C_F * 1e12
+    st.session_state["cd_Cth_mW_ns_per_K"] = p.C_th_J_per_K * 1e12
+    st.session_state["cd_S_e_mW_per_K"] = p.S_e_W_per_K * 1e3
+    st.session_state["cd_T0_K"] = p.T0_K
+    st.session_state["cd_T_init_K"] = p.T_init_K
+    st.session_state["cd_V_init_mV"] = p.V_init_V * 1e3
+    st.session_state["cd_sigma"] = p.sigma_W_sqrt_s
+    st.session_state["cd_start_branch"] = p.start_branch
+    st.session_state["cd_frame_duration_s"] = 0.5
+    st.session_state["cd_seed"] = ""
+    for f in dataclasses.fields(YuanhangResistParams):
+        st.session_state[_cd_res_key(f.name)] = getattr(p.resist_params, f.name)
+    st.session_state["cd_last_result"] = None
+
+
 def _apply_current_drive_paper_preset() -> None:
     # Keep this scoped to current-drive controls so voltage-driven workflows are unaffected.
     resist, circuit = _paper_params()
@@ -1298,15 +1864,15 @@ def _apply_current_drive_paper_preset() -> None:
 def _apply_current_drive_professor_preset() -> tuple[bool, str]:
     """
     Apply the sample-oriented current-mode baseline in one step:
-    - current/thermal settings from the paper-current preset
+    - waveform/initial-state settings from the lab-pulse preset
     - specimen RT-fitted resistance/hysteresis preset
     """
 
-    _apply_current_drive_paper_preset()
-    ok, msg = _apply_specimen_resistance_preset()
+    _apply_current_drive_lab_pulse_preset()
+    ok, msg = _apply_specimen_resistance_preset(apply_current_branch=False)
     st.session_state["job_name_current_drive"] = "Sample Current + Specimen RT Preset"
     if not ok:
-        return False, f"Loaded paper current preset, but specimen RT preset failed: {msg}"
+        return False, f"Loaded lab pulse preset, but specimen RT preset failed: {msg}"
 
     # Auto-stabilize dt for sample preset so diagnostics do not start in a numerically invalid regime.
     # This keeps the preset immediately runnable while preserving all other parameters.
@@ -1351,13 +1917,15 @@ def _apply_current_drive_professor_preset() -> tuple[bool, str]:
 
     if dt_after_ns < dt_before_ns * 0.98:
         return True, (
-            "Loaded sample preset: paper current/thermal defaults "
-            "(T0=298 K, sigma=1e-6, ideal current source) + specimen RT resistance fit, "
+            "Loaded sample preset: lab pulse defaults "
+            "(t_pre=200 ns, pulse_off=300 ns, T0=325 K, start_branch=insulator, ideal current source) "
+            "+ specimen RT resistance fit, "
             f"and auto-adjusted dt from {dt_before_ns:.4g} ns to {dt_after_ns:.4g} ns for stability."
         )
     return True, (
-        "Loaded sample preset: paper current/thermal defaults "
-        "(T0=298 K, sigma=1e-6, ideal current source) + specimen RT resistance fit."
+        "Loaded sample preset: lab pulse defaults "
+        "(t_pre=200 ns, pulse_off=300 ns, T0=325 K, start_branch=insulator, ideal current source) "
+        "+ specimen RT resistance fit."
     )
 
 
@@ -1429,72 +1997,39 @@ def _current_drive_numerics_report(
     resist_params: YuanhangResistParams,
     start_branch: str,
 ) -> Dict[str, float]:
-    eps = 1e-12
-    dt = float(dt_s)
-    C = max(float(C_F), eps)
-    C_th = max(float(C_th_J_per_K), eps)
+    from neuristor.current_drive_sim import CurrentDriveParams, current_drive_numerics_report
 
-    # Use the same hysteresis evaluator as simulation to estimate initial branch resistance.
-    h = HysteresisArray(resist_params, size=1, start_branch=start_branch)
-    T0 = np.asarray([float(T_init_K)], dtype=float)
-    h.initialize(T0)
-    R_init = float(h.evaluate(T0)[0][0])
-
-    R_metal = max(float(resist_params.Rm), eps)
-    R_eff_init = max(R_init, eps)
-    R_eff_fast = max(R_metal, eps)
-    tau_init_s = C * R_eff_init
-    tau_fast_s = C * R_eff_fast
-
-    I_peak_A = abs(float(I_peak_uA)) * 1e-6
-    V_fast_est = I_peak_A * R_eff_fast
-    P_fast_est = (V_fast_est * V_fast_est) / max(R_metal, eps)
-    dT_step_est_K = (dt / C_th) * P_fast_est
-    reversal_thr = max(float(resist_params.reversal_threshold_K), eps)
-
-    return {
-        "R_init_ohm": R_init,
-        "R_metal_ohm": R_metal,
-        "R_eff_init_ohm": R_eff_init,
-        "R_eff_fast_ohm": R_eff_fast,
-        "tau_init_s": tau_init_s,
-        "tau_fast_s": tau_fast_s,
-        "dt_over_tau_init": dt / max(tau_init_s, eps),
-        "dt_over_tau_fast": dt / max(tau_fast_s, eps),
-        "I_peak_uA": float(I_peak_uA),
-        "dT_step_est_K": dT_step_est_K,
-        "reversal_threshold_K": reversal_thr,
-        "dT_step_over_reversal": dT_step_est_K / reversal_thr,
-    }
+    params = CurrentDriveParams(
+        dt_s=float(dt_s),
+        t_end_s=1e-9,
+        t_pre_s=0.0,
+        pulse_on_s=0.0,
+        pulse_off_s=None,
+        V_init_V=0.0,
+        T0_K=float(T_init_K),
+        T_init_K=float(T_init_K),
+        C_F=float(C_F),
+        C_th_J_per_K=float(C_th_J_per_K),
+        S_e_W_per_K=0.0,
+        sigma_W_sqrt_s=0.0,
+        resist_params=resist_params,
+        start_branch=start_branch,
+    )
+    return current_drive_numerics_report(params, I_peak_uA=float(I_peak_uA))
 
 
 def _current_drive_report_messages(report: Dict[str, float]) -> List[str]:
-    msgs: List[str] = []
+    from neuristor.current_drive_sim import current_drive_report_messages
+
+    msgs = current_drive_report_messages(report)
     dt_tau_fast = float(report["dt_over_tau_fast"])
-    tau_fast_ns = float(report["tau_fast_s"]) * 1e9
     if dt_tau_fast > 0.1:
-        target_ns = 0.1 * tau_fast_ns
-        msgs.append(
-            f"dt/tau_fast={dt_tau_fast:.3g} (>0.1). Fast RC is under-resolved; target dt <= {target_ns:.3g} ns."
-        )
-    elif dt_tau_fast > 0.03:
-        msgs.append(f"dt/tau_fast={dt_tau_fast:.3g}. This is borderline for accurate waveform shape.")
-
-    dt_tau_init = float(report["dt_over_tau_init"])
-    if dt_tau_init > 0.2:
-        msgs.append(f"dt/tau_init={dt_tau_init:.3g} (>0.2). Euler artifacts are likely.")
-
-    dT_over_rev = float(report["dT_step_over_reversal"])
-    if dT_over_rev > 1.0:
-        msgs.append(
-            f"Conservative per-step thermal jump estimate is {dT_over_rev:.3g}x reversal threshold; "
-            "minor-loop reversal points may be skipped."
-        )
-    elif dT_over_rev > 0.2:
-        msgs.append(
-            f"Conservative per-step thermal jump estimate is {dT_over_rev:.3g}x reversal threshold; "
-            "hysteresis timing may be sensitive to dt."
-        )
+        return [
+            msg.replace("Target dt <=", "Fast RC is under-resolved; target dt <=")
+            if "Target dt <=" in msg
+            else msg
+            for msg in msgs
+        ]
     return msgs
 
 
@@ -1520,7 +2055,7 @@ def _current_drive_recommendations(
                 "title": "Fast electrical RC is under-resolved",
                 "problem": (
                     f"`dt/tau_fast = {dt_tau_fast:.3g}` (> 0.1). "
-                    "This can suppress oscillations or produce non-physical waveforms."
+                    "The exponential update is stable, but coupled transition timing can be inaccurate."
                 ),
                 "change": f"Reduce `{_label('cd_dt_ns')}` to `<= {target_dt_ns:.4g}` ns.",
                 "actions": [
@@ -1560,7 +2095,7 @@ def _current_drive_recommendations(
                 "id": "dt_init",
                 "severity": "warning",
                 "title": "Initial electrical RC is under-resolved",
-                "problem": f"`dt/tau_init = {dt_tau_init:.3g}` (> 0.2). Euler artifacts are likely.",
+                "problem": f"`dt/tau_init = {dt_tau_init:.3g}` (> 0.2). The charging transient is under-resolved.",
                 "change": f"Reduce `{_label('cd_dt_ns')}` to `<= {target_dt_ns:.4g}` ns.",
                 "actions": [
                     {
@@ -1576,20 +2111,12 @@ def _current_drive_recommendations(
     if dT_over_rev > 0.2:
         target_ratio = 0.2
         target_dt_ns = max(min_dt_ns, dt_ns * (target_ratio / dT_over_rev))
-        target_c_th = c_th * (dT_over_rev / target_ratio)
         actions: List[Dict[str, Any]] = []
         if target_dt_ns < dt_ns * 0.98:
             actions.append(
                 {
                     "label": f"Set dt = {target_dt_ns:.4g} ns",
                     "updates": {"cd_dt_ns": float(f"{target_dt_ns:.16g}")},
-                }
-            )
-        if target_c_th > c_th * 1.02:
-            actions.append(
-                {
-                    "label": f"Set C_th = {target_c_th:.4g}",
-                    "updates": {"cd_Cth_mW_ns_per_K": float(f"{target_c_th:.16g}")},
                 }
             )
         recs.append(
@@ -1602,8 +2129,8 @@ def _current_drive_recommendations(
                     "Hysteresis reversal points can be skipped."
                 ),
                 "change": (
-                    f"Lower `{_label('cd_dt_ns')}` and/or increase `{_label('cd_Cth_mW_ns_per_K')}` "
-                    "until this ratio is below ~0.2."
+                    f"Lower `{_label('cd_dt_ns')}` until this ratio is below ~0.2. "
+                    "Do not change physical C_th merely to repair numerical resolution."
                 ),
                 "actions": actions,
                 "why": "Smaller per-step thermal jumps preserve branch switching timing.",
@@ -1728,6 +2255,14 @@ def _render_current_drive_tuning_guide() -> None:
     with st.expander("Symptom -> parameters to tune", expanded=False):
         guide_rows = [
             {
+                "Symptom": "Voltage valley is near 0 V after switching",
+                "Change first": "metallic resistance Rm, measured series/contact resistance, current",
+                "How to change": (
+                    "Check the fitted metallic resistance and what voltage the instrument measures. Under ideal current drive "
+                    "the floor is approximately I*Rm; lowering C only makes the approach to that floor faster."
+                ),
+            },
+            {
                 "Symptom": "No oscillation, smooth ramp/flat response",
                 "Change first": "cd_i_stop_uA, cd_C_pF, cd_T_init_K",
                 "How to change": (
@@ -1761,7 +2296,7 @@ def _render_current_drive_tuning_guide() -> None:
                 ),
             },
         ]
-        st.dataframe(pd.DataFrame(guide_rows), hide_index=True, use_container_width=True)
+        st.dataframe(pd.DataFrame(guide_rows), hide_index=True, width="stretch")
 
 
 def _estimate_input_power_dbm(i_trace_a: np.ndarray, r_ref_ohm: float = _CURRENT_RF_REF_OHM) -> float:
@@ -2251,6 +2786,803 @@ def _plot_current_domain_heatmap(detail_df: pd.DataFrame, param_label: str) -> g
     return fig
 
 
+def _style_plotly(fig: go.Figure, *, title: str, height: int, yaxis_type: str | None = None) -> go.Figure:
+    fig.update_layout(
+        title=dict(text=title, x=0.0, xanchor="left", font=dict(size=21, color=_UI["ink"])),
+        height=height,
+        paper_bgcolor=_UI["panel"],
+        plot_bgcolor=_UI["panel"],
+        font=dict(color=_UI["ink"], family="Inter, Arial, sans-serif", size=13),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="left",
+            x=0,
+            bgcolor="rgba(255,255,255,0)",
+        ),
+        margin=dict(l=18, r=18, t=74, b=50),
+    )
+    fig.update_xaxes(
+        showgrid=True,
+        gridcolor=_UI["grid"],
+        zeroline=False,
+        linecolor=_UI["line"],
+        tickfont=dict(color=_UI["ink"]),
+        title_font=dict(color=_UI["ink"]),
+    )
+    fig.update_yaxes(
+        showgrid=True,
+        gridcolor=_UI["grid"],
+        zeroline=False,
+        linecolor=_UI["line"],
+        tickfont=dict(color=_UI["ink"]),
+        title_font=dict(color=_UI["ink"]),
+    )
+    if yaxis_type:
+        fig.update_yaxes(type=yaxis_type)
+    return fig
+
+
+def _rt_arrays(
+    df: pd.DataFrame,
+    pred_ohm: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    t = df["Temperature"].to_numpy(dtype=float)
+    r = np.maximum(df["Resistance"].to_numpy(dtype=float), 1e-12)
+    pred = np.maximum(np.asarray(pred_ohm, dtype=float), 1e-12)
+    residual = np.log10(pred) - np.log10(r)
+    dT = np.diff(t, prepend=t[0])
+    cooling = dT < 0.0
+    heating = dT > 0.0
+    neutral = ~(cooling | heating)
+    return t, r, pred, residual, cooling, heating, neutral
+
+
+def _plot_rt_resistance(df: pd.DataFrame, pred_ohm: np.ndarray) -> go.Figure:
+    t, r, pred, _, cooling, heating, neutral = _rt_arrays(df, pred_ohm)
+    fig = go.Figure()
+    if np.any(cooling):
+        fig.add_trace(
+            go.Scatter(
+                x=t[cooling],
+                y=r[cooling],
+                mode="markers",
+                marker=dict(size=7, color=_UI["cooling"], line=dict(width=0)),
+                name="Data cooling",
+            ),
+        )
+    if np.any(heating):
+        fig.add_trace(
+            go.Scatter(
+                x=t[heating],
+                y=r[heating],
+                mode="markers",
+                marker=dict(size=7, color=_UI["heating"], line=dict(width=0)),
+                name="Data heating",
+            ),
+        )
+    if np.any(neutral):
+        fig.add_trace(
+            go.Scatter(
+                x=t[neutral],
+                y=r[neutral],
+                mode="markers",
+                marker=dict(size=7, color=_UI["muted"], line=dict(width=0)),
+                name="Data",
+            ),
+        )
+    fig.add_trace(
+        go.Scatter(x=t, y=pred, mode="lines", line=dict(color=_UI["model"], width=3), name="Model R(T)"),
+    )
+    fig.update_xaxes(title_text="Temperature (K)")
+    fig.update_yaxes(title_text="Resistance (Ohm)")
+    return _style_plotly(
+        fig,
+        title="Measured R-T Data And Model",
+        height=520,
+        yaxis_type="log",
+    )
+
+
+def _plot_rt_residual(df: pd.DataFrame, pred_ohm: np.ndarray) -> go.Figure:
+    t, _, _, residual, _, _, _ = _rt_arrays(df, pred_ohm)
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=t,
+            y=residual,
+            mode="lines",
+            line=dict(color=_UI["residual"], width=2.6),
+            name="log10(model/data)",
+        )
+    )
+    fig.add_hline(y=0.0, line_dash="dot", line_color=_UI["muted"])
+    fig.update_xaxes(title_text="Temperature (K)")
+    fig.update_yaxes(title_text="log10(model / data)")
+    return _style_plotly(fig, title="Fit Residual", height=330)
+
+
+def _plot_rt_g(df: pd.DataFrame, g_pred: np.ndarray) -> go.Figure:
+    t = df["Temperature"].to_numpy(dtype=float)
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=t,
+            y=np.asarray(g_pred, dtype=float),
+            mode="lines",
+            line=dict(color=_UI["phase"], width=2.8),
+            fill="tozeroy",
+            fillcolor="rgba(109, 40, 217, 0.10)",
+            name="g(T)",
+        )
+    )
+    fig.update_xaxes(title_text="Temperature (K)")
+    fig.update_yaxes(title_text="Semiconducting fraction g", range=[-0.05, 1.05])
+    return _style_plotly(fig, title="Hysteresis State", height=330)
+
+
+def _safe_filename(text: str) -> str:
+    safe = "".join(ch if ch.isalnum() or ch in {"-", "_", "."} else "_" for ch in str(text).strip())
+    return safe or "sample.tsv"
+
+
+def _filename_with_default_tsv(filename: str) -> str:
+    name = Path(str(filename).strip() or "sample").name.rstrip(".") or "sample"
+    return name if Path(name).suffix else f"{name}.tsv"
+
+
+def _render_stat_grid(items: List[tuple[str, str]], columns: int = 4) -> None:
+    safe_cols = max(1, int(columns))
+    cards = []
+    for label, value in items:
+        cards.append(
+            "<div class=\"stat-card\">"
+            f"<div class=\"stat-label\">{html.escape(str(label))}</div>"
+            f"<div class=\"stat-value\">{html.escape(str(value))}</div>"
+            "</div>"
+        )
+    st.markdown(
+        f"<div class=\"stat-grid\" style=\"--stat-cols: {safe_cols};\">{''.join(cards)}</div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _persist_uploaded_rt_bytes(sample_id: str, source_filename: str) -> str:
+    data = st.session_state.get("rt_upload_bytes")
+    if not data:
+        return str(st.session_state.get("rt_source_path", ""))
+    return _persist_rt_bytes(sample_id, source_filename, bytes(data))
+
+
+def _persist_rt_bytes(sample_id: str, source_filename: str, data: bytes) -> str:
+    data_dir = ROOT / "presets" / "samples" / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    filename = f"{_safe_filename(sample_id)}_{_safe_filename(source_filename)}"
+    path = data_dir / filename
+    path.write_bytes(data)
+    return str(path)
+
+
+def _rt_parameter_editor_keys() -> List[str]:
+    return list(_RT_CORE_KEYS) + ["width_factor", "reversal_threshold_K"]
+
+
+def _rt_parameter_editor_key() -> str:
+    return f"rt_parameter_editor_{int(st.session_state.get('_rt_editor_version', 0))}"
+
+
+def _apply_pending_rt_parameter_edits() -> None:
+    editor_state = st.session_state.get(_rt_parameter_editor_key())
+    if not isinstance(editor_state, dict):
+        return
+    edited_rows = editor_state.get("edited_rows", {})
+    if not isinstance(edited_rows, dict):
+        return
+    editable_keys = _rt_parameter_editor_keys()
+    min_values = {
+        "R0": 1e-12,
+        "Rm": 1e-12,
+        "w": 1e-12,
+        "beta": 1e-12,
+        "gamma": 1e-9,
+        "width_factor": 1e-12,
+        "reversal_threshold_K": 0.0,
+    }
+    for row_idx, changes in edited_rows.items():
+        if not isinstance(changes, dict) or "Value" not in changes:
+            continue
+        try:
+            name = editable_keys[int(row_idx)]
+            value = float(changes["Value"])
+        except Exception:
+            continue
+        if not np.isfinite(value):
+            continue
+        if name in min_values:
+            value = max(float(min_values[name]), value)
+        st.session_state[_rt_key(name)] = value
+
+
+def _render_rt_parameter_controls() -> YuanhangResistParams:
+    st.markdown("#### R-T Parameters")
+    editable_keys = _rt_parameter_editor_keys()
+    label_to_key = {_label(name): name for name in editable_keys}
+    note_by_key = {name: description for name, description in HYSTERESIS_PARAMETER_NOTES}
+    rows = [
+        {
+            "Parameter": _label(name),
+            "Value": float(st.session_state.get(_rt_key(name), getattr(YuanhangResistParams(), name, 0.0))),
+            "Info": note_by_key.get(name, _help(name) or ""),
+        }
+        for name in editable_keys
+    ]
+    editor = st.data_editor(
+        pd.DataFrame(rows),
+        key=_rt_parameter_editor_key(),
+        hide_index=True,
+        num_rows="fixed",
+        width="stretch",
+        column_config={
+            "Parameter": st.column_config.TextColumn("Parameter", disabled=True),
+            "Value": st.column_config.NumberColumn("Value", format="%.16g", required=True),
+            "Info": st.column_config.TextColumn("Info", disabled=True, width="large"),
+        },
+    )
+    min_values = {
+        "R0": 1e-12,
+        "Rm": 1e-12,
+        "w": 1e-12,
+        "beta": 1e-12,
+        "gamma": 1e-9,
+        "width_factor": 1e-12,
+        "reversal_threshold_K": 0.0,
+    }
+    for row in editor.to_dict("records"):
+        name = label_to_key.get(str(row.get("Parameter", "")))
+        if not name:
+            continue
+        try:
+            value = float(row.get("Value"))
+        except Exception:
+            continue
+        if not np.isfinite(value):
+            continue
+        if name in min_values:
+            value = max(float(min_values[name]), value)
+        st.session_state[_rt_key(name)] = value
+
+    current_branch = str(st.session_state.get("rt_start_branch", "insulator"))
+    branch_options = ["insulator", "metal"]
+    branch_index = branch_options.index(current_branch) if current_branch in branch_options else 0
+    st.selectbox(
+        "Initial branch",
+        branch_options,
+        index=branch_index,
+        key="rt_start_branch",
+        help=_help("start_branch"),
+    )
+    return _rt_params_from_state()
+
+
+def _render_sample_library_actions(sample: Dict[str, Any] | None) -> None:
+    if not sample:
+        return
+    st.markdown("#### Sample Library")
+    try:
+        rmse = float(dict(sample.get("fit_metrics", {})).get("rmse_log10", float("nan")))
+    except Exception:
+        rmse = float("nan")
+    _render_stat_grid(
+        [
+            ("Active sample", str(sample.get("display_name", ""))),
+            ("Branch", str(sample.get("start_branch", ""))),
+            ("Saved RMSE", "n/a" if not np.isfinite(rmse) else f"{rmse:.4f}"),
+            ("Type", "Legacy" if sample.get("_legacy") else "Custom"),
+        ],
+        columns=4,
+    )
+
+    with st.expander("Manage active sample", expanded=False):
+        cols = st.columns([2, 1, 1, 1])
+        with cols[0]:
+            rename_value = st.text_input("Rename to", value=str(sample.get("display_name", "")), key="sample_rename_value")
+        with cols[1]:
+            if st.button("Rename", width="stretch", disabled=bool(sample.get("_legacy"))):
+                try:
+                    renamed = rename_sample(str(sample["sample_id"]), rename_value)
+                    st.session_state["selected_sample_id"] = str(renamed["sample_id"])
+                    _sync_selected_sample_state(force=True)
+                    st.success("Sample renamed.")
+                    _rerun()
+                except Exception as exc:
+                    st.error(f"Rename failed: {exc}")
+        with cols[2]:
+            if st.button("Duplicate", width="stretch"):
+                try:
+                    duplicate = duplicate_sample(str(sample["sample_id"]))
+                    st.session_state["selected_sample_id"] = str(duplicate["sample_id"])
+                    _sync_selected_sample_state(force=True)
+                    st.success("Sample duplicated.")
+                    _rerun()
+                except Exception as exc:
+                    st.error(f"Duplicate failed: {exc}")
+        with cols[3]:
+            if st.button("Delete", width="stretch", disabled=bool(sample.get("_legacy"))):
+                try:
+                    delete_sample(str(sample["sample_id"]))
+                    st.session_state["selected_sample_id"] = ""
+                    st.session_state["_loaded_sample_id"] = ""
+                    _sync_selected_sample_state(force=True)
+                    st.success("Sample deleted.")
+                    _rerun()
+                except Exception as exc:
+                    st.error(f"Delete failed: {exc}")
+        export_payload = dict(sample)
+        export_payload.pop("_path", None)
+        export_payload.pop("_legacy", None)
+        st.download_button(
+            "Export active sample JSON",
+            data=json.dumps(export_payload, indent=2),
+            file_name=f"{_safe_filename(str(sample.get('display_name', 'sample')))}.json",
+            mime="application/json",
+        )
+
+
+def _sample_rmse_text(sample: Dict[str, Any]) -> str:
+    try:
+        rmse = float(dict(sample.get("fit_metrics", {})).get("rmse_log10", float("nan")))
+    except Exception:
+        rmse = float("nan")
+    return "n/a" if not np.isfinite(rmse) else f"{rmse:.4f}"
+
+
+def _render_sample_fab() -> None:
+    if st.button("+", key="sample_new_fab", type="primary", help="Create a new sample"):
+        _start_new_sample_editor()
+        _rerun()
+
+
+def _open_uploaded_sample_draft(upload) -> None:
+    data = upload.getvalue()
+    source_filename = _filename_with_default_tsv(upload.name)
+    df_upload = parse_experimental_rt_bytes(data, filename=source_filename)
+    _start_new_sample_editor()
+    st.session_state["rt_df"] = df_upload
+    st.session_state["rt_upload_bytes"] = data
+    st.session_state["rt_source_filename"] = source_filename
+    st.session_state["rt_source_path"] = ""
+    st.session_state["rt_df_source"] = f"upload:{source_filename}:{len(data)}"
+    st.session_state["sample_display_name"] = Path(source_filename).stem
+    st.session_state["sample_library_upload_nonce"] = int(st.session_state.get("sample_library_upload_nonce", 0)) + 1
+
+
+def _fit_and_save_uploaded_sample(upload, *, seed: int) -> Dict[str, Any]:
+    from neuristor.resistance_custom_analysis import fit_resistance_params
+
+    data = upload.getvalue()
+    source_filename = _filename_with_default_tsv(upload.name)
+    df_upload = parse_experimental_rt_bytes(data, filename=source_filename)
+    fit_result, _ = fit_resistance_params(
+        df_upload,
+        seed=seed,
+        random_iters=_IMPORT_FIT_RANDOM_ITERS,
+        local_passes=_IMPORT_FIT_LOCAL_PASSES,
+        fit_gamma=True,
+        gamma_fixed=_IMPORT_FIT_GAMMA,
+        g_weight=0.2,
+        high_res_weight=_IMPORT_FIT_HIGH_RES_WEIGHT,
+    )
+    metrics, _, _ = compute_rt_fit_metrics(df_upload, fit_result.params, start_branch=fit_result.start_branch)
+    display_name = Path(source_filename).stem
+    sample_id = make_sample_id(display_name)
+    source_path = _persist_rt_bytes(sample_id, source_filename, bytes(data))
+    payload = build_sample_payload(
+        display_name=display_name,
+        source_filename=source_filename,
+        source_path=source_path,
+        notes="Initial auto-fit created during sample import.",
+        params=fit_result.params,
+        start_branch=fit_result.start_branch,
+        fit_metrics=metrics,
+        sample_id=sample_id,
+    )
+    save_sample(payload)
+    return payload
+
+
+def _render_import_fit_overlay(uploads: List[Any]) -> List[Dict[str, Any]]:
+    imported: List[Dict[str, Any]] = []
+    failures: List[str] = []
+    total = len(uploads)
+    overlay = st.empty()
+    with overlay.container(key="sample_fit_overlay"):
+        st.markdown("### Fitting imported samples")
+        st.caption("Each dropped file is parsed, auto-fitted once, and saved as a sample preset.")
+        overall = st.progress(0.0)
+        status = st.empty()
+        for idx, upload in enumerate(uploads, start=1):
+            source_filename = _filename_with_default_tsv(upload.name)
+            status.write(f"Fitting {idx}/{total}: `{source_filename}`")
+            overall.progress((idx - 1) / max(total, 1))
+            try:
+                imported.append(_fit_and_save_uploaded_sample(upload, seed=42 + idx))
+            except Exception as exc:
+                failures.append(f"{source_filename}: {exc}")
+            overall.progress(idx / max(total, 1))
+        if failures:
+            status.warning("Some samples could not be imported.")
+        else:
+            status.success("Imported samples are ready.")
+        time.sleep(0.4)
+    overlay.empty()
+    st.session_state["sample_library_upload_nonce"] = int(st.session_state.get("sample_library_upload_nonce", 0)) + 1
+    st.session_state["sample_import_results"] = {
+        "imported": [str(p.get("display_name", p.get("sample_id", "Sample"))) for p in imported],
+        "failures": failures,
+    }
+    return imported
+
+
+def _render_sample_dropzone() -> None:
+    st.markdown(
+        """
+        <div class="sample-drop-intro">
+          <div class="sample-drop-title">Drop your samples here! :)</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    nonce = int(st.session_state.get("sample_library_upload_nonce", 0))
+    upload = st.file_uploader(
+        "Drop your samples here! :)",
+        type=None,
+        key=f"sample_library_upload_{nonce}",
+        label_visibility="collapsed",
+        accept_multiple_files=True,
+    )
+    if upload:
+        uploads = list(upload)
+        imported = _render_import_fit_overlay(uploads)
+        if imported and not st.session_state.get("selected_sample_id"):
+            st.session_state["selected_sample_id"] = str(imported[0]["sample_id"])
+        st.session_state["sample_editor_mode"] = "list"
+        st.session_state["sample_editor_sample_id"] = ""
+        _rerun()
+
+
+def _render_sample_list_page() -> None:
+    st.header("Samples")
+    _render_sample_dropzone()
+    import_results = st.session_state.pop("sample_import_results", None)
+    if isinstance(import_results, dict):
+        imported = list(import_results.get("imported", []))
+        failures = list(import_results.get("failures", []))
+        if imported:
+            st.success(f"Imported and auto-fitted {len(imported)} sample{'s' if len(imported) != 1 else ''}.")
+        if failures:
+            st.warning("Some files could not be imported:\n" + "\n".join(f"- {msg}" for msg in failures))
+
+    samples = list_samples()
+    if not samples:
+        st.info("No saved samples yet. Use the + button to create one.")
+        _render_sample_fab()
+        return
+
+    for start in range(0, len(samples), 3):
+        cols = st.columns(3)
+        for col, sample in zip(cols, samples[start : start + 3]):
+            with col:
+                with st.container(border=True):
+                    name = str(sample.get("display_name", sample.get("sample_id", "Sample")))
+                    if st.button(name, key=f"open_sample_{sample['sample_id']}", width="stretch"):
+                        _open_sample_editor(str(sample["sample_id"]))
+                        _rerun()
+                    sample_type = "Legacy" if sample.get("_legacy") else "Custom"
+                    branch = str(sample.get("start_branch", ""))
+                    st.caption(f"{sample_type} · {branch} · RMSE {_sample_rmse_text(sample)}")
+                    source = str(sample.get("source_filename", "") or "No source file")
+                    st.caption(source)
+
+    _render_sample_fab()
+
+
+def _model_rt_temperature_path(params: YuanhangResistParams) -> np.ndarray:
+    low = float(min(params.T_min_K, params.T_max_K))
+    high = float(max(params.T_min_K, params.T_max_K))
+    if not np.isfinite(low) or not np.isfinite(high) or abs(high - low) < 1e-9:
+        low, high = 300.0, 370.0
+    heating = np.linspace(low, high, 180)
+    cooling = np.linspace(high, low, 180)
+    return np.concatenate([heating, cooling[1:]])
+
+
+def _plot_rt_model_only(temperatures_K: np.ndarray, pred_ohm: np.ndarray) -> go.Figure:
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=np.asarray(temperatures_K, dtype=float),
+            y=np.asarray(pred_ohm, dtype=float),
+            mode="lines",
+            line=dict(color=_UI["model"], width=3),
+            name="Model R(T)",
+        )
+    )
+    fig.update_xaxes(title_text="Temperature (K)")
+    fig.update_yaxes(title_text="Resistance (Ohm)")
+    return _style_plotly(fig, title="Model R-T Curve", height=520, yaxis_type="log")
+
+
+def _load_editor_sample() -> Dict[str, Any] | None:
+    if st.session_state.get("sample_editor_mode") != "edit":
+        return None
+    sid = str(st.session_state.get("sample_editor_sample_id") or st.session_state.get("selected_sample_id", ""))
+    sample = get_sample(sid) if sid else None
+    if sample and str(st.session_state.get("_loaded_sample_id", "")) != str(sample["sample_id"]):
+        _open_sample_editor(str(sample["sample_id"]))
+    return sample
+
+
+def _render_sample_editor_page() -> None:
+    mode = str(st.session_state.get("sample_editor_mode", "list"))
+    sample = _load_editor_sample()
+    if mode == "edit" and not sample:
+        st.error("Sample not found.")
+        if st.button("Back to samples"):
+            st.session_state["sample_editor_mode"] = "list"
+            _rerun()
+        _render_sample_fab()
+        return
+
+    top_cols = st.columns([1, 4])
+    with top_cols[0]:
+        if st.button("← Samples", width="stretch"):
+            st.session_state["sample_editor_mode"] = "list"
+            _rerun()
+    with top_cols[1]:
+        title = "New sample" if mode == "new" else str(sample.get("display_name", "Sample"))
+        st.header(title)
+
+    source_path = str(st.session_state.get("rt_source_path", "") or "").strip()
+    if mode == "edit" and sample and not source_path:
+        st.session_state["rt_df"] = None
+        st.session_state["rt_df_source"] = str(sample.get("sample_id", ""))
+    df = st.session_state.get("rt_df")
+    if (df is None or not isinstance(df, pd.DataFrame) or df.empty) and sample and source_path:
+        df = _load_rt_data_for_sample(sample)
+        if df is not None:
+            st.session_state["rt_df"] = df
+            st.session_state["rt_df_source"] = str(sample.get("sample_id", ""))
+
+    meta_cols = st.columns(2)
+    with meta_cols[0]:
+        st.text_input("Sample name", key="sample_display_name")
+    with meta_cols[1]:
+        st.text_input("Source file", key="rt_source_filename", disabled=True)
+
+    _apply_pending_rt_parameter_edits()
+    params = _rt_params_from_state()
+    branch = str(st.session_state.get("rt_start_branch", "insulator"))
+
+    metrics: Dict[str, float] = {}
+    pred: np.ndarray | None = None
+    g_pred: np.ndarray | None = None
+    has_measured_data = isinstance(df, pd.DataFrame) and not df.empty and {"Temperature", "Resistance"}.issubset(df.columns)
+    try:
+        if has_measured_data:
+            metrics, pred, g_pred = compute_rt_fit_metrics(df, params, start_branch=branch)
+            _render_stat_grid(
+                [
+                    ("RMSE log10", f"{metrics['rmse_log10']:.4f}"),
+                    (
+                        "R² log10",
+                        "n/a" if not np.isfinite(metrics["r2_log10"]) else f"{metrics['r2_log10']:.4f}",
+                    ),
+                    (
+                        "Cooling RMSE",
+                        "n/a"
+                        if not np.isfinite(metrics["rmse_log10_cooling"])
+                        else f"{metrics['rmse_log10_cooling']:.4f}",
+                    ),
+                    (
+                        "Heating RMSE",
+                        "n/a"
+                        if not np.isfinite(metrics["rmse_log10_heating"])
+                        else f"{metrics['rmse_log10_heating']:.4f}",
+                    ),
+                    ("Max |log err|", f"{metrics['max_abs_log10_error']:.4f}"),
+                ],
+                columns=5,
+            )
+            st.plotly_chart(_plot_rt_resistance(df, pred), width="stretch")
+            with st.expander("Fit diagnostics", expanded=False):
+                st.plotly_chart(_plot_rt_residual(df, pred), width="stretch")
+                st.plotly_chart(_plot_rt_g(df, g_pred), width="stretch")
+        else:
+            temperatures = _model_rt_temperature_path(params)
+            pred, g_pred = predict_resistance_trace(temperatures, params, start_branch=branch)
+            st.info("No experimental R-T file is attached. Showing the model curve over the current temperature range.")
+            st.plotly_chart(_plot_rt_model_only(temperatures, pred), width="stretch")
+    except Exception as exc:
+        st.error(f"Could not evaluate R-T model: {exc}")
+        _render_sample_fab()
+        return
+
+    if has_measured_data:
+        st.markdown("### Auto-Fit")
+        refit_cols = st.columns([1, 3])
+        with refit_cols[0]:
+            refit_now = st.button("Auto-Fit", type="primary", width="stretch")
+        with refit_cols[1]:
+            st.caption(
+                "Fits R0, Ea/k, Rm, w, Tc, beta, gamma, and the initial branch from this sample's saved R-T data."
+            )
+        with st.expander("Auto-Fit settings", expanded=False):
+            fit_cols = st.columns(5)
+            with fit_cols[0]:
+                fit_seed = int(st.number_input("Seed", value=42, step=1, key="sample_refit_seed"))
+            with fit_cols[1]:
+                fit_random_iters = int(
+                    st.number_input(
+                        "Random iterations",
+                        value=12000,
+                        min_value=0,
+                        step=500,
+                        key="sample_refit_random_iters",
+                    )
+                )
+            with fit_cols[2]:
+                fit_local_passes = int(
+                    st.number_input("Local passes", value=180, min_value=0, step=10, key="sample_refit_local_passes")
+                )
+            with fit_cols[3]:
+                high_res_weight = float(
+                    st.number_input(
+                        "High-R weight",
+                        value=0.65,
+                        min_value=0.0,
+                        step=0.05,
+                        format="%.4g",
+                        key="sample_refit_high_res_weight",
+                    )
+                )
+            with fit_cols[4]:
+                g_weight = float(
+                    st.number_input(
+                        "g weight",
+                        value=0.2,
+                        min_value=0.0,
+                        step=0.05,
+                        format="%.4g",
+                        key="sample_refit_g_weight",
+                    )
+                )
+        if refit_now:
+            try:
+                from neuristor.resistance_custom_analysis import fit_resistance_params
+
+                with st.spinner("Fitting R-T parameters..."):
+                    fit_result, _ = fit_resistance_params(
+                        df,
+                        seed=fit_seed,
+                        random_iters=fit_random_iters,
+                        local_passes=fit_local_passes,
+                        fit_gamma=True,
+                        gamma_fixed=float(st.session_state[_rt_key("gamma")]),
+                        g_weight=g_weight,
+                        high_res_weight=high_res_weight,
+                    )
+                _set_rt_state_from_params(fit_result.params, start_branch=fit_result.start_branch)
+                st.success(f"Auto-Fit applied: rmse_log10={fit_result.rmse_log10:.4f}.")
+                _rerun()
+            except Exception as exc:
+                st.error(f"Auto-Fit failed: {exc}")
+
+    _render_rt_parameter_controls()
+    st.text_area("Notes", key="sample_notes", height=80)
+
+    selected = sample if mode == "edit" else None
+    can_update = bool(selected and not selected.get("_legacy"))
+
+    def _payload_for_save(
+        sample_id: str | None = None,
+        created_at: str | None = None,
+        *,
+        persist_upload: bool = True,
+    ) -> Dict[str, Any]:
+        display_name = str(st.session_state.get("sample_display_name", "") or "Untitled sample")
+        sid = sample_id or make_sample_id(display_name)
+        source_filename = str(st.session_state.get("rt_source_filename", "") or "")
+        source_path = (
+            _persist_uploaded_rt_bytes(sid, source_filename)
+            if persist_upload
+            else str(st.session_state.get("rt_source_path", ""))
+        )
+        return build_sample_payload(
+            display_name=display_name,
+            source_filename=source_filename,
+            source_path=source_path,
+            notes=str(st.session_state.get("sample_notes", "")),
+            params=_rt_params_from_state(),
+            start_branch=str(st.session_state.get("rt_start_branch", "insulator")),
+            fit_metrics=metrics,
+            sample_id=sid,
+            created_at_utc=created_at,
+        )
+
+    st.markdown("### Save")
+    save_cols = st.columns([1, 1, 1, 1])
+    with save_cols[0]:
+        primary_label = "Save sample" if mode == "new" or not can_update else "Save changes"
+        if st.button(primary_label, type="primary", width="stretch"):
+            try:
+                if can_update:
+                    payload = _payload_for_save(
+                        sample_id=str(selected["sample_id"]),
+                        created_at=str(selected.get("created_at_utc", "")),
+                    )
+                else:
+                    payload = _payload_for_save()
+                save_sample(payload)
+                st.session_state["selected_sample_id"] = str(payload["sample_id"])
+                st.session_state["sample_editor_mode"] = "edit"
+                st.session_state["sample_editor_sample_id"] = str(payload["sample_id"])
+                st.session_state["_loaded_sample_id"] = ""
+                _sync_selected_sample_state(force=True)
+                st.success("Sample saved.")
+                _rerun()
+            except Exception as exc:
+                st.error(f"Save failed: {exc}")
+    with save_cols[1]:
+        if st.button("Save as copy", width="stretch"):
+            try:
+                payload = _payload_for_save()
+                save_sample(payload)
+                st.session_state["selected_sample_id"] = str(payload["sample_id"])
+                st.session_state["sample_editor_mode"] = "edit"
+                st.session_state["sample_editor_sample_id"] = str(payload["sample_id"])
+                st.session_state["_loaded_sample_id"] = ""
+                _sync_selected_sample_state(force=True)
+                st.success("Sample copy saved.")
+                _rerun()
+            except Exception as exc:
+                st.error(f"Copy failed: {exc}")
+    with save_cols[2]:
+        preview_payload = _payload_for_save(
+            sample_id=str(selected["sample_id"]) if selected and not selected.get("_legacy") else None,
+            persist_upload=False,
+        )
+        st.download_button(
+            "Export JSON",
+            data=json.dumps(preview_payload, indent=2),
+            file_name=f"{_safe_filename(str(preview_payload['display_name']))}.json",
+            mime="application/json",
+            width="stretch",
+        )
+    with save_cols[3]:
+        if st.button("Delete", width="stretch", disabled=not can_update):
+            try:
+                delete_sample(str(selected["sample_id"]))
+                st.session_state["selected_sample_id"] = ""
+                st.session_state["sample_editor_mode"] = "list"
+                st.session_state["sample_editor_sample_id"] = ""
+                st.session_state["_loaded_sample_id"] = ""
+                st.success("Sample deleted.")
+                _rerun()
+            except Exception as exc:
+                st.error(f"Delete failed: {exc}")
+
+    _render_sample_fab()
+
+
+def _render_samples_page() -> None:
+    if st.session_state.get("sample_editor_mode") in {"edit", "new"}:
+        _render_sample_editor_page()
+    else:
+        st.session_state["sample_editor_mode"] = "list"
+        _render_sample_list_page()
+
+
 def _looks_like_nyquist_zigzag(v_mV: np.ndarray) -> bool:
     """Detect alternating sample-to-sample artifacts that render as a ribbon."""
     if v_mV.size < 8:
@@ -2266,7 +3598,18 @@ def _looks_like_nyquist_zigzag(v_mV: np.ndarray) -> bool:
 def _looks_numerically_unstable(v_mV: np.ndarray) -> bool:
     if v_mV.size == 0:
         return False
-    return float(np.nanmax(np.abs(v_mV))) > 2_000.0
+    return (not np.all(np.isfinite(v_mV))) or float(np.nanmax(np.abs(v_mV))) > 50_000.0
+
+
+def _threshold_crossing_cycle_count(v_mV: np.ndarray) -> int:
+    """Count relaxation cycles without relying on resolved local extrema."""
+    if v_mV.size < 8 or not np.all(np.isfinite(v_mV)):
+        return 0
+    low, high = np.quantile(v_mV, [0.1, 0.9])
+    if high - low <= 1e-12:
+        return 0
+    threshold = 0.5 * (low + high)
+    return int(np.sum((v_mV[:-1] < threshold) & (v_mV[1:] >= threshold)))
 
 
 def _classify_current_trace_oscillation(
@@ -2286,6 +3629,8 @@ def _classify_current_trace_oscillation(
     if v_eval.size == 0:
         v_eval = v_mV
     turns = _count_turns(v_eval)
+    crossing_cycles = _threshold_crossing_cycle_count(v_eval)
+    effective_turns = max(turns, 2 * crossing_cycles)
     v_pp = float(np.ptp(v_eval)) if v_eval.size else 0.0
     v_std = float(np.std(v_eval)) if v_eval.size else 0.0
     v_avg = float(np.mean(v_eval)) if v_eval.size else 0.0
@@ -2294,12 +3639,13 @@ def _classify_current_trace_oscillation(
     oscillatory = (
         (not unstable)
         and (not zigzag)
-        and (turns >= int(min_turns))
+        and (effective_turns >= int(min_turns))
         and (v_pp >= float(min_vpp_mV))
         and (v_pp <= float(max_vpp_mV))
     )
     return {
-        "turn_count": float(turns),
+        "turn_count": float(effective_turns),
+        "threshold_crossing_cycles": float(crossing_cycles),
         "V_avg_mV": v_avg,
         "V_std_mV": v_std,
         "V_pp_mV": v_pp,
@@ -2314,6 +3660,12 @@ def _apply_current_scan_override(current_params: Dict[str, Any], param_key: str,
         raise ValueError(f"Unsupported current-domain parameter key: {param_key}")
     target_field, scale = _CURRENT_DOMAIN_SCAN_PARAM_MAP[param_key]
     current_params[target_field] = float(value) * float(scale)
+
+
+def _sanitize_current_drive_params_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+    from neuristor.current_drive_sim import sanitize_current_drive_params
+
+    return sanitize_current_drive_params(payload)
 
 
 def _show_plotly_with_click(
@@ -2336,7 +3688,7 @@ def _show_plotly_with_click(
         if points and show_click:
             st.write(f"{label} click:", points[0])
         return points
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     return []
 
 
@@ -2526,12 +3878,18 @@ def _matplotlib_sweep2d_figs(df: pd.DataFrame, x_label: str, y_label: str) -> Li
 
 def _create_job(config: Dict[str, Any]) -> Dict[str, Any]:
     job_id = _job_id()
-    job_dir = _job_dir(job_id)
+    job_storage = _normalize_job_storage(config.get("job_storage", "local"))
+    job_dir = _job_dir(job_id, storage=job_storage)
     job_dir.mkdir(parents=True, exist_ok=True)
+    config["job_storage"] = job_storage
     job = {
         "id": job_id,
         "name": config.get("job_name", ""),
+        "job_storage": job_storage,
         "type": config["type"],
+        "sample_id": config.get("sample_id", ""),
+        "sample_name": config.get("sample_name", ""),
+        "source_model": config.get("source_model", ""),
         "status": "queued",
         "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         "params": config,
@@ -2545,9 +3903,9 @@ def _create_job(config: Dict[str, Any]) -> Dict[str, Any]:
 def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
     config = job["params"]
     if job["type"] == "current_domain_scan":
-        from neuristor.current_drive_sim import CurrentDriveParams, simulate_current_step
+        from neuristor.current_drive_sim import CurrentDriveParams, simulate_current_step, stabilize_current_drive_params
 
-        cp_base = dict(config["current_params"])
+        cp_base = _sanitize_current_drive_params_payload(config["current_params"])
         cp_base["resist_params"] = dict(cp_base["resist_params"])
 
         scan_key = str(config["scan_param_key"])
@@ -2578,6 +3936,18 @@ def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
             cp["resist_params"] = YuanhangResistParams(**cp_base["resist_params"])
             _apply_current_scan_override(cp, scan_key, float(scan_val))
             params = CurrentDriveParams(**cp)
+            i_peak = max(abs(int(config["I_start_uA"])), abs(int(config["I_stop_uA"])))
+            params_before_dt = float(params.dt_s)
+            params, _ = stabilize_current_drive_params(params, I_peak_uA=float(i_peak))
+            if float(params.dt_s) < params_before_dt * 0.98:
+                _append_job_log(
+                    job,
+                    (
+                        "[current_domain_scan] auto-adjusted dt "
+                        f"from {params_before_dt * 1e9:.4g} ns to {float(params.dt_s) * 1e9:.4g} ns "
+                        f"for scan_value={float(scan_val):.6g}"
+                    ),
+                )
 
             scan_detail: List[Dict[str, float]] = []
             for i_idx, i_uA in enumerate(currents_uA):
@@ -2657,9 +4027,13 @@ def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
         return
 
     if job["type"] == "current_sweep":
-        from neuristor.current_drive_sim import CurrentDriveParams, run_sweep_make_gif, simulate_current_step
+        from neuristor.current_drive_sim import (
+            CurrentDriveParams,
+            run_sweep_make_gif,
+            stabilize_current_drive_params,
+        )
 
-        cp = dict(config["current_params"])
+        cp = _sanitize_current_drive_params_payload(config["current_params"])
         cp["resist_params"] = YuanhangResistParams(**cp["resist_params"])
         params = CurrentDriveParams(**cp)
 
@@ -2668,6 +4042,16 @@ def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
         i_step = int(config["I_step_uA"])
         seed = config.get("seed")
         i_peak = max(abs(i_start), abs(i_stop))
+        params_before_dt = float(params.dt_s)
+        params, report = stabilize_current_drive_params(params, I_peak_uA=float(i_peak))
+        if float(params.dt_s) < params_before_dt * 0.98:
+            _append_job_log(
+                job,
+                (
+                    "[current_sweep] auto-adjusted dt "
+                    f"from {params_before_dt * 1e9:.4g} ns to {float(params.dt_s) * 1e9:.4g} ns"
+                ),
+            )
 
         report = _current_drive_numerics_report(
             dt_s=params.dt_s,
@@ -2713,10 +4097,7 @@ def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
             progress_cb("[current_sweep] extracting sweep summary/spectra")
 
         currents_uA = [int(v) for v in result["currents_uA"]]
-        traces: List[Dict[str, np.ndarray]] = []
-        for idx, i_uA in enumerate(currents_uA):
-            run_seed = None if seed is None else int(seed) + idx
-            traces.append(simulate_current_step(float(i_uA), params=params, seed=run_seed))
+        traces = result["traces"]
 
         traces_df, summary_df, spectra_df = _build_current_summary_and_spectra(
             currents_uA=currents_uA,
@@ -2866,56 +4247,9 @@ def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
 # -----------------------------
 
 
-def _render_top_bar() -> None:
-    col_text, _ = st.columns([6, 1])
-    with col_text:
-        st.markdown("## Quantum Materials for Neuromorphic Computation")
-        st.markdown("VO2 Simulations")
-
-
 def _render_sidebar() -> None:
-    st.sidebar.markdown("")
-    choice = st.sidebar.radio(
-        "Select mode",
-        [*_SIMULATION_MODES, "Jobs"],
-    )
-    st.session_state["mode"] = choice
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("### Parameter Presets")
-    st.sidebar.caption(f"Apply to: {choice}")
-    if choice in _SIMULATION_MODES:
-        c1, c2 = st.sidebar.columns(2)
-        if c1.button("Paper Parameters", key="sidebar_paper_params", use_container_width=True):
-            ok, msg = _apply_mode_scoped_preset("paper")
-            if ok:
-                st.sidebar.success(msg)
-            else:
-                st.sidebar.error(msg)
-        if c2.button("Sample Parameters", key="sidebar_sample_params", use_container_width=True):
-            ok, msg = _apply_mode_scoped_preset("sample")
-            if ok:
-                st.sidebar.success(msg)
-            else:
-                st.sidebar.error(msg)
-
-        profile = _mode_profile(mode=choice)
-        st.sidebar.caption(f"Current preset profile: {profile}")
-        if profile == "sample":
-            st.sidebar.markdown(
-                """
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-                  <div style="border-left:6px solid #16a34a;height:18px;"></div>
-                  <span>Sample-derived parameter</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-                  <div style="border-left:6px solid #dc2626;height:18px;"></div>
-                  <span>Assumed / not extracted</span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-    else:
-        st.sidebar.caption("Choose a simulation mode to apply presets.")
+    st.sidebar.markdown("### Navigation")
+    st.sidebar.radio("Page", list(_APP_PAGES), key="app_page", label_visibility="collapsed")
 
 
 def _render_terminal() -> None:
@@ -2929,6 +4263,334 @@ def _inject_global_styles() -> None:
     st.markdown(
         """
         <style>
+        :root {
+            --app-bg: #f5f5f7;
+            --app-panel: #ffffff;
+            --app-panel-alt: #f2f2f7;
+            --app-ink: #1d1d1f;
+            --app-muted: #6e6e73;
+            --app-line: rgba(0, 0, 0, 0.12);
+            --app-accent: #007AFF;
+            --app-accent-dark: #0056B3;
+            --app-accent-soft: #E5F1FF;
+            --app-warn: #FF9500;
+            --app-header-offset: 4.25rem;
+        }
+        .stApp {
+            background: var(--app-bg);
+            color: var(--app-ink);
+        }
+        #MainMenu {
+            display: none !important;
+        }
+        header[data-testid="stHeader"] {
+            background: rgba(245, 245, 247, 0.92);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+        [data-testid="collapsedControl"] {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            color: var(--app-ink) !important;
+            background: var(--app-panel) !important;
+            border: 1px solid var(--app-line) !important;
+            border-radius: 10px !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        }
+        [data-testid="collapsedControl"] svg {
+            color: var(--app-ink) !important;
+            fill: var(--app-ink) !important;
+        }
+        .stApp h1, .stApp h2, .stApp h3, .stApp h4,
+        .stApp p, .stApp label, .stApp span,
+        .stApp div[data-testid="stMarkdownContainer"] {
+            color: var(--app-ink);
+        }
+        section[data-testid="stSidebar"] {
+            background: var(--app-panel);
+            border-right: 1px solid var(--app-line);
+        }
+        section[data-testid="stSidebar"] * {
+            color: var(--app-ink) !important;
+        }
+        section[data-testid="stSidebar"] div[role="radiogroup"] label {
+            border-radius: 8px;
+            padding: 5px 6px;
+        }
+        section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
+            background: var(--app-accent-soft);
+            border: 1px solid rgba(0, 122, 255, 0.24);
+        }
+        input[type="radio"],
+        input[type="checkbox"] {
+            accent-color: var(--app-accent) !important;
+        }
+        div[data-baseweb="select"] > div {
+            background: var(--app-panel) !important;
+            border-color: var(--app-line) !important;
+            border-radius: 8px !important;
+        }
+        div[data-baseweb="select"] span,
+        div[data-baseweb="select"] svg {
+            color: var(--app-ink) !important;
+            fill: var(--app-ink) !important;
+        }
+        div[data-testid="stTextInput"] input,
+        div[data-testid="stNumberInput"] input,
+        textarea {
+            background: var(--app-panel) !important;
+            color: var(--app-ink) !important;
+            border-color: var(--app-line) !important;
+            border-radius: 8px !important;
+        }
+        div[data-testid="stTextInput"] input:focus,
+        div[data-testid="stNumberInput"] input:focus,
+        textarea:focus {
+            border-color: var(--app-accent) !important;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.18) !important;
+        }
+        .block-container {
+            max-width: 1180px;
+            padding-top: var(--app-header-offset) !important;
+            padding-bottom: 3rem;
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(var(--stat-cols), minmax(0, 1fr));
+            gap: 12px;
+            margin: 10px 0 18px 0;
+        }
+        .stat-card {
+            background: var(--app-panel);
+            border: 1px solid var(--app-line);
+            border-radius: 12px;
+            padding: 13px 15px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.035);
+            min-height: 74px;
+        }
+        .stat-label {
+            color: var(--app-muted) !important;
+            font-size: 0.78rem;
+            line-height: 1.2;
+            margin-bottom: 7px;
+        }
+        .stat-value {
+            color: var(--app-ink) !important;
+            font-size: 1.22rem;
+            font-weight: 650;
+            line-height: 1.12;
+            overflow-wrap: anywhere;
+        }
+        .reference-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid var(--app-line);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin: 6px 0 14px 0;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.035);
+        }
+        .reference-strip strong {
+            color: var(--app-ink);
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+        .reference-strip span {
+            color: var(--app-muted) !important;
+            font-size: 0.84rem;
+            line-height: 1.35;
+        }
+        div[data-testid="stMetric"] {
+            background: var(--app-panel);
+            border: 1px solid var(--app-line);
+            border-radius: 8px;
+            padding: 12px 14px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+        }
+        div[data-testid="stMetric"] * {
+            color: var(--app-ink) !important;
+        }
+        div[data-testid="stExpander"] {
+            border: 1px solid var(--app-line);
+            border-radius: 8px;
+            background: var(--app-panel);
+        }
+        div[data-testid="stFileUploader"] {
+            background: var(--app-panel);
+            border: 1px dashed #8aa5b6;
+            border-radius: 8px;
+            padding: 8px 12px;
+        }
+        [data-testid="stFileUploaderDropzone"] {
+            background: var(--app-panel) !important;
+            border: 1px dashed var(--app-line) !important;
+            border-radius: 10px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        [data-testid="stFileUploaderDropzone"] * {
+            color: var(--app-ink) !important;
+            fill: var(--app-muted) !important;
+        }
+        [data-testid="stFileUploaderDropzoneInstructions"],
+        [data-testid="stFileUploaderDropzoneInstructions"] * {
+            display: none !important;
+        }
+        [data-testid="stFileUploaderDropzone"] button {
+            background: var(--app-accent) !important;
+            border-color: var(--app-accent) !important;
+            color: #ffffff !important;
+        }
+        [data-testid="stFileUploaderDropzone"] button * {
+            color: #ffffff !important;
+        }
+        .stButton > button,
+        .stDownloadButton > button,
+        button[kind="secondary"] {
+            border-radius: 10px !important;
+            border: 1px solid var(--app-line) !important;
+            background: var(--app-panel) !important;
+            color: var(--app-ink) !important;
+            font-weight: 650 !important;
+        }
+        .stButton > button[kind="primary"],
+        button[kind="primary"] {
+            background: var(--app-accent) !important;
+            border-color: var(--app-accent) !important;
+            color: #ffffff !important;
+        }
+        .stButton > button:hover,
+        .stDownloadButton > button:hover {
+            border-color: rgba(0, 122, 255, 0.36) !important;
+            color: var(--app-accent-dark) !important;
+        }
+        .stButton > button[kind="primary"]:hover,
+        button[kind="primary"]:hover {
+            color: #ffffff !important;
+            background: var(--app-accent-dark) !important;
+        }
+        div[data-testid="stAlert"] {
+            border-radius: 8px;
+        }
+        div[data-testid="stPlotlyChart"] {
+            border: 1px solid var(--app-line);
+            border-radius: 8px;
+            background: var(--app-panel);
+            padding: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+        }
+        .sample-drop-intro {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            border: 1px solid rgba(0, 122, 255, 0.20);
+            border-bottom: 0;
+            border-radius: 16px 16px 0 0;
+            padding: 20px 22px 4px 22px;
+            margin-top: 8px;
+        }
+        .sample-drop-title {
+            color: var(--app-ink);
+            font-size: 1.35rem;
+            font-weight: 750;
+            line-height: 1.15;
+        }
+        [class*="st-key-sample_library_upload_"] {
+            margin-bottom: 24px;
+        }
+        [class*="st-key-sample_library_upload_"] div[data-testid="stFileUploader"] {
+            background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%) !important;
+            border: 1px solid rgba(0, 122, 255, 0.20) !important;
+            border-top: 0 !important;
+            border-radius: 0 0 16px 16px !important;
+            padding: 12px 22px 22px 22px !important;
+            box-shadow: 0 18px 48px rgba(0, 0, 0, 0.055);
+        }
+        [class*="st-key-sample_library_upload_"] [data-testid="stFileUploaderDropzone"] {
+            min-height: 86px;
+            border: 1.5px dashed rgba(0, 122, 255, 0.36) !important;
+            background: rgba(0, 122, 255, 0.045) !important;
+        }
+        [class*="st-key-sample_library_upload_"] [data-testid="stFileUploaderDropzone"]:hover {
+            border-color: rgba(0, 122, 255, 0.72) !important;
+            background: rgba(0, 122, 255, 0.075) !important;
+        }
+        .st-key-sample_fit_overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(245, 245, 247, 0.72);
+            backdrop-filter: blur(10px);
+        }
+        .st-key-sample_fit_overlay > div {
+            max-width: 560px;
+            width: min(560px, calc(100vw - 48px));
+            background: var(--app-panel);
+            border: 1px solid var(--app-line);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.18);
+        }
+        .st-key-sample_new_fab {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            z-index: 9999;
+        }
+        .st-key-sample_new_fab button {
+            width: 58px !important;
+            height: 58px !important;
+            min-height: 58px !important;
+            padding: 0 !important;
+            border-radius: 50% !important;
+            font-size: 2rem !important;
+            line-height: 1 !important;
+            box-shadow: 0 14px 35px rgba(0, 122, 255, 0.32) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: #ffffff !important;
+            position: relative;
+        }
+        .st-key-sample_new_fab button p,
+        .st-key-sample_new_fab button span {
+            display: none !important;
+        }
+        .st-key-sample_new_fab button::before {
+            content: "+";
+            color: #ffffff;
+            font-size: 2.1rem;
+            font-weight: 500;
+            line-height: 1;
+            margin-top: -2px;
+        }
+        div[data-testid="InputInstructions"] {
+            display: none !important;
+        }
+        div[data-testid="stDataFrame"] {
+            border: 1px solid var(--app-line);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        @media (max-width: 760px) {
+            .stat-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .stat-card {
+                min-height: 64px;
+                padding: 12px;
+            }
+            .stat-value {
+                font-size: 1.05rem;
+            }
+        }
         /* Remove +/- stepper controls from all Streamlit number inputs. */
         div[data-testid="stNumberInput"] button {
             display: none !important;
@@ -2947,29 +4609,68 @@ def _inject_global_styles() -> None:
     )
 
 
+def _render_voltage_quick_config_button(key_suffix: str) -> None:
+    cols = st.columns([4.6, 1.4], vertical_alignment="center")
+    with cols[0]:
+        st.markdown(
+            """
+            <div class="reference-strip">
+                <div>
+                    <strong>Yuanhang Zhang reference magnitudes</strong><br>
+                    <span>Vin 14.5 V · Rseries 12 kOhm · C 145 pF · Cth 49.6 mW*ns/K · Sth 0.206 mW/K · 300 us at 10 ns.</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with cols[1]:
+        if st.button("Use quick config", key=f"voltage_quick_config_{key_suffix}", width="stretch"):
+            _apply_voltage_yuanhang_quick_config()
+            st.rerun()
+
+
+def _render_current_quick_config_button() -> None:
+    cols = st.columns([4.6, 1.4], vertical_alignment="center")
+    with cols[0]:
+        st.markdown(
+            """
+            <div class="reference-strip">
+                <div>
+                    <strong>Current-source quick pulse</strong><br>
+                    <span>50-2000 uA sweep · 10 ns dt · 200 ns pre-pulse · 300 ns pulse-off · C 145 pF · T0 325 K.</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with cols[1]:
+        if st.button("Use quick config", key="current_quick_config", width="stretch"):
+            _apply_current_yuanhang_quick_config()
+            st.rerun()
+
+
 def _inputs_common() -> None:
     st.markdown("### Circuit / Thermal")
-    circuit_keys = [f.name for f in dataclasses.fields(YuanhangCircuitParams)]
+    circuit_keys = [
+        f.name for f in dataclasses.fields(YuanhangCircuitParams) if f.name not in _HIDDEN_EXPERIMENT_CIRCUIT_KEYS
+    ]
     _render_input_grid(circuit_keys, _num_input, columns=4)
 
     with st.expander("Time / Window", expanded=False):
         time_keys = ["t_end_us", "dt_ns", "t_start_us", "t_end_window_us", "threshold_A"]
         _render_input_grid(time_keys, _num_input, columns=4)
 
-    with st.expander("Lattice", expanded=False):
-        _render_input_grid(["nx", "ny"], _int_input, columns=4)
-
-    with st.expander("Hysteresis / Resistance", expanded=False):
-        resist_keys = [f.name for f in dataclasses.fields(YuanhangResistParams)]
-        _render_input_grid(resist_keys, _num_input, columns=4)
-
 
 def _build_job_config_single() -> Dict[str, Any]:
     resist, circuit, lattice = _build_params()
     vin_list = [float(x.strip()) for x in st.session_state["vin_list"].split(",") if x.strip()]
+    sample = _selected_sample()
     return {
         "type": "single",
         "job_name": st.session_state.get("job_name_single", "").strip(),
+        "job_storage": _current_job_storage(),
+        **_sample_meta(sample),
+        "source_model": "Voltage Source",
         "vin": float(st.session_state["vin"]),
         "vin_list": vin_list,
         "t_end": float(st.session_state["t_end_us"]) * 1e-6,
@@ -2987,9 +4688,13 @@ def _build_job_config_single() -> Dict[str, Any]:
 
 def _build_job_config_sweep1d(param_label: str) -> Dict[str, Any]:
     resist, circuit, lattice = _build_params()
+    sample = _selected_sample()
     return {
         "type": "sweep1d",
         "job_name": st.session_state.get("job_name_sweep1d", "").strip(),
+        "job_storage": _current_job_storage(),
+        **_sample_meta(sample),
+        "source_model": "Voltage Source",
         "param": _param_name_from_label(param_label),
         "start": float(st.session_state["sweep_start"]),
         "stop": float(st.session_state["sweep_stop"]),
@@ -3017,9 +4722,13 @@ def _parse_optional_float(text: str) -> Optional[float]:
 
 def _build_job_config_sweep2d(param_x_label: str, param_y_label: str) -> Dict[str, Any]:
     resist, circuit, lattice = _build_params()
+    sample = _selected_sample()
     return {
         "type": "sweep2d",
         "job_name": st.session_state.get("job_name_sweep2d", "").strip(),
+        "job_storage": _current_job_storage(),
+        **_sample_meta(sample),
+        "source_model": "Voltage Source",
         "param_x": _param_name_from_label(param_x_label),
         "param_y": _param_name_from_label(param_y_label),
         "x_start": _parse_optional_float(st.session_state["x_start"]),
@@ -3067,9 +4776,13 @@ def _build_job_config_current_drive() -> Dict[str, Any]:
         "start_branch": st.session_state["cd_start_branch"],
     }
     seed_text = str(st.session_state["cd_seed"]).strip()
+    sample = _selected_sample()
     return {
         "type": "current_sweep",
         "job_name": st.session_state.get("job_name_current_drive", "").strip(),
+        "job_storage": _current_job_storage(),
+        **_sample_meta(sample),
+        "source_model": "Current Source",
         "I_start_uA": int(round(float(st.session_state["cd_i_start_uA"]))),
         "I_stop_uA": int(round(float(st.session_state["cd_i_stop_uA"]))),
         "I_step_uA": int(round(float(st.session_state["cd_i_step_uA"]))),
@@ -3084,6 +4797,11 @@ def _build_job_config_current_domain_scan() -> Dict[str, Any]:
     return {
         "type": "current_domain_scan",
         "job_name": st.session_state.get("job_name_current_domain", "").strip(),
+        "job_storage": base.get("job_storage", _current_job_storage()),
+        "sample_id": base.get("sample_id", ""),
+        "sample_name": base.get("sample_name", ""),
+        "sample_source": base.get("sample_source", ""),
+        "source_model": "Current Source",
         "I_start_uA": int(base["I_start_uA"]),
         "I_stop_uA": int(base["I_stop_uA"]),
         "I_step_uA": int(base["I_step_uA"]),
@@ -3237,6 +4955,7 @@ def _render_batch_runner(terminal_placeholder) -> None:
 
 def _render_single() -> None:
     st.header("Single Simulation")
+    _render_voltage_quick_config_button("single")
     with st.form("single_form"):
         _text_input("Simulation name (optional)", key="job_name_single")
         st.markdown("### Inputs")
@@ -3246,15 +4965,10 @@ def _render_single() -> None:
         with cols[1]:
             _text_input("Vin list (comma-separated)", key="vin_list")
         with cols[2]:
-            _selectbox_input(
-                _label("start_branch"),
-                ["insulator", "metal"],
-                key="start_branch",
-            )
-        with cols[3]:
             _text_input("Noise seed (optional)", key="noise_seed")
 
         _inputs_common()
+        _render_job_storage_control()
 
         btn_col1, btn_col2 = st.columns(2)
         with btn_col1:
@@ -3274,6 +4988,7 @@ def _render_single() -> None:
 
 def _render_sweep1d() -> None:
     st.header("Sweep Over Free Variable")
+    _render_voltage_quick_config_button("sweep1d")
     with st.form("sweep1d_form"):
         _text_input("Simulation name (optional)", key="job_name_sweep1d")
         st.markdown("### Inputs")
@@ -3298,15 +5013,10 @@ def _render_sweep1d() -> None:
         with cols[1]:
             _num_input(_label("Vin"), key="vin")
         with cols[2]:
-            _selectbox_input(
-                _label("start_branch"),
-                ["insulator", "metal"],
-                key="start_branch",
-            )
-        with cols[3]:
             _text_input("Noise seed (optional)", key="noise_seed")
 
         _inputs_common()
+        _render_job_storage_control()
 
         btn_col1, btn_col2 = st.columns(2)
         with btn_col1:
@@ -3326,6 +5036,7 @@ def _render_sweep1d() -> None:
 
 def _render_sweep2d() -> None:
     st.header("2D Free Variable vs Oscillation Frequency")
+    _render_voltage_quick_config_button("sweep2d")
     with st.form("sweep2d_form"):
         _text_input("Simulation name (optional)", key="job_name_sweep2d")
         st.markdown("### Inputs")
@@ -3363,15 +5074,10 @@ def _render_sweep2d() -> None:
         with cols[0]:
             _num_input(_label("Vin"), key="vin")
         with cols[1]:
-            _selectbox_input(
-                _label("start_branch"),
-                ["insulator", "metal"],
-                key="start_branch",
-            )
-        with cols[2]:
             _text_input("Noise seed (optional)", key="noise_seed")
 
         _inputs_common()
+        _render_job_storage_control()
 
         btn_col1, btn_col2 = st.columns(2)
         with btn_col1:
@@ -3423,8 +5129,8 @@ def _validate_current_drive_inputs() -> List[str]:
             errors.append("Current-driven pulse-off time must be numeric or empty.")
     if pulse_off_ns is not None and pulse_off_ns <= float(st.session_state["cd_pulse_on_ns"]):
         errors.append("Pulse-off time must be greater than pulse-on time.")
-    if float(st.session_state["cd_C_pF"]) <= 0:
-        errors.append("Current-driven C must be > 0.")
+    if float(st.session_state["cd_C_pF"]) < 0:
+        errors.append("Current-driven C must be >= 0 (C=0 selects the algebraic voltage limit).")
     if float(st.session_state["cd_Cth_mW_ns_per_K"]) <= 0:
         errors.append("Current-driven C_th must be > 0.")
     if float(st.session_state["cd_S_e_mW_per_K"]) <= 0:
@@ -3485,8 +5191,10 @@ def _render_current_drive() -> None:
     st.header("Current-Driven Sweep")
     st.caption(
         "Current-drive model uses an ideal current source at the VO2 node: "
-        "dV/dt = (I_in - V/R_vo2)/C. External/source series resistance is not part of this model."
+        "C dV/dt = I_in - V/R_vo2. C=0 uses V=I_in R_vo2. "
+        "External/source series resistance is not part of this ideal-source model."
     )
+    _render_current_quick_config_button()
     st.session_state["cd_diag_conflicts"] = {}
 
     with st.form("current_drive_form"):
@@ -3513,26 +5221,14 @@ def _render_current_drive() -> None:
 
         cols = st.columns(4)
         with cols[0]:
-            _selectbox_input(
-                _label("cd_start_branch"),
+            _text_input("Seed (optional)", key="cd_seed")
+        with cols[1]:
+            st.selectbox(
+                "Initial hysteresis branch",
                 ["insulator", "metal"],
                 key="cd_start_branch",
             )
-        with cols[1]:
-            _text_input("Seed (optional)", key="cd_seed")
-
-        with st.expander("Current-Driven Resistance / Hysteresis", expanded=False):
-            resist_keys = [f.name for f in dataclasses.fields(YuanhangResistParams)]
-            for row in _chunked(resist_keys, 4):
-                cols = st.columns(4)
-                for col, name in zip(cols, row):
-                    with col:
-                        _num_input(
-                            _label(name),
-                            key=_cd_res_key(name),
-                            help=_help(_cd_res_key(name)),
-                        )
-
+        _render_job_storage_control()
         btn_col1, btn_col2 = st.columns(2)
         with btn_col1:
             submitted_add = st.form_submit_button("Add to batch")
@@ -3560,15 +5256,79 @@ def _render_current_drive() -> None:
                 _enqueue_job(job["id"])
                 _update_terminal(f"[job] queued {job['type']} ({job['id']})", terminal_placeholder)
 
-    st.caption("Current-driven sweeps are saved and rendered in the Jobs view.")
+    st.caption("Current-driven sweeps are saved and rendered in the History view.")
     _render_batch_runner(terminal_placeholder)
 
 
+def _render_experiment_sample_selector() -> Dict[str, Any] | None:
+    samples = list_samples()
+    if not samples:
+        st.warning("No sample selected. Create or import a sample on the Samples page first.")
+        return None
+
+    current = _selected_sample()
+    labels = [_sample_display(s) for s in samples]
+    current_label = _sample_display(current) if current else labels[0]
+    index = labels.index(current_label) if current_label in labels else 0
+    chosen_label = st.selectbox("Sample", labels, index=index, key="experiment_sample_label")
+    chosen = _sample_by_label(samples, chosen_label)
+    if chosen and str(chosen["sample_id"]) != str(st.session_state.get("selected_sample_id", "")):
+        st.session_state["selected_sample_id"] = str(chosen["sample_id"])
+        st.session_state["_loaded_sample_id"] = ""
+        _sync_selected_sample_state(force=True)
+    return chosen or current
+
+
+def _render_experiment_page() -> None:
+    _sync_selected_sample_state()
+    st.header("Experiment")
+    selected = _render_experiment_sample_selector()
+    if not selected:
+        return
+    _apply_sample_to_sim_state(selected)
+
+    source = st.radio(
+        "Source model",
+        list(_SOURCE_MODELS),
+        key="source_model",
+        horizontal=True,
+        help="Voltage source uses the collective-dynamics RC circuit. Current source uses the Yuanhang ideal-current model.",
+    )
+    if source == "Voltage Source":
+        experiment = st.radio(
+            "Voltage-source experiment",
+            list(_VOLTAGE_EXPERIMENTS),
+            key="voltage_experiment_type",
+            horizontal=True,
+        )
+        st.session_state["mode"] = experiment
+        if experiment == "Single Simulation":
+            _render_single()
+        elif experiment == "Sweep over Free Variable":
+            _render_sweep1d()
+        else:
+            _render_sweep2d()
+        return
+
+    st.session_state["mode"] = "Current-Driven Sweep"
+    _render_current_drive()
+
+
 def _render_jobs_view() -> None:
-    st.header("Jobs")
+    st.header("History")
+    st.caption("Past experiments, queued jobs, generated plots, and downloadable outputs.")
     loading = st.progress(0.0)
     use_events = False
     jobs = _list_jobs()
+    filter_choice = st.radio(
+        "History storage",
+        ["All", "Local/private", "Public"],
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+    if filter_choice != "All":
+        wanted = "public" if filter_choice == "Public" else "local"
+        jobs = [job for job in jobs if _normalize_job_storage(job.get("job_storage")) == wanted]
     if not jobs:
         loading.empty()
         st.info("No jobs found.")
@@ -3578,7 +5338,7 @@ def _render_jobs_view() -> None:
     for idx, job in enumerate(jobs, start=1):
         loading.progress(idx / total)
         job_name = job.get("name", "").strip()
-        summary_cols = st.columns([4, 2, 2, 1, 1])
+        summary_cols = st.columns([3, 1.5, 1.5, 1.5, 1, 1])
         name_key = f"name_{job['id']}"
         with summary_cols[0]:
             new_name = st.text_input(
@@ -3593,15 +5353,21 @@ def _render_jobs_view() -> None:
                 job_name = job["name"]
                 _save_job(job)
         summary_cols[1].write(job["type"])
-        summary_cols[2].write(job["status"])
-        with summary_cols[3]:
-            open_job = st.toggle("Open", key=f"open_{job['id']}")
+        summary_cols[2].write(job.get("sample_name", "") or job.get("params", {}).get("sample_name", ""))
+        summary_cols[3].write(job["status"])
         with summary_cols[4]:
+            open_job = st.toggle("Open", key=f"open_{job['id']}")
+        with summary_cols[5]:
             if job.get("status") not in {"queued", "running", "cancel_requested"}:
                 if st.button("🗑", key=f"delete_{job['id']}", help="Delete job"):
                     shutil.rmtree(_job_dir(job["id"]), ignore_errors=True)
                     _rerun()
-        st.caption(f"Created: {job.get('created_at', '')} | Outputs: {len(job.get('outputs', []))}")
+        source_model = job.get("source_model", "") or job.get("params", {}).get("source_model", "")
+        storage = _normalize_job_storage(job.get("job_storage"))
+        st.caption(
+            f"Created: {job.get('created_at', '')} | Source: {source_model or 'n/a'} | "
+            f"Storage: {_job_storage_label(storage)} | Outputs: {len(job.get('outputs', []))}"
+        )
         if not open_job:
             st.markdown("---")
             continue
@@ -3615,6 +5381,9 @@ def _render_jobs_view() -> None:
 
         job_removals = _get_job_removals(job["id"])
         st.json(job["params"], expanded=False)
+        conclusion = str(job.get("params", {}).get("conclusion", "")).strip()
+        if conclusion:
+            st.warning(conclusion)
         if os.path.exists(job["log_path"]):
             with open(job["log_path"], "r") as f:
                 log_text = f.read().strip()
@@ -3640,7 +5409,7 @@ def _render_jobs_view() -> None:
                 tabs = st.tabs([o["label"] for o in csvs])
                 for tab, selected in zip(tabs, csvs):
                     with tab:
-                        df = pd.read_csv(selected["path"])
+                        df = _read_job_csv(selected["path"])
                         df["time_us"] = df["time_s"] * 1e6
                         df["V_vo2"] = df["V_node"]
                         df["I_vo2"] = df["I_vo2"]
@@ -3691,7 +5460,7 @@ def _render_jobs_view() -> None:
         if job["type"] == "sweep1d":
             csvs = _csv_outputs(job.get("outputs", []))
             if csvs:
-                df = pd.read_csv(csvs[0]["path"])
+                df = _read_job_csv(csvs[0]["path"])
                 df.rename(columns={"value": "value"}, inplace=True)
                 removed_idx = job_removals["sweep1d"]
                 df_filtered = _apply_sweep1d_removals(df, removed_idx)
@@ -3776,7 +5545,7 @@ def _render_jobs_view() -> None:
                         st.success("Opened matplotlib window.")
                     except Exception as exc:
                         st.error(f"Failed to launch matplotlib: {exc}")
-                df = pd.read_csv(csvs[0]["path"])
+                df = _read_job_csv(csvs[0]["path"])
                 df.rename(columns={job["params"]["param_x"]: "x", job["params"]["param_y"]: "y"}, inplace=True)
                 removed_xy = job_removals["sweep2d"]
                 df_filtered = _apply_sweep2d_removals(df, removed_xy, "x", "y")
@@ -3895,9 +5664,9 @@ def _render_jobs_view() -> None:
             traces_path = next((o["path"] for o in outputs if o["path"].endswith("current_sweep_traces.csv")), None)
 
             if summary_path and os.path.exists(summary_path):
-                df_summary = pd.read_csv(summary_path)
+                df_summary = _read_job_csv(summary_path)
                 fig_avg = _plot_current_avg_iv(df_summary)
-                st.plotly_chart(fig_avg, use_container_width=True)
+                st.plotly_chart(fig_avg, width="stretch")
                 thr = _estimate_threshold_current_uA(df_summary)
                 if thr is not None:
                     st.caption(f"Estimated threshold current: {thr:.1f} uA")
@@ -3905,7 +5674,7 @@ def _render_jobs_view() -> None:
                 st.info("Current sweep summary CSV not found yet.")
 
             if spectra_path and os.path.exists(spectra_path):
-                df_spectra = pd.read_csv(spectra_path)
+                df_spectra = _read_job_csv(spectra_path)
                 fig_db = _plot_current_gain_spectra(
                     df_spectra,
                     y_col="gain_dB",
@@ -3918,28 +5687,32 @@ def _render_jobs_view() -> None:
                     y_title="Linear Gain",
                     title="Linear Gain vs Frequency",
                 )
-                st.plotly_chart(fig_db, use_container_width=True)
-                st.plotly_chart(fig_linear, use_container_width=True)
+                st.plotly_chart(fig_db, width="stretch")
+                st.plotly_chart(fig_linear, width="stretch")
             else:
                 st.info("Current sweep spectra CSV not found yet.")
 
             if traces_path and os.path.exists(traces_path):
-                df_traces = pd.read_csv(traces_path)
+                df_traces = _read_job_csv(traces_path)
                 currents = sorted(df_traces["I_target_uA"].unique().tolist())
                 if currents:
-                    selected_current = st.select_slider(
-                        "Current trace to inspect (uA)",
-                        options=currents,
-                        value=currents[0],
-                        key=f"current_trace_slider_{job['id']}",
-                    )
+                    if len(currents) == 1:
+                        selected_current = currents[0]
+                        st.caption(f"Current trace: {float(selected_current):g} uA")
+                    else:
+                        selected_current = st.select_slider(
+                            "Current trace to inspect (uA)",
+                            options=currents,
+                            value=currents[0],
+                            key=f"current_trace_slider_{job['id']}",
+                        )
                     d_sel = df_traces[df_traces["I_target_uA"] == float(selected_current)].sort_values("time_ns")
                     v_sel = d_sel["V_vo2_mV"].to_numpy(dtype=float)
                     i_sel = d_sel["I_in_uA"].to_numpy(dtype=float)
                     if _looks_numerically_unstable(v_sel):
                         st.warning(
-                            "This trace exceeds +/-2 V equivalent range in mV units, which usually indicates "
-                            "numerical instability for this preset/current."
+                            "This trace is non-finite or exceeds +/-50 V, which indicates numerical instability "
+                            "for this preset/current."
                         )
                     v_check = v_sel[np.abs(i_sel) > 0.0] if np.any(np.abs(i_sel) > 0.0) else v_sel
                     if _looks_like_nyquist_zigzag(v_check):
@@ -3949,9 +5722,10 @@ def _render_jobs_view() -> None:
                             "Use a smaller integration step or a different preset."
                         )
                     fig_trace = _plot_current_time_trace(df_traces, float(selected_current))
-                    st.plotly_chart(fig_trace, use_container_width=True)
+                    st.plotly_chart(fig_trace, width="stretch")
             else:
                 st.info("Current sweep trace CSV not found yet.")
+
         if job["type"] == "current_domain_scan":
             outputs = job.get("outputs", [])
             summary_path = next((o["path"] for o in outputs if o["path"].endswith("current_domain_scan_summary.csv")), None)
@@ -3960,25 +5734,25 @@ def _render_jobs_view() -> None:
             param_label = _label(param_key)
 
             if summary_path and os.path.exists(summary_path):
-                df_summary = pd.read_csv(summary_path)
+                df_summary = _read_job_csv(summary_path)
                 if not df_summary.empty:
                     d_rank = df_summary.sort_values(
                         ["osc_fraction", "best_turn_count"],
                         ascending=[False, False],
                     ).head(12)
-                    st.dataframe(d_rank, hide_index=True, use_container_width=True)
+                    st.dataframe(d_rank, hide_index=True, width="stretch")
                     fig_summary = _plot_current_domain_summary(df_summary, param_label)
-                    st.plotly_chart(fig_summary, use_container_width=True)
+                    st.plotly_chart(fig_summary, width="stretch")
                 else:
                     st.info("Domain summary CSV is empty.")
             else:
                 st.info("Current domain summary CSV not found yet.")
 
             if detail_path and os.path.exists(detail_path):
-                df_detail = pd.read_csv(detail_path)
+                df_detail = _read_job_csv(detail_path)
                 if not df_detail.empty:
                     fig_map = _plot_current_domain_heatmap(df_detail, param_label)
-                    st.plotly_chart(fig_map, use_container_width=True)
+                    st.plotly_chart(fig_map, width="stretch")
                 else:
                     st.info("Domain detail CSV is empty.")
             else:
@@ -4003,22 +5777,17 @@ def main() -> None:
     _inject_global_styles()
     _init_defaults()
     _ensure_worker()
-
-    _render_top_bar()
+    _sync_selected_sample_state()
 
     _render_sidebar()
 
     content = st.empty()
-    mode = st.session_state["mode"]
+    page = st.session_state.get("app_page", "Samples")
     with content.container():
-        if mode == "Single Simulation":
-            _render_single()
-        elif mode == "Sweep over Free Variable":
-            _render_sweep1d()
-        elif mode == "2D Frequency Sweep":
-            _render_sweep2d()
-        elif mode == "Current-Driven Sweep":
-            _render_current_drive()
+        if page == "Samples":
+            _render_samples_page()
+        elif page == "Experiment":
+            _render_experiment_page()
         else:
             _render_jobs_view()
 

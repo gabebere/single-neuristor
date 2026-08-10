@@ -1,0 +1,2 @@
+I_target_uA,I_avg_uA,V_avg_mV,V_std_mV,V_pp_mV,turn_count,input_power_dBm,dominant_freq_MHz,oscillatory,n_cycles,late_window_min_mV,late_window_max_mV,settled_min_mV,settled_max_mV,R_settled_ohm,regime
+390.0,390.0,159.770751953125,7.067960262298584,53.778289794921875,0.0,-21.18900781610983,0.0,0.0,1.0,156.63259887695312,210.410888671875,159.3089599609375,159.47914123535156,408.8740234375,nonzero-valley damped fixed point

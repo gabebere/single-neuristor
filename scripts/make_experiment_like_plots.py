@@ -41,6 +41,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--t-end-ns", type=float, default=600.0)
     parser.add_argument("--pulse-off-ns", type=float, default=300.0)
     parser.add_argument("--representative-current", type=float, default=50.0)
+    parser.add_argument(
+        "--start-branch",
+        choices=["insulator", "metal", "fit"],
+        default="insulator",
+        help="Initial hysteresis branch for the pulse simulation. 'fit' reuses the RT preset metadata.",
+    )
     parser.add_argument("--avg-start-ns", type=float, default=100.0)
     parser.add_argument("--avg-stop-ns", type=float, default=250.0)
     parser.add_argument(
@@ -382,7 +388,8 @@ def main() -> None:
     candidate_json = Path(args.candidate_json) if args.candidate_json else newest_candidate_json()
     resistance_preset = Path(args.resistance_preset)
     candidate = load_candidate(candidate_json)
-    base_resist_params, start_branch = load_resistance_preset(resistance_preset)
+    base_resist_params, fit_start_branch = load_resistance_preset(resistance_preset)
+    start_branch = fit_start_branch if args.start_branch == "fit" else args.start_branch
     resist_params = candidate_resist_params(base_resist_params, candidate)
     params = build_params(args, candidate, resist_params, start_branch)
     traces = simulate_sweep(args, params)

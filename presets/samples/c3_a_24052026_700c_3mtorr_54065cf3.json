@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "sample_id": "c3_a_24052026_700c_3mtorr_54065cf3",
+  "display_name": "c3_a_24052026_700C_3mTorr",
+  "created_at_utc": "2026-05-31T11:42:43+00:00",
+  "updated_at_utc": "2026-06-14T08:45:51+00:00",
+  "source_filename": "c3_a_24052026_700C_3mTorr.tsv",
+  "source_path": "presets/samples/data/c3_a_24052026_700c_3mtorr_54065cf3_c3_a_24052026_700C_3mTorr.tsv",
+  "notes": "Initial auto-fit created during sample import.\nTop-aware manual-style refit using the unchanged Yuanhang R-T model.",
+  "start_branch": "insulator",
+  "fit_metrics": {
+    "rmse_log10": 0.07572587615758768,
+    "rmse_log10_cooling": 0.0719247031753475,
+    "rmse_log10_heating": 0.07925651291579337,
+    "r2_log10": 0.9983981509614868,
+    "mean_log10_error": 0.022001632959599983,
+    "max_abs_log10_error": 0.2781612403740592,
+    "n_samples": 332.0
+  },
+  "resist_params": {
+    "R0": 15.54568566609556,
+    "Ea_over_k": 3479.8690612781447,
+    "Rm0": 109.82758156270326,
+    "Rm_factor": 1.0,
+    "w": 7.2046012819302385,
+    "Tc_K": 340.3475649572628,
+    "beta": 0.9377420489390274,
+    "gamma": 1.4,
+    "width_factor": 1.0,
+    "T_min_K": 284.825,
+    "T_max_K": 375.0045,
+    "reversal_threshold_K": 0.01
+  }
+}

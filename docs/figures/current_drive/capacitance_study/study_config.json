@@ -1,0 +1,49 @@
+{
+  "model": "derived ideal-current source with Yuanhang R(T)",
+  "resistance_params": {
+    "R0": 0.00535882879,
+    "Ea_over_k": 5220.47417,
+    "Rm0": 262.5,
+    "Rm_factor": 4.90025335,
+    "w": 7.19357064,
+    "Tc_K": 332.805839,
+    "beta": 0.252796285,
+    "gamma": 0.956269682,
+    "width_factor": 1.0,
+    "T_min_K": 305.0,
+    "T_max_K": 370.0,
+    "reversal_threshold_K": 0.01
+  },
+  "baseline": {
+    "C_pF": 145.34619293,
+    "C_th_pJ_per_K": 49.62776831,
+    "S_e_mW_per_K": 0.20558726,
+    "T0_K": 325.0
+  },
+  "currents_uA": [
+    300.0,
+    400.0,
+    500.0,
+    600.0,
+    700.0,
+    800.0
+  ],
+  "numerics": {
+    "dt_ns": 0.5,
+    "t_end_us": 30.0,
+    "analysis_start_us": 8.0
+  },
+  "operating_estimates": {
+    "T_heating_transition_K": 336.40262432,
+    "T_cooling_transition_K": 329.20905368,
+    "R_heating_transition_ohm": 15997.640865229787,
+    "R_cooling_transition_ohm": 21936.290718267046,
+    "thermal_only_lower_current_uA": 382.8005346717043,
+    "thermal_only_upper_current_uA": 198.6134863926574,
+    "thermal_only_window_exists": 0.0,
+    "tau_thermal_s": 2.413951541063391e-07,
+    "tau_metal_s": 1.8696120681393197e-07,
+    "tau_metal_over_tau_thermal": 0.7745027339346342,
+    "V_metal_floor_V": 1.0290532035
+  }
+}

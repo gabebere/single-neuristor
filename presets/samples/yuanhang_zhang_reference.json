@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "sample_id": "yuanhang_zhang_reference",
+  "display_name": "Yuanhang Zhang reference",
+  "created_at_utc": "2026-05-31T12:15:00+00:00",
+  "updated_at_utc": "2026-05-31T12:15:00+00:00",
+  "source_filename": "",
+  "source_path": "",
+  "notes": "Reference VO2 resistance/hysteresis parameters from the Yuanhang Zhang collective-dynamics code path. This preset has no lab TSV attached; it is intended as an order-of-magnitude baseline for simulations.",
+  "start_branch": "insulator",
+  "fit_metrics": {},
+  "resist_params": {
+    "R0": 0.00535882879,
+    "Ea_over_k": 5220.47417,
+    "Rm0": 262.5,
+    "Rm_factor": 4.90025335,
+    "w": 7.19357064,
+    "Tc_K": 332.805839,
+    "beta": 0.252796285,
+    "gamma": 0.956269682,
+    "width_factor": 1.0,
+    "T_min_K": 305.0,
+    "T_max_K": 370.0,
+    "reversal_threshold_K": 0.01
+  }
+}

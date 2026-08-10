@@ -33,6 +33,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--t-end-ns", type=float, default=600.0, help="Simulation duration after the step.")
     parser.add_argument("--t-pre-ns", type=float, default=0.0, help="Pre-step duration.")
     parser.add_argument("--pulse-off-ns", type=float, default=None, help="Optional pulse-off time; omit for constant current.")
+    parser.add_argument(
+        "--start-branch",
+        choices=["insulator", "metal", "fit"],
+        default="insulator",
+        help="Initial hysteresis branch used for current-drive traces. 'fit' reuses the RT preset metadata.",
+    )
     parser.add_argument("--min-T0-K", type=float, default=298.0, help="Minimum ambient/base temperature.")
     parser.add_argument("--max-T0-K", type=float, default=298.0, help="Maximum ambient/base temperature.")
     parser.add_argument("--min-c-pF", type=float, default=5.0)
@@ -73,6 +79,7 @@ def main() -> None:
     args = build_parser().parse_args()
     cfg = DomainSearchConfig(
         resistance_preset_path=args.preset,
+        current_start_branch=args.start_branch,
         current_start_uA=args.current_start,
         current_stop_uA=args.current_stop,
         coarse_current_step_uA=args.coarse_step,

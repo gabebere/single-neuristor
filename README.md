@@ -28,11 +28,26 @@ These are the main files worth reading first:
 - `presets/`: saved fitted/sample parameter sets
 - `data/experimental/`: measured data used for fitting
 - `docs/manuscript/`: manuscript source, compiled PDF, and manuscript figures
+- `docs/figures/current_drive/`: committed evidence figures, numerical grids, and figure-level reports
+- `Simulations_on_VO2/`: archived July 2026 presentation source, PDF, and media
 - `references/papers/`: paper PDFs used as modeling references
 - `references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/`: upstream reference code
+- `docs/HYSTERESIS_IMPLEMENTATION_AUDIT.md`: hysteresis implementation, branch conventions, provenance, and validation rules
+- `docs/ARCHIVE_INDEX.md`: current evidence, historical artifacts, and reproducibility map
+- `jobs/`: local-only Streamlit run history, ignored by Git
+- `public_jobs/`: curated Streamlit run history that can be committed and shared
 
 The root is intentionally minimal. `app.py` is the only top-level application entrypoint.
 Implementation code lives under `src/neuristor/`, and auxiliary command-line tools live under `scripts/`.
+
+## Job History Storage
+
+Streamlit run history is split into two lanes:
+
+- Local/private jobs are saved under `jobs/`; this folder is ignored and should be used for exploratory sweeps.
+- Public jobs are saved under `public_jobs/`; this folder is intentionally not ignored so selected runs can be reviewed through GitHub.
+
+Use the **Save in public history** toggle in the experiment forms only for runs that should be shared. The History tab can filter between both lanes.
 
 ## Custom Resistance Calibration (Experimental Specimen)
 
@@ -57,6 +72,40 @@ This applies paper current/thermal defaults plus the specimen RT-fitted resistan
 
 Current-drive ODE assumption used in this repo: ideal current source at the VO2 node
 (`dV/dt = (I_in - V/R_vo2)/C`). External/source series resistance is not part of that reduced model.
+Set `C=0` to use the algebraic limit `V=I_in*R_vo2`; finite-C electrical and deterministic
+thermal substeps use stable frozen-coefficient exponential updates.
+
+For the Yuanhang-centered `C_th`-versus-`C` heatmaps and the image-based lab parameter
+estimates, see `docs/CURRENT_DRIVE_CALIBRATION.md` and run:
+
+```bash
+python scripts/sweep_current_capacitances.py
+python scripts/estimate_lab_current_parameters.py
+```
+
+The reviewed evidence package is committed under `docs/figures/current_drive/` so the
+plots render directly on GitHub. To rebuild that exact package from tracked model and
+lab-image inputs:
+
+```bash
+python scripts/sweep_current_capacitances.py \
+  --output-dir docs/figures/current_drive/capacitance_study
+python scripts/estimate_lab_current_parameters.py \
+  --output-dir docs/figures/current_drive/lab_estimates
+python scripts/generate_nonzero_valley_examples.py
+```
+
+The ignored `outputs/`, `output/`, and `tmp/` trees are scratch/render workspaces and
+are not the scientific archive. Curated Streamlit runs belong in `public_jobs/`.
+
+## Performance and fidelity
+
+- The executable hysteresis path is the upstream-faithful Yuanhang float32 implementation.
+- Torch evaluates the hysteresis transcendental functions; NumPy stores and integrates simulation state.
+- Deterministic Yuanhang current-source sweeps are vectorized across current amplitudes and are tested for exact equality with serial traces.
+- Optional stochastic current-source sweeps retain the serial path so seeded noise streams stay reproducible.
+- Dynamic-phase, double-thermal, multidomain, and alternate reversal current-source modes are not part of the active physical model.
+- Streamlit caches unchanged sample presets and completed job CSVs. Cache keys include file timestamps and sizes, so edited files invalidate automatically.
 
 ## Installation and GUI (Streamlit)
 

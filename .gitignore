@@ -3,6 +3,9 @@ README_FOR_CODEX.md
 IMPLEMENTATION_GUIDE.md
 jobs/
 
+# Curated public jobs live in public_jobs/ and are intentionally
+# not ignored. Use the Streamlit export toggle when a run should be shareable.
+
 # OS / Python build junk
 .DS_Store
 __pycache__/
@@ -13,6 +16,13 @@ __pycache__/
 
 # Generated analysis outputs
 outputs/
+
+# Disposable render/package workspaces. Curated figures and presentation
+# sources belong under docs/, Simulations_on_VO2/, or public_jobs/ instead.
+output/
+tmp/
+presentation_package_*/
+presentation_package_*.zip
 
 # LaTeX build intermediates
 *.aux

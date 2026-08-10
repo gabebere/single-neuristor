@@ -25,7 +25,7 @@
     \vspace*{0.24\textheight}
     {\LARGE Theory Behind Simulations\par}
     \vspace{1.5cm}
-    {\Large Single VO2 Neuristor under Voltage and current sources\par}
+    {\Large Single VO2 Neuristor under Voltage and Current Sources\par}
     \vfill
     {\large by Gabriel Berezovsky\par}
     \vspace*{0.1\textheight}
@@ -547,36 +547,49 @@ R_0\exp\!\left(\frac{E_a/k_B}{T_n}\right)g_n+R_m.
     \end{equation}
     \begin{equation}
     T_{pr,n}\leftarrow
-    \delta_n\frac{w}{2}+T_c-\frac{1}{\beta}\operatorname{arctanh}(2g_{r,n}-1)-T_{r,n},
+    \delta_n\frac{w}{2}+T_c-\frac{1}{\beta}\operatorname{arctanh}\!\left(2g^*_{r,n}-1\right)-T_{r,n},
     \quad
     \mathrm{reversed}_n\leftarrow 1.
     \label{eq:disc_reversal_tpr}
     \end{equation}
     \item Evaluate \(g_n\) and \(R_n\) from Eqs.~\eqref{eq:disc_gn}--\eqref{eq:disc_rn}.
-    \item Set \(T^{last}_{n+1}\leftarrow T_n\) for the next reversal check.
+    \item Set \(T^{last}_{n+1}\leftarrow T_n\) only after the deadband has been crossed. Sub-threshold motion therefore accumulates from the last accepted anchor.
 \end{enumerate}
+
+Here \(g^*_{r,n}=g_{r,n}\) for every interior float32 value. Only exact
+endpoints \(g_{r,n}=0\) or \(1\) are replaced by the nearest numerically safe
+open-interval values. A previous blanket clip to
+\([10^{-6},1-10^{-6}]\) changed valid near-saturated minor loops and is not
+used in the active time-domain model.
+
+The Samples page also contains a fit-replay compatibility path for saved measured R--T presets. Those presets were calibrated with a point-to-point deadband convention, so the app uses that replay only for displaying their stored R--T overlays and RMSE values. Time-domain simulations use the accumulated-anchor update above.
 
 \subsection{Discretization of the Current-Source Model}
 \subsubsection*{Discrete Update Equation}
-For the direct ideal-current model of Section 2:
+For the direct ideal-current model of Section 2, freeze \(R_n\) and
+\(I_{in,n}\) over one step and define \(V_{\infty,n}=I_{in,n}R_n\). The
+electrical subproblem then has the exact update
 \begin{equation}
 V_{n+1}
 =
-V_n+\frac{\Delta t}{C}\left(I_{in,n}-\frac{V_n}{R_n}\right),
+V_{\infty,n}+(V_n-V_{\infty,n})
+\exp\!\left(-\frac{\Delta t}{R_nC}\right),
 \qquad
 R_n=R(T_n,\mathcal{H}_n).
 \label{eq:disc_current_drive_v}
 \end{equation}
-Thermal update in the current module (Euler-Maruyama in implementation):
+For \(C=0\), the implementation uses the algebraic limit
+\(V_n=I_{in,n}R_n\), so there is no electrical state or electrical time
+constant.
+
+With \(P_n=V_n^2/R_n\) and
+\(T_{\infty,n}=T_0+P_n/S_e\), the frozen-power deterministic cooling
+subproblem is also advanced exactly, followed by the stochastic increment:
 \begin{equation}
 T_{n+1}
 =
-T_n
-+\frac{\Delta t}{C_{th}}
-\left(
-\frac{V_n^2}{R_n}
--S_e(T_n-T_0)
-\right)
+T_{\infty,n}+(T_n-T_{\infty,n})
+\exp\!\left(-\frac{S_e\Delta t}{C_{th}}\right)
 +\frac{\sigma}{C_{th}}\sqrt{\Delta t}\,\zeta_n,
 \quad
 \zeta_n\sim\mathcal{N}(0,1).
@@ -586,7 +599,8 @@ T_n
 \subsubsection*{State Update Order}
 \begin{enumerate}
     \item Evaluate \(R_n\) from \((T_n,\mathcal{H}_n)\).
-    \item Update \(V_{n+1}\) with Eq.~\eqref{eq:disc_current_drive_v}.
+    \item If \(C=0\), enforce \(V_n=I_{in,n}R_n\); otherwise update
+    \(V_{n+1}\) with Eq.~\eqref{eq:disc_current_drive_v}.
     \item Update \(T_{n+1}\) with Eq.~\eqref{eq:disc_current_drive_t}.
     \item Update hysteresis memory using \((T_n,T_{n+1})\) for the next step.
 \end{enumerate}
@@ -793,12 +807,12 @@ For the fitted case documented here:
 \toprule
 Parameter & Value \\
 \midrule
-\(R_0\) & 0.5297358678 \\
-\(E_a/k_B\) (K) & 2658.0234292 \\
-\(R_m\) (\(\Omega\)) & 18.1978381368 \\
-\(w\) (K) & 6.9003303359 \\
-\(T_c\) (K) & 333.5701800799 \\
-\(\beta\) & 0.2969914699 \\
+\(R_0\) & 0.6461899358 \\
+\(E_a/k_B\) (K) & 2606.0865549 \\
+\(R_m\) (\(\Omega\)) & 18.3025411908 \\
+\(w\) (K) & 6.9842869901 \\
+\(T_c\) (K) & 333.4693743794 \\
+\(\beta\) & 0.2915514718 \\
 \(\gamma\) & 0.9562696820 (fixed in this run) \\
 Start branch & metal \\
 \bottomrule
@@ -814,9 +828,9 @@ Start branch & metal \\
 \toprule
 Metric & Value \\
 \midrule
-Overall RMSE & 0.0375554 \\
-Cooling RMSE & 0.0343180 \\
-Heating RMSE & 0.0406742 \\
+Overall RMSE & 0.0373334 \\
+Cooling RMSE & 0.0360230 \\
+Heating RMSE & 0.0387234 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -837,6 +851,60 @@ At the end of this procedure, the following still require additional identificat
     \item \textbf{Not part of this fit}: electrical/thermal dynamical parameters (\(C\), \(C_{th}\), \(S_e\), source terms) must be calibrated separately from transient simulations.
 \end{itemize}
 
+\section{Supported Yuanhang Current-Source Model}
+
+\subsection{Official current-source equations}
+The supported current-source circuit is the ideal imposed-current reduction:
+\begin{align}
+C\frac{dV}{dt} &= I_{\mathrm{in}}-\frac{V}{R}, \label{eq:official_current}\\
+C_{\mathrm{th}}\frac{dT}{dt} &= \frac{V^2}{R}-S_e(T-T_0). \label{eq:official_thermal}
+\end{align}
+The resistance is evaluated with the upstream-faithful Yuanhang hysteresis law:
+\begin{equation}
+R(T)=R_m+R_0\exp\left(\frac{E_a/k_B}{T}\right)
+g_{\mathrm{eq}}\!\left(T,\mathcal{H}\right).
+\label{eq:official_current_resistance}
+\end{equation}
+The independent dynamical states are \(V\) and \(T\). The phase fraction is not an additional dynamical state; it is the instantaneous value prescribed by the Yuanhang hysteresis state \(\mathcal{H}\). Optional stochastic heating may be enabled for exploratory noisy runs, but \(\sigma=0\) is the deterministic default.
+
+\subsection{Removed current-source alternatives}
+The codebase previously contained local current-source extensions for delayed phase response, double thermal bodies, parallel domains, and alternate reversal conventions. Those paths are now treated as nonphysical for this project and have been removed from the active simulator, scripts, and app preset folder. Their old fields are stripped when historical job JSON is loaded so old records do not crash the app, but rerunning an old current-source record uses Equations~\eqref{eq:official_current}--\eqref{eq:official_current_resistance}.
+
+This matters because the old extensions changed the mechanism being tested. A delayed phase variable adds an extra state and an uncalibrated time constant; the double-thermal and multidomain variants add spatial or substrate degrees of freedom; and alternate reversal conventions change the minor-loop geometry. Those mechanisms may be valid hypotheses in another calibrated model, but they are not the standard physical model used by this project.
+
+\subsection{Verification status}
+The current-source implementation uses the exact Yuanhang float32 hysteresis path and keeps one thermal body and one device/domain. Deterministic current sweeps are vectorized across current amplitudes, and regression tests compare the vectorized output to serial traces sample by sample. Compatibility columns such as \texttt{g\_dyn} and \texttt{T\_sub} are retained only as aliases of the supported states.
+
+At \(I=1640.226~\mu\mathrm{A}\), the representative Yuanhang current-source relaxation oscillation remains timestep-converged:
+\begin{center}
+\begin{tabular}{rrr}
+\toprule
+\(dt\) (ns) & Period (ns) & Frequency (MHz) \\
+\midrule
+0.015820 & 123.206 & 8.116 \\
+0.007910 & 123.135 & 8.121 \\
+0.003955 & 123.095 & 8.124 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+As a positive control, the original voltage-driven relaxation oscillator also remains oscillatory and converges as the timestep is reduced:
+\begin{center}
+\begin{tabular}{rrr}
+\toprule
+\(dt\) (ns) & Frequency (MHz) & Voltage peak-to-peak (V) \\
+\midrule
+10.00 & 0.4330 & 5.012 \\
+5.00 & 0.4372 & 4.921 \\
+2.50 & 0.4395 & 4.873 \\
+1.25 & 0.4407 & 4.849 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Current scientific conclusion}
+The project now has exactly two active physical simulation families: the original voltage-source circuit and the Yuanhang ideal-current-source reduction. All current-source claims should be made with the single supported implementation above and should continue to pass timestep and duration checks before being treated as physical.
+
 \section{Sources}
 \begin{enumerate}
     \item Y.-H. Zhang \emph{et al.}, ``Collective dynamics and long-range order in thermal neuristor networks,'' \emph{Nature Communications}, 2024.
@@ -844,6 +912,7 @@ At the end of this procedure, the following still require additional identificat
     \item R. Hooke and T. A. Jeeves, ``Direct Search'' Solution of Numerical and Statistical Problems,'' \emph{Journal of the ACM}, vol. 8, no. 2, pp. 212--229, 1961.
     \item T. G. Kolda, R. M. Lewis, and V. Torczon, ``Optimization by Direct Search: New Perspectives on Some Classical and Modern Methods,'' \emph{SIAM Review}, vol. 45, no. 3, pp. 385--482, 2003.
     \item A. R. Conn, K. Scheinberg, and L. N. Vicente, \emph{Introduction to Derivative-Free Optimization}. SIAM, 2009.
+    \item ``Harnessing the VO2 Phase Transition for Automatic Gain Control in Transimpedance Amplifiers,'' preprint arXiv:2604.04594, 2026.
 \end{enumerate}
 
 \end{document}
