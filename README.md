@@ -92,6 +92,7 @@ python scripts/sweep_current_capacitances.py \
   --output-dir docs/figures/current_drive/capacitance_study
 python scripts/estimate_lab_current_parameters.py \
   --output-dir docs/figures/current_drive/lab_estimates
+python scripts/generate_nonzero_valley_examples.py
 ```
 
 The ignored `outputs/`, `output/`, and `tmp/` trees are scratch/render workspaces and

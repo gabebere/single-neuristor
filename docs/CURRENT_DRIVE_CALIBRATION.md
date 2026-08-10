@@ -114,6 +114,18 @@ The trace comparison makes the distinction explicit: finite `C` changes charging
 discharging timing and therefore cycle frequency; it does not change the metallic
 steady-state bound `I*Rm`. The `C=0` case removes electrical memory and settles.
 
+## Direct current-input versus voltage-output examples
+
+![Basic current input and voltage output with nonzero valleys](figures/current_drive/nonzero_valley_examples/current_input_voltage_output.png)
+
+Panel A gives a Yuanhang-centered oscillation whose voltage stays above approximately
+0.85 V and whose temperature remains inside the published `R(T)` calibration range.
+Panel B holds the lab-scale dynamics fixed and changes only the switched resistance:
+the fitted 18.3 Ohm control falls to approximately 18 mV, whereas an explicit effective
+150 Ohm candidate bottoms near the observed 190 mV plateau while retaining sustained
+oscillations. The candidate is a circuit/device hypothesis, not a refit of intrinsic
+metallic resistance. Full parameters and metrics are stored beside the figure.
+
 Cells that drive temperature outside the 305--370 K calibrated resistance range are marked with `*`. In those cells the model clamps `R(T)` and the result is an extrapolation.
 
 ## Can the system oscillate with only thermal dynamics?
@@ -194,6 +206,7 @@ For example, if `T0=325 K`, the onset estimate gives `S_e=0.00513 mW/K`; thermal
 ```bash
 python scripts/sweep_current_capacitances.py
 python scripts/estimate_lab_current_parameters.py
+python scripts/generate_nonzero_valley_examples.py
 python scripts/audit_model_fidelity.py
 python -m unittest discover -s tests -v
 ```

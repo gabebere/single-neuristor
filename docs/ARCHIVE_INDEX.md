@@ -26,6 +26,9 @@ claims.
 - `docs/figures/current_drive/lab_estimates/lab_parameter_estimates.png`: independently
   supported electrical capacitance, ambient/cooling degeneracy, and effective plateau
   resistance.
+- `docs/figures/current_drive/nonzero_valley_examples/current_input_voltage_output.png`:
+  direct imposed-current/voltage-output examples, including an unchanged specimen
+  control and an explicit nonzero-valley effective-resistance candidate.
 - The adjacent CSV, JSON, and README files preserve the plotted numerical values,
   simulation settings, assumptions, and validity warnings.
 
@@ -49,6 +52,7 @@ python scripts/sweep_current_capacitances.py \
   --output-dir docs/figures/current_drive/capacitance_study
 python scripts/estimate_lab_current_parameters.py \
   --output-dir docs/figures/current_drive/lab_estimates
+python scripts/generate_nonzero_valley_examples.py
 python scripts/audit_model_fidelity.py
 python scripts/check_current_drive_model.py
 python -m unittest discover -s tests -v
