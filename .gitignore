@@ -2,6 +2,7 @@
 README_FOR_CODEX.md
 IMPLEMENTATION_GUIDE.md
 jobs/
+runs/
 
 # Curated public jobs live in public_jobs/ and are intentionally
 # not ignored. Use the Streamlit export toggle when a run should be shareable.
@@ -10,6 +11,9 @@ jobs/
 .DS_Store
 __pycache__/
 *.pyc
+*.egg-info/
+build/
+dist/
 
 # Local environments
 .venv/

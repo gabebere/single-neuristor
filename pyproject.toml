@@ -1,5 +1,41 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "single-neuristor"
+version = "0.2.0"
+description = "Reproducible voltage- and current-driven VO2 neuristor simulations"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Gabriel Berezovsky" }]
+dependencies = [
+  "imageio",
+  "matplotlib",
+  "numpy",
+  "pandas",
+  "pillow",
+  "plotly",
+  "scipy",
+  "streamlit",
+  "torch",
+  "typer>=0.12",
+  "tomli>=2; python_version < '3.11'",
+]
+
+[project.scripts]
+neuristor = "neuristor.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.ruff]
 line-length = 120
+target-version = "py310"
 
 [tool.ruff.lint]
 ignore = ["E402"]

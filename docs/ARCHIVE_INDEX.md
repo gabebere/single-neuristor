@@ -34,8 +34,8 @@ claims.
 
 ## Historical artifacts
 
-- `public_jobs/`: immutable July 2026 Streamlit run records. See its README for an index
-  and the correction-status caveat.
+- `public_jobs/`: tracked reviewed evidence. The registry reads both historical July
+  2026 `job.json` records and current portable `run.json` bundles.
 - `Simulations_on_VO2/`: July 2026 Beamer presentation source, compiled deck, figures,
   and animations.
 - `docs/presentation/project_year_presentation_outline.md`: longer historical talk
@@ -48,17 +48,18 @@ claims.
 From the repository root:
 
 ```bash
-python scripts/sweep_current_capacitances.py \
-  --output-dir docs/figures/current_drive/capacitance_study
-python scripts/estimate_lab_current_parameters.py \
-  --output-dir docs/figures/current_drive/lab_estimates
-python scripts/generate_nonzero_valley_examples.py
-python scripts/audit_model_fidelity.py
-python scripts/check_current_drive_model.py
-python -m unittest discover -s tests -v
+neuristor simulate current \
+  --config experiments/current/nonzero_voltage_valley.toml
+neuristor sweep run \
+  --config experiments/sweeps/current_capacitance_map.toml
+neuristor analyze estimates \
+  --images "data/Current Results" \
+  --resistance-preset presets/resistance_100425_chip1_gap3.json
+pytest -q
+neuristor validate
 ```
 
-The lab estimator digitizes the tracked `data/Current Results/` frames by default; it
-does not require an ignored local output file. The stored March image-fit JSON is
-retained only as a correlated historical starting point, not an independent parameter
-measurement.
+The lab estimator can digitize the tracked `data/Current Results/` frames directly.
+The stored March image-fit JSON is retained only as a correlated historical starting
+point, not an independent parameter measurement. Pre-refactor reproduction sources
+remain in `legacy_scripts/` and in the `v0.1.0-working-baseline` tag.

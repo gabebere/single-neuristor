@@ -43,7 +43,7 @@ class ResistanceFitResult:
 
     def to_jsonable(self) -> Dict[str, object]:
         return {
-            "generated_at_utc": _dt.datetime.now(_dt.UTC).isoformat(timespec="seconds"),
+            "generated_at_utc": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
             "source_data": self.source_data,
             "n_samples": int(self.n_samples),
             "start_branch": self.start_branch,

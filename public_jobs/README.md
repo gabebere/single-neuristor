@@ -1,16 +1,26 @@
-# Public Jobs
+# Public run archive
 
-This folder is intentionally not ignored by Git.
+This directory is intentionally tracked by Git. It contains reviewed evidence that is
+discoverable in the archive dashboard after cloning the repository.
 
-Use the Streamlit **Save in public history** toggle when a run should
-be shareable with collaborators through GitHub. Ordinary exploratory jobs should
-stay in `jobs/`, which is ignored and local-only.
+New workflows write exploratory bundles under ignored `runs/`. Review a bundle's
+report, metrics, configuration, and size before publishing it:
 
-Before committing files here, check that the job is small enough to review and
-that its `job.json` clearly describes the sample, source model, parameters, and
-outputs.
+```bash
+neuristor runs show RUN_ID
+neuristor runs publish RUN_ID
+git add public_jobs/RUN_ID
+git commit -m "Archive <description>"
+git push
+```
 
-## Archived runs
+Publishing copies a bundle; it never overwrites an existing ID and does not silently
+commit or push. Completed public bundles are immutable. Corrections should be new runs
+whose reports explain the changed assumption or implementation.
+
+## Historical records
+
+Historical `job.json` evidence:
 
 - `20260707_145140_paper_frequency_f881d2`: fitted-specimen paper-frequency analog,
   including current sweep, spectra, energy cycle, pump-probe recovery, and animations.
@@ -22,8 +32,6 @@ outputs.
   translated to the ideal-current circuit, including deterministic/noisy controls and
   timestep checks.
 
-These are immutable historical run records from July 2026. They predate the August
-2026 endpoint-fidelity and exact-substep corrections, so use them for provenance and
-presentation history. New quantitative claims should be regenerated with the current
-solver. Public `job.json` paths are repository-relative so the History tab works after
-cloning the repository.
+Those `job.json` records predate the August 2026 endpoint-fidelity and exact-substep
+corrections. They remain for provenance, not new quantitative claims. The dashboard
+normalizes them alongside current `run.json` bundles.

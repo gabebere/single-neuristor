@@ -1,0 +1,33 @@
+schema_version = 1
+name = "Measured specimen current step"
+kind = "simulation"
+model = "current"
+seed = 0
+
+[time]
+dt_ns = 0.05
+duration_us = 2.0
+
+[input]
+amplitude_uA = 1100.0
+
+[initial]
+temperature_K = 311.21937437938016
+
+[electrical]
+C_pF = 25.930953
+
+[thermal]
+C_th_pJ_per_K = 5.0
+S_e_mW_per_K = 0.1
+T0_K = 311.21937437938016
+
+[resistance]
+preset = "../../presets/resistance_100425_chip1_gap3.json"
+start_branch = "insulator"
+
+[analysis]
+start_us = 1.0
+
+[output]
+root = "runs"

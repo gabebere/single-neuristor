@@ -23,5 +23,10 @@ The 150 Ohm value is not claimed as the intrinsic metallic resistance measured b
 ## Reproduce
 
 ```bash
-python scripts/generate_nonzero_valley_examples.py
+neuristor simulate current \
+  --config experiments/current/nonzero_voltage_valley.toml
 ```
+
+The exact multi-panel historical generator is retained as
+`legacy_scripts/generate_nonzero_valley_examples.py` and in the
+`v0.1.0-working-baseline` Git tag.

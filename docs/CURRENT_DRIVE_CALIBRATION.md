@@ -80,7 +80,11 @@ The low voltage predicted with the 18.3 Ohm specimen `Rm` is not itself a numeri
 
 ## Cth-versus-C frequency sweep with Yuanhang values
 
-`scripts/sweep_current_capacitances.py` evaluates a 7 by 7 grid centered on Yuanhang's `C` and `C_th`, at 300, 400, 500, 600, 700, and 800 uA. It excludes startup behavior and only labels regular, persistent late-time cycles as oscillations.
+The checked-in `experiments/sweeps/current_capacitance_map.toml` recipe evaluates a
+current-faceted grid centered on Yuanhang's `C` and `C_th`, at 300, 400, 500, 600,
+700, and 800 uA. The archived figure below used the denser pre-refactor 7 by 7 recipe;
+its exact generator remains in `legacy_scripts/sweep_current_capacitances.py` and the
+working-baseline tag. Both workflows exclude startup behavior from cycle metrics.
 
 At the nominal Yuanhang capacitances:
 
@@ -204,13 +208,17 @@ For example, if `T0=325 K`, the onset estimate gives `S_e=0.00513 mW/K`; thermal
 ## Reproduction commands
 
 ```bash
-python scripts/sweep_current_capacitances.py
-python scripts/estimate_lab_current_parameters.py
-python scripts/generate_nonzero_valley_examples.py
-python scripts/audit_model_fidelity.py
-python -m unittest discover -s tests -v
+neuristor simulate current \
+  --config experiments/current/nonzero_voltage_valley.toml
+neuristor sweep run \
+  --config experiments/sweeps/current_capacitance_map.toml
+neuristor analyze estimates \
+  --images "data/Current Results" \
+  --resistance-preset presets/resistance_100425_chip1_gap3.json
+pytest -q
+neuristor validate
 ```
 
-Generated outputs are written to `outputs/current_capacitance_study/` and `outputs/lab_parameter_estimates/`.
-Pass `--output-dir docs/figures/current_drive/...` as shown in the root README to
-regenerate the committed GitHub evidence package.
+New outputs are standard bundles under `runs/`. Use `neuristor runs publish RUN_ID`
+to copy reviewed evidence into the Git-tracked `public_jobs/` archive. Exact historical
+figure sources remain under `legacy_scripts/` for provenance.
