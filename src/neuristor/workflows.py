@@ -290,9 +290,9 @@ def _simulation_report(config: Mapping[str, Any], result: SimulationResult) -> s
     lines = [
         f"# {config['name']}",
         "",
-        f"Model: `{config['model']}`  ",
-        f"Oscillatory: **{bool(metrics.get('oscillatory', False))}**  ",
-        f"Estimated frequency: **{float(metrics.get('frequency_MHz', 0.0)):.6g} MHz**",
+        f"- Model: `{config['model']}`",
+        f"- Oscillatory: **{bool(metrics.get('oscillatory', False))}**",
+        f"- Estimated frequency: **{float(metrics.get('frequency_MHz', 0.0)):.6g} MHz**",
         "",
         "## Interpretation",
         "",
@@ -308,8 +308,8 @@ def _simulation_report(config: Mapping[str, Any], result: SimulationResult) -> s
                 "A low valley is therefore a physical consequence of the chosen metallic resistance; capacitance "
                 "changes how rapidly that valley is approached, not its steady-state value.",
                 "",
-                f"Electrical metallic time constant: **{result.diagnostics['electrical_metal_time_constant_ns']:.6g} ns**  ",
-                f"Thermal time constant: **{result.diagnostics['thermal_time_constant_us']:.6g} us**",
+                f"- Electrical metallic time constant: **{result.diagnostics['electrical_metal_time_constant_ns']:.6g} ns**",
+                f"- Thermal time constant: **{result.diagnostics['thermal_time_constant_us']:.6g} us**",
             ]
         )
     else:
@@ -318,8 +318,8 @@ def _simulation_report(config: Mapping[str, Any], result: SimulationResult) -> s
                 "The voltage-source model includes the external series resistor and parasitic capacitance. "
                 "Its electrical charging time competes with VO2 heating and cooling.",
                 "",
-                f"Series RC time constant: **{result.diagnostics['electrical_series_time_constant_us']:.6g} us**  ",
-                f"Thermal time constant: **{result.diagnostics['thermal_time_constant_us']:.6g} us**",
+                f"- Series RC time constant: **{result.diagnostics['electrical_series_time_constant_us']:.6g} us**",
+                f"- Thermal time constant: **{result.diagnostics['thermal_time_constant_us']:.6g} us**",
             ]
         )
     if bool(result.diagnostics.get("temperature_outside_resistance_calibration", False)):
