@@ -547,7 +547,7 @@ R_0\exp\!\left(\frac{E_a/k_B}{T_n}\right)g_n+R_m.
     \end{equation}
     \begin{equation}
     T_{pr,n}\leftarrow
-    \delta_n\frac{w}{2}+T_c-\frac{1}{\beta}\operatorname{arctanh}\!\left(2\,\mathrm{clip}(g_{r,n},10^{-6},1-10^{-6})-1\right)-T_{r,n},
+    \delta_n\frac{w}{2}+T_c-\frac{1}{\beta}\operatorname{arctanh}\!\left(2g^*_{r,n}-1\right)-T_{r,n},
     \quad
     \mathrm{reversed}_n\leftarrow 1.
     \label{eq:disc_reversal_tpr}
@@ -556,29 +556,40 @@ R_0\exp\!\left(\frac{E_a/k_B}{T_n}\right)g_n+R_m.
     \item Set \(T^{last}_{n+1}\leftarrow T_n\) only after the deadband has been crossed. Sub-threshold motion therefore accumulates from the last accepted anchor.
 \end{enumerate}
 
+Here \(g^*_{r,n}=g_{r,n}\) for every interior float32 value. Only exact
+endpoints \(g_{r,n}=0\) or \(1\) are replaced by the nearest numerically safe
+open-interval values. A previous blanket clip to
+\([10^{-6},1-10^{-6}]\) changed valid near-saturated minor loops and is not
+used in the active time-domain model.
+
 The Samples page also contains a fit-replay compatibility path for saved measured R--T presets. Those presets were calibrated with a point-to-point deadband convention, so the app uses that replay only for displaying their stored R--T overlays and RMSE values. Time-domain simulations use the accumulated-anchor update above.
 
 \subsection{Discretization of the Current-Source Model}
 \subsubsection*{Discrete Update Equation}
-For the direct ideal-current model of Section 2:
+For the direct ideal-current model of Section 2, freeze \(R_n\) and
+\(I_{in,n}\) over one step and define \(V_{\infty,n}=I_{in,n}R_n\). The
+electrical subproblem then has the exact update
 \begin{equation}
 V_{n+1}
 =
-V_n+\frac{\Delta t}{C}\left(I_{in,n}-\frac{V_n}{R_n}\right),
+V_{\infty,n}+(V_n-V_{\infty,n})
+\exp\!\left(-\frac{\Delta t}{R_nC}\right),
 \qquad
 R_n=R(T_n,\mathcal{H}_n).
 \label{eq:disc_current_drive_v}
 \end{equation}
-Thermal update in the current module (Euler-Maruyama in implementation):
+For \(C=0\), the implementation uses the algebraic limit
+\(V_n=I_{in,n}R_n\), so there is no electrical state or electrical time
+constant.
+
+With \(P_n=V_n^2/R_n\) and
+\(T_{\infty,n}=T_0+P_n/S_e\), the frozen-power deterministic cooling
+subproblem is also advanced exactly, followed by the stochastic increment:
 \begin{equation}
 T_{n+1}
 =
-T_n
-+\frac{\Delta t}{C_{th}}
-\left(
-\frac{V_n^2}{R_n}
--S_e(T_n-T_0)
-\right)
+T_{\infty,n}+(T_n-T_{\infty,n})
+\exp\!\left(-\frac{S_e\Delta t}{C_{th}}\right)
 +\frac{\sigma}{C_{th}}\sqrt{\Delta t}\,\zeta_n,
 \quad
 \zeta_n\sim\mathcal{N}(0,1).
@@ -588,7 +599,8 @@ T_n
 \subsubsection*{State Update Order}
 \begin{enumerate}
     \item Evaluate \(R_n\) from \((T_n,\mathcal{H}_n)\).
-    \item Update \(V_{n+1}\) with Eq.~\eqref{eq:disc_current_drive_v}.
+    \item If \(C=0\), enforce \(V_n=I_{in,n}R_n\); otherwise update
+    \(V_{n+1}\) with Eq.~\eqref{eq:disc_current_drive_v}.
     \item Update \(T_{n+1}\) with Eq.~\eqref{eq:disc_current_drive_t}.
     \item Update hysteresis memory using \((T_n,T_{n+1})\) for the next step.
 \end{enumerate}
@@ -839,143 +851,31 @@ At the end of this procedure, the following still require additional identificat
     \item \textbf{Not part of this fit}: electrical/thermal dynamical parameters (\(C\), \(C_{th}\), \(S_e\), source terms) must be calibrated separately from transient simulations.
 \end{itemize}
 
-\section{Quasistatic and Dynamic-Phase Current-Source Models}
+\section{Supported Yuanhang Current-Source Model}
 
-\subsection{Shared electrothermal equations}
-The ideal current-source circuit uses
+\subsection{Official current-source equations}
+The supported current-source circuit is the ideal imposed-current reduction:
 \begin{align}
-C\frac{dV}{dt} &= I_{\mathrm{in}}-\frac{V}{R}, \label{eq:dynamic_current}\\
-C_{\mathrm{th}}\frac{dT}{dt} &= \frac{V^2}{R}-S_e(T-T_0). \label{eq:dynamic_thermal}
+C\frac{dV}{dt} &= I_{\mathrm{in}}-\frac{V}{R}, \label{eq:official_current}\\
+C_{\mathrm{th}}\frac{dT}{dt} &= \frac{V^2}{R}-S_e(T-T_0). \label{eq:official_thermal}
 \end{align}
-Both the quasistatic and dynamic-phase models use these same electrical and thermal balances and the same fitted resistance law
+The resistance is evaluated with the upstream-faithful Yuanhang hysteresis law:
 \begin{equation}
-R(T,g)=R_m+R_0\exp\left(\frac{E_a/k_B}{T}\right)g.
-\label{eq:dynamic_resistance}
+R(T)=R_m+R_0\exp\left(\frac{E_a/k_B}{T}\right)
+g_{\mathrm{eq}}\!\left(T,\mathcal{H}\right).
+\label{eq:official_current_resistance}
 \end{equation}
-The only distinction is how the actual insulating phase fraction \(g\) responds to the hysteresis-prescribed equilibrium fraction \(g_{\mathrm{eq}}(T,\mathcal{H})\).
+The independent dynamical states are \(V\) and \(T\). The phase fraction is not an additional dynamical state; it is the instantaneous value prescribed by the Yuanhang hysteresis state \(\mathcal{H}\). Optional stochastic heating may be enabled for exploratory noisy runs, but \(\sigma=0\) is the deterministic default.
 
-\subsection{Original quasistatic phase response}
-The original Yuanhang Zhang model assumes that the phase fraction responds immediately:
-\begin{equation}
-g(t)=g_{\mathrm{eq}}\!\left(T(t),\mathcal{H}(t)\right).
-\label{eq:official_quasistatic}
-\end{equation}
-The independent dynamical states are therefore \(V\) and \(T\). Whether a numerical trajectory follows the intended minor-loop geometry also depends on faithful implementation of the discrete reversal detector, as documented below.
+\subsection{Removed current-source alternatives}
+The codebase previously contained local current-source extensions for delayed phase response, double thermal bodies, parallel domains, and alternate reversal conventions. Those paths are now treated as nonphysical for this project and have been removed from the active simulator, scripts, and app preset folder. Their old fields are stripped when historical job JSON is loaded so old records do not crash the app, but rerunning an old current-source record uses Equations~\eqref{eq:official_current}--\eqref{eq:official_current_resistance}.
 
-A matched quasistatic numerical control also demonstrated why visual inspection of one trace is insufficient. At a reference timestep, several currents showed repeated switching that looked oscillatory. However, changing only the integration timestep caused those cycles to appear, disappear, or change sharply in frequency and amplitude. For example, the \(1100~\mu\mathrm{A}\) control showed repeated cycles at \(dt=0.025~\mathrm{ns}\), no cycles at \(dt=0.05~\mathrm{ns}\), and a different large switching event at finer timesteps. These are apparent numerical oscillations, not a timestep-converged physical limit cycle.
+This matters because the old extensions changed the mechanism being tested. A delayed phase variable adds an extra state and an uncalibrated time constant; the double-thermal and multidomain variants add spatial or substrate degrees of freedom; and alternate reversal conventions change the minor-loop geometry. Those mechanisms may be valid hypotheses in another calibrated model, but they are not the standard physical model used by this project.
 
-The application History entry \texttt{Quasistatic apparent oscillations - numerical control} preserves these traces with the standard current slider. They were produced by the historical local port bug, not by the exact upstream reversal algorithm.
+\subsection{Verification status}
+The current-source implementation uses the exact Yuanhang float32 hysteresis path and keeps one thermal body and one device/domain. Deterministic current sweeps are vectorized across current amplitudes, and regression tests compare the vectorized output to serial traces sample by sample. Compatibility columns such as \texttt{g\_dyn} and \texttt{T\_sub} are retained only as aliases of the supported states.
 
-\subsection{Dynamic-phase working extension}
-The local dynamic-phase extension treats \(g\) as a third dynamical state:
-\begin{equation}
-\tau_g\frac{dg}{dt}=g_{\mathrm{eq}}(T,\mathcal{H})-g.
-\label{eq:official_dynamic_phase}
-\end{equation}
-The resistance in Equation~\ref{eq:dynamic_resistance} is evaluated using this delayed \(g(t)\). The quasistatic model is recovered as \(\tau_g\rightarrow 0\).
-
-Practically, finite \(\tau_g\) means that temperature first changes the preferred phase fraction, while the actual material state and resistance respond later. This introduces a delayed feedback loop:
-\[
-I_{\mathrm{in}}\rightarrow V\rightarrow P_{\mathrm{Joule}}\rightarrow T
-\rightarrow g_{\mathrm{eq}}\rightarrow g\rightarrow R\rightarrow V.
-\]
-The delay can support a limit cycle even when the corresponding instantaneous-feedback model approaches a fixed point. This extension is physically motivated by finite transition kinetics, but it is not part of the original Yuanhang Zhang repository and must be independently calibrated before its quantitative predictions are treated as experimental predictions.
-
-\begin{table}[htbp]
-\centering
-\small
-\caption{Direct comparison of the two phase-response assumptions.}
-\label{tab:phase_model_comparison}
-\begin{tabular}{p{0.25\textwidth}p{0.31\textwidth}p{0.31\textwidth}}
-\toprule
-Property & Quasistatic model & Dynamic-phase extension \\
-\midrule
-Independent states & \(V,T\) & \(V,T,g\) \\
-Phase response & \(g=g_{\mathrm{eq}}(T,\mathcal{H})\) & \(\tau_g\dot g=g_{\mathrm{eq}}-g\) \\
-New parameter & none & \(\tau_g\) \\
-Original Yuanhang code & yes & no \\
-Current-source result after reversal-detector fix & a newly targeted parameter set supports a converged relaxation-oscillation domain & tested prior candidate points approach fixed points \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{Dynamic-Model Article-Comparison Campaign}
-
-\subsection{Target observables}
-The comparison preprint supplied for this project reports a current-driven oscillatory regime at approximately \(200\)--\(600~\mu\mathrm{A}\), oscillation frequencies near \(40\)--\(60~\mathrm{MHz}\), mean power near \(60\)--\(100~\mu\mathrm{W}\), and energy near \(1.2\)--\(1.9~\mathrm{pJ}\) per cycle. These values were used as targets, not as fitted constraints.
-
-\subsection{Search procedure}
-The search kept the resistance model and dynamic-phase equations unchanged. It:
-\begin{enumerate}
-    \item used the improved measured-sample resistance fits;
-    \item broadly sampled \(C\), \(C_{\mathrm{th}}\), \(S_e\), \(\tau_g\), and \(T_0\);
-    \item first screened the center of the reported current window;
-    \item tested neighboring currents only after a candidate showed repeated cycles; and
-    \item required late-window persistence and repeated simulations at smaller timesteps before accepting a result.
-\end{enumerate}
-
-Across the four newly fitted samples and the best-characterized 100425 chip1 gap3 sample, the broad \(200\)--\(600~\mu\mathrm{A}\) searches produced large switching transients but no sustained \(40\)--\(60~\mathrm{MHz}\) limit cycle.
-
-At a higher-current exploratory base point,
-\[
-C=80~\mathrm{pF},\quad
-C_{\mathrm{th}}=3~\mathrm{pJ/K},\quad
-S_e=0.052838~\mathrm{mW/K},\quad
-\tau_g=10~\mathrm{ns},\quad
-T_0=325~\mathrm{K},
-\]
-coarser integrations using the historical local per-step port showed apparent late-time oscillations over parts of approximately \(0.8\)--\(1.8~\mathrm{mA}\), with frequencies of roughly \(4.7\)--\(10.1~\mathrm{MHz}\). These legacy results did not quantitatively reproduce the preprint's current or frequency range and did not survive corrected reversal handling.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.96\textwidth]{../../outputs/dynamic_article_comparison/sweep_frequency_summary.png}
-\caption{Legacy one-at-a-time dynamic-phase sweeps generated with the timestep-dependent local port bug. Green points passed the late-window criterion at the screening timestep, but the apparent oscillations did not survive corrected reversal handling.}
-\label{fig:dynamic_article_sweeps}
-\end{figure}
-
-\subsection{Timestep-convergence audit and numerical correction}
-The apparent oscillatory domains were tested over \(5~\mu\mathrm{s}\) at timesteps of \(0.05\), \(0.025\), and \(0.0125~\mathrm{ns}\). The \(0.05\) and \(0.025~\mathrm{ns}\) results were often close, but the \(0.0125~\mathrm{ns}\) results changed sharply in frequency and voltage amplitude. Therefore, the apparent domains are not yet timestep-converged.
-
-The sensitivity was associated with the finite deadband in a historical local hysteresis reversal detector. That detector updated its temperature anchor after every evaluated point, so a reversal was accepted only when the temperature change from the previous evaluated point exceeded the fixed threshold
-\begin{equation}
-|\Delta T_{\mathrm{step}}|>0.01~\mathrm{K}.
-\label{eq:reversal_step_threshold}
-\end{equation}
-Changing the timestep changes \(\Delta T_{\mathrm{step}}\), and therefore can change whether and when the hysteresis branch reverses. This convention is still used only to replay saved measured R--T sample fits in the Samples tab; time-domain simulations use the accumulated-anchor detector in Eqs.~\eqref{eq:disc_reversal_assign}--\eqref{eq:disc_reversal_tpr}.
-
-Historical control experiments also tested an accumulated-displacement detector and a turning-point extension. The turning-point extension tracks the latest temperature extremum \(T_{\mathrm{extreme}}\) and confirms a reversal after the cumulative excursion satisfies
-\begin{equation}
-\left|T-T_{\mathrm{extreme}}\right|>0.01~\mathrm{K}.
-\label{eq:reversal_cumulative_threshold}
-\end{equation}
-In the extension, the reversal point is assigned to \(T_{\mathrm{extreme}}\), rather than to the sampled detection point used by the fitted app model. This can improve timestep robustness but changes minor-loop geometry. These alternate detectors are no longer selectable in the Streamlit interface.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.92\textwidth]{../../jobs/20260614_125407_article_audit_816bf1/timestep_convergence_audit.png}
-\caption{Legacy timestep-convergence audit for representative apparent oscillatory points. The frequency and amplitude changes exposed the local anchor-update bug and motivated a full upstream-fidelity audit.}
-\label{fig:dynamic_convergence_audit}
-\end{figure}
-
-\subsection{Post-correction convergence results}
-The measured 100425 resistance-fit RMSE remained effectively unchanged at \(0.03733344\), showing that the numerical correction did not disturb the fitted major resistance loop.
-
-After the correction, the previously tested quasistatic and dynamic-phase current-source candidate points at \(800\), \(1100\), \(1500\), and \(1800~\mu\mathrm{A}\) all approached fixed points consistently for \(dt=0.05\), \(0.025\), \(0.0125\), and \(0.00625~\mathrm{ns}\). The previously reported domains at those parameter sets must therefore be classified as numerical artifacts of the legacy reversal detector.
-
-A subsequent first-principles search using the \texttt{turning\_point} reversal extension found a different, timestep-converged oscillatory domain while retaining the original quasistatic ideal-current equations and fixed measured resistance fit. The search targeted the steep negative-slope portion of the fitted heating branch. At a current-source equilibrium,
-\begin{equation}
-I^2R(T)=S_e(T-T_0),
-\end{equation}
-and the local \(V,T\) Jacobian can become an unstable focus when the negative \(dR/dT\) feedback overcomes electrical and thermal damping. Simulating parameter sets selected from this condition identified
-\[
-C=25.930953~\mathrm{pF},\quad
-C_{\mathrm{th}}=5.0~\mathrm{pJ/K},\quad
-S_e=0.1~\mathrm{mW/K},\quad
-T_0=311.219374~\mathrm{K}.
-\]
-For the measured 100425 chip1 gap3 resistance fit, that extension produced sustained quasistatic relaxation oscillations from approximately \(1.27\) to \(2.74~\mathrm{mA}\). Fixed points were recovered at \(1.20\) and \(2.80~\mathrm{mA}\). Across the extension's oscillatory domain, frequency increased from approximately \(5.49\) to \(14.13~\mathrm{MHz}\). A subsequent exact-reference resweep found a narrower upper edge: sustained late-window oscillations remained at \(2.47~\mathrm{mA}\), while \(2.48~\mathrm{mA}\) settled to a fixed point.
-
-At \(I=1640.226~\mu\mathrm{A}\), the period converges as the timestep is halved:
+At \(I=1640.226~\mu\mathrm{A}\), the representative Yuanhang current-source relaxation oscillation remains timestep-converged:
 \begin{center}
 \begin{tabular}{rrr}
 \toprule
@@ -987,9 +887,8 @@ At \(I=1640.226~\mu\mathrm{A}\), the period converges as the timestep is halved:
 \bottomrule
 \end{tabular}
 \end{center}
-The late-window voltage peak-to-peak amplitude converges near \(2.275~\mathrm{V}\), and the temperature remains approximately \(325.4\)--\(349.1~\mathrm{K}\). The application History entry \texttt{Validated old-model quasistatic oscillatory domain} preserves fixed-point controls and representative traces, but its name predates the fidelity audit: those saved traces used the \texttt{turning\_point} extension.
 
-As a positive control, the original voltage-driven relaxation oscillator remained oscillatory and converged as the timestep was reduced:
+As a positive control, the original voltage-driven relaxation oscillator also remains oscillatory and converges as the timestep is reduced:
 \begin{center}
 \begin{tabular}{rrr}
 \toprule
@@ -1002,21 +901,9 @@ As a positive control, the original voltage-driven relaxation oscillator remaine
 \bottomrule
 \end{tabular}
 \end{center}
-This is the expected signature of a robust circuit-driven oscillation: the behavior persists and its quantitative values approach stable limits as \(dt\) decreases.
 
 \subsection{Current scientific conclusion}
-The quasistatic ideal-current equations support a broad, timestep-converged relaxation-oscillation domain when the electrical and thermal timescales are selected from the instability condition on the measured resistance transition. The sole supported hysteresis implementation is now the exact Yuanhang reference detector, for which the audited sweep extends through approximately \(2.47~\mathrm{mA}\) and reaches a fixed point at \(2.48~\mathrm{mA}\). The former turning-point extension produced an historical upper boundary near \(2.74~\mathrm{mA}\), but it was removed from executable code because it changed minor-loop geometry. The dynamic-phase extension remains a physically plausible hypothesis, but the searched dynamic-phase parameter sets have not yet produced a separately validated current-source limit cycle. Specifically:
-\begin{itemize}
-    \item the searched model did not reproduce the supplied preprint's \(200\)--\(600~\mu\mathrm{A}\), \(40\)--\(60~\mathrm{MHz}\) domain;
-    \item the old candidate domains disappeared after correcting timestep-dependent reversal recognition;
-    \item an historical turning-point search found a different domain, but that reversal extension is no longer executable;
-    \item the exact-reference resweep found oscillations through \(2.47~\mathrm{mA}\) and a fixed point at \(2.48~\mathrm{mA}\);
-    \item the exact upstream float32 hysteresis path is now the only software implementation and matches the vendored reference trace to within \(0.001~\Omega\) on the fidelity audit;
-    \item the original voltage-driven oscillator survives and converges under the same correction; and
-    \item all future positive domains must continue to pass corrected-detector timestep and duration checks.
-\end{itemize}
-
-Legacy exploratory traces remain saved in the application History and are explicitly labeled as pre-correction numerical results. Their obsolete mode fields are provenance only; rerunning a historical configuration uses the sole Yuanhang reference implementation.
+The project now has exactly two active physical simulation families: the original voltage-source circuit and the Yuanhang ideal-current-source reduction. All current-source claims should be made with the single supported implementation above and should continue to pass timestep and duration checks before being treated as physical.
 
 \section{Sources}
 \begin{enumerate}

@@ -70,7 +70,7 @@ class HysteresisReversalTests(unittest.TestCase):
         )
         self.assertTrue(np.isfinite(float(tpr[0])))
 
-    def test_matches_sample_calibrated_reference_trace(self) -> None:
+    def test_matches_upstream_reference_trace(self) -> None:
         if model.torch is None:
             self.skipTest("Torch is required for the float32 reference replay.")
         model._TORCH_HYSTERESIS_AVAILABLE = True
@@ -81,11 +81,11 @@ class HysteresisReversalTests(unittest.TestCase):
                 51843.3750,
                 1286.3866,
                 51843.3750,
-                1286.3273,
-                16334.6455,
-                1286.3273,
-                7070.7046,
-                1286.3431,
+                1286.3185,
+                37773.2617,
+                1286.3191,
+                9628.7910,
+                1286.3302,
             ]
         )
         h = HysteresisArray(

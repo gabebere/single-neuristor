@@ -304,7 +304,7 @@ def main() -> None:
 
     print("== Interpreting This Audit ==")
     print("- local vs reference_float32 should be nearly exact; this is the only supported hysteresis implementation.")
-    print("- A large dt/tau_fast means current-drive results are dominated by Euler-step artifacts when the device enters the metallic branch.")
+    print("- A large dt/tau_fast means the coupled current-drive transition is under-resolved; the exponential RC substep remains stable.")
     print("- A large positive Tc - T0 means the device starts far below transition and will look RC-like unless pulse/thermal parameters compensate.")
     print("- If plateau_mean_mV keeps scaling with current instead of flattening near ~200 mV, the reduced ideal-current model and/or dynamic parameter set is not reproducing the lab pulse family.")
 

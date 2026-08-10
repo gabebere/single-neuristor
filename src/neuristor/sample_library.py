@@ -97,6 +97,12 @@ class SampleFitHysteresisArray(HysteresisArray):
     without changing the simulator's convergence-tested hysteresis update.
     """
 
+    def _solve_Tpr(self, delta: np.ndarray, gr: np.ndarray, Tr: np.ndarray) -> np.ndarray:
+        """Retain the 1e-6 endpoint clip used when the saved sample fits were made."""
+
+        gr_legacy = np.clip(np.asarray(gr, dtype=_FIT_DTYPE), 1e-6, 1.0 - 1e-6)
+        return super()._solve_Tpr(delta, gr_legacy, Tr)
+
     def _update_reversal(self, T_clamped: np.ndarray) -> None:
         params = self.params
         T_arr = np.asarray(T_clamped, dtype=_FIT_DTYPE)

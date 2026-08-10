@@ -1,0 +1,99 @@
+{
+  "id": "20260707_145140_paper_frequency_f881d2",
+  "name": "Professor paper package - paper-frequency analog",
+  "job_storage": "public",
+  "type": "current_sweep",
+  "sample_id": "100425_chip1_gap3",
+  "sample_name": "100425 chip1 gap3",
+  "source_model": "Current Source",
+  "status": "completed",
+  "created_at": "2026-07-07 14:51:47",
+  "params": {
+    "type": "current_sweep",
+    "job_name": "Professor paper package - paper-frequency analog",
+    "job_storage": "public",
+    "sample_id": "100425_chip1_gap3",
+    "sample_name": "100425 chip1 gap3",
+    "sample_source": "presets/resistance_100425_chip1_gap3.json",
+    "source_model": "Current Source",
+    "I_start_uA": 0,
+    "I_stop_uA": 3000,
+    "I_step_uA": 100,
+    "frame_duration_s": 1.0,
+    "seed": 0,
+    "current_params": {
+      "dt_s": 1.83e-12,
+      "t_end_s": 6e-07,
+      "t_pre_s": 0.0,
+      "pulse_on_s": 1.5e-07,
+      "pulse_off_s": 4.5e-07,
+      "V_init_V": 0.0,
+      "T0_K": 311.21937437938016,
+      "T_init_K": 311.21937437938016,
+      "C_F": 4e-12,
+      "R_out_ohm": 0.0,
+      "C_th_J_per_K": 1e-12,
+      "S_e_W_per_K": 0.0001,
+      "sigma_W_sqrt_s": 0.0,
+      "resist_params": {
+        "R0": 0.6461899358106661,
+        "Ea_over_k": 2606.086554863271,
+        "Rm0": 18.302541190786375,
+        "Rm_factor": 1.0,
+        "w": 6.984286990116681,
+        "Tc_K": 333.46937437938016,
+        "beta": 0.29155147175596274,
+        "gamma": 0.956269682,
+        "width_factor": 1.0,
+        "T_min_K": 284.8545,
+        "T_max_K": 375.1625,
+        "reversal_threshold_K": 0.01
+      },
+      "start_branch": "insulator"
+    },
+    "conclusion": "Paper-frequency phenomenology: this run reaches the 40-60 MHz oscillatory scale with the same Yuanhang ideal-current-source equations by using a smaller physical electrical capacitance and thermal mass. The absolute current window remains model/sample-scaled."
+  },
+  "outputs": [
+    {
+      "label": "Current sweep GIF",
+      "path": "public_jobs/20260707_145140_paper_frequency_f881d2/current_sweep.gif"
+    },
+    {
+      "label": "Current sweep traces CSV",
+      "path": "public_jobs/20260707_145140_paper_frequency_f881d2/current_sweep_traces.csv"
+    },
+    {
+      "label": "Current sweep summary CSV",
+      "path": "public_jobs/20260707_145140_paper_frequency_f881d2/current_sweep_summary.csv"
+    },
+    {
+      "label": "Current sweep spectra CSV",
+      "path": "public_jobs/20260707_145140_paper_frequency_f881d2/current_sweep_spectra.csv"
+    },
+    {
+      "label": "Three-regime figure",
+      "path": "public_jobs/20260707_145140_paper_frequency_f881d2/paper_frequency_three_regimes.png"
+    },
+    {
+      "label": "Operating-window figure",
+      "path": "public_jobs/20260707_145140_paper_frequency_f881d2/paper_frequency_operating_window.png"
+    },
+    {
+      "label": "Energy-per-cycle figure",
+      "path": "public_jobs/20260707_145140_paper_frequency_f881d2/paper_frequency_energy_cycle.png"
+    },
+    {
+      "label": "Pump-probe recovery figure",
+      "path": "public_jobs/20260707_145140_paper_frequency_f881d2/paper_frequency_pump_probe_recovery.png"
+    },
+    {
+      "label": "Pump-probe recovery CSV",
+      "path": "public_jobs/20260707_145140_paper_frequency_f881d2/paper_frequency_pump_probe_recovery.csv"
+    },
+    {
+      "label": "10s time-evolution GIF",
+      "path": "public_jobs/20260707_145140_paper_frequency_f881d2/paper_frequency_1800uA_time_evolution_10s.gif"
+    }
+  ],
+  "log_path": "public_jobs/20260707_145140_paper_frequency_f881d2/log.txt"
+}

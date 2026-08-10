@@ -1,0 +1,109 @@
+{
+  "id": "20260709_115815_published_table_current_3c2df4",
+  "name": "Published Yuanhang table parameters - ideal-current sweep",
+  "job_storage": "public",
+  "type": "current_sweep",
+  "sample_id": "yuanhang_published_table",
+  "sample_name": "Published Yuanhang parameter table",
+  "source_model": "Current Source",
+  "status": "completed",
+  "created_at": "2026-07-09 11:58:15",
+  "params": {
+    "type": "current_sweep",
+    "job_name": "Published Yuanhang table parameters - ideal-current sweep",
+    "job_storage": "public",
+    "sample_id": "yuanhang_published_table",
+    "sample_name": "Published Yuanhang parameter table",
+    "sample_source": "Screenshot supplied 2026-07-09",
+    "source_model": "Current Source",
+    "I_start_uA": 0,
+    "I_stop_uA": 1000,
+    "I_step_uA": 50,
+    "frame_duration_s": 1.0,
+    "seed": 19,
+    "current_params": {
+      "dt_s": 1e-09,
+      "t_end_s": 3e-05,
+      "t_pre_s": 0.0,
+      "pulse_on_s": 1e-06,
+      "pulse_off_s": 2.7e-05,
+      "V_init_V": 0.0,
+      "T0_K": 325.0,
+      "T_init_K": 325.0,
+      "C_F": 1.45e-10,
+      "R_out_ohm": 0.0,
+      "C_th_J_per_K": 4.96e-11,
+      "S_e_W_per_K": 0.000201,
+      "sigma_W_sqrt_s": 1e-06,
+      "resist_params": {
+        "R0": 0.00536,
+        "Ea_over_k": 5220.0,
+        "Rm0": 1286.0,
+        "Rm_factor": 1.0,
+        "w": 7.19,
+        "Tc_K": 332.8,
+        "beta": 0.253,
+        "gamma": 0.956,
+        "width_factor": 1.0,
+        "T_min_K": 305.0,
+        "T_max_K": 370.0,
+        "reversal_threshold_K": 0.01
+      },
+      "start_branch": "insulator"
+    },
+    "table_parameters_not_active": {
+      "R_load_ohm": 12000.0,
+      "S_c_W_per_K": 4.11e-06,
+      "reason": "Ideal current source has no load term; single device has no neighbor coupling."
+    },
+    "deterministic_control": "Same parameters with sigma set to zero.",
+    "conclusion": "Simulation of the published parameter table in the hardcoded Yuanhang ideal-current model. Exact table noise and a sigma=0 control are both saved."
+  },
+  "outputs": [
+    {
+      "label": "Exact-noise current sweep summary CSV",
+      "path": "public_jobs/20260709_115815_published_table_current_3c2df4/current_sweep_summary.csv"
+    },
+    {
+      "label": "Exact-noise current sweep traces CSV",
+      "path": "public_jobs/20260709_115815_published_table_current_3c2df4/current_sweep_traces.csv"
+    },
+    {
+      "label": "Exact-noise current sweep spectra CSV",
+      "path": "public_jobs/20260709_115815_published_table_current_3c2df4/current_sweep_spectra.csv"
+    },
+    {
+      "label": "Deterministic control summary CSV",
+      "path": "public_jobs/20260709_115815_published_table_current_3c2df4/deterministic_control_summary.csv"
+    },
+    {
+      "label": "Operating map",
+      "path": "public_jobs/20260709_115815_published_table_current_3c2df4/published_table_operating_map.png"
+    },
+    {
+      "label": "Representative current traces and R(T)",
+      "path": "public_jobs/20260709_115815_published_table_current_3c2df4/published_table_three_regimes.png"
+    },
+    {
+      "label": "Noise comparison",
+      "path": "public_jobs/20260709_115815_published_table_current_3c2df4/published_table_noise_comparison.png"
+    },
+    {
+      "label": "Timestep and noise-seed validation",
+      "path": "public_jobs/20260709_115815_published_table_current_3c2df4/published_table_validation.png"
+    },
+    {
+      "label": "Timestep convergence CSV",
+      "path": "public_jobs/20260709_115815_published_table_current_3c2df4/timestep_convergence.csv"
+    },
+    {
+      "label": "Noise-seed robustness CSV",
+      "path": "public_jobs/20260709_115815_published_table_current_3c2df4/noise_seed_robustness.csv"
+    },
+    {
+      "label": "Parameter translation and report",
+      "path": "public_jobs/20260709_115815_published_table_current_3c2df4/published_table_report.json"
+    }
+  ],
+  "log_path": "public_jobs/20260709_115815_published_table_current_3c2df4/log.txt"
+}

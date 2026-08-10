@@ -17,6 +17,13 @@ __pycache__/
 # Generated analysis outputs
 outputs/
 
+# Disposable render/package workspaces. Curated figures and presentation
+# sources belong under docs/, Simulations_on_VO2/, or public_jobs/ instead.
+output/
+tmp/
+presentation_package_*/
+presentation_package_*.zip
+
 # LaTeX build intermediates
 *.aux
 *.log

@@ -1,0 +1,718 @@
+\documentclass[aspectratio=169]{beamer}
+
+\usetheme{Madrid}
+\usecolortheme{seahorse}
+\usefonttheme{professionalfonts}
+
+\setbeamertemplate{navigation symbols}{}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+
+\graphicspath{{assets/}}
+
+\definecolor{tracepurple}{RGB}{119,52,219}
+\definecolor{tracegreen}{RGB}{28,166,76}
+\definecolor{tracered}{RGB}{235,64,69}
+\definecolor{softgray}{RGB}{245,246,248}
+
+\newcommand{\slidesource}[1]{%
+    \vfill
+    {\tiny\color{gray}#1}
+}
+
+\tikzset{
+    flowbox/.style={
+        draw=structure.fg,
+        rounded corners=2pt,
+        fill=structure.fg!7,
+        minimum height=0.72cm,
+        text width=2.25cm,
+        align=center,
+        font=\scriptsize
+    },
+    flowarrow/.style={-{Stealth[length=2.2mm]}, thick, draw=structure.fg}
+}
+
+\title[VO\textsubscript{2} Neuristor Simulations]{
+Single VO\textsubscript{2} Neuristor Simulations
+}
+
+\subtitle{
+From the Yuanhang voltage-source model to current-source oscillations
+}
+
+\author[Gabriel Berezovsky]{
+Gabriel Berezovsky
+}
+
+\institute[Technion]{
+Quantum Materials for Neuromorphic Computation Lab\\
+Technion\\[0.25cm]
+Supervised by Prof. Yoav Kalcheim and Amir Gildor
+}
+
+\date{}
+
+\begin{document}
+
+% Main talk: approximately 10 minutes.
+
+% ------------------------------------------------
+% Slide 1 (0:00-0:25)
+% ------------------------------------------------
+\begin{frame}
+    \titlepage
+    \note{Open with the project arc: reproduce a published model, make it local and testable, adapt it to ideal current drive, and locate a physically interpretable oscillatory domain.}
+\end{frame}
+
+% ------------------------------------------------
+% Slide 2 (0:25-1:00)
+% ------------------------------------------------
+\begin{frame}{The Central Research Question}
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.42cm]
+    \node[flowbox, text width=2.05cm] (upstream) {\textbf{Published model}\\Yuanhang voltage drive};
+    \node[flowbox, right=of upstream, text width=2.05cm] (local) {\textbf{Local simulator}\\reproducible Python};
+    \node[flowbox, right=of local, text width=2.05cm] (fit) {\textbf{Measured device}\\fit \(R(T,\mathcal H)\)};
+    \node[flowbox, right=of fit, text width=2.05cm] (current) {\textbf{Current drive}\\derive, do not invent};
+    \node[flowbox, right=of current, text width=2.05cm] (search) {\textbf{Domain search}\\find sustained oscillations};
+    \draw[flowarrow] (upstream) -- (local);
+    \draw[flowarrow] (local) -- (fit);
+    \draw[flowarrow] (fit) -- (current);
+    \draw[flowarrow] (current) -- (search);
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.35cm}
+
+\begin{alertblock}{Research question}
+Can the original electrothermal and hysteretic mechanism produce robust
+relaxation oscillations under an \emph{ideal imposed current}, and where is
+that operating domain?
+\end{alertblock}
+
+\begin{itemize}
+    \item Preserve the original VO\textsubscript{2} resistance mechanism.
+    \item Reject startup overshoot and timestep-dependent artifacts.
+    \item Visualize internal temperature and resistance dynamics.
+\end{itemize}
+
+\note{This is the map of the talk. Emphasize that the final current model is a circuit reduction using the same material law, not a new phenomenological oscillator.}
+\end{frame}
+
+% ------------------------------------------------
+% Slide 3 (1:00-1:40)
+% ------------------------------------------------
+\begin{frame}{Starting Point: Electrical Dynamics}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.59\textwidth}
+
+\textbf{Yuanhang voltage-source node equation}
+
+\vspace{0.18cm}
+
+\[
+C\frac{dV}{dt}
+=
+\frac{V_{in}-V}{R_{series}}
+-
+\frac{V}{R_{\mathrm{VO_2}}}
+\]
+
+\vspace{0.22cm}
+
+\begin{itemize}
+    \item \(C\,dV/dt\): charge stored at the neuristor node.
+    \item \((V_{in}-V)/R_{series}\): current delivered by the source.
+    \item \(V/R_{\mathrm{VO_2}}\): nonlinear leakage through VO\textsubscript{2}.
+    \item \(R_{\mathrm{VO_2}}=R(T,\mathcal H)\): temperature and memory couple the electrical and thermal problems.
+\end{itemize}
+
+\end{column}
+
+\begin{column}{0.36\textwidth}
+\centering
+\includegraphics[width=0.92\linewidth]{../vo2_device.png}
+
+\vspace{0.2cm}
+{\small Voltage-source equivalent circuit.}
+\end{column}
+\end{columns}
+
+\slidesource{Starting point: Y.-H. Zhang et al., Nature Communications (2024).}
+\note{Explain the competition: the load charges the capacitor, while the VO2 path discharges it. The resistance is not fixed; it is controlled by the thermal state.}
+\end{frame}
+
+% ------------------------------------------------
+% Slide 4 (1:40-2:20)
+% ------------------------------------------------
+\begin{frame}{The Feedback Mechanism: Thermal Dynamics}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.61\textwidth}
+
+\textbf{Single-neuristor reduction}
+
+\vspace{0.15cm}
+
+\[
+C_{th}\frac{dT}{dt}
+=
+\underbrace{\frac{V^2}{R_{\mathrm{VO_2}}}}_{\text{Joule heating}}
+-
+\underbrace{S_e(T-T_0)}_{\text{cooling}}
++
+\underbrace{\sigma\eta(t)}_{\text{optional noise}}
+\]
+
+\vspace{0.2cm}
+
+\begin{itemize}
+    \item \(C_{th}\): thermal inertia of the active device.
+    \item \(S_e\): thermal conductance to substrate/environment.
+    \item Heating lowers \(R_{\mathrm{VO_2}}\); lower resistance changes the voltage and power.
+    \item This delayed negative feedback enables relaxation oscillations.
+\end{itemize}
+
+\end{column}
+
+\begin{column}{0.34\textwidth}
+\begin{block}{Two coupled state variables}
+\[
+V(t),\qquad T(t)
+\]
+\end{block}
+
+\begin{block}{Material memory}
+\[
+\mathcal H=
+\{\delta,T_r,g_r,T_{pr},\ldots\}
+\]
+\end{block}
+
+\begin{center}
+\small
+Electrical storage\\
+\(\Updownarrow\)\\
+Joule heating\\
+\(\Updownarrow\)\\
+Hysteretic switching
+\end{center}
+\end{column}
+\end{columns}
+
+\slidesource{For one isolated device, the inter-neuristor thermal coupling term is zero.}
+\note{Keep this physical: electrical and thermal storage provide two timescales. Hysteresis supplies distinct heating and cooling thresholds.}
+\end{frame}
+
+% ------------------------------------------------
+% Slide 5 (2:20-3:05)
+% ------------------------------------------------
+\begin{frame}{Measured Hysteretic Resistance}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.42\textwidth}
+\small
+
+\[
+R(T,\mathcal H)
+=
+R_0 e^{(E_a/k_B)/T}
+\underbrace{g(T,\mathcal H)}_{\text{insulating fraction}}
++R_m
+\]
+
+\[
+g=
+\frac{1}{2}
++\frac{1}{2}\tanh
+\left[
+\beta\left(
+\delta\frac{w}{2}+T_c-(T+T_p)
+\right)
+\right]
+\]
+
+\scriptsize
+\begin{itemize}
+    \setlength\itemsep{0.06cm}
+    \item \(T_c,w,\beta\): center, width, and steepness.
+    \item \(\delta\): heating or cooling direction.
+    \item \(T_p\): minor-loop shift after a reversal.
+    \item The same law is used in both source configurations.
+\end{itemize}
+
+\end{column}
+
+\begin{column}{0.56\textwidth}
+\centering
+\includegraphics[width=0.91\linewidth]{resistance_fit.png}
+
+\vspace{0.1cm}
+{\scriptsize Sample 100425 chip1 gap3; log-space \(R^2\approx0.9987\).}
+\end{column}
+\end{columns}
+
+\slidesource{Hysteresis: L. A. L. de Almeida et al., Optical Engineering (2002).}
+\note{Point out that fitting in log resistance is essential because the transition spans orders of magnitude. The metallic floor is about 18.3 ohm for this sample.}
+\end{frame}
+
+% ------------------------------------------------
+% Slide 6 (3:05-3:50)
+% ------------------------------------------------
+\begin{frame}{What Happens at Every Timestep?}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.50\textwidth}
+\small
+
+\[
+R_n=R(T_n,\mathcal H_n)
+\]
+
+\[
+V_{n+1}=V_n+\frac{\Delta t}{C}
+\left(I_{\mathrm{src},n}-\frac{V_n}{R_n}\right)
+\]
+
+\[
+T_{n+1}=T_n+\frac{\Delta t}{C_{th}}
+\left[
+\frac{V_n^2}{R_n}-S_e(T_n-T_0)
+\right]
++\frac{\sigma}{C_{th}}\sqrt{\Delta t}\,\zeta_n
+\]
+
+\[
+I_{\mathrm{src},n}=
+\begin{cases}
+(V_{in,n}-V_n)/R_{series}, & \text{voltage drive},\\
+I_{in,n}, & \text{current drive}.
+\end{cases}
+\]
+
+\end{column}
+
+\begin{column}{0.47\textwidth}
+\centering
+\begin{tikzpicture}[node distance=0.30cm]
+    \node[flowbox] (r) {1. Evaluate \(R_n\) from \(T_n,\mathcal H_n\)};
+    \node[flowbox, below=of r] (v) {2. Update electrical state \(V_{n+1}\)};
+    \node[flowbox, below=of v] (p) {3. Compute \(P_n=V_n^2/R_n\)};
+    \node[flowbox, below=of p] (t) {4. Update thermal state \(T_{n+1}\)};
+    \node[flowbox, below=of t] (h) {5. Update reversal memory \(\mathcal H_{n+1}\)};
+    \draw[flowarrow] (r) -- (v);
+    \draw[flowarrow] (v) -- (p);
+    \draw[flowarrow] (p) -- (t);
+    \draw[flowarrow] (t) -- (h);
+    \draw[flowarrow] (h.east) -- ++(0.65,0) |- (r.east);
+\end{tikzpicture}
+
+\vspace{0.12cm}
+{\scriptsize Forward Euler; Euler--Maruyama when \(\sigma>0\).\\
+Production sweeps use \(\sigma=0\).}
+\end{column}
+\end{columns}
+
+\note{This slide replaces the long derivation. Stress the update order: resistance is evaluated from the current thermal state, then electrical and thermal states advance, then hysteresis memory is updated.}
+\end{frame}
+
+% ------------------------------------------------
+% Slide 7 (3:50-4:35)
+% ------------------------------------------------
+\begin{frame}{From Voltage Drive to Ideal Current Drive}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.47\textwidth}
+\begin{block}{Original voltage source}
+\[
+C\frac{dV}{dt}
+=
+\frac{V_{in}-V}{R_{series}}
+-\frac{V}{R}
+\]
+\[
+I_{\mathrm{src}} \text{ changes with } V
+\]
+\end{block}
+\end{column}
+
+\begin{column}{0.47\textwidth}
+\begin{alertblock}{Ideal imposed current}
+\[
+I_{in}=C\frac{dV}{dt}+\frac{V}{R}
+\]
+\[
+\boxed{
+C\frac{dV}{dt}=I_{in}-\frac{V}{R}
+}
+\]
+\end{alertblock}
+\end{column}
+\end{columns}
+
+\vspace{0.2cm}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Preserved} & \textbf{Assumed in the current-source reduction} \\
+\midrule
+Yuanhang \(R(T,\mathcal H)\) & one VO\textsubscript{2} device/domain \\
+single thermal state \(T\) & one thermal node \\
+Joule heating and cooling & ideal imposed current \\
+optional stochastic heating & no added phase-lag state \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.12cm}
+\begin{center}
+\alert{\textbf{The circuit boundary condition changed; the material mathematics did not.}}
+\end{center}
+
+\note{Derive the current equation directly from KCL. This is the clean answer to whether we changed the mathematics: the hysteresis law is unchanged; only the source boundary condition differs.}
+\end{frame}
+
+% ------------------------------------------------
+% Slide 8 (4:35-5:15)
+% ------------------------------------------------
+\begin{frame}{New Problem: The Oscillatory Domain Was Unknown}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+\begin{block}{Physical controls}
+\begin{tabular}{ll}
+\(I_{in}\) & imposed electrical drive \\
+\(C\) & electrical charging time \\
+\(C_{th}\) & thermal inertia \\
+\(S_e\) & environmental cooling \\
+\(T_0\) & starting/ambient temperature \\
+\end{tabular}
+\end{block}
+
+\[
+\tau_e\sim R C,
+\qquad
+\tau_{th}\sim \frac{C_{th}}{S_e}
+\]
+
+\small
+Oscillations require enough Joule heating to cross the transition, but enough
+cooling and electrical recovery to return.
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\begin{alertblock}{Acceptance criteria}
+\begin{enumerate}
+    \item Oscillations persist in a late-time window.
+    \item More than one full cycle is present.
+    \item Startup overshoot is excluded.
+    \item Frequency is below the numerical/Nyquist limit.
+    \item Period and amplitude survive timestep refinement.
+    \item The path is interpretable on \(R(T,\mathcal H)\).
+\end{enumerate}
+\end{alertblock}
+\end{column}
+\end{columns}
+
+\note{Explain why a blind sweep is not enough. A classifier can call overshoot an oscillation, so the scientific definition must include late-time persistence and convergence.}
+\end{frame}
+
+% ------------------------------------------------
+% Slide 9 (5:15-5:55)
+% ------------------------------------------------
+\begin{frame}{How I Used Codex as a Research Tool}
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.30cm]
+    \node[flowbox, text width=2.0cm] (constraint) {\textbf{Constrain}\\use existing equations and APIs};
+    \node[flowbox, right=of constraint, text width=2.0cm] (sweep) {\textbf{Sweep}\\physical parameter ranges};
+    \node[flowbox, right=of sweep, text width=2.0cm] (classify) {\textbf{Classify}\\late-window traces};
+    \node[flowbox, right=of classify, text width=2.0cm] (verify) {\textbf{Verify}\\timestep and duration};
+    \node[flowbox, right=of verify, text width=2.0cm] (save) {\textbf{Record}\\plots, CSV, app History};
+    \draw[flowarrow] (constraint) -- (sweep);
+    \draw[flowarrow] (sweep) -- (classify);
+    \draw[flowarrow] (classify) -- (verify);
+    \draw[flowarrow] (verify) -- (save);
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.25cm}
+
+\begin{block}{Representative instruction}
+\small
+``Use the existing current-source simulator without changing the model. Sweep
+physical values of current, capacitance, thermal capacitance, and thermal
+conductance. Find sustained oscillations, reject startup overshoot and numerical
+artifacts, and save successful simulations into app History.''
+\end{block}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.47\textwidth}
+\textbf{Codex accelerated}
+\begin{itemize}
+    \item search-script implementation;
+    \item repeated simulations and plots;
+    \item trace metrics and job registration.
+\end{itemize}
+\end{column}
+\begin{column}{0.47\textwidth}
+\textbf{Scientific control remained}
+\begin{itemize}
+    \item equations and physical constraints;
+    \item acceptance/rejection criteria;
+    \item interpretation and final claims.
+\end{itemize}
+\end{column}
+\end{columns}
+
+\note{Do not present AI as producing the scientific answer. Present it as a repository-integrated computational assistant that made a constrained, reproducible search practical.}
+\end{frame}
+
+% ------------------------------------------------
+% Slide 10 (5:55-6:45)
+% ------------------------------------------------
+\begin{frame}{Result: Three Current-Driven Regimes}
+\centering
+
+\includegraphics[height=0.77\textheight]{three_regimes.png}
+
+\vspace{0.04cm}
+{\scriptsize
+Low current: insulating equilibrium \(\rightarrow\)
+intermediate current: relaxation oscillation \(\rightarrow\)
+high current: metallic lock.
+}
+
+\note{Walk down the rows. At low current the device never reaches the transition. In the middle it repeatedly traverses a minor hysteresis loop. At high current it cannot cool back, so it locks metallic.}
+\end{frame}
+
+% ------------------------------------------------
+% Slide 11 (6:45-7:30)
+% ------------------------------------------------
+\begin{frame}{What the Simulation Reveals Inside One Oscillation}
+\centering
+
+\includegraphics[width=0.92\linewidth]{oscillation_1800uA.png}
+
+\vspace{0.05cm}
+{\scriptsize
+\(\SI{1800}{\micro\ampere}\): sustained \(\SI{53.5}{\mega\hertz}\) voltage
+oscillation. The right panel exposes the otherwise hidden trajectory through the
+hysteresis loop.
+}
+
+\vspace{0.05cm}
+\href{run:media/paper_frequency_1800uA_time_evolution_10s.gif}{
+\beamergotobutton{Open 10-second time-evolution animation}
+}
+
+\note{Use the left panel for what the oscilloscope sees and the right panel for what the simulator adds. The trajectory is the physical explanation: heat, switch, discharge, cool, recover, repeat.}
+\end{frame}
+
+% ------------------------------------------------
+% Slide 12 (7:30-8:05)
+% ------------------------------------------------
+\begin{frame}{Higher-Frequency Oscillation: \(\SI{57.1}{\mega\hertz}\)}
+\centering
+
+\includegraphics[width=0.93\linewidth]{high_frequency_1900uA.png}
+
+\vspace{0.04cm}
+{\scriptsize
+\(\SI{1900}{\micro\ampere}\),
+\(C=\SI{4}{\pico\farad}\),
+\(C_{th}=\SI{1}{\pico\joule\per\kelvin}\):
+\(\SI{57.1}{\mega\hertz}\), \(V_{pp}\approx\SI{2.08}{\volt}\), and
+\(E_{\mathrm{cycle}}\approx\SI{39.1}{\pico\joule}\).
+The trajectory repeatedly closes a stable minor loop.
+}
+
+\vspace{0.05cm}
+\href{run:media/paper_frequency_current_sweep.gif}{
+\beamergotobutton{Open high-frequency current-sweep animation}
+}
+
+\note{This is a higher-current point in the paper-frequency parameter set. Compared with 1800 microamperes, the cycle is faster, the amplitude is slightly smaller, and the hysteresis path remains stable.}
+\end{frame}
+
+% ------------------------------------------------
+% Slide 13 (8:05-8:40)
+% ------------------------------------------------
+\begin{frame}{Upper Edge of the Oscillatory Window}
+\centering
+
+\includegraphics[width=0.94\linewidth]{high_frequency_2100uA.png}
+
+\vspace{0.04cm}
+{\scriptsize
+At \(\SI{2100}{\micro\ampere}\), frequency reaches
+\(\SI{60.7}{\mega\hertz}\), \(V_{pp}\approx\SI{1.89}{\volt}\), and
+\(E_{\mathrm{cycle}}\approx\SI{36.3}{\pico\joule}\).
+This is the last sustained point before metallic lock at
+\(\SI{2200}{\micro\ampere}\).
+}
+
+\note{This operating point marks the high-frequency edge of the domain. Increasing current further prevents sufficient cooling and the device settles into the metallic-lock regime instead of completing another relaxation cycle.}
+\end{frame}
+
+% ------------------------------------------------
+% Slide 14 (8:40-9:10)
+% ------------------------------------------------
+\begin{frame}{Mapped Operating Window}
+
+\centering
+\includegraphics[width=0.97\linewidth]{operating_window_response.png}
+
+\vspace{0.08cm}
+
+\small
+\textbf{Window:} \(\SIrange{1400}{2100}{\micro\ampere}\).
+Frequency increases while cycle energy decreases; voltage amplitude remains
+approximately \(\SI{2}{\volt}\).
+
+\vspace{0.04cm}
+{\scriptsize
+\(C=\SI{4}{\pico\farad}\), \(C_{th}=\SI{1}{\pico\joule\per\kelvin}\),
+\(S_e=\SI{0.10}{\milli\watt\per\kelvin}\); current applied from
+\(\SI{150}{\nano\second}\) to \(\SI{450}{\nano\second}\).
+}
+
+\note{The key result is a contiguous domain, not one lucky trace. Frequency rises through the oscillatory band, and the system exits into metallic lock at higher current.}
+\end{frame}
+
+% ------------------------------------------------
+% Slide 15 (9:10-9:35)
+% ------------------------------------------------
+\begin{frame}{What Is Established, and What Is Not}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.48\textwidth}
+\begin{block}{Supported by the simulations}
+\begin{itemize}
+    \item The original Yuanhang hysteresis mechanism can oscillate under ideal current drive.
+    \item Low, oscillatory, and metallic-lock regimes emerge without adding a phase-delay state.
+    \item The paper-frequency analog reaches \(\SIrange{35.7}{60.7}{\mega\hertz}\).
+    \item Serial and vectorized traces agree; representative periods converge with smaller \(\Delta t\).
+\end{itemize}
+\end{block}
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\begin{alertblock}{Not yet an absolute experimental fit}
+\begin{itemize}
+    \item The simulated current window is higher than the measured one.
+    \item Cycle energy is \(\sim\SIrange{36}{54}{\pico\joule}\), not the paper's \(\sim\SIrange{1}{2}{\pico\joule}\).
+    \item \(C\), \(C_{th}\), \(S_e\), and source non-ideality need transient calibration.
+    \item The model is phenomenologically corroborative, not parameter-identical.
+\end{itemize}
+\end{alertblock}
+\end{column}
+\end{columns}
+
+\note{This slide protects the scientific claim. We reproduce the mechanism, regime sequence, and frequency scale, but we should not claim a full quantitative fit to current or energy yet.}
+\end{frame}
+
+% ------------------------------------------------
+% Slide 16 (9:35-10:00)
+% ------------------------------------------------
+\begin{frame}{Conclusions and Next Steps}
+
+\begin{enumerate}
+    \item \textbf{Calibrate dynamics:} fit \(C\), \(C_{th}\), \(S_e\), and a non-ideal current-source output impedance to transient data.
+    \item \textbf{Validate across samples:} compare onset current, voltage floor, frequency, amplitude, and cycle energy.
+    \item \textbf{Quantify uncertainty:} report parameter intervals and sensitivity, not only best-fit traces.
+    \item \textbf{Preserve reproducibility:} keep equations hardcoded, regression-tested, and every accepted run in public app History.
+\end{enumerate}
+
+\vspace{0.35cm}
+
+\begin{alertblock}{Takeaway}
+We rebuilt and validated the published VO\textsubscript{2} neuristor model,
+derived its ideal-current counterpart, and used AI-assisted but physically
+constrained domain search to demonstrate robust current-driven relaxation
+oscillations.
+\end{alertblock}
+
+\begin{center}
+\Large Thank you
+\end{center}
+
+\note{Close on the one-sentence contribution. The immediate experimental bridge is calibration of dynamic parameters and source non-ideality, not adding unvalidated internal states.}
+\end{frame}
+
+% ------------------------------------------------
+% Backup slides
+% ------------------------------------------------
+\appendix
+
+\begin{frame}{Backup: Representative Timestep Convergence}
+\centering
+
+\begin{tabular}{rrr}
+\toprule
+\(\Delta t\) (ns) & Period (ns) & Frequency (MHz) \\
+\midrule
+0.015820 & 123.206 & 8.116 \\
+0.007910 & 123.135 & 8.121 \\
+0.003955 & 123.095 & 8.124 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.45cm}
+
+\begin{block}{Interpretation}
+The period approaches a stable value as the timestep is halved. This is the
+expected signature of a physical solution being resolved more accurately, rather
+than an oscillation created by the numerical grid.
+\end{block}
+
+\slidesource{Representative Yuanhang current-source case: \(I=\SI{1640.226}{\micro\ampere}\).}
+\end{frame}
+
+\begin{frame}{Backup: Final Current-Source Standard}
+
+\[
+\boxed{
+\begin{aligned}
+C\frac{dV}{dt} &= I_{in}-\frac{V}{R},\\
+C_{th}\frac{dT}{dt} &= \frac{V^2}{R}-S_e(T-T_0),\\
+R(T,\mathcal H) &= R_m+R_0e^{(E_a/k_B)/T}g(T,\mathcal H).
+\end{aligned}
+}
+\]
+
+\begin{itemize}
+    \item Exactly one VO\textsubscript{2} device/domain and one thermal node.
+    \item Upstream-faithful Yuanhang/Almeida hysteresis and reversal memory.
+    \item Deterministic default \(\sigma=0\); optional stochastic heating remains available.
+    \item Obsolete delayed-phase, double-thermal, and multidomain variants are not active models.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Backup: Reproducibility Trail}
+
+\begin{itemize}
+    \item Fitted sample: \texttt{100425 chip1 gap3}.
+    \item Public History job: \texttt{20260707\_145140\_paper\_frequency\_f881d2}.
+    \item Public History job: \texttt{20260707\_145140\_sample\_scale\_89ffb4}.
+    \item Each job stores parameters, trace CSVs, spectral summaries, figures, and the animation.
+    \item Current-source regression tests cover finite traces, serial/vectorized equality, old-history compatibility, and voltage-source preservation.
+\end{itemize}
+
+\begin{block}{AI-use principle}
+Codex was allowed to automate implementation and search, but successful results
+were accepted only after model-preservation, physical interpretation, and
+numerical-convergence checks.
+\end{block}
+\end{frame}
+
+\end{document}

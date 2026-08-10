@@ -53,9 +53,11 @@ accumulated displacement exceeds 0.01 K, direction is evaluated and `T_last` is
 advanced. If direction changed, the sampled detection point is stored as the
 reversal point.
 
-The reversal fraction `g_r` is clipped to the open interval before
-`arctanh(2g_r-1)`. This keeps saturated low/high-temperature endpoints finite
-and avoids infinities in aggressive minor-loop paths.
+Only exact saturated reversal fractions (`g_r=0` or `g_r=1` in float32) are
+moved to the closest safe open-interval values before `arctanh(2g_r-1)`.
+Clipping every valid near-endpoint fraction to `1e-6` was found to change a
+minor-loop resistance by as much as 56.8%. The corrected active path matches
+the upstream float32 audit trace to about 0.001 Ohm.
 
 The Samples tab has one extra compatibility layer:
 `SampleFitHysteresisArray` in `src/neuristor/sample_library.py`. It is used only
@@ -90,11 +92,13 @@ minimum number of cycles required in the finite analysis window.
 
 ## Integration ordering
 
-At each current-drive Euler step:
+At each current-drive step:
 
 1. Evaluate R and phase fraction at the current temperature.
-2. Compute electrical and thermal derivatives.
-3. Advance V and T.
+2. Freeze resistance and power for the step.
+3. Advance the finite-C RC and deterministic cooling terms with their exact
+   exponential substeps, then add the optional stochastic increment. `C=0`
+   instead enforces the algebraic limit `V=I_in R(T)`.
 4. Update hysteresis direction using the new temperature.
 
 The next step evaluates resistance with the updated branch state. Calling the
@@ -104,16 +108,17 @@ detector again at the same temperature does not create another reversal.
 
 Torch is used for the float32 transcendental operations needed to match the
 upstream trace. NumPy owns the ODE state and integration arrays. The current
-sweep runner batches deterministic quasistatic amplitudes into one vectorized
+sweep runner batches deterministic Yuanhang current-source amplitudes into one vectorized
 hysteresis evaluation per timestep. Each batch column has an independent
 accepted-temperature anchor, making its output exactly equal to running the
 same amplitudes serially. A regression test compares every voltage,
 temperature, resistance, phase, current, and power sample.
 
-Stochastic, dynamic-phase, and multidomain configurations deliberately use the
-serial integrator because batching could otherwise change random streams or
-state semantics. Streamlit reuses the traces produced for GIF rendering when
-building CSV and FFT outputs, so a sweep is never simulated twice.
+Optional stochastic current-source configurations deliberately use the serial
+integrator so seeded noise streams remain stable. Dynamic-phase, double-thermal,
+multidomain, and alternate-reversal current-source modes are not part of the
+active executable model. Streamlit reuses the traces produced for GIF rendering
+when building CSV and FFT outputs, so a sweep is never simulated twice.
 
 ## Historical artifact provenance
 
@@ -123,8 +128,9 @@ building CSV and FFT outputs, so a sweep is never simulated twice.
   campaign created in June 2026 were generated with the `turning_point`
   extension. Their electrical/thermal equations and fitted R(T) parameters are
   original, but their reversal geometry is not the exact Yuanhang algorithm.
-- New runs always use the reference implementation and no longer store a mode
-  selector.
+- New runs always use the Yuanhang reference implementation and no longer store
+  a current-source mode selector. Obsolete active presets/scripts were deleted;
+  Git history is the recovery path if an audit needs them later.
 
 ## Verification commands
 

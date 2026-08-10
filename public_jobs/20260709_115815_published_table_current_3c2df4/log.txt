@@ -1,0 +1,5 @@
+[job] published-table ideal-current simulation
+[model] R_load ignored by ideal imposed-current equation
+[model] S_c ignored for one device/domain
+[noise] exact table sigma=1e-06 W sqrt(s)
+[result] exact-noise oscillatory current range: none classified

@@ -215,11 +215,18 @@ class HysteresisArray:
         """Compute T_pr at reversal from (δ, g_r, T_r) per the paper’s formula."""
         params = self.params
         delta_arr = np.asarray(delta, dtype=_SIM_DTYPE)
-        # Keep saturated reversal endpoints on the open arctanh interval.
-        # The measured R(T) sample presets were calibrated with this finite
-        # endpoint handling; without it, low/high-T reversals can throw the
-        # minor-loop shift to infinity and destroy the fitted branch overlay.
-        gr_arr = np.clip(np.asarray(gr, dtype=_SIM_DTYPE), 1e-6, 1.0 - 1e-6).astype(_SIM_DTYPE, copy=False)
+        # Yuanhang's expression uses the actual reversal fraction.  Only exact
+        # float32 endpoints need regularizing: clipping every value below 1e-6
+        # changes valid near-saturated minor loops substantially (more than 50%
+        # in resistance on the repository audit path).  These endpoint values
+        # are the closest representable fractions whose transformed argument
+        # remains strictly inside the arctanh domain in float32 arithmetic.
+        gr_arr = np.asarray(gr, dtype=_SIM_DTYPE)
+        eps = np.finfo(_SIM_DTYPE).eps
+        lower_open = _SIM_DTYPE(eps / 4.0)
+        upper_open = _SIM_DTYPE(1.0 - eps / 2.0)
+        gr_arr = np.where(gr_arr <= 0.0, lower_open, gr_arr)
+        gr_arr = np.where(gr_arr >= 1.0, upper_open, gr_arr).astype(_SIM_DTYPE, copy=False)
         Tr_arr = np.asarray(Tr, dtype=_SIM_DTYPE)
         if _TORCH_HYSTERESIS_AVAILABLE:
             delta_t = _torch_tensor(delta_arr)

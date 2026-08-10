@@ -14,7 +14,13 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 import neuristor.model as model
-from neuristor.current_drive_sim import CurrentDriveParams, simulate_current_step, simulate_current_steps
+from neuristor.current_drive_sim import (
+    CurrentDriveParams,
+    current_drive_operating_estimates,
+    sanitize_current_drive_params,
+    simulate_current_step,
+    simulate_current_steps,
+)
 from neuristor.current_domain_search import analyze_current_trace
 from neuristor.model import (
     YuanhangCircuitParams,
@@ -29,7 +35,7 @@ class SimulationConvergenceTests(unittest.TestCase):
     def setUp(self) -> None:
         model._TORCH_HYSTERESIS_AVAILABLE = False
 
-    def test_quasistatic_current_control_settles_across_timesteps(self) -> None:
+    def test_yuanhang_current_control_settles_across_timesteps(self) -> None:
         payload = json.loads((ROOT / "presets" / "resistance_100425_chip1_gap3.json").read_text())
         resist = YuanhangResistParams(**payload["resist_params"])
         for dt_ns in (0.05, 0.025):
@@ -41,7 +47,6 @@ class SimulationConvergenceTests(unittest.TestCase):
                 C_F=80e-12,
                 C_th_J_per_K=3e-12,
                 S_e_W_per_K=0.052838e-3,
-                phase_mode="quasistatic",
                 resist_params=resist,
                 start_branch="insulator",
             )
@@ -73,6 +78,7 @@ class SimulationConvergenceTests(unittest.TestCase):
         for serial_trace, batched_trace in zip(serial, batched):
             for key in ("I_in", "V_vo2", "T", "R", "g_eq", "P"):
                 np.testing.assert_array_equal(serial_trace[key], batched_trace[key])
+            np.testing.assert_array_equal(batched_trace["g_eq"], batched_trace["g_dyn"])
 
     def test_voltage_oscillator_frequency_converges(self) -> None:
         resist = YuanhangResistParams()
@@ -102,7 +108,7 @@ class SimulationConvergenceTests(unittest.TestCase):
         relative_difference = abs(frequencies[0] - frequencies[1]) / frequencies[1]
         self.assertLess(relative_difference, 0.02)
 
-    def test_quasistatic_relaxation_oscillator_converges(self) -> None:
+    def test_yuanhang_current_relaxation_oscillator_converges(self) -> None:
         payload = json.loads((ROOT / "presets" / "resistance_100425_chip1_gap3.json").read_text())
         resist = YuanhangResistParams(**payload["resist_params"])
         frequencies = []
@@ -115,7 +121,6 @@ class SimulationConvergenceTests(unittest.TestCase):
                 C_F=25.930953e-12,
                 C_th_J_per_K=5e-12,
                 S_e_W_per_K=0.1e-3,
-                phase_mode="quasistatic",
                 resist_params=resist,
                 start_branch="insulator",
             )
@@ -137,6 +142,64 @@ class SimulationConvergenceTests(unittest.TestCase):
             self.assertEqual(metrics["oscillatory"], 1.0)
             frequencies.append(metrics["dominant_freq_MHz"])
         self.assertLess(abs(frequencies[0] - frequencies[1]) / frequencies[1], 0.02)
+
+    def test_legacy_current_mode_fields_are_ignored_before_instantiation(self) -> None:
+        payload = {
+            "dt_s": 0.1e-9,
+            "t_end_s": 10e-9,
+            "thermal_mode": "double",
+            "C_sub_J_per_K": 1e-12,
+            "G_hot_sub_W_per_K": 1e-3,
+            "T_sub_init_K": 325.0,
+            "phase_mode": "dynamic",
+            "tau_g_s": 10e-9,
+            "domain_count": 8,
+            "domain_temperature_span_K": 5.0,
+            "domain_coupling_W_per_K": 1e-4,
+            "hysteresis_reversal_mode": "turning_point",
+            "resist_params": YuanhangResistParams(),
+        }
+        cleaned = sanitize_current_drive_params(payload)
+        params = CurrentDriveParams(**cleaned)
+        out = simulate_current_step(100.0, params=params, seed=0)
+        self.assertTrue(np.all(np.isfinite(out["V_vo2"])))
+        np.testing.assert_array_equal(out["g_eq"], out["g_dyn"])
+
+    def test_zero_capacitance_is_the_algebraic_voltage_limit(self) -> None:
+        params = CurrentDriveParams(
+            C_F=0.0,
+            dt_s=0.1e-9,
+            t_end_s=20e-9,
+            T0_K=325.0,
+            T_init_K=325.0,
+        )
+        out = simulate_current_step(400.0, params=params, seed=0)
+        np.testing.assert_allclose(out["V_vo2"], out["I_in"] * out["R"], rtol=2e-6, atol=1e-7)
+        self.assertTrue(np.all(out["V_vo2"] >= 0.0))
+
+    def test_small_capacitance_update_remains_bounded_when_dt_exceeds_rc(self) -> None:
+        params = CurrentDriveParams(
+            C_F=0.01e-12,
+            dt_s=1.0e-9,
+            t_end_s=100e-9,
+            T0_K=325.0,
+            T_init_K=325.0,
+        )
+        out = simulate_current_step(400.0, params=params, seed=0)
+        target = out["I_in"] * out["R"]
+        self.assertTrue(np.all(np.isfinite(out["V_vo2"])))
+        self.assertTrue(np.all(out["V_vo2"] >= 0.0))
+        self.assertLessEqual(float(np.max(out["V_vo2"])), 1.01 * float(np.max(target)))
+
+    def test_operating_estimate_exposes_voltage_floor_and_thermal_only_gap(self) -> None:
+        params = CurrentDriveParams()
+        report = current_drive_operating_estimates(params, I_uA=400.0)
+        self.assertAlmostEqual(report["V_metal_floor_V"], 400e-6 * params.resist_params.Rm, places=7)
+        self.assertGreater(
+            report["thermal_only_lower_current_uA"],
+            report["thermal_only_upper_current_uA"],
+        )
+        self.assertEqual(report["thermal_only_window_exists"], 0.0)
 
 
 if __name__ == "__main__":

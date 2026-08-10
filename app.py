@@ -294,7 +294,10 @@ FIELD_HELP = {
     "cd_t_pre_ns": "Optional pre-step duration in ns (I_in=0 before t=0).",
     "cd_pulse_on_ns": "Time in ns at which the current pulse turns on (typically 0).",
     "cd_pulse_off_ns": "Optional time in ns at which the pulse turns off. Leave blank to keep current on.",
-    "cd_C_pF": "Capacitance C used in current-driven electrical dynamics.",
+    "cd_C_pF": (
+        "Capacitance C used in current-driven electrical dynamics. Set C=0 for the algebraic "
+        "limit V=I_in R(T); lowering C speeds the voltage drop but does not raise its metallic-state floor."
+    ),
     "cd_Cth_mW_ns_per_K": "Thermal capacitance C_th for current-driven simulation.",
     "cd_S_e_mW_per_K": "Thermal cooling coefficient S_e to ambient.",
     "cd_T0_K": "Ambient/base temperature T0 in Kelvin.",
@@ -1157,19 +1160,54 @@ def _job_path(job_id: str, storage: Any | None = None) -> Path:
     return _job_dir(job_id, storage=storage) / "job.json"
 
 
+def _portable_public_job_value(value: Any) -> Any:
+    """Convert repo-local absolute paths to portable paths in public job JSON."""
+
+    if isinstance(value, dict):
+        return {key: _portable_public_job_value(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_portable_public_job_value(item) for item in value]
+    if isinstance(value, tuple):
+        return [_portable_public_job_value(item) for item in value]
+    if isinstance(value, Path):
+        value = str(value)
+    if isinstance(value, str):
+        candidate = Path(value)
+        if candidate.is_absolute():
+            try:
+                return candidate.resolve().relative_to(ROOT.resolve()).as_posix()
+            except ValueError:
+                return value
+    return value
+
+
+def _resolve_job_artifact_paths(job: Dict[str, Any]) -> Dict[str, Any]:
+    """Resolve portable public artifact paths for runtime file access."""
+
+    log_path = job.get("log_path")
+    if isinstance(log_path, str) and log_path and not Path(log_path).is_absolute():
+        job["log_path"] = str(ROOT / log_path)
+    for output in job.get("outputs", []):
+        output_path = output.get("path")
+        if isinstance(output_path, str) and output_path and not Path(output_path).is_absolute():
+            output["path"] = str(ROOT / output_path)
+    return job
+
+
 def _load_job(job_id: str) -> Dict[str, Any]:
     with open(_job_path(job_id), "r") as f:
         job = json.load(f)
     job.setdefault("job_storage", _infer_job_storage(job_id))
-    return job
+    return _resolve_job_artifact_paths(job)
 
 
 def _save_job(job: Dict[str, Any]) -> None:
     job["job_storage"] = _normalize_job_storage(job.get("job_storage"))
     path = _job_path(job["id"], storage=job["job_storage"])
     tmp_path = path.with_suffix(".json.tmp")
+    serialized = _portable_public_job_value(job) if job["job_storage"] == "public" else job
     with open(tmp_path, "w") as f:
-        json.dump(job, f, indent=2)
+        json.dump(serialized, f, indent=2)
     os.replace(tmp_path, path)
 
 
@@ -1193,7 +1231,7 @@ def _list_jobs() -> List[Dict[str, Any]]:
             with open(job_file, "r") as f:
                 job = json.load(f)
             job.setdefault("job_storage", storage)
-            jobs.append(job)
+            jobs.append(_resolve_job_artifact_paths(job))
     return sorted(jobs, key=lambda j: str(j.get("created_at", "")), reverse=True)
 
 
@@ -2017,7 +2055,7 @@ def _current_drive_recommendations(
                 "title": "Fast electrical RC is under-resolved",
                 "problem": (
                     f"`dt/tau_fast = {dt_tau_fast:.3g}` (> 0.1). "
-                    "This can suppress oscillations or produce non-physical waveforms."
+                    "The exponential update is stable, but coupled transition timing can be inaccurate."
                 ),
                 "change": f"Reduce `{_label('cd_dt_ns')}` to `<= {target_dt_ns:.4g}` ns.",
                 "actions": [
@@ -2057,7 +2095,7 @@ def _current_drive_recommendations(
                 "id": "dt_init",
                 "severity": "warning",
                 "title": "Initial electrical RC is under-resolved",
-                "problem": f"`dt/tau_init = {dt_tau_init:.3g}` (> 0.2). Euler artifacts are likely.",
+                "problem": f"`dt/tau_init = {dt_tau_init:.3g}` (> 0.2). The charging transient is under-resolved.",
                 "change": f"Reduce `{_label('cd_dt_ns')}` to `<= {target_dt_ns:.4g}` ns.",
                 "actions": [
                     {
@@ -2073,20 +2111,12 @@ def _current_drive_recommendations(
     if dT_over_rev > 0.2:
         target_ratio = 0.2
         target_dt_ns = max(min_dt_ns, dt_ns * (target_ratio / dT_over_rev))
-        target_c_th = c_th * (dT_over_rev / target_ratio)
         actions: List[Dict[str, Any]] = []
         if target_dt_ns < dt_ns * 0.98:
             actions.append(
                 {
                     "label": f"Set dt = {target_dt_ns:.4g} ns",
                     "updates": {"cd_dt_ns": float(f"{target_dt_ns:.16g}")},
-                }
-            )
-        if target_c_th > c_th * 1.02:
-            actions.append(
-                {
-                    "label": f"Set C_th = {target_c_th:.4g}",
-                    "updates": {"cd_Cth_mW_ns_per_K": float(f"{target_c_th:.16g}")},
                 }
             )
         recs.append(
@@ -2099,8 +2129,8 @@ def _current_drive_recommendations(
                     "Hysteresis reversal points can be skipped."
                 ),
                 "change": (
-                    f"Lower `{_label('cd_dt_ns')}` and/or increase `{_label('cd_Cth_mW_ns_per_K')}` "
-                    "until this ratio is below ~0.2."
+                    f"Lower `{_label('cd_dt_ns')}` until this ratio is below ~0.2. "
+                    "Do not change physical C_th merely to repair numerical resolution."
                 ),
                 "actions": actions,
                 "why": "Smaller per-step thermal jumps preserve branch switching timing.",
@@ -2224,6 +2254,14 @@ def _render_current_drive_recommendations(
 def _render_current_drive_tuning_guide() -> None:
     with st.expander("Symptom -> parameters to tune", expanded=False):
         guide_rows = [
+            {
+                "Symptom": "Voltage valley is near 0 V after switching",
+                "Change first": "metallic resistance Rm, measured series/contact resistance, current",
+                "How to change": (
+                    "Check the fitted metallic resistance and what voltage the instrument measures. Under ideal current drive "
+                    "the floor is approximately I*Rm; lowering C only makes the approach to that floor faster."
+                ),
+            },
             {
                 "Symptom": "No oscillation, smooth ramp/flat response",
                 "Change first": "cd_i_stop_uA, cd_C_pF, cd_T_init_K",
@@ -3624,6 +3662,12 @@ def _apply_current_scan_override(current_params: Dict[str, Any], param_key: str,
     current_params[target_field] = float(value) * float(scale)
 
 
+def _sanitize_current_drive_params_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+    from neuristor.current_drive_sim import sanitize_current_drive_params
+
+    return sanitize_current_drive_params(payload)
+
+
 def _show_plotly_with_click(
     fig,
     label: str,
@@ -3861,8 +3905,7 @@ def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
     if job["type"] == "current_domain_scan":
         from neuristor.current_drive_sim import CurrentDriveParams, simulate_current_step, stabilize_current_drive_params
 
-        cp_base = dict(config["current_params"])
-        cp_base.pop("hysteresis_reversal_mode", None)
+        cp_base = _sanitize_current_drive_params_payload(config["current_params"])
         cp_base["resist_params"] = dict(cp_base["resist_params"])
 
         scan_key = str(config["scan_param_key"])
@@ -3990,8 +4033,7 @@ def _run_job_core(job: Dict[str, Any], progress_cb=None) -> None:
             stabilize_current_drive_params,
         )
 
-        cp = dict(config["current_params"])
-        cp.pop("hysteresis_reversal_mode", None)
+        cp = _sanitize_current_drive_params_payload(config["current_params"])
         cp["resist_params"] = YuanhangResistParams(**cp["resist_params"])
         params = CurrentDriveParams(**cp)
 
@@ -5087,8 +5129,8 @@ def _validate_current_drive_inputs() -> List[str]:
             errors.append("Current-driven pulse-off time must be numeric or empty.")
     if pulse_off_ns is not None and pulse_off_ns <= float(st.session_state["cd_pulse_on_ns"]):
         errors.append("Pulse-off time must be greater than pulse-on time.")
-    if float(st.session_state["cd_C_pF"]) <= 0:
-        errors.append("Current-driven C must be > 0.")
+    if float(st.session_state["cd_C_pF"]) < 0:
+        errors.append("Current-driven C must be >= 0 (C=0 selects the algebraic voltage limit).")
     if float(st.session_state["cd_Cth_mW_ns_per_K"]) <= 0:
         errors.append("Current-driven C_th must be > 0.")
     if float(st.session_state["cd_S_e_mW_per_K"]) <= 0:
@@ -5149,7 +5191,8 @@ def _render_current_drive() -> None:
     st.header("Current-Driven Sweep")
     st.caption(
         "Current-drive model uses an ideal current source at the VO2 node: "
-        "dV/dt = (I_in - V/R_vo2)/C. External/source series resistance is not part of this model."
+        "C dV/dt = I_in - V/R_vo2. C=0 uses V=I_in R_vo2. "
+        "External/source series resistance is not part of this ideal-source model."
     )
     _render_current_quick_config_button()
     st.session_state["cd_diag_conflicts"] = {}
@@ -5249,7 +5292,7 @@ def _render_experiment_page() -> None:
         list(_SOURCE_MODELS),
         key="source_model",
         horizontal=True,
-        help="Voltage source uses the collective-dynamics RC circuit. Current source uses the ideal current-drive model.",
+        help="Voltage source uses the collective-dynamics RC circuit. Current source uses the Yuanhang ideal-current model.",
     )
     if source == "Voltage Source":
         experiment = st.radio(
