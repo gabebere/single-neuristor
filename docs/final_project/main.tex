@@ -196,43 +196,50 @@ $\gamma$ & $0.95627$ (fixed) & --- \\
 
 The fit gives $R^2=0.998734$ and a $\log_{10}R$ RMSE of $0.03663$, equivalent to a typical multiplicative error of $1.088$. The largest deviation is a factor of $1.336$ inside the switching region; this residual is retained rather than adding parameters unsupported by the measurement.
 
-\section{Thermal capacitance}
+\section{Experimental conditions and measured operating points}
 
-\planned{} Estimate $C_{\mathrm{th}}$ independently from the device geometry and material properties,
+\planned{} Record the ambient temperature and exact current for every waveform. Extract the pre-switch voltage and current, switching direction, period, and voltage slopes. The switching power is
 
 \begin{equation}
-C_{\mathrm{th}}=\rho c_p V,
+P_{\mathrm{sw}}=I_{\mathrm{sw}}V_{\mathrm{sw}}
+=\frac{V_{\mathrm{sw}}^2}{R(T_{\mathrm{sw}})}.
 \end{equation}
 
-and from measured thermal relaxation using $\tau_{\mathrm{th}}=C_{\mathrm{th}}/S_e$. Assumed active volume and material values will be listed with their uncertainty.
+Together with the fitted $R(T)$ transition temperatures, these measurements provide the remaining inputs.
 
+\section{Environmental thermal conductance}
+
+\planned{} At a verified quasi-steady point, use the relevant heating or cooling transition temperature to estimate
+
+\begin{equation}
+S_e=\frac{P_{\mathrm{sw}}}{T_{\mathrm{sw}}-T_0},
+\qquad
+\left.\frac{dT}{dt}\right|_{\mathrm{sw}}\approx0.
+\end{equation}
+
+The selected point, voltage definition, and quasi-steady assumption will be stated explicitly; agreement across currents will test consistency.
+
+\newpage
+\thispagestyle{fancy}
 \section{Electrical capacitance}
 
-\planned{} Estimate the effective capacitance from a nonswitching electrical transient using
+\planned{} Determine the effective capacitance from a nonswitching transient, separating electrical charging from the later thermal response. At the beginning of a current step, where $V/R(T)\ll I$, the current-balance estimate below reduces to $C\approx I/(dV/dt)$:
 
 \begin{equation}
 C=\frac{\tau_{\mathrm{el}}}{R_{\mathrm{eff}}}
 \qquad\text{or}\qquad
-C\approx\frac{I}{dV/dt},
+C=\frac{I-V/R(T)}{dV/dt}.
 \end{equation}
 
-depending on which portion of the measured waveform is suitable.
+\section{Thermal time constant and thermal capacitance}
 
-\section{Ambient temperature}
-
-\planned{} Use the ambient temperature recorded for the exact TIA waveform being simulated. The value will not be transferred from a different measurement condition.
-
-\section{Environmental thermal conductance}
-
-\planned{} At a verified steady point, estimate the effective environmental conductance from
+\planned{} With $R(T)$, $T_0$, $S_e$, and $C$ fixed, fit the measured thermal relaxation or switching interval to obtain $\tau_{\mathrm{th}}$, then calculate
 
 \begin{equation}
-S_e=\frac{P_{\mathrm{steady}}}{T_{\mathrm{steady}}-T_0},
-\qquad
-P_{\mathrm{steady}}=\frac{V^2}{R}=I^2R.
+C_{\mathrm{th}}=S_e\tau_{\mathrm{th}}.
 \end{equation}
 
-The voltage definition and the assumed device temperature at the selected point will be stated explicitly.
+An independent geometry estimate, $C_{\mathrm{th}}=\rho c_p V$, will be used as a cross-check rather than as the primary dynamical estimate. Assumed active volume and material values will be reported with their uncertainty.
 
 \section{Comparison across experimental currents}
 
