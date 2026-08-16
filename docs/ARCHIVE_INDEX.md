@@ -5,6 +5,18 @@ presentation artifacts. That distinction matters because Git history preserves e
 experiments, while only the current solver and audit should be used for new numerical
 claims.
 
+## Active final-project manuscript
+
+- `docs/final_project/main.tex`: working LaTeX manuscript for the VO2 automatic-gain-
+  control simulation project. Draft 0.1 completes the Yuanhang-source audit and the
+  ideal-current verification case; later sample-fitting sections remain explicitly marked
+  as planned.
+- The Case I figure and metrics point to the immutable public run bundle
+  `20260810_170502_current-step-with-a-nonzero-metallic-voltage-val_b05d39` rather than
+  duplicating scientific output inside the manuscript directory.
+- `docs/final_project/figures/` contains the manuscript's derived R(T) trajectory and
+  synchronized current/voltage--R(T) animation; both are regenerated from that bundle.
+
 ## Current model authority
 
 - `src/neuristor/model.py`: Yuanhang hysteretic resistance and voltage-driven model.

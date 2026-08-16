@@ -12,6 +12,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.animation import FuncAnimation, PillowWriter
+from matplotlib.collections import LineCollection
+from matplotlib.colors import Normalize
 
 
 COLORS = {
@@ -54,6 +57,133 @@ def plot_current_run(frame: pd.DataFrame, out_path: str | Path, *, title: str) -
         axis.grid(True, color=COLORS["grid"], alpha=0.7)
     fig.suptitle(title, fontsize=15, color=COLORS["ink"])
     return _finish(fig, out_path)
+
+
+def _current_trace_arrays(frame: pd.DataFrame) -> tuple[np.ndarray, ...]:
+    """Return validated arrays required by current-drive trajectory plots."""
+
+    columns = ["time_us", "current_uA", "voltage_V", "temperature_K", "resistance_ohm"]
+    missing = [column for column in columns if column not in frame]
+    if missing:
+        raise ValueError(f"Current-drive trace is missing columns: {', '.join(missing)}")
+    arrays = tuple(frame[column].to_numpy(dtype=float) for column in columns)
+    finite = np.logical_and.reduce([np.isfinite(values) for values in arrays])
+    positive_resistance = arrays[-1] > 0.0
+    keep = finite & positive_resistance
+    if np.count_nonzero(keep) < 2:
+        raise ValueError("Current-drive trace needs at least two finite samples with positive resistance")
+    return tuple(values[keep] for values in arrays)
+
+
+def plot_resistance_temperature_trajectory(
+    frame: pd.DataFrame,
+    out_path: str | Path,
+    *,
+    title: str = "Resistance-temperature trajectory",
+) -> Path:
+    """Plot the simulated R(T) path with color indicating elapsed time."""
+
+    time_us, _, _, temperature_K, resistance_ohm = _current_trace_arrays(frame)
+    points = np.column_stack([temperature_K, resistance_ohm]).reshape(-1, 1, 2)
+    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+    segment_time = 0.5 * (time_us[:-1] + time_us[1:])
+    norm = Normalize(vmin=float(time_us.min()), vmax=float(time_us.max()))
+
+    fig, ax = plt.subplots(figsize=(9.8, 6.2))
+    trajectory = LineCollection(segments, cmap="viridis", norm=norm, linewidth=1.8)
+    trajectory.set_array(segment_time)
+    ax.add_collection(trajectory)
+    ax.scatter(
+        [temperature_K[0], temperature_K[-1]],
+        [resistance_ohm[0], resistance_ohm[-1]],
+        c=[COLORS["ink"], COLORS["red"]],
+        s=42,
+        zorder=4,
+    )
+    ax.annotate("start", (temperature_K[0], resistance_ohm[0]), xytext=(6, 6), textcoords="offset points")
+    ax.annotate("end", (temperature_K[-1], resistance_ohm[-1]), xytext=(6, -13), textcoords="offset points")
+    ax.autoscale()
+    ax.margins(x=0.04, y=0.08)
+    ax.set_yscale("log")
+    ax.set_xlabel("Temperature (K)")
+    ax.set_ylabel("Equivalent resistance (Ohm)")
+    ax.set_title(title)
+    ax.grid(True, which="both", color=COLORS["grid"], alpha=0.75)
+    fig.colorbar(trajectory, ax=ax, label="Time (us)")
+    return _finish(fig, out_path)
+
+
+def animate_current_resistance_temperature(
+    frame: pd.DataFrame,
+    out_path: str | Path,
+    *,
+    title: str = "Current-drive electrothermal evolution",
+    frame_count: int = 96,
+    duration_s: float = 10.0,
+) -> Path:
+    """Animate current/voltage time traces beside the simultaneous R(T) path."""
+
+    if frame_count < 2:
+        raise ValueError("frame_count must be at least 2")
+    if duration_s <= 0.0:
+        raise ValueError("duration_s must be positive")
+    time_us, current_uA, voltage_V, temperature_K, resistance_ohm = _current_trace_arrays(frame)
+
+    # A few thousand points preserve the waveform while keeping GIF rendering and
+    # repository size manageable for long, sub-nanosecond simulations.
+    display_indices = np.unique(np.linspace(0, len(time_us) - 1, min(len(time_us), 5000), dtype=int))
+    time_us = time_us[display_indices]
+    current_uA = current_uA[display_indices]
+    voltage_V = voltage_V[display_indices]
+    temperature_K = temperature_K[display_indices]
+    resistance_ohm = resistance_ohm[display_indices]
+    animation_indices = np.unique(np.linspace(0, len(time_us) - 1, min(frame_count, len(time_us)), dtype=int))
+
+    fig, (wave_ax, rt_ax) = plt.subplots(1, 2, figsize=(12.2, 5.2))
+    voltage_ax = wave_ax.twinx()
+    wave_ax.plot(time_us, current_uA, color=COLORS["ink"], linewidth=0.9, alpha=0.18)
+    voltage_ax.plot(time_us, voltage_V, color=COLORS["blue"], linewidth=0.9, alpha=0.18)
+    (current_line,) = wave_ax.plot([], [], color=COLORS["ink"], linewidth=1.7, label="Current")
+    (voltage_line,) = voltage_ax.plot([], [], color=COLORS["blue"], linewidth=1.6, label="Voltage")
+    cursor = wave_ax.axvline(time_us[0], color=COLORS["red"], linewidth=1.0, alpha=0.75)
+    wave_ax.set_xlim(float(time_us.min()), float(time_us.max()))
+    wave_ax.set_ylim(min(0.0, float(current_uA.min())), max(1.0, float(current_uA.max()) * 1.08))
+    voltage_ax.set_ylim(min(0.0, float(voltage_V.min())), max(1e-6, float(voltage_V.max()) * 1.08))
+    wave_ax.set_xlabel("Time (us)")
+    wave_ax.set_ylabel("Current (uA)", color=COLORS["ink"])
+    voltage_ax.set_ylabel("Voltage (V)", color=COLORS["blue"])
+    wave_ax.grid(True, color=COLORS["grid"], alpha=0.75)
+    wave_ax.legend([current_line, voltage_line], ["Current", "Voltage"], loc="upper right")
+
+    rt_ax.plot(temperature_K, resistance_ohm, color=COLORS["purple"], linewidth=1.0, alpha=0.18)
+    (rt_line,) = rt_ax.plot([], [], color=COLORS["purple"], linewidth=1.8)
+    (rt_point,) = rt_ax.plot([], [], "o", color=COLORS["red"], markersize=6)
+    rt_ax.set_xlim(float(temperature_K.min()) - 1.0, float(temperature_K.max()) + 1.0)
+    rt_ax.set_ylim(float(resistance_ohm.min()) * 0.85, float(resistance_ohm.max()) * 1.18)
+    rt_ax.set_yscale("log")
+    rt_ax.set_xlabel("Temperature (K)")
+    rt_ax.set_ylabel("Equivalent resistance (Ohm)")
+    rt_ax.grid(True, which="both", color=COLORS["grid"], alpha=0.75)
+    time_label = rt_ax.text(0.02, 0.98, "", transform=rt_ax.transAxes, ha="left", va="top")
+    fig.suptitle(title, fontsize=14, color=COLORS["ink"])
+    fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.94))
+
+    def update(sample_index: int) -> tuple[plt.Artist, ...]:
+        stop = int(sample_index) + 1
+        current_line.set_data(time_us[:stop], current_uA[:stop])
+        voltage_line.set_data(time_us[:stop], voltage_V[:stop])
+        cursor.set_xdata([time_us[sample_index], time_us[sample_index]])
+        rt_line.set_data(temperature_K[:stop], resistance_ohm[:stop])
+        rt_point.set_data([temperature_K[sample_index]], [resistance_ohm[sample_index]])
+        time_label.set_text(f"t = {time_us[sample_index]:.2f} us")
+        return current_line, voltage_line, cursor, rt_line, rt_point, time_label
+
+    animation = FuncAnimation(fig, update, frames=animation_indices, interval=1000 * duration_s / len(animation_indices))
+    path = Path(out_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    animation.save(path, writer=PillowWriter(fps=len(animation_indices) / duration_s), dpi=105)
+    plt.close(fig)
+    return path
 
 
 def plot_voltage_run(frame: pd.DataFrame, out_path: str | Path, *, title: str) -> Path:

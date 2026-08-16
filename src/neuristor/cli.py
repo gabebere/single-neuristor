@@ -10,10 +10,12 @@ from pathlib import Path
 from typing import Optional
 
 import typer
+import pandas as pd
 
 from .config import ConfigError, apply_overrides, load_toml
 from .runs import RunRegistry, find_project_root
 from .validation import validate_repository
+from .visualization import animate_current_resistance_temperature, plot_resistance_temperature_trajectory
 from .workflows import run_lab_analysis, run_lab_estimates, run_resistance_fit, run_simulation, run_sweep
 
 
@@ -217,6 +219,48 @@ def runs_publish(run_id: str = typer.Argument(...)) -> None:
         typer.echo(str(exc), err=True)
         raise typer.Exit(2) from exc
     typer.echo(f"Published: {record.root}")
+
+
+@runs_app.command("visualize")
+def runs_visualize(
+    run_id: str = typer.Argument(..., help="Current-drive run identifier."),
+    output_directory: Optional[Path] = typer.Option(None, "--output-directory", "-o"),
+    frames: int = typer.Option(96, "--frames", min=2, help="Number of GIF frames."),
+    duration_s: float = typer.Option(10.0, "--duration-s", min=0.1, help="GIF duration in seconds."),
+) -> None:
+    """Create an R(T) trajectory figure and synchronized current/voltage GIF."""
+
+    try:
+        record = RunRegistry().get(run_id)
+    except KeyError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(2) from exc
+    trace_path = record.root / "traces.csv"
+    if record.model != "current" or not trace_path.is_file():
+        typer.echo("This command requires a current-drive run with traces.csv.", err=True)
+        raise typer.Exit(2)
+    output = output_directory or (find_project_root() / "outputs" / "run_visuals" / run_id)
+    output = output.expanduser().resolve()
+    frame = pd.read_csv(trace_path)
+    peak_current_uA = float(frame["current_uA"].max()) if "current_uA" in frame else 0.0
+    try:
+        static_path = plot_resistance_temperature_trajectory(
+            frame,
+            output / "resistance_temperature_trajectory.png",
+            title=f"Equivalent resistance-temperature trajectory at {peak_current_uA:g} uA",
+        )
+        gif_path = animate_current_resistance_temperature(
+            frame,
+            output / "current_voltage_rt_evolution.gif",
+            title=f"{peak_current_uA:g} uA current-drive electrothermal evolution",
+            frame_count=frames,
+            duration_s=duration_s,
+        )
+    except ValueError as exc:
+        typer.echo(f"Trace error: {exc}", err=True)
+        raise typer.Exit(2) from exc
+    typer.echo(f"Static figure: {static_path}")
+    typer.echo(f"Animation: {gif_path}")
 
 
 @app.command("validate")

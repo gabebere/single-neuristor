@@ -79,6 +79,7 @@ Use `neuristor --help` or `neuristor <group> --help` for the complete live refer
 | Digitize lab images | `neuristor analyze lab --images DIRECTORY` |
 | Estimate C, Sₑ, Cₜₕ scenarios | `neuristor analyze estimates --images DIRECTORY --resistance-preset FILE.json` |
 | Browse runs | `neuristor runs list` / `neuristor runs show RUN_ID` |
+| Visualize a current run | `neuristor runs visualize RUN_ID` |
 | Copy a run to the Git archive | `neuristor runs publish RUN_ID` |
 | Validate recipes and archive | `neuristor validate` |
 | Open dashboard | `neuristor dashboard` |
