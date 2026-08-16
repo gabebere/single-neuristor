@@ -16,6 +16,8 @@ from matplotlib.animation import FuncAnimation, PillowWriter
 from matplotlib.collections import LineCollection
 from matplotlib.colors import Normalize
 
+from .model import HysteresisArray, YuanhangResistParams
+
 
 COLORS = {
     "ink": "#172033",
@@ -75,6 +77,55 @@ def _current_trace_arrays(frame: pd.DataFrame) -> tuple[np.ndarray, ...]:
     return tuple(values[keep] for values in arrays)
 
 
+def _yuanhang_major_branches() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Evaluate the published Yuanhang major heating and cooling branches."""
+
+    params = YuanhangResistParams()
+    temperature_K = np.linspace(params.T_min_K, params.T_max_K, 600, dtype=np.float32)
+    branch_resistance: list[np.ndarray] = []
+    for branch in ("insulator", "metal"):
+        hysteresis = HysteresisArray(params, len(temperature_K), start_branch=branch)
+        hysteresis.initialize(temperature_K)
+        resistance_ohm, _ = hysteresis.evaluate(temperature_K)
+        branch_resistance.append(np.asarray(resistance_ohm, dtype=float))
+    return np.asarray(temperature_K, dtype=float), branch_resistance[0], branch_resistance[1]
+
+
+def _plot_yuanhang_hysteresis_background(ax: plt.Axes) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Draw the Yuanhang major loop as a quiet reference behind a trajectory."""
+
+    reference_temperature_K, heating_resistance_ohm, cooling_resistance_ohm = _yuanhang_major_branches()
+    ax.fill_between(
+        reference_temperature_K,
+        cooling_resistance_ohm,
+        heating_resistance_ohm,
+        color=COLORS["grid"],
+        alpha=0.38,
+        zorder=0,
+    )
+    ax.plot(
+        reference_temperature_K,
+        heating_resistance_ohm,
+        color=COLORS["orange"],
+        linestyle="--",
+        linewidth=1.35,
+        alpha=0.72,
+        label="Yuanhang heating branch",
+        zorder=1,
+    )
+    ax.plot(
+        reference_temperature_K,
+        cooling_resistance_ohm,
+        color=COLORS["blue"],
+        linestyle="--",
+        linewidth=1.35,
+        alpha=0.72,
+        label="Yuanhang cooling branch",
+        zorder=1,
+    )
+    return reference_temperature_K, heating_resistance_ohm, cooling_resistance_ohm
+
+
 def plot_resistance_temperature_trajectory(
     frame: pd.DataFrame,
     out_path: str | Path,
@@ -90,8 +141,10 @@ def plot_resistance_temperature_trajectory(
     norm = Normalize(vmin=float(time_us.min()), vmax=float(time_us.max()))
 
     fig, ax = plt.subplots(figsize=(9.8, 6.2))
+    _plot_yuanhang_hysteresis_background(ax)
     trajectory = LineCollection(segments, cmap="viridis", norm=norm, linewidth=1.8)
     trajectory.set_array(segment_time)
+    trajectory.set_zorder(3)
     ax.add_collection(trajectory)
     ax.scatter(
         [temperature_K[0], temperature_K[-1]],
@@ -109,6 +162,7 @@ def plot_resistance_temperature_trajectory(
     ax.set_ylabel("Equivalent resistance (Ohm)")
     ax.set_title(title)
     ax.grid(True, which="both", color=COLORS["grid"], alpha=0.75)
+    ax.legend(loc="upper right", fontsize=8.5)
     fig.colorbar(trajectory, ax=ax, label="Time (us)")
     return _finish(fig, out_path)
 
@@ -155,15 +209,20 @@ def animate_current_resistance_temperature(
     wave_ax.grid(True, color=COLORS["grid"], alpha=0.75)
     wave_ax.legend([current_line, voltage_line], ["Current", "Voltage"], loc="upper right")
 
-    rt_ax.plot(temperature_K, resistance_ohm, color=COLORS["purple"], linewidth=1.0, alpha=0.18)
+    reference_temperature_K, heating_resistance_ohm, cooling_resistance_ohm = (
+        _plot_yuanhang_hysteresis_background(rt_ax)
+    )
+    rt_ax.plot(temperature_K, resistance_ohm, color=COLORS["purple"], linewidth=1.0, alpha=0.18, zorder=2)
     (rt_line,) = rt_ax.plot([], [], color=COLORS["purple"], linewidth=1.8)
     (rt_point,) = rt_ax.plot([], [], "o", color=COLORS["red"], markersize=6)
-    rt_ax.set_xlim(float(temperature_K.min()) - 1.0, float(temperature_K.max()) + 1.0)
-    rt_ax.set_ylim(float(resistance_ohm.min()) * 0.85, float(resistance_ohm.max()) * 1.18)
+    rt_ax.set_xlim(float(reference_temperature_K.min()) - 1.0, float(reference_temperature_K.max()) + 1.0)
+    reference_resistance = np.concatenate([heating_resistance_ohm, cooling_resistance_ohm, resistance_ohm])
+    rt_ax.set_ylim(float(reference_resistance.min()) * 0.85, float(reference_resistance.max()) * 1.18)
     rt_ax.set_yscale("log")
     rt_ax.set_xlabel("Temperature (K)")
     rt_ax.set_ylabel("Equivalent resistance (Ohm)")
     rt_ax.grid(True, which="both", color=COLORS["grid"], alpha=0.75)
+    rt_ax.legend(loc="upper right", fontsize=7.5)
     time_label = rt_ax.text(0.02, 0.98, "", transform=rt_ax.transAxes, ha="left", va="top")
     fig.suptitle(title, fontsize=14, color=COLORS["ink"])
     fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.94))

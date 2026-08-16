@@ -71,8 +71,6 @@
 
 This run checks that the Yuanhang-based implementation can produce a stable current-driven oscillation with a nonzero voltage valley. It validates the simulation mechanism; it is not a fit to the experimental sample.
 
-\subsection{Settings and assumptions}
-
 All values were taken from Zhang \emph{et al.}\ \cite{zhang2024}, except $C_{\mathrm{th}}$. At $600~\mu$A, the nominal value ($49.6278$~pJ/K) did not sustain oscillations, so it was increased fourfold to slow the thermal response and obtain a stable validation cycle. This control value is not an estimate of our sample's thermal capacitance.
 
 \begin{table}[H]
@@ -100,8 +98,6 @@ Analysis interval & $10$--$38~\mu$s \\
 \label{tab:validation_settings}
 \end{table}
 
-\subsection{Results}
-
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../../public_jobs/20260810_170502_current-step-with-a-nonzero-metallic-voltage-val_b05d39/figures/overview.png}
@@ -112,7 +108,7 @@ Analysis interval & $10$--$38~\mu$s \\
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.88\textwidth]{figures/resistance_temperature_trajectory.png}
-\caption{Equivalent resistance versus temperature, with color showing progression through the $40~\mu$s simulation. Repeated loops correspond to successive heating and cooling cycles.}
+\caption{Equivalent resistance versus temperature. The dashed curves and shaded band show Yuanhang's major heating and cooling hysteresis; color shows progression through the $40~\mu$s simulated trajectory.}
 \label{fig:rt_trajectory}
 \end{figure}
 
@@ -140,8 +136,6 @@ Thermal time $C_{\mathrm{th}}/S_e$ & $0.965581~\mu$s \\
 \caption{Metrics measured from the validation run.}
 \label{tab:validation_results}
 \end{table}
-
-\subsection{Voltage valley and experimental comparison}
 
 The metallic-state voltage is set approximately by $V=IR_m$:
 
