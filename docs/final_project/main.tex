@@ -150,7 +150,51 @@ The simulated minimum is $0.905654$~V; it remains above this fixed point because
 
 \section{Sample-specific resistance--temperature fit}
 
-\planned{} Fit the supplied resistance--temperature measurement and report the heating and cooling branches, fitted parameter values, uncertainties, and residuals. The fitted curve will be plotted directly over the measured data before being used in transient simulations.
+The supplied file contains 264 measurements from one cooling sweep and one heating sweep over $289.85$--$370.16$~K at $2~\mu$A. We fitted the major-loop form
+
+\begin{equation}
+R(T,\delta)=R_m+R_0 e^{(E_a/k_B)/T}
+\left[\frac{1}{2}+\frac{1}{2}\tanh\!\left(\beta\left(\delta\frac{w}{2}+T_c-T\right)\right)\right],
+\qquad
+\delta=\begin{cases}-1,&\text{cooling},\\+1,&\text{heating}.
+\end{cases}
+\label{eq:sample_rt_fit}
+\end{equation}
+
+The fit minimizes the residual in $\log_{10}R$. Confidence intervals use 1000 circular block-bootstrap samples with eight-point blocks. The minor-loop parameter $\gamma$ was fixed to Yuanhang's value because a major loop alone does not determine it.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{../../public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/figures/resistance_fit.png}
+\caption{Measured heating and cooling branches, fitted model, and log-resistance residuals.}
+\label{fig:sample_rt_fit}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r r@{}}
+\toprule
+Parameter & Estimate & 95\% interval \\
+\midrule
+$R_0$ & $0.7989~\Omega$ & $0.3774$--$1.8483~\Omega$ \\
+$E_a/k_B$ & $2536.97$ K & $2272.55$--$2767.52$ K \\
+$E_a$ & $0.21862$ eV & $0.19583$--$0.23849$ eV \\
+$R_m$ & $18.2153~\Omega$ & $17.4943$--$18.9010~\Omega$ \\
+$T_c$ & $333.494$ K & $333.137$--$333.838$ K \\
+$w$ & $6.8823$ K & $6.6291$--$7.2681$ K \\
+$\beta$ & $0.29916~\mathrm{K}^{-1}$ & $0.28092$--$0.32021~\mathrm{K}^{-1}$ \\
+$T_{\mathrm{cool}}=T_c-w/2$ & $330.052$ K & $329.642$--$330.385$ K \\
+$T_{\mathrm{heat}}=T_c+w/2$ & $336.935$ K & $336.534$--$337.348$ K \\
+$\gamma$ & $0.95627$ (fixed) & --- \\
+\bottomrule
+\end{tabular}
+\caption{Sample-specific resistance parameters. $R_0$ and $E_a/k_B$ are strongly correlated; their joint combination, rather than either value alone, determines the insulating branch.}
+\label{tab:sample_rt_parameters}
+\end{table}
+
+The fit gives $R^2=0.998734$ and a $\log_{10}R$ RMSE of $0.03663$, equivalent to a typical multiplicative error of $1.088$. The largest deviation is a factor of $1.336$ inside the switching region; this residual is retained rather than adding parameters unsupported by the measurement.
 
 \section{Thermal capacitance}
 
@@ -224,6 +268,20 @@ neuristor simulate current --config experiments/current/nonzero\_voltage\_valley
 The archived bundle contains the resolved configuration, traces, metrics, figure, and repository provenance. A fresh execution produced identical metrics and byte-identical trace data.
 
 The resistance--temperature figure and synchronized GIF are regenerated from the same archived traces with \texttt{neuristor runs visualize}.
+
+The sample resistance fit is archived as
+
+\begin{center}
+\footnotesize
+\path{20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9}.
+\end{center}
+
+It is reproduced with
+
+\begin{center}
+\ttfamily\small
+neuristor fit resistance --data data/experimental/100425\_chip1\_gap3.tsv --method major-loop --bootstrap-samples 1000
+\end{center}
 
 \begin{thebibliography}{9}
 

@@ -22,15 +22,42 @@
   "generated_at_utc": "2026-08-16T12:59:07+00:00",
   "n_samples": 264,
   "parameter_ci95": {
-    "Ea_eV": {"lower": 0.19583345401540747, "upper": 0.23848625520628183},
-    "Ea_over_k_K": {"lower": 2272.5528659658266, "upper": 2767.5180703285405},
-    "R0_ohm": {"lower": 0.3773803655332552, "upper": 1.8482708235643621},
-    "Rm_ohm": {"lower": 17.494277999279635, "upper": 18.900968756593144},
-    "T_cooling_transition_K": {"lower": 329.6418185333858, "upper": 330.3852151136318},
-    "T_heating_transition_K": {"lower": 336.534135379888, "upper": 337.34823618154763},
-    "Tc_K": {"lower": 333.1368880516553, "upper": 333.8383134999961},
-    "beta_per_K": {"lower": 0.28091741375362467, "upper": 0.320206095383966},
-    "w_K": {"lower": 6.629054255675719, "upper": 7.268147836329526}
+    "Ea_eV": {
+      "lower": 0.19583345401540747,
+      "upper": 0.23848625520628183
+    },
+    "Ea_over_k_K": {
+      "lower": 2272.5528659658266,
+      "upper": 2767.5180703285405
+    },
+    "R0_ohm": {
+      "lower": 0.3773803655332552,
+      "upper": 1.8482708235643621
+    },
+    "Rm_ohm": {
+      "lower": 17.494277999279635,
+      "upper": 18.900968756593144
+    },
+    "T_cooling_transition_K": {
+      "lower": 329.6418185333858,
+      "upper": 330.3852151136318
+    },
+    "T_heating_transition_K": {
+      "lower": 336.534135379888,
+      "upper": 337.34823618154763
+    },
+    "Tc_K": {
+      "lower": 333.1368880516553,
+      "upper": 333.8383134999961
+    },
+    "beta_per_K": {
+      "lower": 0.28091741375362467,
+      "upper": 0.320206095383966
+    },
+    "w_K": {
+      "lower": 6.629054255675719,
+      "upper": 7.268147836329526
+    }
   },
   "resist_params": {
     "Ea_over_k": 2536.9654457644647,
@@ -46,6 +73,6 @@
     "w": 6.882302959338694,
     "width_factor": 1.0
   },
-  "source_data": "data/experimental/100425_chip1_gap3.tsv",
+  "source_data": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/data/experimental/100425_chip1_gap3.tsv",
   "start_branch": "metal"
 }
