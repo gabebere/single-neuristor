@@ -109,6 +109,8 @@ def fit_resistance(
     seed: int = typer.Option(42, "--seed"),
     random_iters: int = typer.Option(12_000, "--random-iters", min=0),
     local_passes: int = typer.Option(180, "--local-passes", min=0),
+    method: str = typer.Option("auto", "--method", help="auto, major-loop, or stateful"),
+    bootstrap_samples: int = typer.Option(500, "--bootstrap-samples", min=0),
     output_root: Path = typer.Option(Path("runs"), "--output-root"),
 ) -> None:
     """Fit Yuanhang resistance/hysteresis parameters to measured R(T)."""
@@ -119,6 +121,8 @@ def fit_resistance(
         seed=seed,
         random_iters=random_iters,
         local_passes=local_passes,
+        method=method,
+        bootstrap_samples=bootstrap_samples,
         output_root=output_root,
         command=_command(),
     )

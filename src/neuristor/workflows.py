@@ -25,7 +25,12 @@ from .current_results_digitizer import digitize_directory, traces_to_dataframe
 from .metrics import current_run_metrics, voltage_run_metrics
 from .lab_estimates import estimate_lab_parameters
 from .model import YuanhangCircuitParams, YuanhangResistParams, series_first, simulate_yuanhang
-from .resistance_custom_analysis import fit_resistance_params, load_experimental_rt
+from .resistance_custom_analysis import (
+    fit_major_loop_resistance_params,
+    fit_resistance_params,
+    is_major_loop_temperature_trace,
+    load_experimental_rt,
+)
 from .runs import RunBundle
 from .visualization import (
     plot_current_run,
@@ -453,6 +458,8 @@ def run_resistance_fit(
     seed: int = 42,
     random_iters: int = 12_000,
     local_passes: int = 180,
+    method: str = "auto",
+    bootstrap_samples: int = 500,
     output_root: str | Path = "runs",
     command: str = "neuristor fit resistance",
 ) -> RunBundle:
@@ -468,6 +475,8 @@ def run_resistance_fit(
         "seed": seed,
         "random_iters": random_iters,
         "local_passes": local_passes,
+        "method": method,
+        "bootstrap_samples": bootstrap_samples,
     }
     bundle = RunBundle.create(
         name=name,
@@ -479,29 +488,84 @@ def run_resistance_fit(
     )
     try:
         data = load_experimental_rt(source)
-        result, prediction = fit_resistance_params(
-            data,
-            seed=seed,
-            random_iters=random_iters,
-            local_passes=local_passes,
+        requested_method = str(method).strip().lower()
+        if requested_method not in {"auto", "major-loop", "stateful"}:
+            raise ValueError("Resistance fit method must be auto, major-loop, or stateful")
+        use_major_loop = requested_method == "major-loop" or (
+            requested_method == "auto"
+            and is_major_loop_temperature_trace(data["Temperature"].to_numpy(dtype=float))
         )
+        bootstrap = pd.DataFrame()
+        if use_major_loop:
+            result, prediction, bootstrap = fit_major_loop_resistance_params(
+                data,
+                seed=seed,
+                bootstrap_samples=bootstrap_samples,
+            )
+        else:
+            result, prediction = fit_resistance_params(
+                data,
+                seed=seed,
+                random_iters=random_iters,
+                local_passes=local_passes,
+            )
         result.source_data = str(source)
         measured_path = bundle.add_artifact("measured.csv", label="Normalized measured R(T)", media_type="text/csv")
         measured = data.copy()
         measured["model_resistance_ohm"] = prediction
+        measured["log10_residual"] = np.log10(np.maximum(prediction, 1e-12)) - np.log10(
+            np.maximum(measured["Resistance"].to_numpy(dtype=float), 1e-12)
+        )
         measured.to_csv(measured_path, index=False)
         payload = result.to_jsonable()
         bundle.write_json("resistance_preset.json", payload, label="Fitted resistance preset")
         bundle.write_json("metrics.json", payload["fit_metrics"], label="Fit metrics")
+        parameter_rows = []
+        for parameter, estimate in payload["resist_params"].items():
+            ci = payload.get("parameter_ci95", {}).get(parameter, {})
+            alias = {
+                "R0": "R0_ohm",
+                "Ea_over_k": "Ea_over_k_K",
+                "Rm0": "Rm_ohm",
+                "w": "w_K",
+                "Tc_K": "Tc_K",
+                "beta": "beta_per_K",
+            }.get(parameter)
+            if alias:
+                ci = payload.get("parameter_ci95", {}).get(alias, ci)
+            parameter_rows.append(
+                {
+                    "parameter": parameter,
+                    "estimate": estimate,
+                    "ci95_lower": ci.get("lower"),
+                    "ci95_upper": ci.get("upper"),
+                    "status": "fitted" if alias else "fixed or conventional",
+                }
+            )
+        pd.DataFrame(parameter_rows).to_csv(
+            bundle.add_artifact("parameter_summary.csv", label="Parameter estimates", media_type="text/csv"),
+            index=False,
+        )
+        if not bootstrap.empty:
+            bootstrap.to_csv(
+                bundle.add_artifact(
+                    "parameter_bootstrap.csv",
+                    label="Block-bootstrap parameter samples",
+                    media_type="text/csv",
+                ),
+                index=False,
+            )
         figure = bundle.add_artifact("figures/resistance_fit.png", label="Resistance fit", media_type="image/png")
         plot_resistance_fit(data, prediction, figure)
         bundle.write_text(
             "report.md",
             f"# {name}\n\nFitted {len(data)} R(T) samples from `{source}`.\n\n"
-            f"Overall log10 RMSE: **{result.rmse_log10:.6g}**. Start branch: **{result.start_branch}**.\n",
+            f"Method: **{result.fit_method}**. Overall log10 RMSE: **{result.rmse_log10:.6g}**. "
+            f"Start branch: **{result.start_branch}**.\n\n"
+            "Gamma is fixed to the Yuanhang value for major-loop data because it is a minor-loop parameter.\n",
             label="Scientific report",
         )
-        bundle.complete(summary=payload["fit_metrics"])
+        bundle.complete(summary={**payload["fit_metrics"], "fit_method": result.fit_method})
     except BaseException as exc:
         bundle.fail(exc)
         raise

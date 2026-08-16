@@ -33,7 +33,8 @@ COLORS = {
 def _finish(fig: plt.Figure, out_path: str | Path) -> Path:
     path = Path(out_path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    fig.tight_layout()
+    if not fig.get_constrained_layout():
+        fig.tight_layout()
     fig.savefig(path, dpi=190, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     return path
@@ -433,9 +434,16 @@ def plot_voltage_floor_comparison(
 
 
 def plot_resistance_fit(data: pd.DataFrame, prediction: np.ndarray, out_path: str | Path) -> Path:
-    """Plot measured and fitted heating/cooling resistance branches."""
+    """Plot measured/fitted hysteresis with a log-residual diagnostic panel."""
 
-    fig, ax = plt.subplots(figsize=(9.6, 6.2))
+    fig, (ax, residual_ax) = plt.subplots(
+        2,
+        1,
+        figsize=(9.8, 7.4),
+        sharex=True,
+        layout="constrained",
+        gridspec_kw={"height_ratios": [3.2, 1.0]},
+    )
     temperature_column = "temperature_K" if "temperature_K" in data.columns else "Temperature"
     resistance_column = "resistance_ohm" if "resistance_ohm" in data.columns else "Resistance"
     temperature = data[temperature_column].to_numpy(dtype=float)
@@ -445,20 +453,66 @@ def plot_resistance_fit(data: pd.DataFrame, prediction: np.ndarray, out_path: st
     if "branch" in data.columns:
         branch = data["branch"].astype(str).str.lower().to_numpy()
     else:
-        direction = np.diff(temperature, prepend=temperature[0])
+        direction = np.sign(np.diff(temperature, prepend=temperature[0]))
+        nonzero = np.flatnonzero(direction)
+        if nonzero.size:
+            direction[0] = direction[nonzero[0]]
+        for index in range(1, len(direction)):
+            if direction[index] == 0.0:
+                direction[index] = direction[index - 1]
         branch = np.where(direction < 0.0, "cooling", "heating")
-    for label, color in (("heating", COLORS["red"]), ("cooling", COLORS["blue"]), ("data", COLORS["ink"])):
+    prediction = np.asarray(prediction, dtype=float)
+    for label, color in (("heating", COLORS["red"]), ("cooling", COLORS["blue"])):
         mask = branch == label
         if np.any(mask):
-            ax.scatter(temperature[mask], resistance[mask], s=18, color=color, alpha=0.72, label=f"Measured {label}")
-    order = np.argsort(temperature)
-    ax.plot(
-        temperature[order], np.asarray(prediction)[order], color=COLORS["green"], linewidth=1.5, label="Fitted model"
-    )
+            order = np.argsort(temperature[mask])
+            branch_temperature = temperature[mask][order]
+            branch_resistance = resistance[mask][order]
+            branch_prediction = prediction[mask][order]
+            ax.scatter(
+                branch_temperature,
+                branch_resistance,
+                s=20,
+                facecolor="white",
+                edgecolor=color,
+                linewidth=0.9,
+                alpha=0.9,
+                label=f"Measured {label}",
+                zorder=3,
+            )
+            ax.plot(
+                branch_temperature,
+                branch_prediction,
+                color=color,
+                linewidth=2.0,
+                label=f"Fitted {label}",
+                zorder=2,
+            )
+            log_residual = np.log10(np.maximum(branch_prediction, 1e-12)) - np.log10(
+                np.maximum(branch_resistance, 1e-12)
+            )
+            residual_ax.scatter(branch_temperature, log_residual, s=15, color=color, alpha=0.75)
+    full_error = np.log10(np.maximum(prediction, 1e-12)) - np.log10(np.maximum(resistance, 1e-12))
+    rmse = float(np.sqrt(np.mean(full_error * full_error)))
+    target_log = np.log10(np.maximum(resistance, 1e-12))
+    ss_total = float(np.sum((target_log - np.mean(target_log)) ** 2))
+    r_squared = float(1.0 - np.sum(full_error * full_error) / ss_total)
     ax.set_yscale("log")
-    ax.set_xlabel("Temperature (K)")
     ax.set_ylabel("Resistance (Ohm)")
     ax.grid(True, which="both", color=COLORS["grid"])
-    ax.legend()
-    ax.set_title("Measured and fitted hysteretic resistance")
+    ax.legend(ncol=2, fontsize=8.5, loc="upper right")
+    ax.set_title("Measured R(T) hysteresis and fitted model")
+    ax.text(
+        0.02,
+        0.04,
+        rf"$\log_{{10}}$ RMSE = {rmse:.4f}   |   $R^2$ = {r_squared:.5f}",
+        transform=ax.transAxes,
+        color=COLORS["ink"],
+        fontsize=9,
+    )
+    residual_ax.axhline(0.0, color=COLORS["ink"], linewidth=0.9)
+    residual_ax.axhspan(-rmse, rmse, color=COLORS["grid"], alpha=0.45)
+    residual_ax.set_xlabel("Temperature (K)")
+    residual_ax.set_ylabel(r"$\log_{10}(R_{model}/R_{data})$")
+    residual_ax.grid(True, color=COLORS["grid"], alpha=0.75)
     return _finish(fig, out_path)

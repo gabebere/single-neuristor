@@ -96,6 +96,20 @@ neuristor simulate current \
 Overrides are type-checked, reject misspelled paths, and are written into the run's
 resolved configuration.
 
+A complete cooling/heating R(T) sweep is fitted directly as a major hysteresis loop:
+
+```bash
+neuristor fit resistance \
+  --data data/experimental/100425_chip1_gap3.tsv \
+  --method major-loop \
+  --bootstrap-samples 1000
+```
+
+This fits the six major-loop parameters in log-resistance space and archives block-
+bootstrap confidence intervals. The minor-loop parameter `gamma` remains fixed unless
+minor-loop measurements are available. `--method auto` selects this path when the input
+contains exactly one cooling/heating reversal and otherwise uses the stateful fitter.
+
 ## Experiment recipes
 
 Recipes live under [`experiments/`](experiments/) and state units in every physical
