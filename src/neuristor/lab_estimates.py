@@ -1,8 +1,8 @@
-"""Identifiability-aware estimates from digitized current-drive traces.
+"""Identifiability-aware estimates from numerical current-drive waveforms.
 
 These calculations intentionally keep direct estimates separate from assumed
-quantities.  Screenshot data can estimate the cold electrical capacitance, but
-thermal capacitance still requires an independently measured recovery time.
+quantities.  Electrical waveforms can estimate the cold electrical capacitance,
+but thermal capacitance still requires an independently measured recovery time.
 """
 
 from __future__ import annotations
@@ -42,17 +42,18 @@ def estimate_lab_parameters(
     """
 
     required = {
-        "frame_index",
-        "current_inferred_uA",
-        "v_plateau_mean_mV",
-        "v_plateau_vpp_mV",
-        "v_slope_0_30_mV_per_ns",
+        "source_file",
+        "current_plateau_uA",
+        "current_step_uA",
+        "voltage_plateau_mean_mV",
+        "voltage_plateau_vpp_mV",
+        "voltage_slope_0_30_mV_per_ns",
     }
     missing = sorted(required - set(summary.columns))
     if missing:
         raise ValueError(f"Lab summary is missing columns: {', '.join(missing)}")
-    ordered = summary.sort_values("current_inferred_uA").reset_index(drop=True)
-    switched = np.flatnonzero(ordered["v_plateau_vpp_mV"].to_numpy(dtype=float) >= ripple_threshold_mV)
+    ordered = summary.sort_values("current_plateau_uA").reset_index(drop=True)
+    switched = np.flatnonzero(ordered["voltage_plateau_vpp_mV"].to_numpy(dtype=float) >= ripple_threshold_mV)
     if switched.size == 0 or int(switched[0]) == 0:
         raise ValueError("Could not bracket switching onset from plateau ripple")
     high_index = int(switched[0])
@@ -60,23 +61,31 @@ def estimate_lab_parameters(
     post_switch = ordered.iloc[high_index]
 
     capacitance = ordered.copy()
-    capacitance["C_slope_pF"] = capacitance["current_inferred_uA"] / capacitance["v_slope_0_30_mV_per_ns"]
+    capacitance["C_slope_pF"] = (
+        capacitance["current_step_uA"] / capacitance["voltage_slope_0_30_mV_per_ns"]
+    )
     valid_capacitance = (
-        (capacitance["current_inferred_uA"] > 0.0)
-        & (capacitance["current_inferred_uA"] <= float(pre_switch["current_inferred_uA"]))
-        & (capacitance["v_slope_0_30_mV_per_ns"] > 1.0)
-        & (capacitance["v_plateau_vpp_mV"] < ripple_threshold_mV)
+        (capacitance["current_step_uA"] > 0.0)
+        & (capacitance["current_plateau_uA"] <= float(pre_switch["current_plateau_uA"]))
+        & (capacitance["voltage_slope_0_30_mV_per_ns"] > 1.0)
+        & (capacitance["voltage_plateau_vpp_mV"] < ripple_threshold_mV)
         & np.isfinite(capacitance["C_slope_pF"])
     )
     capacitance = capacitance.loc[
         valid_capacitance,
-        ["frame_index", "current_inferred_uA", "v_slope_0_30_mV_per_ns", "C_slope_pF"],
+        [
+            "source_file",
+            "current_plateau_uA",
+            "current_step_uA",
+            "voltage_slope_0_30_mV_per_ns",
+            "C_slope_pF",
+        ],
     ].reset_index(drop=True)
     if capacitance.empty:
         raise ValueError("No valid pre-switch slope points were found")
 
-    current_uA = float(pre_switch["current_inferred_uA"])
-    voltage_mV = float(pre_switch["v_plateau_mean_mV"])
+    current_uA = float(pre_switch["current_plateau_uA"])
+    voltage_mV = float(pre_switch["voltage_plateau_mean_mV"])
     switching_power_mW = current_uA * voltage_mV * 1e-6
     conductance_rows = []
     for ambient_K in ambient_temperatures_K:
@@ -108,8 +117,12 @@ def estimate_lab_parameters(
             )
     thermal_capacitance = pd.DataFrame(thermal_rows)
 
-    resistance = ordered[["frame_index", "current_inferred_uA", "v_plateau_mean_mV", "v_plateau_vpp_mV"]].copy()
-    resistance["R_effective_ohm"] = 1000.0 * resistance["v_plateau_mean_mV"] / resistance["current_inferred_uA"]
+    resistance = ordered[
+        ["source_file", "current_plateau_uA", "voltage_plateau_mean_mV", "voltage_plateau_vpp_mV"]
+    ].copy()
+    resistance["R_effective_ohm"] = (
+        1000.0 * resistance["voltage_plateau_mean_mV"] / resistance["current_plateau_uA"]
+    )
     return LabParameterEstimates(
         electrical_capacitance=capacitance,
         thermal_conductance=conductance,

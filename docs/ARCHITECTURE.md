@@ -10,7 +10,7 @@ flowchart LR
     Config --> Workflows
     Workflows --> Current["current_drive_sim.py"]
     Workflows --> Voltage["model.py"]
-    Workflows --> Analysis["lab_estimates.py / fitting"]
+    Workflows --> Analysis["experimental_waveforms.py / lab_estimates.py / fitting"]
     Current --> Bundle["portable run bundle"]
     Voltage --> Bundle
     Analysis --> Bundle
@@ -27,8 +27,9 @@ state. They do not know about TOML, Typer, Streamlit, Git, or output directories
 
 ### Analysis
 
-Fitting, digitization, and laboratory estimate modules operate on numerical arrays or
-data frames. They expose reusable functions rather than command-line parsing.
+Waveform import, fitting, and laboratory estimate modules operate on numerical arrays
+or data frames. They expose reusable functions rather than command-line parsing. Plot
+pixels are not a supported data source.
 
 ### Workflow
 

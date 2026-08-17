@@ -57,14 +57,16 @@ At 400 uA:
 
 Therefore, decreasing `C` cannot prevent the voltage valley. It makes the drop faster. The main causes of the mismatch are the fitted specimen's very low metallic resistance and uncertainty about which physical voltage the oscilloscope includes.
 
-The digitized lab family supports this diagnosis. Above 350 uA, plateau `V/I` ranges from about 135 to 472 Ohm, while the fitted `Rm` is only 18.3 Ohm. Because the plateau stays near 190 mV over a broad current range, one fixed added series resistance is also insufficient to reproduce the whole family; the temperature-dependent state and/or nonideal source/measurement circuit matters.
+The professor-supplied numerical waveform family supports this diagnosis. Above
+350 uA, plateau `V/I` ranges from about 205 to 480 Ohm, while the fitted `Rm` is only
+18.2 Ohm. Because the plateau stays near 190 mV over a broad current range, one fixed
+added series resistance is also insufficient to reproduce the whole family; the
+temperature-dependent state and/or nonideal source/measurement circuit matters.
 
 ### Evidence: measured plateau versus the ideal-current floor
 
-![Measured plateau and ideal-current resistance floors](figures/current_drive/lab_estimates/voltage_floor_comparison.png)
-
 The red line is the fitted specimen prediction `V=I*18.3 Ohm`; it stays near zero
-compared with the digitized laboratory plateau. Yuanhang's much larger metallic
+compared with the measured numerical plateau. Yuanhang's much larger metallic
 resistance produces a much larger floor, while a fixed 250 Ohm addition crosses the
 data only locally and cannot reproduce the nearly current-independent 190 mV plateau.
 None of these steady-state lines depends on electrical capacitance.
@@ -150,17 +152,12 @@ to cool through the lower transition.
 
 For Yuanhang's values these estimates are about 382.8 uA and 198.6 uA, respectively. Since the required lower current is greater than the allowed upper current, there is no overlap. The simulated `C=0` column likewise settles for every tested current and `C_th`. Finite electrical memory is essential for the oscillations found in this parameter set.
 
-## Estimates from the digitized lab screenshots
+## Estimates from the numerical laboratory waveforms
 
-These are image-based estimates, not substitutes for raw oscilloscope data.
-
-![Lab-derived parameter constraints](figures/current_drive/lab_estimates/lab_parameter_estimates.png)
-
-The left panel supports the approximately 22.7 pF electrical-capacitance estimate.
-The center panel shows why ambient temperature and environmental conductance cannot be
-fit independently from switching power alone. The right panel shows that the measured
-high-current plateau corresponds to a current-dependent effective `V/I`, rather than
-one constant series resistance.
+The 22 converted traces contain the measured time, input current, and output voltage;
+no values are recovered from images. They cover 41.9--943.3 uA. A conservative
+periodic-peak detector identifies coherent oscillations from 233.5 to 621.8 uA at
+41.7--62.5 MHz, reproducing the operating range reported in Figure 7.
 
 ### Electrical capacitance
 
@@ -170,30 +167,56 @@ Before switching and near `V=0`, `dV/dt` is approximately `I/C`, so
 C\approx\frac{I}{dV/dt}.
 \]
 
-Four clean pre-switch frames give 20.9--25.0 pF, with a median of 22.7 pF. This is consistent with the earlier joint image fit (`C=20.05 pF`) and is much smaller than Yuanhang's 145.35 pF.
+Four clean pre-switch traces give 18.5--21.4 pF, with a median of 19.8 pF. This is
+much smaller than Yuanhang's 145.35 pF. The estimate uses the measured current step,
+not the nonzero oscilloscope baseline.
 
 ### Switching current and environmental conductance
 
-The digitized family brackets switching onset between 194.6 and 233.4 uA. Using the last pre-switch point (`V=315.2 mV`, `P=61.35 uW`) and the fitted specimen heating midpoint `T_switch=336.96 K`:
+The numerical family brackets switching onset between 195.3 and 233.5 uA. Using the
+last pre-switch point (`V=316.0 mV`, `P=61.73 uW`) and the fitted specimen heating
+midpoint `T_switch=336.93 K`:
 
 | Assumed T0 | Estimated Se |
 |---:|---:|
-| 298 K | 0.00157 mW/K |
-| 325 K | 0.00513 mW/K |
-| 330 K | 0.00881 mW/K |
-| 333 K | 0.01549 mW/K |
+| 298 K | 0.00159 mW/K |
+| 325 K | 0.00517 mW/K |
+| 330 K | 0.00890 mW/K |
+| 333 K | 0.01569 mW/K |
 
 This strong dependence is why ambient temperature must be measured rather than absorbed freely into `S_e`.
 
 ### Thermal capacitance
 
-Voltage screenshots do not independently identify `C_th`. First measure the thermal recovery time from a post-pulse or pump-probe trace, then calculate
+Electrical waveforms do not independently identify `C_th`. First measure the thermal
+recovery time from a post-pulse or pump-probe trace, then calculate
 
 \[
 C_{th}=S_e\tau_{th}.
 \]
 
-For example, if `T0=325 K`, the onset estimate gives `S_e=0.00513 mW/K`; thermal recovery times of 20, 50, and 100 ns imply `C_th=0.103`, `0.256`, and `0.513 pJ/K`. The earlier correlated image fit used `C_th=6.55 pJ/K` together with the much larger `S_e=0.129 mW/K`, giving a similar order-50-ns thermal time. This illustrates that waveform fitting often identifies the ratio `C_th/S_e` more strongly than either parameter alone.
+For example, if `T0=325 K`, the onset estimate gives `S_e=0.00517 mW/K`; thermal
+recovery times of 20, 50, and 100 ns imply `C_th=0.103`, `0.259`, and `0.517 pJ/K`.
+This illustrates that waveform fitting often identifies the ratio `C_th/S_e` more
+strongly than either parameter alone.
+
+### What the waveforms can tell us about gamma
+
+`gamma` changes the curvature of minor hysteresis loops after a temperature reversal.
+The oscillatory traces contain many such reversals, so they can constrain one shared
+specimen value once the thermal trajectory is known. For a calibrated electrical
+capacitance,
+
+\[
+I_R=I_{in}-C\frac{dV}{dt},\qquad P=V I_R.
+\]
+
+With independently constrained `T0`, `S_e`, and `C_th`, integrating the thermal
+balance reconstructs `T(t)`, and `gamma` can be fitted globally to the measured
+`R(t)=V/I_R` cycles. Without those thermal constraints, changes in `gamma` can be
+compensated by changes in the latent temperature trajectory, so a fitted value would
+not be independently identifiable. Apply the resulting value across current traces
+from this same specimen; transferring it to another specimen requires validation.
 
 ## Recommended calibration order
 
@@ -213,12 +236,13 @@ neuristor simulate current \
 neuristor sweep run \
   --config experiments/sweeps/current_capacitance_map.toml
 neuristor analyze estimates \
-  --images "data/Current Results" \
+  --data data/experimental/tia_current_sweep \
   --resistance-preset presets/resistance_100425_chip1_gap3.json
 pytest -q
 neuristor validate
 ```
 
 New outputs are standard bundles under `runs/`. Use `neuristor runs publish RUN_ID`
-to copy reviewed evidence into the Git-tracked `public_jobs/` archive. Exact historical
-figure sources remain under `legacy_scripts/` for provenance.
+to copy reviewed evidence into the Git-tracked `public_jobs/` archive. The former
+screenshot-digitization code and its derived artifacts were removed; Git history is
+their recovery path.

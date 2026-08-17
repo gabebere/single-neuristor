@@ -131,13 +131,13 @@ def fit_resistance(
 
 @analyze_app.command("lab")
 def analyze_lab(
-    image_directory: Path = typer.Option(..., "--images", exists=True, file_okay=False, readable=True),
-    name: str = typer.Option("Digitized laboratory current sweep", "--name"),
+    data_directory: Path = typer.Option(..., "--data", exists=True, file_okay=False, readable=True),
+    name: str = typer.Option("Measured laboratory current sweep", "--name"),
     output_root: Path = typer.Option(Path("runs"), "--output-root"),
 ) -> None:
-    """Digitize current/voltage traces from the laboratory PNG sequence."""
+    """Analyze professor-supplied numerical current/voltage waveforms."""
 
-    bundle = run_lab_analysis(image_directory, name=name, output_root=output_root, command=_command())
+    bundle = run_lab_analysis(data_directory, name=name, output_root=output_root, command=_command())
     _announce_bundle(bundle.root)
 
 
@@ -155,7 +155,7 @@ def _csv_numbers(text: str, option: str) -> list[float]:
 def analyze_estimates(
     resistance_preset: Path = typer.Option(..., "--resistance-preset", exists=True, dir_okay=False, readable=True),
     summary: Optional[Path] = typer.Option(None, "--summary", exists=True, dir_okay=False, readable=True),
-    image_directory: Optional[Path] = typer.Option(None, "--images", exists=True, file_okay=False, readable=True),
+    data_directory: Optional[Path] = typer.Option(None, "--data", exists=True, file_okay=False, readable=True),
     ambient_K: str = typer.Option("298,325,330,333", "--ambient-K"),
     thermal_times_ns: str = typer.Option("10,20,50,100", "--thermal-times-ns"),
     ripple_threshold_mV: float = typer.Option(20.0, "--ripple-threshold-mV", min=0.0),
@@ -164,14 +164,14 @@ def analyze_estimates(
 ) -> None:
     """Estimate electrical C and scenario-dependent thermal parameters."""
 
-    if (summary is None) == (image_directory is None):
-        typer.echo("Provide exactly one of --summary or --images.", err=True)
+    if (summary is None) == (data_directory is None):
+        typer.echo("Provide exactly one of --summary or --data.", err=True)
         raise typer.Exit(2)
     bundle = run_lab_estimates(
         name=name,
         resistance_preset=resistance_preset,
         summary_path=summary,
-        image_directory=image_directory,
+        data_directory=data_directory,
         ambient_temperatures_K=_csv_numbers(ambient_K, "--ambient-K"),
         thermal_times_ns=_csv_numbers(thermal_times_ns, "--thermal-times-ns"),
         ripple_threshold_mV=ripple_threshold_mV,

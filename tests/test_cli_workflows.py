@@ -9,6 +9,7 @@ from typer.testing import CliRunner
 
 from neuristor.cli import app
 from neuristor.config import ConfigError, apply_overrides, load_toml
+from neuristor.experimental_waveforms import load_converted_sweep
 from neuristor.lab_estimates import estimate_lab_parameters
 from neuristor.runs import RunRegistry
 from neuristor.workflows import run_simulation, run_sweep
@@ -181,11 +182,12 @@ values = [0.0, 1.0]
 def test_lab_estimates_keep_thermal_capacitance_scenario_dependent() -> None:
     summary = pd.DataFrame(
         {
-            "frame_index": range(5),
-            "current_inferred_uA": [50.0, 100.0, 150.0, 200.0, 250.0],
-            "v_plateau_mean_mV": [100.0, 150.0, 200.0, 250.0, 190.0],
-            "v_plateau_vpp_mV": [2.0, 3.0, 5.0, 8.0, 30.0],
-            "v_slope_0_30_mV_per_ns": [2.5, 5.0, 7.5, 10.0, 12.5],
+            "source_file": [f"{value}mv0_converted.csv" for value in range(50, 251, 50)],
+            "current_plateau_uA": [50.0, 100.0, 150.0, 200.0, 250.0],
+            "current_step_uA": [40.0, 80.0, 120.0, 160.0, 200.0],
+            "voltage_plateau_mean_mV": [100.0, 150.0, 200.0, 250.0, 190.0],
+            "voltage_plateau_vpp_mV": [2.0, 3.0, 5.0, 8.0, 30.0],
+            "voltage_slope_0_30_mV_per_ns": [2.0, 4.0, 6.0, 8.0, 10.0],
         }
     )
     estimates = estimate_lab_parameters(
@@ -197,3 +199,17 @@ def test_lab_estimates_keep_thermal_capacitance_scenario_dependent() -> None:
     assert estimates.electrical_capacitance["C_slope_pF"].median() == 20.0
     conductance = float(estimates.thermal_conductance.iloc[0]["S_e_mW_per_K"])
     assert estimates.thermal_capacitance["C_th_pJ_per_K"].tolist() == [conductance * 10.0, conductance * 20.0]
+
+
+def test_numerical_waveform_loader_preserves_units_and_computes_power(tmp_path: Path) -> None:
+    time_ns = list(range(-200, 251))
+    current_uA = [0.0 if time < 0 else 100.0 for time in time_ns]
+    voltage_mV = [0.0 if time < 0 else 200.0 for time in time_ns]
+    pd.DataFrame({"t": time_ns, "i": current_uA, "v": voltage_mV}).to_csv(
+        tmp_path / "100mv0_converted.csv", header=False, index=False
+    )
+    traces, summary = load_converted_sweep(tmp_path)
+    assert traces["output_power_uW"].max() == 20.0
+    assert summary.iloc[0]["current_plateau_uA"] == 100.0
+    assert summary.iloc[0]["voltage_plateau_mean_mV"] == 200.0
+    assert bool(summary.iloc[0]["oscillation_detected"]) is False

@@ -14,8 +14,7 @@ Migration map:
 |---|---|
 | `manual.py`, `run_current_drive.py` | `neuristor simulate ...` and experiment TOML |
 | `sweep_current_capacitances.py` | `neuristor sweep run --config experiments/sweeps/current_capacitance_map.toml` |
-| `digitize_current_results.py` | `neuristor analyze lab` |
-| `estimate_lab_current_parameters.py` | `neuristor analyze estimates` |
+| former screenshot-digitization scripts | removed; use numerical exports with `neuristor analyze lab --data ...` |
 | `fit_resistance.py` | `neuristor fit resistance` |
 | `search_sample_current_domain.py` | parameter sweep recipes and dashboard filtering |
 | fidelity/check scripts | `pytest -q`, with these sources retained for deeper historical audits |

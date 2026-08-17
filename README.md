@@ -76,8 +76,8 @@ Use `neuristor --help` or `neuristor <group> --help` for the complete live refer
 | Voltage-source run | `neuristor simulate voltage --config FILE.toml` |
 | Parameter sweep | `neuristor sweep run --config FILE.toml` |
 | Fit measured R(T) | `neuristor fit resistance --data FILE.tsv` |
-| Digitize lab images | `neuristor analyze lab --images DIRECTORY` |
-| Estimate C, Sₑ, Cₜₕ scenarios | `neuristor analyze estimates --images DIRECTORY --resistance-preset FILE.json` |
+| Analyze numerical lab traces | `neuristor analyze lab --data DIRECTORY` |
+| Estimate C, Sₑ, Cₜₕ scenarios | `neuristor analyze estimates --data DIRECTORY --resistance-preset FILE.json` |
 | Browse runs | `neuristor runs list` / `neuristor runs show RUN_ID` |
 | Visualize a current run | `neuristor runs visualize RUN_ID` |
 | Copy a run to the Git archive | `neuristor runs publish RUN_ID` |
@@ -168,19 +168,20 @@ notes.
 
 ## Laboratory parameter estimation
 
-Digitize the tracked oscilloscope screenshots and archive their recovered traces:
+Analyze the professor-supplied numerical oscilloscope exports and archive their
+measured traces:
 
 ```bash
 neuristor analyze lab \
-  --images "data/Current Results"
+  --data data/experimental/tia_current_sweep
 ```
 
-Estimate the quantities that screenshots can constrain, while explicitly sweeping
+Estimate the quantities that the waveforms can constrain, while explicitly sweeping
 the assumptions they cannot constrain:
 
 ```bash
 neuristor analyze estimates \
-  --images "data/Current Results" \
+  --data data/experimental/tia_current_sweep \
   --resistance-preset presets/resistance_100425_chip1_gap3.json \
   --ambient-K 298,325,330,333 \
   --thermal-times-ns 10,20,50,100
@@ -193,8 +194,14 @@ This workflow separates:
 - thermal capacitance scenarios, `C_th = S_e tau_th`;
 - measured effective plateau resistance, `V/I`, from the intrinsic R(T) fit.
 
-It does not pretend that a voltage screenshot independently identifies both `S_e`
-and `C_th`. A measured thermal recovery time is still required.
+It does not pretend that electrical waveforms independently identify both `S_e` and
+`C_th`. A measured thermal recovery time is still required.
+
+The oscillatory traces can later constrain the minor-loop parameter `gamma`, but only
+after `C`, `C_th`, `S_e`, and `T0` are fixed well enough to reconstruct resistive
+current, power, and the latent temperature trajectory. The low- and high-current
+traces constrain the other parameters; only repeated transition reversals carry
+meaningful information about `gamma`.
 
 ## Run bundles and GitHub archive
 

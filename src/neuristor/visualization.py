@@ -354,21 +354,28 @@ def plot_sweep_summary(frame: pd.DataFrame, axes: Iterable[str], out_path: str |
 
 
 def plot_lab_summary(summary: pd.DataFrame, out_path: str | Path) -> Path:
-    """Visual summary of digitized current, voltage plateau, and ripple."""
+    """Summarize the numerical current sweep in the style of paper Figure 7."""
 
     fig, axes = plt.subplots(1, 3, figsize=(15.0, 4.8))
-    axes[0].plot(summary["frame_index"], summary["current_inferred_uA"], "o-", color=COLORS["ink"])
-    axes[0].set_xlabel("Frame")
-    axes[0].set_ylabel("Inferred current (uA)")
-    axes[1].plot(summary["current_inferred_uA"], summary["v_plateau_mean_mV"], "o-", color=COLORS["blue"])
+    current = summary["current_plateau_uA"]
+    axes[0].plot(current, summary["voltage_plateau_mean_mV"], "o-", color=COLORS["orange"])
+    axes[0].set_xlabel("Input current (uA)")
+    axes[0].set_ylabel("Average output voltage (mV)")
+    axes[1].plot(current, summary["maximum_output_power_uW"], "s-", color=COLORS["blue"])
     axes[1].set_xlabel("Current (uA)")
-    axes[1].set_ylabel("Plateau voltage (mV)")
-    axes[2].plot(summary["current_inferred_uA"], summary["v_plateau_vpp_mV"], "o-", color=COLORS["purple"])
-    axes[2].set_xlabel("Current (uA)")
-    axes[2].set_ylabel("Plateau ripple (mV pp)")
+    axes[1].set_ylabel("Maximum output power (uW)")
+    detected = summary[summary["oscillation_detected"].astype(bool)]
+    axes[2].plot(
+        detected["current_plateau_uA"],
+        detected["oscillation_frequency_MHz"],
+        "o-",
+        color=COLORS["red"],
+    )
+    axes[2].set_xlabel("Input current (uA)")
+    axes[2].set_ylabel("Oscillation frequency (MHz)")
     for axis in axes:
         axis.grid(True, color=COLORS["grid"])
-    fig.suptitle("Digitized laboratory current sweep", fontsize=15)
+    fig.suptitle("Professor-supplied numerical current sweep", fontsize=15)
     return _finish(fig, out_path)
 
 
@@ -381,7 +388,7 @@ def plot_lab_parameter_estimates(
     """Show the separately identifiable electrical, cooling, and voltage-floor quantities."""
 
     fig, axes = plt.subplots(1, 3, figsize=(15.0, 4.8))
-    axes[0].scatter(capacitance["current_inferred_uA"], capacitance["C_slope_pF"], s=48, color=COLORS["purple"])
+    axes[0].scatter(capacitance["current_plateau_uA"], capacitance["C_slope_pF"], s=48, color=COLORS["purple"])
     median_c = float(capacitance["C_slope_pF"].median())
     axes[0].axhline(median_c, color=COLORS["ink"], linestyle="--", label=f"median {median_c:.1f} pF")
     axes[0].set_xlabel("Current (uA)")
@@ -392,7 +399,7 @@ def plot_lab_parameter_estimates(
     axes[1].set_xlabel("Assumed ambient T0 (K)")
     axes[1].set_ylabel("S_e (mW/K)")
     axes[1].set_title("Ambient/cooling degeneracy")
-    axes[2].plot(resistance["current_inferred_uA"], resistance["R_effective_ohm"], "o-", color=COLORS["blue"])
+    axes[2].plot(resistance["current_plateau_uA"], resistance["R_effective_ohm"], "o-", color=COLORS["blue"])
     axes[2].set_yscale("log")
     axes[2].set_xlabel("Current (uA)")
     axes[2].set_ylabel("Plateau V/I (Ohm)")
@@ -411,11 +418,11 @@ def plot_voltage_floor_comparison(
 ) -> Path:
     """Compare measured plateaus with the ideal-current prediction V=I*Rm."""
 
-    current = resistance["current_inferred_uA"].to_numpy(dtype=float)
-    measured = resistance["v_plateau_mean_mV"].to_numpy(dtype=float)
+    current = resistance["current_plateau_uA"].to_numpy(dtype=float)
+    measured = resistance["voltage_plateau_mean_mV"].to_numpy(dtype=float)
     grid = np.linspace(0.0, max(1400.0, float(np.max(current)) * 1.03), 400)
     fig, ax = plt.subplots(figsize=(9.8, 6.3))
-    ax.scatter(current, measured, s=32, color=COLORS["ink"], label="Digitized lab plateau", zorder=5)
+    ax.scatter(current, measured, s=32, color=COLORS["ink"], label="Measured numerical plateau", zorder=5)
     ax.plot(
         grid,
         grid * specimen_Rm_ohm / 1000.0,

@@ -28,6 +28,8 @@ claims.
   ordering, provenance, and fidelity checks.
 - `docs/CURRENT_DRIVE_CALIBRATION.md`: voltage-floor diagnosis, parameter
   identifiability, capacitance study, and recommended laboratory calibration sequence.
+- `data/experimental/tia_current_sweep/`: untouched professor-supplied numerical
+  sources for paper Figures 6 and 7, with units, provenance, and ZIP checksum.
 - `docs/manuscript/theory_behind_simulations.pdf`: compiled model theory manuscript.
 
 ## Current corroborating evidence
@@ -36,11 +38,9 @@ claims.
   shared-scale `C_th`-versus-`C` frequency maps for six currents.
 - `docs/figures/current_drive/capacitance_study/capacitance_trace_comparison_600uA.png`:
   direct demonstration that `C` changes timing while the metallic bound is `I*Rm`.
-- `docs/figures/current_drive/lab_estimates/voltage_floor_comparison.png`: digitized
-  laboratory plateau compared with fitted-specimen and Yuanhang ideal-current floors.
-- `docs/figures/current_drive/lab_estimates/lab_parameter_estimates.png`: independently
-  supported electrical capacitance, ambient/cooling degeneracy, and effective plateau
-  resistance.
+- The numerical laboratory workflow archives measured current/voltage traces, the
+  Figure 7 operating window, electrical capacitance, ambient/cooling scenarios, and
+  effective plateau resistance in immutable `public_jobs/` bundles.
 - `docs/figures/current_drive/nonzero_valley_examples/current_input_voltage_output.png`:
   direct imposed-current/voltage-output examples, including an unchanged specimen
   control and an explicit nonzero-valley effective-resistance candidate.
@@ -68,13 +68,14 @@ neuristor simulate current \
 neuristor sweep run \
   --config experiments/sweeps/current_capacitance_map.toml
 neuristor analyze estimates \
-  --images "data/Current Results" \
+  --data data/experimental/tia_current_sweep \
   --resistance-preset presets/resistance_100425_chip1_gap3.json
 pytest -q
 neuristor validate
 ```
 
-The lab estimator can digitize the tracked `data/Current Results/` frames directly.
-The stored March image-fit JSON is retained only as a correlated historical starting
-point, not an independent parameter measurement. Pre-refactor reproduction sources
-remain in `legacy_scripts/` and in the `v0.1.0-working-baseline` tag.
+The laboratory workflows read the checked-in numerical exports directly. The former
+screenshot digitizer, image-fit preset, screenshot sequence, and image-derived bundle
+were removed; the corresponding history remains recoverable through Git. Other
+pre-refactor reproduction sources remain in `legacy_scripts/` and in the
+`v0.1.0-working-baseline` tag.

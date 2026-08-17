@@ -28,10 +28,6 @@ Current `run.json` evidence, generated from clean commit `af4638c`:
 - `20260810_170512_yuanhang-voltage-driven-relaxation-oscillator_b997e9`:
   upstream-style voltage-source oscillator, including a validity warning where its
   temperature slightly exceeds the configured R(T) range.
-- `20260810_170515_lab-current-trace-parameter-estimates_7c7f1d`:
-  digitized electrical-capacitance estimate, ambient/conductance scenarios,
-  thermal-capacitance scenarios, and metallic voltage-floor comparison.
-
 Historical `job.json` evidence:
 
 - `20260707_145140_paper_frequency_f881d2`: fitted-specimen paper-frequency analog,
@@ -47,3 +43,7 @@ Historical `job.json` evidence:
 Those `job.json` records predate the August 2026 endpoint-fidelity and exact-substep
 corrections. They remain for provenance, not new quantitative claims. The dashboard
 normalizes them alongside current `run.json` bundles.
+
+The former screenshot-derived laboratory bundle was removed after the original
+numerical oscilloscope exports became available. Git history preserves it, but it is
+not current evidence.

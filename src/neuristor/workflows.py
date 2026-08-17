@@ -21,7 +21,7 @@ import pandas as pd
 
 from .config import ConfigError, apply_overrides, deep_set, load_toml, resolved_copy, source_directory, validate_config
 from .current_drive_sim import CurrentDriveParams, current_drive_operating_estimates, simulate_current_step
-from .current_results_digitizer import digitize_directory, traces_to_dataframe
+from .experimental_waveforms import load_converted_sweep
 from .metrics import current_run_metrics, voltage_run_metrics
 from .lab_estimates import estimate_lab_parameters
 from .model import YuanhangCircuitParams, YuanhangResistParams, series_first, simulate_yuanhang
@@ -577,53 +577,70 @@ def run_resistance_fit(
 
 
 def run_lab_analysis(
-    image_directory: str | Path,
+    data_directory: str | Path,
     *,
     name: str,
     output_root: str | Path = "runs",
     command: str = "neuristor analyze lab",
 ) -> RunBundle:
-    """Digitize the laboratory current-result frames into an archive bundle."""
+    """Archive and summarize the professor-supplied numerical waveforms."""
 
-    image_dir = Path(image_directory).expanduser().resolve()
+    data_dir = Path(data_directory).expanduser().resolve()
     config = {
         "schema_version": 1,
         "name": name,
         "kind": "analysis",
-        "model": "lab-current-images",
-        "image_directory": str(image_dir),
+        "model": "lab-current-waveforms",
+        "data_directory": str(data_dir),
+        "analysis_windows_ns": {
+            "baseline": [-200.0, -50.0],
+            "edge": [0.0, 30.0],
+            "plateau": [50.0, 250.0],
+        },
     }
     bundle = RunBundle.create(
         name=name,
-        model="lab-current-images",
+        model="lab-current-waveforms",
         kind="analysis",
         config=config,
         output_root=output_root,
         command=command,
     )
     try:
-        bounds, traces, summary = digitize_directory(image_dir)
-        trace_frame = traces_to_dataframe(traces, summary)
+        trace_frame, summary = load_converted_sweep(data_dir)
         summary.to_csv(
-            bundle.add_artifact("summary.csv", label="Digitized frame summary", media_type="text/csv"), index=False
+            bundle.add_artifact("summary.csv", label="Measured sweep summary", media_type="text/csv"), index=False
         )
         trace_frame.to_csv(
-            bundle.add_artifact("traces.csv", label="Digitized traces", media_type="text/csv"), index=False
+            bundle.add_artifact("traces.csv", label="Numerical oscilloscope traces", media_type="text/csv"), index=False
         )
-        bundle.write_json("plot_bounds.json", dataclasses.asdict(bounds), label="Detected plot bounds")
         figure = bundle.add_artifact("figures/lab_summary.png", label="Lab sweep summary", media_type="image/png")
         plot_lab_summary(summary, figure)
+        oscillatory = summary[summary["oscillation_detected"].astype(bool)]
         metrics = {
-            "frames": len(summary),
-            "current_min_uA": float(summary["current_inferred_uA"].min()),
-            "current_max_uA": float(summary["current_inferred_uA"].max()),
-            "maximum_plateau_ripple_mV": float(summary["v_plateau_vpp_mV"].max()),
+            "waveforms": len(summary),
+            "samples": len(trace_frame),
+            "current_min_uA": float(summary["current_plateau_uA"].min()),
+            "current_max_uA": float(summary["current_plateau_uA"].max()),
+            "oscillation_current_min_uA": float(oscillatory["current_plateau_uA"].min()),
+            "oscillation_current_max_uA": float(oscillatory["current_plateau_uA"].max()),
+            "oscillation_frequency_min_MHz": float(oscillatory["oscillation_frequency_MHz"].min()),
+            "oscillation_frequency_max_MHz": float(oscillatory["oscillation_frequency_MHz"].max()),
         }
-        bundle.write_json("metrics.json", metrics, label="Digitization metrics")
+        bundle.write_json("metrics.json", metrics, label="Waveform metrics")
         bundle.write_text(
             "report.md",
-            f"# {name}\n\nDigitized **{len(summary)}** PNG frames from `{image_dir}`.\n\n"
-            "The green current trace determines edge timing; inferred current restores plateaus clipped by the image axes.\n",
+            f"# {name}\n\nLoaded **{len(summary)}** numerical traces from `{data_dir}`. "
+            "No values were recovered from images.\n\n"
+            f"Coherent oscillations are detected from **{metrics['oscillation_current_min_uA']:.3g}** to "
+            f"**{metrics['oscillation_current_max_uA']:.3g} uA**, with measured frequencies from "
+            f"**{metrics['oscillation_frequency_min_MHz']:.3g}** to "
+            f"**{metrics['oscillation_frequency_max_MHz']:.3g} MHz**.\n\n"
+            "These electrical traces can constrain gamma only through a dynamic model. Given independently "
+            "calibrated C, C_th, S_e, and T0, the resistive current is I_R=I_in-C dV/dt, power is P=V I_R, "
+            "and the thermal equation reconstructs T(t). Gamma can then be fitted to the repeated minor-loop "
+            "reversals. Without those thermal constraints, gamma is correlated with the latent temperature "
+            "trajectory and is not independently identified.\n",
             label="Scientific report",
         )
         bundle.complete(summary=metrics)
@@ -638,7 +655,7 @@ def run_lab_estimates(
     name: str,
     resistance_preset: str | Path,
     summary_path: str | Path | None = None,
-    image_directory: str | Path | None = None,
+    data_directory: str | Path | None = None,
     ambient_temperatures_K: Sequence[float] = (298.0, 325.0, 330.0),
     thermal_times_ns: Sequence[float] = (10.0, 20.0, 50.0, 100.0),
     ripple_threshold_mV: float = 20.0,
@@ -647,12 +664,12 @@ def run_lab_estimates(
 ) -> RunBundle:
     """Archive direct and assumption-dependent estimates from lab traces."""
 
-    if (summary_path is None) == (image_directory is None):
-        raise ValueError("Provide exactly one of summary_path or image_directory")
+    if (summary_path is None) == (data_directory is None):
+        raise ValueError("Provide exactly one of summary_path or data_directory")
     summary_source = (
         Path(summary_path).expanduser().resolve()
         if summary_path is not None
-        else Path(str(image_directory)).expanduser().resolve()
+        else Path(str(data_directory)).expanduser().resolve()
     )
     preset_path = Path(resistance_preset).expanduser().resolve()
     config = {
@@ -678,7 +695,7 @@ def run_lab_estimates(
         if summary_path is not None:
             summary = pd.read_csv(summary_source)
         else:
-            _, _, summary = digitize_directory(summary_source)
+            _, summary = load_converted_sweep(summary_source)
         payload = json.loads(preset_path.read_text())
         raw_parameters = payload.get("resist_params", payload)
         resistance = YuanhangResistParams(**raw_parameters)
@@ -710,10 +727,10 @@ def run_lab_estimates(
             "figures/voltage_floor.png", label="Metallic voltage-floor comparison", media_type="image/png"
         )
         plot_voltage_floor_comparison(estimates.effective_resistance, resistance.Rm, YuanhangResistParams().Rm, floor)
-        high_current = estimates.effective_resistance[estimates.effective_resistance["current_inferred_uA"] >= 350.0]
+        high_current = estimates.effective_resistance[estimates.effective_resistance["current_plateau_uA"] >= 350.0]
         metrics = {
-            "switching_lower_current_uA": float(estimates.pre_switch["current_inferred_uA"]),
-            "switching_upper_current_uA": float(estimates.post_switch["current_inferred_uA"]),
+            "switching_lower_current_uA": float(estimates.pre_switch["current_plateau_uA"]),
+            "switching_upper_current_uA": float(estimates.post_switch["current_plateau_uA"]),
             "electrical_capacitance_median_pF": float(estimates.electrical_capacitance["C_slope_pF"].median()),
             "electrical_capacitance_min_pF": float(estimates.electrical_capacitance["C_slope_pF"].min()),
             "electrical_capacitance_max_pF": float(estimates.electrical_capacitance["C_slope_pF"].max()),
@@ -731,8 +748,9 @@ The cold-edge estimate `C = I/(dV/dt)` gives a median electrical capacitance of
 **{metrics["electrical_capacitance_median_pF"]:.3g} pF**.
 
 `S_e = P_switch/(T_switch-T0)` is tabulated for each candidate ambient temperature.
-The screenshot alone does not identify thermal capacitance: once a recovery time is
-measured, use `C_th = S_e tau_th`; the scenario table makes that dependence explicit.
+The electrical waveform alone does not identify thermal capacitance: once a recovery
+time is measured, use `C_th = S_e tau_th`; the scenario table makes that dependence
+explicit.
 
 The fitted specimen metallic resistance is **{resistance.Rm:.3g} ohm**. In an ideal
 current source, it fixes the steady switched-state floor through `V = I Rm`.

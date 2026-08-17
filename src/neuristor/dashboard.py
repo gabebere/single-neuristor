@@ -251,10 +251,26 @@ def _render_data(record: RunRecord) -> None:
         remaining = [column for column in numeric if column != x]
         y_index = _default_column(
             remaining,
-            ("voltage_V", "v_out_mV", "frequency_MHz", "temperature_K", "current_inferred_uA"),
+            (
+                "voltage_V",
+                "output_voltage_mV",
+                "v_out_mV",
+                "frequency_MHz",
+                "temperature_K",
+                "current_plateau_uA",
+                "current_inferred_uA",
+            ),
         )
         y = controls[1].selectbox("Y axis", remaining, index=y_index)
-        group_candidates = ["frame_index", "current_inferred_uA", "current_uA", "seed", "point_index"]
+        group_candidates = [
+            "source_file",
+            "frame_index",
+            "current_plateau_uA",
+            "current_inferred_uA",
+            "current_uA",
+            "seed",
+            "point_index",
+        ]
         groups = [column for column in group_candidates if column in frame.columns and column not in {x, y}]
         color = controls[2].selectbox("Color/group", ["None", *groups])
         plotted = frame
@@ -410,7 +426,7 @@ def main() -> None:
     st.title("Simulation archive")
     st.markdown(
         '<p class="archive-subtitle">A reproducible view of current-source and voltage-source simulations, '
-        "parameter sweeps, specimen fits, and digitized laboratory evidence. Experiments are created in the terminal; "
+        "parameter sweeps, specimen fits, and numerical laboratory evidence. Experiments are created in the terminal; "
         "this dashboard is the durable reading and comparison surface.</p>",
         unsafe_allow_html=True,
     )
