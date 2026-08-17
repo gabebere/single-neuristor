@@ -163,6 +163,14 @@ R(T,\delta)=R_m+R_0 e^{(E_a/k_B)/T}
 
 The fit minimizes the residual in $\log_{10}R$. Confidence intervals use 1000 circular block-bootstrap samples with eight-point blocks. The minor-loop parameter $\gamma$ was fixed to Yuanhang's value because a major loop alone does not determine it.
 
+Here $R_0$ is the Arrhenius prefactor, not the insulating resistance. On the fully insulating branch,
+
+\begin{equation}
+R_{\mathrm{ins}}(T)\approx R_m+R_0e^{(E_a/k_B)/T}.
+\end{equation}
+
+For example, the fitted sample gives $R_{\mathrm{ins}}(300~\mathrm{K})\approx3.78~\mathrm{k}\Omega$, well above the metallic floor $R_m=18.22~\Omega$.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.96\textwidth]{../../public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/figures/resistance_fit.png}
@@ -174,23 +182,23 @@ The fit minimizes the residual in $\log_{10}R$. Confidence intervals use 1000 ci
 \centering
 \small
 \rowcolors{2}{projectgray}{white}
-\begin{tabular}{@{}l r r@{}}
+\begin{tabular}{@{}l r r r@{}}
 \toprule
-Parameter & Estimate & 95\% interval \\
+Parameter & Estimate & 95\% interval & Yuanhang \\
 \midrule
-$R_0$ & $0.7989~\Omega$ & $0.3774$--$1.8483~\Omega$ \\
-$E_a/k_B$ & $2536.97$ K & $2272.55$--$2767.52$ K \\
-$E_a$ & $0.21862$ eV & $0.19583$--$0.23849$ eV \\
-$R_m$ & $18.2153~\Omega$ & $17.4943$--$18.9010~\Omega$ \\
-$T_c$ & $333.494$ K & $333.137$--$333.838$ K \\
-$w$ & $6.8823$ K & $6.6291$--$7.2681$ K \\
-$\beta$ & $0.29916~\mathrm{K}^{-1}$ & $0.28092$--$0.32021~\mathrm{K}^{-1}$ \\
-$T_{\mathrm{cool}}=T_c-w/2$ & $330.052$ K & $329.642$--$330.385$ K \\
-$T_{\mathrm{heat}}=T_c+w/2$ & $336.935$ K & $336.534$--$337.348$ K \\
-$\gamma$ & $0.95627$ (fixed) & --- \\
+$R_0$ (prefactor) & $0.7989~\Omega$ & $0.3774$--$1.8483~\Omega$ & $0.005359~\Omega$ \\
+$E_a/k_B$ & $2536.97$ K & $2272.55$--$2767.52$ K & $5220.47$ K \\
+$E_a$ & $0.21862$ eV & $0.19583$--$0.23849$ eV & $0.44987$ eV \\
+$R_m$ (metallic floor) & $18.2153~\Omega$ & $17.4943$--$18.9010~\Omega$ & $1286.32~\Omega$ \\
+$T_c$ & $333.494$ K & $333.137$--$333.838$ K & $332.806$ K \\
+$w$ & $6.8823$ K & $6.6291$--$7.2681$ K & $7.1936$ K \\
+$\beta$ & $0.29916~\mathrm{K}^{-1}$ & $0.28092$--$0.32021~\mathrm{K}^{-1}$ & $0.25280~\mathrm{K}^{-1}$ \\
+$T_{\mathrm{cool}}=T_c-w/2$ & $330.052$ K & $329.642$--$330.385$ K & $329.209$ K \\
+$T_{\mathrm{heat}}=T_c+w/2$ & $336.935$ K & $336.534$--$337.348$ K & $336.403$ K \\
+$\gamma$ & $0.95627$ (fixed) & --- & $0.95627$ \\
 \bottomrule
 \end{tabular}
-\caption{Sample-specific resistance parameters. $R_0$ and $E_a/k_B$ are strongly correlated; their joint combination, rather than either value alone, determines the insulating branch.}
+\caption{Sample-specific resistance parameters compared with Yuanhang's reference implementation. Yuanhang's displayed metallic floor is $R_m=R_{m0}f_m=(262.5~\Omega)(4.90025335)=1286.32~\Omega$. $R_0$ and $E_a/k_B$ are strongly correlated; their joint combination determines the insulating branch.}
 \label{tab:sample_rt_parameters}
 \end{table}
 
