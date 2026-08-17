@@ -206,14 +206,38 @@ The fit gives $R^2=0.998734$ and a $\log_{10}R$ RMSE of $0.03663$, equivalent to
 
 \section{Experimental conditions and measured operating points}
 
-\planned{} Record the ambient temperature and exact current for every waveform. Extract the pre-switch voltage and current, switching direction, period, and voltage slopes. The switching power is
+Table~\ref{tab:experimental_conditions} records the conditions used for the experimental comparison. The TIA sweep is taken to share the $41.1$--$41.4\,^{\circ}$C ambient range reported for the related measurements \cite{gildor2026}. We therefore use $T_0=314.4$~K. The supplied $R(T)$ curve is treated as belonging to the same device; this is a working assumption and can be revised if the sample records show otherwise.
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabularx}{0.96\textwidth}{@{}l X@{}}
+\toprule
+Quantity & Experimental value or interpretation \\
+\midrule
+Device & Approximately $150$~nm \vo{} on A-cut sapphire; approximately $200$~nm electrode gap; $20/70$~nm Ti/Au electrodes \\
+Ambient temperature & $T_0\approx314.4$~K ($314.25$--$314.55$~K) \\
+Sample correspondence & Supplied $R(T)$ curve and TIA traces assumed to describe the same device \\
+Current excitation & Measured $I_{\mathrm{in}}(t)$ from the raw oscilloscope exports, including baseline and finite edges \\
+Pulse timing & Nominal width $300$~ns; measured $10$--$90\%$ rise time $26$--$27$~ns and fall time $18$--$23$~ns \\
+Measured current plateaus & $41.856$--$943.291~\mu$A; current compliance approximately $1$~mA \\
+Oscillatory interval & $233.511$--$621.843~\mu$A, with measured frequencies $41.667$--$62.5$~MHz \\
+Voltage convention & Stored positive $V_{\mathrm{out}}$ is the magnitude of the voltage across the \vo{} device \\
+\bottomrule
+\end{tabularx}
+\caption{Experimental conditions used as inputs to the sample-specific simulations.}
+\label{tab:experimental_conditions}
+\end{table}
+
+All subsequent extraction uses the complete measured current waveform rather than the nominal generator setting. At any selected switching point, the measured device power is
 
 \begin{equation}
 P_{\mathrm{sw}}=I_{\mathrm{sw}}V_{\mathrm{sw}}
 =\frac{V_{\mathrm{sw}}^2}{R(T_{\mathrm{sw}})}.
 \end{equation}
 
-Together with the fitted $R(T)$ transition temperatures, these measurements provide the remaining inputs.
+Together with the fitted $R(T)$ transition temperatures, this provides the input for the environmental-conductance estimate in the next step.
 
 \section{Environmental thermal conductance}
 
@@ -227,17 +251,21 @@ S_e=\frac{P_{\mathrm{sw}}}{T_{\mathrm{sw}}-T_0},
 
 The selected point, voltage definition, and quasi-steady assumption will be stated explicitly; agreement across currents will test consistency.
 
-\newpage
-\thispagestyle{fancy}
 \section{Electrical capacitance}
 
-\planned{} Determine the effective capacitance from a nonswitching transient, separating electrical charging from the later thermal response. At the beginning of a current step, where $V/R(T)\ll I$, the current-balance estimate below reduces to $C\approx I/(dV/dt)$:
+The initially obtained $19.8$~pF cold-edge estimate is not used. It assumed an instantaneous current step and neglected resistive current, but the measured current itself rises over $26$--$27$~ns. The correct balance is
 
 \begin{equation}
-C=\frac{\tau_{\mathrm{el}}}{R_{\mathrm{eff}}}
-\qquad\text{or}\qquad
 C=\frac{I-V/R(T)}{dV/dt}.
 \end{equation}
+
+Using the measured $I_{\mathrm{in}}(t)$, the data show no resolved voltage lag beyond the current edge, and the nonnegative fit therefore reaches $C=0$. This does not establish zero physical capacitance; it means that a positive value is not identifiable from the present traces. The sample-specific simulations will initially use the exact reduced-model limit
+
+\begin{equation}
+C=0 \quad\Longrightarrow\quad V(t)=I_{\mathrm{in}}(t)R(T).
+\end{equation}
+
+A numerical estimate requires a faster, low-amplitude nonswitching current edge with calibrated current--voltage timing. With $R$ approximately constant, its electrical time constant gives $C=\tau_{\mathrm{el}}/R$; until that measurement is available, only a timing-resolution-dependent upper bound can be reported.
 
 \section{Thermal time constant and thermal capacitance}
 
