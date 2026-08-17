@@ -11,10 +11,11 @@ claims.
   control simulation project. The Yuanhang validation and sample-specific R(T) fit are
   complete; later thermal/electrical parameter sections remain explicitly marked as planned.
 - The Case I figure and metrics point to the immutable public run bundle
-  `20260810_170502_current-step-with-a-nonzero-metallic-voltage-val_b05d39` rather than
-  duplicating scientific output inside the manuscript directory.
+  `20260817_100102_current-step-with-a-nonzero-metallic-voltage-val_6765e0`, whose voltage
+  panel includes the instantaneous metallic fixed point `I(t) R_m`, rather than duplicating
+  scientific output inside the manuscript directory.
 - `docs/final_project/figures/` contains the manuscript's derived R(T) trajectory and
-  synchronized current/voltage--R(T) animation; both are regenerated from that bundle.
+  synchronized current/voltage--R(T) animation; both can be regenerated from that bundle.
 - `20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9` is the reviewed
   sample-specific major-loop fit, including the normalized data, fitted preset, residual
   figure, parameter table, and 1000 block-bootstrap parameter samples.
