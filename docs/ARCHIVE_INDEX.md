@@ -43,9 +43,12 @@ claims.
   estimate in immutable `public_jobs/` bundles.
 - `20260817_134254_measured-laboratory-current-sweep_a45254`: all 22 normalized raw
   traces, their summary table, and the measured 41.7--62.5 MHz operating-window figure.
-- `20260817_152216_environmental-thermal-conductance-estimate_c4be6c`: selected settled
+- `20260817_153807_environmental-thermal-conductance-estimate_761640`: canonical
+  clean-provenance selected settled
   pre-onset waveform, fitted R(T) temperature inversion, conditional conductance
   interval, numerical tables, and evidence figure.
+- `20260817_152216_environmental-thermal-conductance-estimate_c4be6c`: numerically
+  identical pre-commit run retained for immutable provenance and superseded by `761640`.
 - `20260817_134254_lab-current-trace-parameter-estimates_4223e0`: superseded historical
   bundle retained for provenance; its 19.8 pF cold-edge result is not valid.
 - `docs/figures/current_drive/nonzero_valley_examples/current_input_voltage_output.png`:

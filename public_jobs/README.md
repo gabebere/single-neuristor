@@ -34,9 +34,12 @@ Numerical laboratory evidence generated from clean commit `bba2fd8`:
 - `20260817_134254_measured-laboratory-current-sweep_a45254`: 22 professor-supplied
   current/voltage traces, numerical summary, and the measured 41.7--62.5 MHz
   operating window.
-- `20260817_152216_environmental-thermal-conductance-estimate_c4be6c`: baseline-corrected
+- `20260817_153807_environmental-thermal-conductance-estimate_761640`: canonical,
+  clean-provenance baseline-corrected
   quasi-steady estimate `S_e=0.003675 mW/K`, including waveform, R(T)-fit, and ambient
   uncertainty propagation.
+- `20260817_152216_environmental-thermal-conductance-estimate_c4be6c`: numerically
+  identical pre-commit run retained as immutable provenance; superseded by `761640`.
 - `20260817_134254_lab-current-trace-parameter-estimates_4223e0`: superseded historical
   estimate. Its 19.8 pF cold-edge result treated the measured source rise as capacitor
   charging and must not be used quantitatively.

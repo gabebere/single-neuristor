@@ -66,7 +66,7 @@ temperature-dependent state and/or nonideal source/measurement circuit matters.
 ### Evidence from the numerical plateaus
 
 The [measured sweep](../public_jobs/20260817_134254_measured-laboratory-current-sweep_a45254/figures/lab_summary.png)
-and [settled pre-onset trace](../public_jobs/20260817_152216_environmental-thermal-conductance-estimate_c4be6c/figures/environmental_conductance.png)
+and [settled pre-onset trace](../public_jobs/20260817_153807_environmental-thermal-conductance-estimate_761640/figures/environmental_conductance.png)
 come directly from the professor-supplied numerical exports. The fitted specimen
 prediction `V=I*18.3 Ohm` remains far below the measured high-current plateau, while
 Yuanhang's much larger metallic resistance produces a much larger floor. None of
