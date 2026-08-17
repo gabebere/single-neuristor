@@ -149,6 +149,10 @@ def _evaluate_current(config: Mapping[str, Any]) -> SimulationResult:
         {
             "time_us": raw["t"] * 1e6,
             "current_uA": raw["I_in"] * 1e6,
+            # This is the instantaneous fixed point of the electrical equation
+            # if VO2 is fully metallic: V = I(t) R_m.  Archiving it beside the
+            # simulated voltage keeps the plotted reference trace reproducible.
+            "metallic_voltage_floor_V": raw["I_in"] * resistance.Rm,
             "voltage_V": raw["V_vo2"],
             "temperature_K": raw["T"],
             "resistance_ohm": raw["R"],

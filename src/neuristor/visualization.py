@@ -46,9 +46,25 @@ def plot_current_run(frame: pd.DataFrame, out_path: str | Path, *, title: str) -
     fig, axes = plt.subplots(3, 1, figsize=(11.5, 8.4), sharex=True, gridspec_kw={"height_ratios": [0.8, 1.35, 1.2]})
     axes[0].plot(frame["time_us"], frame["current_uA"], color=COLORS["ink"], linewidth=1.5)
     axes[0].set_ylabel("Current (uA)")
-    axes[1].plot(frame["time_us"], frame["voltage_V"], color=COLORS["blue"], linewidth=1.2)
+    axes[1].plot(
+        frame["time_us"],
+        frame["voltage_V"],
+        color=COLORS["blue"],
+        linewidth=1.2,
+        label="Simulated voltage",
+    )
+    if "metallic_voltage_floor_V" in frame:
+        axes[1].plot(
+            frame["time_us"],
+            frame["metallic_voltage_floor_V"],
+            color=COLORS["orange"],
+            linewidth=1.4,
+            linestyle="--",
+            label=r"$I(t)R_m$ metallic fixed point",
+        )
     axes[1].axhline(0.0, color=COLORS["ink"], linewidth=0.8)
     axes[1].set_ylabel("Voltage (V)")
+    axes[1].legend(loc="upper right", fontsize=9)
     axes[2].plot(frame["time_us"], frame["temperature_K"], color=COLORS["orange"], linewidth=1.1, label="Temperature")
     axes[2].set_ylabel("Temperature (K)", color=COLORS["orange"])
     resistance_ax = axes[2].twinx()

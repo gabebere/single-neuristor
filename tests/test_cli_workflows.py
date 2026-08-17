@@ -77,7 +77,18 @@ def test_current_workflow_writes_complete_bundle(tmp_path: Path) -> None:
     assert manifest["status"] == "completed"
     assert manifest["summary"]["metallic_voltage_floor_V"] > 0.0
     traces = pd.read_csv(bundle.root / "traces.csv")
-    assert set(["time_us", "current_uA", "voltage_V", "temperature_K", "resistance_ohm"]) <= set(traces)
+    assert set(
+        [
+            "time_us",
+            "current_uA",
+            "metallic_voltage_floor_V",
+            "voltage_V",
+            "temperature_K",
+            "resistance_ohm",
+        ]
+    ) <= set(traces)
+    expected_floor = traces["current_uA"] * 1e-6 * float(manifest["summary"]["metallic_resistance_ohm"])
+    assert (traces["metallic_voltage_floor_V"] - expected_floor).abs().max() < 1e-8
 
 
 def test_runtime_failure_is_visible_in_bundle(tmp_path: Path) -> None:
