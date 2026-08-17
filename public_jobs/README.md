@@ -28,6 +28,15 @@ Current `run.json` evidence, generated from clean commit `af4638c`:
 - `20260810_170512_yuanhang-voltage-driven-relaxation-oscillator_b997e9`:
   upstream-style voltage-source oscillator, including a validity warning where its
   temperature slightly exceeds the configured R(T) range.
+
+Numerical laboratory evidence generated from clean commit `bba2fd8`:
+
+- `20260817_134254_measured-laboratory-current-sweep_a45254`: 22 professor-supplied
+  current/voltage traces, numerical summary, and the measured 41.7--62.5 MHz
+  operating window.
+- `20260817_134254_lab-current-trace-parameter-estimates_4223e0`: 19.8 pF median
+  cold-edge capacitance estimate, ambient/conductance and thermal-capacitance
+  scenarios, and effective-resistance/voltage-floor comparisons.
 Historical `job.json` evidence:
 
 - `20260707_145140_paper_frequency_f881d2`: fitted-specimen paper-frequency analog,

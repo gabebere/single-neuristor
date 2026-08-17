@@ -41,6 +41,11 @@ claims.
 - The numerical laboratory workflow archives measured current/voltage traces, the
   Figure 7 operating window, electrical capacitance, ambient/cooling scenarios, and
   effective plateau resistance in immutable `public_jobs/` bundles.
+- `20260817_134254_measured-laboratory-current-sweep_a45254`: all 22 normalized raw
+  traces, their summary table, and the measured 41.7--62.5 MHz operating-window figure.
+- `20260817_134254_lab-current-trace-parameter-estimates_4223e0`: raw-data electrical
+  capacitance, cooling and thermal-capacitance scenarios, effective resistance, and
+  voltage-floor comparison.
 - `docs/figures/current_drive/nonzero_valley_examples/current_input_voltage_output.png`:
   direct imposed-current/voltage-output examples, including an unchanged specimen
   control and an explicit nonzero-valley effective-resistance candidate.

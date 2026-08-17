@@ -65,6 +65,9 @@ temperature-dependent state and/or nonideal source/measurement circuit matters.
 
 ### Evidence: measured plateau versus the ideal-current floor
 
+The replacement numerical bundle contains the
+[measured parameter overview](../public_jobs/20260817_134254_lab-current-trace-parameter-estimates_4223e0/figures/parameter_estimates.png)
+and [voltage-floor comparison](../public_jobs/20260817_134254_lab-current-trace-parameter-estimates_4223e0/figures/voltage_floor.png).
 The red line is the fitted specimen prediction `V=I*18.3 Ohm`; it stays near zero
 compared with the measured numerical plateau. Yuanhang's much larger metallic
 resistance produces a much larger floor, while a fixed 250 Ohm addition crosses the
@@ -158,6 +161,9 @@ The 22 converted traces contain the measured time, input current, and output vol
 no values are recovered from images. They cover 41.9--943.3 uA. A conservative
 periodic-peak detector identifies coherent oscillations from 233.5 to 621.8 uA at
 41.7--62.5 MHz, reproducing the operating range reported in Figure 7.
+The [archived sweep summary](../public_jobs/20260817_134254_measured-laboratory-current-sweep_a45254/figures/lab_summary.png)
+shows average output voltage, maximum output power, and detected frequency directly
+from those files.
 
 ### Electrical capacitance
 
