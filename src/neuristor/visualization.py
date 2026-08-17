@@ -26,6 +26,7 @@ COLORS = {
     "orange": "#ea580c",
     "purple": "#7c3aed",
     "red": "#dc2626",
+    "gray": "#64748b",
     "grid": "#dbe3ef",
 }
 
@@ -376,6 +377,102 @@ def plot_lab_summary(summary: pd.DataFrame, out_path: str | Path) -> Path:
     for axis in axes:
         axis.grid(True, color=COLORS["grid"])
     fig.suptitle("Professor-supplied numerical current sweep", fontsize=15)
+    return _finish(fig, out_path)
+
+
+def plot_environmental_conductance_estimate(
+    trace: pd.DataFrame,
+    result: pd.DataFrame,
+    resistance: YuanhangResistParams,
+    out_path: str | Path,
+) -> Path:
+    """Show the measured steady point and its mapping through the fitted R(T) branch."""
+
+    from .lab_estimates import heating_branch_resistance_ohm
+
+    row = result.iloc[0]
+    time_ns = trace["time_ns"].to_numpy(dtype=float)
+    current_uA = trace["current_corrected_uA"].to_numpy(dtype=float)
+    voltage_mV = trace["voltage_corrected_mV"].to_numpy(dtype=float)
+    resistance_ohm = trace["effective_resistance_ohm"].to_numpy(dtype=float)
+    power_uW = trace["corrected_power_uW"].to_numpy(dtype=float)
+    steady_start = float(row["steady_start_ns"])
+    steady_stop = float(row["steady_stop_ns"])
+
+    fig, axes = plt.subplots(1, 3, figsize=(15.8, 4.8))
+    current_axis = axes[0]
+    voltage_axis = current_axis.twinx()
+    current_axis.plot(time_ns, current_uA, color=COLORS["blue"], label="Current")
+    voltage_axis.plot(time_ns, voltage_mV, color=COLORS["orange"], label="Voltage")
+    current_axis.axvspan(steady_start, steady_stop, color=COLORS["gray"], alpha=0.16)
+    current_axis.set_xlim(-50.0, 310.0)
+    current_axis.set_xlabel("Time (ns)")
+    current_axis.set_ylabel("Baseline-corrected current (uA)", color=COLORS["blue"])
+    voltage_axis.set_ylabel("Baseline-corrected voltage (mV)", color=COLORS["orange"])
+    current_axis.set_title("Closest stable trace below onset")
+    current_axis.grid(True, color=COLORS["grid"])
+
+    resistance_axis = axes[1]
+    power_axis = resistance_axis.twinx()
+    valid = (
+        np.isfinite(resistance_ohm)
+        & (time_ns >= 0.0)
+        & (current_uA >= 0.5 * float(row["current_corrected_uA"]))
+    )
+    resistance_axis.plot(time_ns[valid], resistance_ohm[valid], color=COLORS["purple"], label="V/I")
+    power_axis.plot(time_ns, power_uW, color=COLORS["red"], alpha=0.82, label="Power")
+    resistance_axis.axvspan(steady_start, steady_stop, color=COLORS["gray"], alpha=0.16)
+    resistance_axis.axhline(
+        float(row["effective_resistance_ohm"]),
+        color=COLORS["ink"],
+        linestyle="--",
+        linewidth=1.2,
+    )
+    resistance_axis.set_xlim(0.0, 300.0)
+    resistance_axis.set_ylim(
+        0.95 * float(np.percentile(resistance_ohm[valid], 1.0)),
+        1.05 * float(np.percentile(resistance_ohm[valid], 99.0)),
+    )
+    resistance_axis.set_xlabel("Time (ns)")
+    resistance_axis.set_ylabel("Effective resistance (Ohm)", color=COLORS["purple"])
+    power_axis.set_ylabel("Device power (uW)", color=COLORS["red"])
+    resistance_axis.set_title(
+        f"Settled R drift: {100.0 * float(row['resistance_drift_fraction']):.3f}%"
+    )
+    resistance_axis.grid(True, color=COLORS["grid"])
+
+    rt_axis = axes[2]
+    ambient = float(row["ambient_temperature_K"])
+    inferred = float(row["inferred_temperature_K"])
+    temperature = np.linspace(
+        max(float(resistance.T_min_K), ambient - 2.0),
+        min(float(resistance.T_max_K), float(resistance.Tc_K + resistance.w_eff / 2.0 + 5.0)),
+        500,
+    )
+    rt_axis.plot(
+        temperature,
+        heating_branch_resistance_ohm(temperature, resistance),
+        color=COLORS["red"],
+        linewidth=2.0,
+        label="Fitted heating branch",
+    )
+    rt_axis.scatter(
+        [inferred],
+        [float(row["effective_resistance_ohm"])],
+        s=72,
+        color=COLORS["ink"],
+        zorder=5,
+        label=f"Selected point: {inferred:.2f} K",
+    )
+    rt_axis.axvline(ambient, color=COLORS["blue"], linestyle="--", label=f"T0={ambient:.1f} K")
+    rt_axis.set_yscale("log")
+    rt_axis.set_xlabel("Temperature (K)")
+    rt_axis.set_ylabel("Resistance (Ohm)")
+    rt_axis.set_title("Temperature inferred from fitted R(T)")
+    rt_axis.grid(True, color=COLORS["grid"], which="both")
+    rt_axis.legend(fontsize=8)
+
+    fig.suptitle("Environmental thermal-conductance estimate from numerical waveforms", fontsize=15)
     return _finish(fig, out_path)
 
 

@@ -16,7 +16,13 @@ from .config import ConfigError, apply_overrides, load_toml
 from .runs import RunRegistry, find_project_root
 from .validation import validate_repository
 from .visualization import animate_current_resistance_temperature, plot_resistance_temperature_trajectory
-from .workflows import run_lab_analysis, run_lab_estimates, run_resistance_fit, run_simulation, run_sweep
+from .workflows import (
+    run_environmental_conductance,
+    run_lab_analysis,
+    run_resistance_fit,
+    run_simulation,
+    run_sweep,
+)
 
 
 app = typer.Typer(
@@ -151,30 +157,43 @@ def _csv_numbers(text: str, option: str) -> list[float]:
     return values
 
 
-@analyze_app.command("estimates")
-def analyze_estimates(
+@analyze_app.command("conductance")
+def analyze_conductance(
+    data_directory: Path = typer.Option(..., "--data", exists=True, file_okay=False, readable=True),
     resistance_preset: Path = typer.Option(..., "--resistance-preset", exists=True, dir_okay=False, readable=True),
-    summary: Optional[Path] = typer.Option(None, "--summary", exists=True, dir_okay=False, readable=True),
-    data_directory: Optional[Path] = typer.Option(None, "--data", exists=True, file_okay=False, readable=True),
-    ambient_K: str = typer.Option("298,325,330,333", "--ambient-K"),
-    thermal_times_ns: str = typer.Option("10,20,50,100", "--thermal-times-ns"),
-    ripple_threshold_mV: float = typer.Option(20.0, "--ripple-threshold-mV", min=0.0),
-    name: str = typer.Option("Lab current-trace parameter estimates", "--name"),
+    resistance_bootstrap: Optional[Path] = typer.Option(
+        None, "--resistance-bootstrap", exists=True, dir_okay=False, readable=True
+    ),
+    ambient_K: float = typer.Option(314.4, "--ambient-K"),
+    ambient_interval_K: str = typer.Option("314.25,314.55", "--ambient-interval-K"),
+    baseline_window_ns: str = typer.Option("-200,-50", "--baseline-window-ns"),
+    steady_window_ns: str = typer.Option("100,250", "--steady-window-ns"),
+    bootstrap_samples: int = typer.Option(1000, "--bootstrap-samples", min=1),
+    block_size: int = typer.Option(10, "--block-size", min=1),
+    seed: int = typer.Option(20260817, "--seed"),
+    name: str = typer.Option("Environmental thermal-conductance estimate", "--name"),
     output_root: Path = typer.Option(Path("runs"), "--output-root"),
 ) -> None:
-    """Estimate electrical C and scenario-dependent thermal parameters."""
+    """Estimate environmental thermal conductance from a settled pre-onset trace."""
 
-    if (summary is None) == (data_directory is None):
-        typer.echo("Provide exactly one of --summary or --data.", err=True)
+    ambient_bounds = _csv_numbers(ambient_interval_K, "--ambient-interval-K")
+    baseline_bounds = _csv_numbers(baseline_window_ns, "--baseline-window-ns")
+    steady_bounds = _csv_numbers(steady_window_ns, "--steady-window-ns")
+    if len(ambient_bounds) != 2 or len(baseline_bounds) != 2 or len(steady_bounds) != 2:
+        typer.echo("Ambient, baseline, and steady intervals must each contain two values.", err=True)
         raise typer.Exit(2)
-    bundle = run_lab_estimates(
+    bundle = run_environmental_conductance(
+        data_directory,
         name=name,
         resistance_preset=resistance_preset,
-        summary_path=summary,
-        data_directory=data_directory,
-        ambient_temperatures_K=_csv_numbers(ambient_K, "--ambient-K"),
-        thermal_times_ns=_csv_numbers(thermal_times_ns, "--thermal-times-ns"),
-        ripple_threshold_mV=ripple_threshold_mV,
+        resistance_bootstrap=resistance_bootstrap,
+        ambient_temperature_K=ambient_K,
+        ambient_interval_K=(ambient_bounds[0], ambient_bounds[1]),
+        baseline_window_ns=(baseline_bounds[0], baseline_bounds[1]),
+        steady_window_ns=(steady_bounds[0], steady_bounds[1]),
+        bootstrap_samples=bootstrap_samples,
+        block_size=block_size,
+        seed=seed,
         output_root=output_root,
         command=_command(),
     )

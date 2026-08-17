@@ -34,9 +34,12 @@ Numerical laboratory evidence generated from clean commit `bba2fd8`:
 - `20260817_134254_measured-laboratory-current-sweep_a45254`: 22 professor-supplied
   current/voltage traces, numerical summary, and the measured 41.7--62.5 MHz
   operating window.
-- `20260817_134254_lab-current-trace-parameter-estimates_4223e0`: 19.8 pF median
-  cold-edge capacitance estimate, ambient/conductance and thermal-capacitance
-  scenarios, and effective-resistance/voltage-floor comparisons.
+- `20260817_152216_environmental-thermal-conductance-estimate_c4be6c`: baseline-corrected
+  quasi-steady estimate `S_e=0.003675 mW/K`, including waveform, R(T)-fit, and ambient
+  uncertainty propagation.
+- `20260817_134254_lab-current-trace-parameter-estimates_4223e0`: superseded historical
+  estimate. Its 19.8 pF cold-edge result treated the measured source rise as capacitor
+  charging and must not be used quantitatively.
 Historical `job.json` evidence:
 
 - `20260707_145140_paper_frequency_f881d2`: fitted-specimen paper-frequency analog,

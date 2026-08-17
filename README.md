@@ -77,7 +77,7 @@ Use `neuristor --help` or `neuristor <group> --help` for the complete live refer
 | Parameter sweep | `neuristor sweep run --config FILE.toml` |
 | Fit measured R(T) | `neuristor fit resistance --data FILE.tsv` |
 | Analyze numerical lab traces | `neuristor analyze lab --data DIRECTORY` |
-| Estimate C, Sₑ, Cₜₕ scenarios | `neuristor analyze estimates --data DIRECTORY --resistance-preset FILE.json` |
+| Estimate environmental conductance | `neuristor analyze conductance --data DIRECTORY --resistance-preset FILE.json` |
 | Browse runs | `neuristor runs list` / `neuristor runs show RUN_ID` |
 | Visualize a current run | `neuristor runs visualize RUN_ID` |
 | Copy a run to the Git archive | `neuristor runs publish RUN_ID` |
@@ -176,26 +176,26 @@ neuristor analyze lab \
   --data data/experimental/tia_current_sweep
 ```
 
-Estimate the quantities that the waveforms can constrain, while explicitly sweeping
-the assumptions they cannot constrain:
+Estimate environmental thermal conductance from the closest settled trace below
+oscillation onset:
 
 ```bash
-neuristor analyze estimates \
+neuristor analyze conductance \
   --data data/experimental/tia_current_sweep \
   --resistance-preset presets/resistance_100425_chip1_gap3.json \
-  --ambient-K 298,325,330,333 \
-  --thermal-times-ns 10,20,50,100
+  --resistance-bootstrap public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
+  --ambient-K 314.4 \
+  --ambient-interval-K 314.25,314.55
 ```
 
-This workflow separates:
-
-- electrical capacitance from the cold edge, `C ≈ I/(dV/dt)`;
-- environmental conductance scenarios, `S_e = P_switch/(T_switch-T0)`;
-- thermal capacitance scenarios, `C_th = S_e tau_th`;
-- measured effective plateau resistance, `V/I`, from the intrinsic R(T) fit.
-
-It does not pretend that electrical waveforms independently identify both `S_e` and
-`C_th`. A measured thermal recovery time is still required.
+The command subtracts each channel's pre-pulse median, selects the last
+non-oscillating waveform before coherent oscillation begins, verifies that its
+settled resistance is stable, maps that resistance to temperature through the fitted
+heating branch, and evaluates `S_e = P/(T-T0)`. Its conditional interval propagates
+waveform block resampling, the R(T)-fit bootstrap, and the measured ambient range.
+Electrical capacitance is not estimated from the source-limited pulse edge; the
+present traces do not resolve a positive value. Thermal capacitance still requires
+an independently measured thermal time constant.
 
 The oscillatory traces can later constrain the minor-loop parameter `gamma`, but only
 after `C`, `C_th`, `S_e`, and `T0` are fixed well enough to reconstruct resistive

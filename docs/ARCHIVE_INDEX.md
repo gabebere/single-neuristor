@@ -39,13 +39,15 @@ claims.
 - `docs/figures/current_drive/capacitance_study/capacitance_trace_comparison_600uA.png`:
   direct demonstration that `C` changes timing while the metallic bound is `I*Rm`.
 - The numerical laboratory workflow archives measured current/voltage traces, the
-  Figure 7 operating window, electrical capacitance, ambient/cooling scenarios, and
-  effective plateau resistance in immutable `public_jobs/` bundles.
+  Figure 7 operating window, and a baseline-corrected environmental-conductance
+  estimate in immutable `public_jobs/` bundles.
 - `20260817_134254_measured-laboratory-current-sweep_a45254`: all 22 normalized raw
   traces, their summary table, and the measured 41.7--62.5 MHz operating-window figure.
-- `20260817_134254_lab-current-trace-parameter-estimates_4223e0`: raw-data electrical
-  capacitance, cooling and thermal-capacitance scenarios, effective resistance, and
-  voltage-floor comparison.
+- `20260817_152216_environmental-thermal-conductance-estimate_c4be6c`: selected settled
+  pre-onset waveform, fitted R(T) temperature inversion, conditional conductance
+  interval, numerical tables, and evidence figure.
+- `20260817_134254_lab-current-trace-parameter-estimates_4223e0`: superseded historical
+  bundle retained for provenance; its 19.8 pF cold-edge result is not valid.
 - `docs/figures/current_drive/nonzero_valley_examples/current_input_voltage_output.png`:
   direct imposed-current/voltage-output examples, including an unchanged specimen
   control and an explicit nonzero-valley effective-resistance candidate.
@@ -72,9 +74,11 @@ neuristor simulate current \
   --config experiments/current/nonzero_voltage_valley.toml
 neuristor sweep run \
   --config experiments/sweeps/current_capacitance_map.toml
-neuristor analyze estimates \
+neuristor analyze conductance \
   --data data/experimental/tia_current_sweep \
-  --resistance-preset presets/resistance_100425_chip1_gap3.json
+  --resistance-preset presets/resistance_100425_chip1_gap3.json \
+  --resistance-bootstrap public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
+  --ambient-K 314.4 --ambient-interval-K 314.25,314.55
 pytest -q
 neuristor validate
 ```

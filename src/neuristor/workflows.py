@@ -23,7 +23,7 @@ from .config import ConfigError, apply_overrides, deep_set, load_toml, resolved_
 from .current_drive_sim import CurrentDriveParams, current_drive_operating_estimates, simulate_current_step
 from .experimental_waveforms import load_converted_sweep
 from .metrics import current_run_metrics, voltage_run_metrics
-from .lab_estimates import estimate_lab_parameters
+from .lab_estimates import estimate_environmental_conductance
 from .model import YuanhangCircuitParams, YuanhangResistParams, series_first, simulate_yuanhang
 from .resistance_custom_analysis import (
     fit_major_loop_resistance_params,
@@ -34,12 +34,11 @@ from .resistance_custom_analysis import (
 from .runs import RunBundle
 from .visualization import (
     plot_current_run,
+    plot_environmental_conductance_estimate,
     plot_lab_summary,
-    plot_lab_parameter_estimates,
     plot_resistance_fit,
     plot_sweep_summary,
     plot_voltage_run,
-    plot_voltage_floor_comparison,
 )
 
 
@@ -650,111 +649,148 @@ def run_lab_analysis(
     return bundle
 
 
-def run_lab_estimates(
+def run_environmental_conductance(
+    data_directory: str | Path,
     *,
     name: str,
     resistance_preset: str | Path,
-    summary_path: str | Path | None = None,
-    data_directory: str | Path | None = None,
-    ambient_temperatures_K: Sequence[float] = (298.0, 325.0, 330.0),
-    thermal_times_ns: Sequence[float] = (10.0, 20.0, 50.0, 100.0),
-    ripple_threshold_mV: float = 20.0,
+    resistance_bootstrap: str | Path | None = None,
+    ambient_temperature_K: float = 314.4,
+    ambient_interval_K: tuple[float, float] = (314.25, 314.55),
+    baseline_window_ns: tuple[float, float] = (-200.0, -50.0),
+    steady_window_ns: tuple[float, float] = (100.0, 250.0),
+    bootstrap_samples: int = 1000,
+    block_size: int = 10,
+    seed: int = 20260817,
     output_root: str | Path = "runs",
-    command: str = "neuristor analyze estimates",
+    command: str = "neuristor analyze conductance",
 ) -> RunBundle:
-    """Archive direct and assumption-dependent estimates from lab traces."""
+    """Archive the quasi-steady specimen environmental-conductance estimate."""
 
-    if (summary_path is None) == (data_directory is None):
-        raise ValueError("Provide exactly one of summary_path or data_directory")
-    summary_source = (
-        Path(summary_path).expanduser().resolve()
-        if summary_path is not None
-        else Path(str(data_directory)).expanduser().resolve()
-    )
+    data_path = Path(data_directory).expanduser().resolve()
     preset_path = Path(resistance_preset).expanduser().resolve()
+    bootstrap_path = (
+        Path(resistance_bootstrap).expanduser().resolve()
+        if resistance_bootstrap is not None
+        else None
+    )
     config = {
         "schema_version": 1,
         "name": name,
         "kind": "analysis",
-        "model": "lab-parameter-estimates",
-        "summary_source": str(summary_source),
+        "model": "environmental-thermal-conductance",
+        "data_directory": str(data_path),
         "resistance_preset": str(preset_path),
-        "ambient_temperatures_K": list(ambient_temperatures_K),
-        "thermal_times_ns": list(thermal_times_ns),
-        "ripple_threshold_mV": ripple_threshold_mV,
+        "resistance_bootstrap": str(bootstrap_path) if bootstrap_path else None,
+        "ambient_temperature_K": float(ambient_temperature_K),
+        "ambient_interval_K": list(ambient_interval_K),
+        "baseline_window_ns": list(baseline_window_ns),
+        "steady_window_ns": list(steady_window_ns),
+        "bootstrap_samples": int(bootstrap_samples),
+        "block_size": int(block_size),
+        "seed": int(seed),
     }
     bundle = RunBundle.create(
         name=name,
-        model="lab-parameter-estimates",
+        model="environmental-thermal-conductance",
         kind="analysis",
         config=config,
         output_root=output_root,
         command=command,
     )
     try:
-        if summary_path is not None:
-            summary = pd.read_csv(summary_source)
-        else:
-            _, summary = load_converted_sweep(summary_source)
+        traces, summary = load_converted_sweep(data_path)
         payload = json.loads(preset_path.read_text())
         raw_parameters = payload.get("resist_params", payload)
         resistance = YuanhangResistParams(**raw_parameters)
-        estimates = estimate_lab_parameters(
+        resistance_samples = pd.read_csv(bootstrap_path) if bootstrap_path else None
+        estimate = estimate_environmental_conductance(
+            traces,
             summary,
-            transition_temperature_K=float(resistance.Tc_K + 0.5 * resistance.w_eff),
-            ambient_temperatures_K=ambient_temperatures_K,
-            thermal_times_ns=thermal_times_ns,
-            ripple_threshold_mV=ripple_threshold_mV,
+            resistance=resistance,
+            ambient_temperature_K=ambient_temperature_K,
+            ambient_interval_K=ambient_interval_K,
+            resistance_bootstrap=resistance_samples,
+            baseline_window_ns=baseline_window_ns,
+            steady_window_ns=steady_window_ns,
+            bootstrap_samples=bootstrap_samples,
+            block_size=block_size,
+            seed=seed,
         )
-        tables = {
-            "electrical_capacitance.csv": (estimates.electrical_capacitance, "Electrical capacitance estimates"),
-            "thermal_conductance.csv": (estimates.thermal_conductance, "Thermal conductance scenarios"),
-            "thermal_capacitance.csv": (estimates.thermal_capacitance, "Thermal capacitance scenarios"),
-            "effective_resistance.csv": (estimates.effective_resistance, "Effective plateau resistance"),
-        }
-        for filename, (frame, label) in tables.items():
-            frame.to_csv(bundle.add_artifact(filename, label=label, media_type="text/csv"), index=False)
-        overview = bundle.add_artifact(
-            "figures/parameter_estimates.png", label="Parameter estimates", media_type="image/png"
+        estimate.result.to_csv(
+            bundle.add_artifact(
+                "conductance_estimate.csv",
+                label="Environmental conductance estimate",
+                media_type="text/csv",
+            ),
+            index=False,
         )
-        plot_lab_parameter_estimates(
-            estimates.electrical_capacitance,
-            estimates.thermal_conductance,
-            estimates.effective_resistance,
-            overview,
+        estimate.analyzed_trace.to_csv(
+            bundle.add_artifact(
+                "selected_trace.csv",
+                label="Selected numerical waveform",
+                media_type="text/csv",
+            ),
+            index=False,
         )
-        floor = bundle.add_artifact(
-            "figures/voltage_floor.png", label="Metallic voltage-floor comparison", media_type="image/png"
+        estimate.bootstrap.to_csv(
+            bundle.add_artifact(
+                "conductance_bootstrap.csv",
+                label="Conductance uncertainty propagation",
+                media_type="text/csv",
+            ),
+            index=False,
         )
-        plot_voltage_floor_comparison(estimates.effective_resistance, resistance.Rm, YuanhangResistParams().Rm, floor)
-        high_current = estimates.effective_resistance[estimates.effective_resistance["current_plateau_uA"] >= 350.0]
+        figure = bundle.add_artifact(
+            "figures/environmental_conductance.png",
+            label="Environmental conductance evidence",
+            media_type="image/png",
+        )
+        plot_environmental_conductance_estimate(
+            estimate.analyzed_trace,
+            estimate.result,
+            resistance,
+            figure,
+        )
+
+        row = estimate.result.iloc[0]
         metrics = {
-            "switching_lower_current_uA": float(estimates.pre_switch["current_plateau_uA"]),
-            "switching_upper_current_uA": float(estimates.post_switch["current_plateau_uA"]),
-            "electrical_capacitance_median_pF": float(estimates.electrical_capacitance["C_slope_pF"].median()),
-            "electrical_capacitance_min_pF": float(estimates.electrical_capacitance["C_slope_pF"].min()),
-            "electrical_capacitance_max_pF": float(estimates.electrical_capacitance["C_slope_pF"].max()),
-            "specimen_metallic_resistance_ohm": float(resistance.Rm),
-            "high_current_effective_resistance_min_ohm": float(high_current["R_effective_ohm"].min()),
-            "high_current_effective_resistance_max_ohm": float(high_current["R_effective_ohm"].max()),
+            "selected_trace": str(row["selected_trace"]),
+            "first_oscillating_trace": str(row["first_oscillating_trace"]),
+            "current_corrected_uA": float(row["current_corrected_uA"]),
+            "voltage_corrected_mV": float(row["voltage_corrected_mV"]),
+            "effective_resistance_ohm": float(row["effective_resistance_ohm"]),
+            "power_uW": float(row["power_uW"]),
+            "resistance_drift_fraction": float(row["resistance_drift_fraction"]),
+            "inferred_temperature_K": float(row["inferred_temperature_K"]),
+            "ambient_temperature_K": float(row["ambient_temperature_K"]),
+            "S_e_mW_per_K": float(row["S_e_mW_per_K"]),
+            "S_e_ci95_lower_mW_per_K": float(row["S_e_ci95_lower_mW_per_K"]),
+            "S_e_ci95_upper_mW_per_K": float(row["S_e_ci95_upper_mW_per_K"]),
+            "yuanhang_S_e_mW_per_K": float(YuanhangCircuitParams().Sth_mW_per_K),
         }
-        bundle.write_json("metrics.json", metrics, label="Estimate summary")
+        bundle.write_json("metrics.json", metrics, label="Conductance summary")
         report = f"""# {name}
 
-The switching onset is bracketed between **{metrics["switching_lower_current_uA"]:.3g}** and
-**{metrics["switching_upper_current_uA"]:.3g} uA** from the plateau-ripple increase.
+The first coherently oscillating numerical trace is `{metrics["first_oscillating_trace"]}`.
+The immediately preceding trace, `{metrics["selected_trace"]}`, is therefore the closest
+measured stable point below oscillation onset.
 
-The cold-edge estimate `C = I/(dV/dt)` gives a median electrical capacitance of
-**{metrics["electrical_capacitance_median_pF"]:.3g} pF**.
+Both channels are corrected by their pre-pulse medians. In the settled 100--250 ns
+window the median current is **{metrics["current_corrected_uA"]:.3f} uA**, the median
+voltage is **{metrics["voltage_corrected_mV"]:.3f} mV**, the effective resistance is
+**{metrics["effective_resistance_ohm"]:.3f} ohm**, and device power is
+**{metrics["power_uW"]:.3f} uW**. Resistance changes by only
+**{100.0 * metrics["resistance_drift_fraction"]:.3f}%** across the window, supporting
+the quasi-steady approximation `dT/dt approximately 0`.
 
-`S_e = P_switch/(T_switch-T0)` is tabulated for each candidate ambient temperature.
-The electrical waveform alone does not identify thermal capacitance: once a recovery
-time is measured, use `C_th = S_e tau_th`; the scenario table makes that dependence
-explicit.
-
-The fitted specimen metallic resistance is **{resistance.Rm:.3g} ohm**. In an ideal
-current source, it fixes the steady switched-state floor through `V = I Rm`.
-Electrical capacitance changes the approach time but cannot change that steady floor.
+Inverting the specimen's fitted heating branch gives **T={metrics["inferred_temperature_K"]:.3f} K**.
+With **T0={metrics["ambient_temperature_K"]:.3f} K**, the thermal balance gives
+**S_e={metrics["S_e_mW_per_K"]:.6f} mW/K**. The conditional 95% interval is
+**{metrics["S_e_ci95_lower_mW_per_K"]:.6f}--{metrics["S_e_ci95_upper_mW_per_K"]:.6f} mW/K**.
+It propagates waveform block resampling, the R(T)-fit bootstrap, and the stated ambient
+range. It does not include the systematic possibility that the R(T) and TIA measurements
+came from different devices or that driven and quasi-static R(T) differ.
 """
         bundle.write_text("report.md", report, label="Scientific report")
         bundle.complete(summary=metrics)

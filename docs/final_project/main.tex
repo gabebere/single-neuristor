@@ -204,52 +204,95 @@ $\gamma$ & $0.95627$ (fixed) & --- & $0.95627$ \\
 
 The fit gives $R^2=0.998734$ and a $\log_{10}R$ RMSE of $0.03663$, equivalent to a typical multiplicative error of $1.088$. The largest deviation is a factor of $1.336$ inside the switching region; this residual is retained rather than adding parameters unsupported by the measurement.
 
-\section{Experimental conditions and measured operating points}
+\section{Experimental timing and ambient temperature}
 
-Table~\ref{tab:experimental_conditions} records the conditions used for the experimental comparison. The TIA sweep is taken to share the $41.1$--$41.4\,^{\circ}$C ambient range reported for the related measurements \cite{gildor2026}. We therefore use $T_0=314.4$~K. The supplied $R(T)$ curve is treated as belonging to the same device; this is a working assumption and can be revised if the sample records show otherwise.
+The sample-specific simulations will reproduce the measured pulse timing rather than use an instantaneous current step. The TIA sweep is taken to share the ambient range reported for the related measurements \cite{gildor2026}.
 
 \begin{table}[H]
 \centering
 \small
 \rowcolors{2}{projectgray}{white}
-\begin{tabularx}{0.96\textwidth}{@{}l X@{}}
+\begin{tabularx}{0.78\textwidth}{@{}l X@{}}
 \toprule
-Quantity & Experimental value or interpretation \\
+Input & Value \\
 \midrule
-Device & Approximately $150$~nm \vo{} on A-cut sapphire; approximately $200$~nm electrode gap; $20/70$~nm Ti/Au electrodes \\
 Ambient temperature & $T_0\approx314.4$~K ($314.25$--$314.55$~K) \\
-Sample correspondence & Supplied $R(T)$ curve and TIA traces assumed to describe the same device \\
-Current excitation & Measured $I_{\mathrm{in}}(t)$ from the raw oscilloscope exports, including baseline and finite edges \\
-Pulse timing & Nominal width $300$~ns; measured $10$--$90\%$ rise time $26$--$27$~ns and fall time $18$--$23$~ns \\
-Measured current plateaus & $41.856$--$943.291~\mu$A; current compliance approximately $1$~mA \\
-Oscillatory interval & $233.511$--$621.843~\mu$A, with measured frequencies $41.667$--$62.5$~MHz \\
-Voltage convention & Stored positive $V_{\mathrm{out}}$ is the magnitude of the voltage across the \vo{} device \\
+Pulse width & $300$~ns \\
+Current rise time & $26$--$27$~ns ($10$--$90\%$) \\
+Current fall time & $18$--$23$~ns ($90$--$10\%$) \\
 \bottomrule
 \end{tabularx}
-\caption{Experimental conditions used as inputs to the sample-specific simulations.}
+\caption{Measured environmental and timing inputs retained for later simulation of the experiment.}
 \label{tab:experimental_conditions}
 \end{table}
 
-All subsequent extraction uses the complete measured current waveform rather than the nominal generator setting. At any selected switching point, the measured device power is
-
-\begin{equation}
-P_{\mathrm{sw}}=I_{\mathrm{sw}}V_{\mathrm{sw}}
-=\frac{V_{\mathrm{sw}}^2}{R(T_{\mathrm{sw}})}.
-\end{equation}
-
-Together with the fitted $R(T)$ transition temperatures, this provides the input for the environmental-conductance estimate in the next step.
-
 \section{Environmental thermal conductance}
 
-\planned{} At a verified quasi-steady point, use the relevant heating or cooling transition temperature to estimate
+The $300$~mV drive record is the first trace with coherent oscillation. We therefore selected the immediately preceding $250$~mV record as the closest measured point below switching onset. We did not use the first transition during the current edge because the device is still heating there and $dT/dt=0$ would not be justified.
+
+For the selected trace, the current and voltage offsets are their medians from $-200$ to $-50$~ns. We then use the settled $100$--$250$~ns interval. Its effective resistance changes by only $0.145\%$, supporting the quasi-steady approximation. Figure~\ref{fig:conductance_evidence} shows the waveform, the stability test, and the temperature inversion.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260817_152216_environmental-thermal-conductance-estimate_c4be6c/figures/environmental_conductance.png}
+\caption{Environmental-conductance evidence. Gray shading marks the settled interval. The measured $R_*=V_*/I_*$ is mapped to $T_*$ through the fitted heating branch.}
+\label{fig:conductance_evidence}
+\end{figure}
+
+The baseline-corrected medians give
 
 \begin{equation}
-S_e=\frac{P_{\mathrm{sw}}}{T_{\mathrm{sw}}-T_0},
-\qquad
-\left.\frac{dT}{dt}\right|_{\mathrm{sw}}\approx0.
+I_*=190.162~\mu\mathrm{A},\qquad
+V_*=319.213~\mathrm{mV},\qquad
+R_*=\frac{V_*}{I_*}=1679.759~\Omega,
 \end{equation}
 
-The selected point, voltage definition, and quasi-steady assumption will be stated explicitly; agreement across currents will test consistency.
+and
+
+\begin{equation}
+P_*=I_*V_*=60.658~\mu\mathrm{W}.
+\end{equation}
+
+Solving the fitted heating branch $R_{\mathrm{heat}}(T_*)=R_*$ gives $T_*=330.905$~K. At a quasi-steady point, the thermal equation reduces to
+
+\begin{equation}
+C_{\mathrm{th}}\frac{dT}{dt}=P_*-S_e(T_*-T_0)\approx0,
+\qquad
+S_e=\frac{P_*}{T_*-T_0}.
+\end{equation}
+
+Therefore,
+
+\begin{equation}
+S_e=\frac{60.658~\mu\mathrm{W}}{330.905~\mathrm{K}-314.4~\mathrm{K}}
+=3.675~\mu\mathrm{W/K}
+=0.003675~\mathrm{mW/K}.
+\label{eq:sample_conductance}
+\end{equation}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r@{}}
+\toprule
+Result & Value \\
+\midrule
+Selected trace & $250$~mV drive \\
+First oscillating trace & $300$~mV drive \\
+Settled resistance drift & $0.145\%$ \\
+Inferred temperature & $330.905$ K \\
+Temperature rise & $16.505$ K \\
+$S_e$ estimate & $0.003675$ mW/K \\
+Conditional 95\% interval & $0.003434$--$0.004085$ mW/K \\
+Yuanhang reference & $0.205587$ mW/K \\
+\bottomrule
+\end{tabular}
+\caption{Environmental thermal-conductance calculation and comparison.}
+\label{tab:conductance_result}
+\end{table}
+
+The interval propagates paired waveform block resampling, the $1000$-sample $R(T)$ fit bootstrap, and the $314.25$--$314.55$~K ambient range. Omitting baseline correction gives $0.003560$~mW/K, inside the interval. The result remains conditional on the $R(T)$ curve and TIA traces belonging to the same device and on the quasi-static heating branch applying under electrical drive. Yuanhang's conductance is about $56$ times larger.
 
 \section{Electrical capacitance}
 
@@ -324,6 +367,23 @@ It is reproduced with
 \begin{center}
 \ttfamily\small
 neuristor fit resistance --data data/experimental/100425\_chip1\_gap3.tsv --method major-loop --bootstrap-samples 1000
+\end{center}
+
+The environmental-conductance analysis is archived as
+
+\begin{center}
+\footnotesize
+\path{20260817_152216_environmental-thermal-conductance-estimate_c4be6c}.
+\end{center}
+
+It is reproduced with
+
+\begin{center}
+\ttfamily\footnotesize
+neuristor analyze conductance --data data/experimental/tia\_current\_sweep \\
+--resistance-preset presets/resistance\_100425\_chip1\_gap3.json \\
+--resistance-bootstrap public\_jobs/20260816\_125905\_sample-r-t-major-loop-hysteresis-fit\_0849a9/parameter\_bootstrap.csv \\
+--ambient-K 314.4 --ambient-interval-K 314.25,314.55
 \end{center}
 
 \begin{thebibliography}{9}

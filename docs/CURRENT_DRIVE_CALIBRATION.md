@@ -63,16 +63,14 @@ The professor-supplied numerical waveform family supports this diagnosis. Above
 added series resistance is also insufficient to reproduce the whole family; the
 temperature-dependent state and/or nonideal source/measurement circuit matters.
 
-### Evidence: measured plateau versus the ideal-current floor
+### Evidence from the numerical plateaus
 
-The replacement numerical bundle contains the
-[measured parameter overview](../public_jobs/20260817_134254_lab-current-trace-parameter-estimates_4223e0/figures/parameter_estimates.png)
-and [voltage-floor comparison](../public_jobs/20260817_134254_lab-current-trace-parameter-estimates_4223e0/figures/voltage_floor.png).
-The red line is the fitted specimen prediction `V=I*18.3 Ohm`; it stays near zero
-compared with the measured numerical plateau. Yuanhang's much larger metallic
-resistance produces a much larger floor, while a fixed 250 Ohm addition crosses the
-data only locally and cannot reproduce the nearly current-independent 190 mV plateau.
-None of these steady-state lines depends on electrical capacitance.
+The [measured sweep](../public_jobs/20260817_134254_measured-laboratory-current-sweep_a45254/figures/lab_summary.png)
+and [settled pre-onset trace](../public_jobs/20260817_152216_environmental-thermal-conductance-estimate_c4be6c/figures/environmental_conductance.png)
+come directly from the professor-supplied numerical exports. The fitted specimen
+prediction `V=I*18.3 Ohm` remains far below the measured high-current plateau, while
+Yuanhang's much larger metallic resistance produces a much larger floor. None of
+these steady-state relations depends on electrical capacitance.
 
 ## Model and numerical corrections made in this audit
 
@@ -167,30 +165,46 @@ from those files.
 
 ### Electrical capacitance
 
-Before switching and near `V=0`, `dV/dt` is approximately `I/C`, so
+The former cold-edge shortcut
 
 \[
 C\approx\frac{I}{dV/dt}.
 \]
 
-Four clean pre-switch traces give 18.5--21.4 pF, with a median of 19.8 pF. This is
-much smaller than Yuanhang's 145.35 pF. The estimate uses the measured current step,
-not the nonzero oscilloscope baseline.
+is not valid for these traces because the measured current itself rises over
+26--27 ns and the resistive current is not negligible. The correct balance is
 
-### Switching current and environmental conductance
+\[
+C=\frac{I-V/R(T)}{dV/dt}.
+\]
 
-The numerical family brackets switching onset between 195.3 and 233.5 uA. Using the
-last pre-switch point (`V=316.0 mV`, `P=61.73 uW`) and the fitted specimen heating
-midpoint `T_switch=336.93 K`:
+Using the complete measured current waveform leaves the optimum at the nonnegative
+boundary `C=0`: the data do not resolve a positive electrical lag. This does not prove
+that physical capacitance is absent. It makes `C=0`, or `V=I R(T)`, the defensible
+reduced-model baseline until a faster low-amplitude calibration edge is measured.
 
-| Assumed T0 | Estimated Se |
-|---:|---:|
-| 298 K | 0.00159 mW/K |
-| 325 K | 0.00517 mW/K |
-| 330 K | 0.00890 mW/K |
-| 333 K | 0.01569 mW/K |
+### Environmental thermal conductance
 
-This strong dependence is why ambient temperature must be measured rather than absorbed freely into `S_e`.
+The first coherently oscillating record is `300mv0_converted.csv`; the immediately
+preceding `250mv0_converted.csv` record is therefore the closest measured stable point
+below onset. Each channel is offset by its median over -200 to -50 ns. Over the settled
+100--250 ns window, the corrected medians are `I=190.162 uA`, `V=319.213 mV`,
+`R=1679.759 Ohm`, and `P=60.658 uW`. Resistance changes by only 0.145% across this
+window, supporting `dT/dt approximately 0`.
+
+Inverting the fitted specimen heating branch at the measured resistance gives
+`T=330.905 K`. With `T0=314.4 K`,
+
+\[
+S_e=\frac{P}{T-T_0}=0.003675\ \mathrm{mW/K}.
+\]
+
+The conditional 95% interval is 0.003434--0.004085 mW/K. It propagates paired
+waveform block resampling, the 1000-sample R(T) fit bootstrap, and the
+314.25--314.55 K ambient range. Omitting baseline correction gives 0.003560 mW/K,
+inside this interval. The interval remains conditional on the R(T) curve and TIA
+waveforms describing the same device and on quasi-static R(T) applying under drive.
+Yuanhang's reference conductance, 0.205587 mW/K, is about 56 times larger.
 
 ### Thermal capacitance
 
@@ -201,8 +215,8 @@ recovery time from a post-pulse or pump-probe trace, then calculate
 C_{th}=S_e\tau_{th}.
 \]
 
-For example, if `T0=325 K`, the onset estimate gives `S_e=0.00517 mW/K`; thermal
-recovery times of 20, 50, and 100 ns imply `C_th=0.103`, `0.259`, and `0.517 pJ/K`.
+Using the present `S_e=0.003675 mW/K`, thermal recovery times of 20, 50, and 100 ns
+would imply `C_th=0.0735`, `0.1838`, and `0.3675 pJ/K`.
 This illustrates that waveform fitting often identifies the ratio `C_th/S_e` more
 strongly than either parameter alone.
 
@@ -226,13 +240,13 @@ from this same specimen; transferring it to another specimen requires validation
 
 ## Recommended calibration order
 
-1. Record the exact stage/substrate ambient temperature and clarify whether measured voltage is across VO2 only or includes contacts, leads, sense resistance, or source compliance.
-2. From a low-current, nonswitching edge, fit `tau_el` and use `C=tau_el/R` (or the early-slope approximation above).
-3. From a post-pulse or pump-probe recovery, fit `tau_th`.
-4. Use power immediately before switching and the measured `T0` to estimate `S_e=P_switch/(T_switch-T0)`.
-5. Calculate `C_th=S_e*tau_th`.
+1. Fix the ambient temperature, voltage definition, and same-device correspondence.
+2. Fit the specimen heating and cooling R(T) branches.
+3. Use the closest quasi-steady pre-onset trace and fitted heating branch to estimate `S_e=P/(T-T0)`.
+4. From a post-pulse or pump-probe recovery, fit `tau_th` and calculate `C_th=S_e*tau_th`.
+5. Measure a faster low-amplitude nonswitching edge to bound or estimate electrical `C`.
 6. Fit `Rm` and any explicit contact/source model to the measured switched-state voltage floor. Do not use `C` for this purpose.
-7. Only after these steps, refine current amplitude, transition temperature, and hysteresis width against the full waveform and repeat at smaller `dt`.
+7. Only after these steps, refine current amplitude, transition temperature, hysteresis width, and gamma against the full waveform and repeat at smaller `dt`.
 
 ## Reproduction commands
 
@@ -241,9 +255,11 @@ neuristor simulate current \
   --config experiments/current/nonzero_voltage_valley.toml
 neuristor sweep run \
   --config experiments/sweeps/current_capacitance_map.toml
-neuristor analyze estimates \
+neuristor analyze conductance \
   --data data/experimental/tia_current_sweep \
-  --resistance-preset presets/resistance_100425_chip1_gap3.json
+  --resistance-preset presets/resistance_100425_chip1_gap3.json \
+  --resistance-bootstrap public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
+  --ambient-K 314.4 --ambient-interval-K 314.25,314.55
 pytest -q
 neuristor validate
 ```
