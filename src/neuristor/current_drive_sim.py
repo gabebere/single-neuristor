@@ -522,6 +522,117 @@ def simulate_current_step(I_uA: float, params: CurrentDriveParams, seed: Optiona
     return _simulate_with_current_trace(t=t, I_in=I_in, params=params, seed=seed)
 
 
+def _simulate_with_current_matrix(
+    t: np.ndarray,
+    I_in: np.ndarray,
+    params: CurrentDriveParams,
+) -> List[Dict[str, np.ndarray]]:
+    """Integrate independent deterministic waveforms in one vectorized pass."""
+
+    if I_in.ndim != 2 or I_in.shape[0] != t.size:
+        raise ValueError("I_in must have shape (time, independent waveforms)")
+    if float(params.sigma_W_sqrt_s) != 0.0:
+        raise ValueError("Vectorized arbitrary waveforms require zero thermal noise")
+    n_steps, n_currents = I_in.shape
+    if n_currents == 0:
+        return []
+    I_in = np.asarray(I_in, dtype=_SIM_DTYPE)
+    shape = (n_steps, n_currents)
+    V = np.zeros(shape, dtype=_SIM_DTYPE)
+    T = np.zeros(shape, dtype=_SIM_DTYPE)
+    g_eq = np.zeros(shape, dtype=_SIM_DTYPE)
+    R = np.zeros(shape, dtype=_SIM_DTYPE)
+    P = np.zeros(shape, dtype=_SIM_DTYPE)
+    V[0, :] = _SIM_DTYPE(params.V_init_V)
+    T[0, :] = _SIM_DTYPE(params.T_init_K)
+
+    hyst = HysteresisArray(
+        params.resist_params,
+        size=n_currents,
+        start_branch=params.start_branch,
+        independent_anchors=True,
+    )
+    hyst.initialize(T[0, :])
+    C = float(params.C_F)
+    C_th = float(params.C_th_J_per_K)
+    S_e = float(params.S_e_W_per_K)
+    dt = _SIM_DTYPE(params.dt_s)
+    T0 = _SIM_DTYPE(params.T0_K)
+
+    for k in range(n_steps - 1):
+        R_k, g_k = hyst.evaluate(T[k, :])
+        R_k = np.maximum(np.asarray(R_k, dtype=_SIM_DTYPE), _SIM_DTYPE(_EPS))
+        g_k = np.clip(np.asarray(g_k, dtype=_SIM_DTYPE), 0.0, 1.0)
+        if C == 0.0:
+            V[k, :] = I_in[k, :] * R_k
+        P_k = (V[k, :] * V[k, :]) / R_k
+        V[k + 1, :] = _advance_voltage_exact(V[k, :], I_in[k, :], R_k, dt_s=float(dt), C_F=C)
+        T[k + 1, :] = _advance_temperature_exact(
+            T[k, :],
+            P_k,
+            T0_K=float(T0),
+            dt_s=float(dt),
+            C_th_J_per_K=C_th,
+            S_e_W_per_K=S_e,
+        )
+        g_eq[k, :] = g_k
+        R[k, :] = R_k
+        P[k, :] = P_k
+
+    R_end, g_end = hyst.evaluate(T[-1, :])
+    g_eq[-1, :] = np.clip(np.asarray(g_end, dtype=_SIM_DTYPE), 0.0, 1.0)
+    R[-1, :] = np.maximum(np.asarray(R_end, dtype=_SIM_DTYPE), _SIM_DTYPE(_EPS))
+    if C == 0.0:
+        V[-1, :] = I_in[-1, :] * R[-1, :]
+    P[-1, :] = (V[-1, :] * V[-1, :]) / R[-1, :]
+    return [
+        {
+            "t": t,
+            "I_in": I_in[:, idx].copy(),
+            "V_vo2": V[:, idx].copy(),
+            "T": T[:, idx].copy(),
+            "T_hot": T[:, idx].copy(),
+            "T_sub": T[:, idx].copy(),
+            "g_eq": g_eq[:, idx].copy(),
+            "g_dyn": g_eq[:, idx].copy(),
+            "R": R[:, idx].copy(),
+            "P": P[:, idx].copy(),
+        }
+        for idx in range(n_currents)
+    ]
+
+
+def simulate_current_waveforms(
+    currents_uA: np.ndarray,
+    params: CurrentDriveParams,
+    *,
+    waveform_time_s: np.ndarray,
+) -> List[Dict[str, np.ndarray]]:
+    """Simulate many measured current records with shared times and parameters.
+
+    Columns are independent devices/traces. This is mathematically identical to
+    repeated ``simulate_current_waveform`` calls when thermal noise is disabled,
+    but makes global parameter inference computationally practical.
+    """
+
+    currents = np.asarray(currents_uA, dtype=float)
+    if currents.ndim == 1:
+        currents = currents[:, np.newaxis]
+    times = np.asarray(waveform_time_s, dtype=float).reshape(-1)
+    if currents.ndim != 2 or currents.shape[0] != times.size:
+        raise ValueError("currents_uA must have shape (waveform time, traces)")
+    if times.size < 2 or np.any(np.diff(times) <= 0.0):
+        raise ValueError("waveform_time_s must increase strictly")
+    t = _time_grid(params.dt_s, params.t_end_s, params.t_pre_s)
+    interpolated = np.column_stack(
+        [
+            np.interp(t.astype(float), times, currents[:, idx], left=currents[0, idx], right=currents[-1, idx])
+            for idx in range(currents.shape[1])
+        ]
+    )
+    return _simulate_with_current_matrix(t, interpolated * 1e-6, params)
+
+
 def simulate_current_steps(
     currents_uA: List[float],
     params: CurrentDriveParams,
@@ -552,72 +663,7 @@ def simulate_current_steps(
     currents_A = np.asarray(currents * 1e-6, dtype=_SIM_DTYPE)
     I_in[active, :] = currents_A[np.newaxis, :]
 
-    shape = (n_steps, n_currents)
-    V = np.zeros(shape, dtype=_SIM_DTYPE)
-    T = np.zeros(shape, dtype=_SIM_DTYPE)
-    g_eq = np.zeros(shape, dtype=_SIM_DTYPE)
-    R = np.zeros(shape, dtype=_SIM_DTYPE)
-    P = np.zeros(shape, dtype=_SIM_DTYPE)
-    V[0, :] = _SIM_DTYPE(params.V_init_V)
-    T[0, :] = _SIM_DTYPE(params.T_init_K)
-
-    hyst = HysteresisArray(
-        params.resist_params,
-        size=n_currents,
-        start_branch=params.start_branch,
-        independent_anchors=True,
-    )
-    hyst.initialize(T[0, :])
-
-    C = float(params.C_F)
-    C_th = float(params.C_th_J_per_K)
-    S_e = float(params.S_e_W_per_K)
-    dt = _SIM_DTYPE(params.dt_s)
-    T0 = _SIM_DTYPE(params.T0_K)
-
-    for k in range(n_steps - 1):
-        R_k, g_k = hyst.evaluate(T[k, :])
-        R_k = np.maximum(np.asarray(R_k, dtype=_SIM_DTYPE), _SIM_DTYPE(_EPS))
-        g_k = np.clip(np.asarray(g_k, dtype=_SIM_DTYPE), 0.0, 1.0)
-        if C == 0.0:
-            V[k, :] = I_in[k, :] * R_k
-        P_k = (V[k, :] * V[k, :]) / R_k
-        V[k + 1, :] = _advance_voltage_exact(V[k, :], I_in[k, :], R_k, dt_s=float(dt), C_F=C)
-        T[k + 1, :] = _advance_temperature_exact(
-            T[k, :],
-            P_k,
-            T0_K=float(T0),
-            dt_s=float(dt),
-            C_th_J_per_K=C_th,
-            S_e_W_per_K=S_e,
-        )
-
-        g_eq[k, :] = g_k
-        R[k, :] = R_k
-        P[k, :] = P_k
-
-    R_end, g_end = hyst.evaluate(T[-1, :])
-    g_eq[-1, :] = np.clip(np.asarray(g_end, dtype=_SIM_DTYPE), 0.0, 1.0)
-    R[-1, :] = np.maximum(np.asarray(R_end, dtype=_SIM_DTYPE), _SIM_DTYPE(_EPS))
-    if C == 0.0:
-        V[-1, :] = I_in[-1, :] * R[-1, :]
-    P[-1, :] = (V[-1, :] * V[-1, :]) / R[-1, :]
-
-    return [
-        {
-            "t": t,
-            "I_in": I_in[:, idx].copy(),
-            "V_vo2": V[:, idx].copy(),
-            "T": T[:, idx].copy(),
-            "T_hot": T[:, idx].copy(),
-            "T_sub": T[:, idx].copy(),
-            "g_eq": g_eq[:, idx].copy(),
-            "g_dyn": g_eq[:, idx].copy(),
-            "R": R[:, idx].copy(),
-            "P": P[:, idx].copy(),
-        }
-        for idx in range(n_currents)
-    ]
+    return _simulate_with_current_matrix(t, I_in, params)
 
 
 def _count_turns(signal: np.ndarray) -> int:

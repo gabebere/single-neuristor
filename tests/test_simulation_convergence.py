@@ -20,6 +20,8 @@ from neuristor.current_drive_sim import (
     sanitize_current_drive_params,
     simulate_current_step,
     simulate_current_steps,
+    simulate_current_waveform,
+    simulate_current_waveforms,
 )
 from neuristor.current_domain_search import analyze_current_trace
 from neuristor.model import (
@@ -79,6 +81,33 @@ class SimulationConvergenceTests(unittest.TestCase):
             for key in ("I_in", "V_vo2", "T", "R", "g_eq", "P"):
                 np.testing.assert_array_equal(serial_trace[key], batched_trace[key])
             np.testing.assert_array_equal(batched_trace["g_eq"], batched_trace["g_dyn"])
+
+    def test_vectorized_measured_waveforms_match_serial_traces(self) -> None:
+        times = np.arange(-20.0, 81.0, 1.0) * 1e-9
+        currents = np.column_stack(
+            [
+                np.where(times < 0.0, 0.0, 120.0),
+                np.where(times < 0.0, 0.0, 240.0),
+            ]
+        )
+        params = CurrentDriveParams(
+            dt_s=0.5e-9,
+            t_pre_s=20e-9,
+            t_end_s=80e-9,
+            C_F=0.39e-12,
+            C_th_J_per_K=0.047873236e-12,
+            S_e_W_per_K=0.0036751265e-3,
+            T0_K=314.4,
+            T_init_K=314.4,
+        )
+        serial = [
+            simulate_current_waveform(currents[:, index], params, waveform_time_s=times)
+            for index in range(currents.shape[1])
+        ]
+        batched = simulate_current_waveforms(currents, params, waveform_time_s=times)
+        for serial_trace, batched_trace in zip(serial, batched):
+            for key in ("I_in", "V_vo2", "T", "R", "g_eq", "P"):
+                np.testing.assert_array_equal(serial_trace[key], batched_trace[key])
 
     def test_voltage_oscillator_frequency_converges(self) -> None:
         resist = YuanhangResistParams()

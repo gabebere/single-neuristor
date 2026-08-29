@@ -1,0 +1,78 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Thermal capacitance estimate",
+      "media_type": "text/csv",
+      "path": "thermal_capacitance_estimate.csv"
+    },
+    {
+      "label": "Per-trace thermal fits",
+      "media_type": "text/csv",
+      "path": "trace_fits.csv"
+    },
+    {
+      "label": "Reconstructed temperature trajectories",
+      "media_type": "text/csv",
+      "path": "thermal_trajectories.csv"
+    },
+    {
+      "label": "Thermal capacitance uncertainty propagation",
+      "media_type": "text/csv",
+      "path": "thermal_capacitance_bootstrap.csv"
+    },
+    {
+      "label": "Thermal capacitance evidence",
+      "media_type": "image/png",
+      "path": "figures/thermal_capacitance.png"
+    },
+    {
+      "label": "Thermal capacitance summary",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Scientific report",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor analyze thermal-capacitance --data data/experimental/tia_current_sweep --resistance-preset presets/resistance_100425_chip1_gap3.json --resistance-bootstrap public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv --conductance-mW-per-K 0.003675126546984294 --conductance-bootstrap public_jobs/20260817_153807_environmental-thermal-conductance-estimate_761640/conductance_bootstrap.csv --ambient-K 314.4 --selected-drives-mV 100,150,200 --near-transition-check-mV 250 --fit-window-ns 15,35 --bootstrap-samples 1000",
+  "created_at": "2026-08-17T16:15:39.107540+00:00",
+  "id": "20260817_161539_thermal-time-constant-and-capacitance-estimate_c285f9",
+  "kind": "analysis",
+  "model": "thermal-capacitance",
+  "name": "Thermal time constant and capacitance estimate",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "d488609318354583aabc734763a8d13544a78496",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "C_th_ci95_lower_pJ_per_K": 0.02012238146450977,
+    "C_th_ci95_upper_pJ_per_K": 0.0923531322897198,
+    "C_th_pJ_per_K": 0.04716260865806837,
+    "S_e_mW_per_K": 0.003675126546984294,
+    "ambient_temperature_K": 314.4,
+    "fit_rmse_K": 0.8062520911009592,
+    "measured_oscillation_period_max_ns": 24.0,
+    "measured_oscillation_period_min_ns": 16.0,
+    "near_transition_check_C_th_pJ_per_K": 0.022961939796479952,
+    "near_transition_check_rmse_K": 2.088957863818798,
+    "near_transition_check_trace": "250mv0_converted.csv",
+    "selected_traces": "100mv0_converted.csv,150mv0_converted.csv,200mv0_converted.csv",
+    "tau_th_ci95_lower_ns": 5.411761770234337,
+    "tau_th_ci95_upper_ns": 24.769335278780073,
+    "tau_th_ns": 12.832921004249142,
+    "yuanhang_C_th_pJ_per_K": 49.62776831,
+    "yuanhang_to_specimen_C_th_ratio": 1052.2693659675226
+  },
+  "updated_at": "2026-08-17T16:15:46.557573+00:00"
+}

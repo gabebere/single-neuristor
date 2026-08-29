@@ -1,0 +1,134 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Original and fitted shared parameters",
+      "media_type": "text/csv",
+      "path": "parameter_comparison.csv"
+    },
+    {
+      "label": "Train, test, and full objective summary",
+      "media_type": "text/csv",
+      "path": "fit_summary.csv"
+    },
+    {
+      "label": "Per-trace fit evidence",
+      "media_type": "text/csv",
+      "path": "trace_metrics.csv"
+    },
+    {
+      "label": "Measured and globally fitted waveforms",
+      "media_type": "text/csv",
+      "path": "fitted_traces.csv"
+    },
+    {
+      "label": "Optimizer evaluation history",
+      "media_type": "text/csv",
+      "path": "optimization_history.csv"
+    },
+    {
+      "label": "Fine-step fit verification",
+      "media_type": "text/csv",
+      "path": "convergence.csv"
+    },
+    {
+      "label": "Optimization convergence",
+      "media_type": "image/png",
+      "path": "figures/optimization_history.png"
+    },
+    {
+      "label": "Measured and fitted operating features",
+      "media_type": "image/png",
+      "path": "figures/operating_summary.png"
+    },
+    {
+      "label": "Representative globally fitted traces",
+      "media_type": "image/png",
+      "path": "figures/representative_fits.png"
+    },
+    {
+      "label": "Global inference summary",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Scientific report",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor analyze fit-waveforms --config experiments/current/specimen_oscillation_inference.toml",
+  "created_at": "2026-08-29T16:01:47.953244+00:00",
+  "id": "20260829_160147_oscillation-priority-global-specimen-parameter-i_ac1c5e",
+  "kind": "analysis",
+  "model": "global-waveform-parameter-inference",
+  "name": "Oscillation-priority global specimen parameter inference",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "be96b7e69a1fc18ac288c864c1464a7245dd58bc",
+    "dirty": false
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "baseline_classification_matches": 11,
+    "baseline_objective_all": 126.38060130650004,
+    "constrained_classification_matches": 11,
+    "constrained_evaluations": 164,
+    "constrained_objective_all": 126.37855613102275,
+    "constrained_optimizer_messages": {
+      "global": "Optimization terminated successfully.",
+      "local": "Maximum number of function evaluations has been exceeded."
+    },
+    "constrained_predicted_oscillating_traces": 0,
+    "final_dt_ns": 0.05,
+    "held_out_traces": 5,
+    "holdout_drives_mV": [
+      200.0,
+      400.0,
+      600.0,
+      800.0,
+      1000.0
+    ],
+    "objective_weights": {
+      "amplitude": 0.01,
+      "classification": 250.0,
+      "edge": 0.01,
+      "false_positive": 250.0,
+      "frequency": 0.5,
+      "mean_voltage": 0.02,
+      "prior": 0.01,
+      "spectrum": 0.05,
+      "sustain": 0.5,
+      "waveform": 0.02
+    },
+    "relaxed_classification_matches": 21,
+    "relaxed_evaluations": 516,
+    "relaxed_objective_all": 14.164707650404123,
+    "relaxed_optimizer_messages": {
+      "global": "Maximum number of iterations has been exceeded.",
+      "local": "Maximum number of function evaluations has been exceeded."
+    },
+    "relaxed_parameters_outside_physical_bounds": [
+      "C_pF",
+      "C_th_pJ_per_K",
+      "S_e_mW_per_K",
+      "T0_K",
+      "Tc_K",
+      "w_K",
+      "beta_per_K",
+      "gamma"
+    ],
+    "relaxed_predicted_oscillating_traces": 10,
+    "resistance_source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/resistance_100425_chip1_gap3.json",
+    "search_dt_ns": 0.05,
+    "start_branch": "insulator",
+    "training_traces": 17
+  },
+  "updated_at": "2026-08-29T16:18:43.109356+00:00"
+}

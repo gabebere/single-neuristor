@@ -1,0 +1,1169 @@
+"""Small, consistent plotting surface for run bundles and the dashboard."""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Iterable
+import math
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.animation import FuncAnimation, PillowWriter
+from matplotlib.collections import LineCollection
+from matplotlib.colors import Normalize
+
+from .model import HysteresisArray, YuanhangResistParams
+
+
+COLORS = {
+    "ink": "#172033",
+    "blue": "#2563eb",
+    "green": "#059669",
+    "orange": "#ea580c",
+    "purple": "#7c3aed",
+    "red": "#dc2626",
+    "gray": "#64748b",
+    "grid": "#dbe3ef",
+}
+
+
+def _finish(fig: plt.Figure, out_path: str | Path) -> Path:
+    path = Path(out_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not fig.get_constrained_layout():
+        fig.tight_layout()
+    fig.savefig(path, dpi=190, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    return path
+
+
+def plot_current_run(frame: pd.DataFrame, out_path: str | Path, *, title: str) -> Path:
+    """Plot imposed current, voltage, temperature, and resistance for one run."""
+
+    fig, axes = plt.subplots(3, 1, figsize=(11.5, 8.4), sharex=True, gridspec_kw={"height_ratios": [0.8, 1.35, 1.2]})
+    axes[0].plot(frame["time_us"], frame["current_uA"], color=COLORS["ink"], linewidth=1.5)
+    axes[0].set_ylabel("Current (uA)")
+    axes[1].plot(
+        frame["time_us"],
+        frame["voltage_V"],
+        color=COLORS["blue"],
+        linewidth=1.2,
+        label="Simulated voltage",
+    )
+    if "metallic_voltage_floor_V" in frame:
+        axes[1].plot(
+            frame["time_us"],
+            frame["metallic_voltage_floor_V"],
+            color=COLORS["orange"],
+            linewidth=1.4,
+            linestyle="--",
+            label=r"$I(t)R_m$ metallic fixed point",
+        )
+    axes[1].axhline(0.0, color=COLORS["ink"], linewidth=0.8)
+    axes[1].set_ylabel("Voltage (V)")
+    axes[1].legend(loc="upper right", fontsize=9)
+    axes[2].plot(frame["time_us"], frame["temperature_K"], color=COLORS["orange"], linewidth=1.1, label="Temperature")
+    axes[2].set_ylabel("Temperature (K)", color=COLORS["orange"])
+    resistance_ax = axes[2].twinx()
+    resistance_ax.plot(frame["time_us"], frame["resistance_ohm"], color=COLORS["purple"], linewidth=1.0, alpha=0.8)
+    resistance_ax.set_ylabel("Resistance (Ohm)", color=COLORS["purple"])
+    resistance_ax.set_yscale("log")
+    axes[2].set_xlabel("Time (us)")
+    for axis in axes:
+        axis.grid(True, color=COLORS["grid"], alpha=0.7)
+    fig.suptitle(title, fontsize=15, color=COLORS["ink"])
+    return _finish(fig, out_path)
+
+
+def _current_trace_arrays(frame: pd.DataFrame) -> tuple[np.ndarray, ...]:
+    """Return validated arrays required by current-drive trajectory plots."""
+
+    columns = ["time_us", "current_uA", "voltage_V", "temperature_K", "resistance_ohm"]
+    missing = [column for column in columns if column not in frame]
+    if missing:
+        raise ValueError(f"Current-drive trace is missing columns: {', '.join(missing)}")
+    arrays = tuple(frame[column].to_numpy(dtype=float) for column in columns)
+    finite = np.logical_and.reduce([np.isfinite(values) for values in arrays])
+    positive_resistance = arrays[-1] > 0.0
+    keep = finite & positive_resistance
+    if np.count_nonzero(keep) < 2:
+        raise ValueError("Current-drive trace needs at least two finite samples with positive resistance")
+    return tuple(values[keep] for values in arrays)
+
+
+def _yuanhang_major_branches() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Evaluate the published Yuanhang major heating and cooling branches."""
+
+    params = YuanhangResistParams()
+    temperature_K = np.linspace(params.T_min_K, params.T_max_K, 600, dtype=np.float32)
+    branch_resistance: list[np.ndarray] = []
+    for branch in ("insulator", "metal"):
+        hysteresis = HysteresisArray(params, len(temperature_K), start_branch=branch)
+        hysteresis.initialize(temperature_K)
+        resistance_ohm, _ = hysteresis.evaluate(temperature_K)
+        branch_resistance.append(np.asarray(resistance_ohm, dtype=float))
+    return np.asarray(temperature_K, dtype=float), branch_resistance[0], branch_resistance[1]
+
+
+def _plot_yuanhang_hysteresis_background(ax: plt.Axes) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Draw the Yuanhang major loop as a quiet reference behind a trajectory."""
+
+    reference_temperature_K, heating_resistance_ohm, cooling_resistance_ohm = _yuanhang_major_branches()
+    ax.fill_between(
+        reference_temperature_K,
+        cooling_resistance_ohm,
+        heating_resistance_ohm,
+        color=COLORS["grid"],
+        alpha=0.38,
+        zorder=0,
+    )
+    ax.plot(
+        reference_temperature_K,
+        heating_resistance_ohm,
+        color=COLORS["orange"],
+        linestyle="--",
+        linewidth=1.35,
+        alpha=0.72,
+        label="Yuanhang heating branch",
+        zorder=1,
+    )
+    ax.plot(
+        reference_temperature_K,
+        cooling_resistance_ohm,
+        color=COLORS["blue"],
+        linestyle="--",
+        linewidth=1.35,
+        alpha=0.72,
+        label="Yuanhang cooling branch",
+        zorder=1,
+    )
+    return reference_temperature_K, heating_resistance_ohm, cooling_resistance_ohm
+
+
+def plot_resistance_temperature_trajectory(
+    frame: pd.DataFrame,
+    out_path: str | Path,
+    *,
+    title: str = "Resistance-temperature trajectory",
+) -> Path:
+    """Plot the simulated R(T) path with color indicating elapsed time."""
+
+    time_us, _, _, temperature_K, resistance_ohm = _current_trace_arrays(frame)
+    points = np.column_stack([temperature_K, resistance_ohm]).reshape(-1, 1, 2)
+    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+    segment_time = 0.5 * (time_us[:-1] + time_us[1:])
+    norm = Normalize(vmin=float(time_us.min()), vmax=float(time_us.max()))
+
+    fig, ax = plt.subplots(figsize=(9.8, 6.2))
+    _plot_yuanhang_hysteresis_background(ax)
+    trajectory = LineCollection(segments, cmap="viridis", norm=norm, linewidth=1.8)
+    trajectory.set_array(segment_time)
+    trajectory.set_zorder(3)
+    ax.add_collection(trajectory)
+    ax.scatter(
+        [temperature_K[0], temperature_K[-1]],
+        [resistance_ohm[0], resistance_ohm[-1]],
+        c=[COLORS["ink"], COLORS["red"]],
+        s=42,
+        zorder=4,
+    )
+    ax.annotate("start", (temperature_K[0], resistance_ohm[0]), xytext=(6, 6), textcoords="offset points")
+    ax.annotate("end", (temperature_K[-1], resistance_ohm[-1]), xytext=(6, -13), textcoords="offset points")
+    ax.autoscale()
+    ax.margins(x=0.04, y=0.08)
+    ax.set_yscale("log")
+    ax.set_xlabel("Temperature (K)")
+    ax.set_ylabel("Equivalent resistance (Ohm)")
+    ax.set_title(title)
+    ax.grid(True, which="both", color=COLORS["grid"], alpha=0.75)
+    ax.legend(loc="upper right", fontsize=8.5)
+    fig.colorbar(trajectory, ax=ax, label="Time (us)")
+    return _finish(fig, out_path)
+
+
+def animate_current_resistance_temperature(
+    frame: pd.DataFrame,
+    out_path: str | Path,
+    *,
+    title: str = "Current-drive electrothermal evolution",
+    frame_count: int = 96,
+    duration_s: float = 10.0,
+) -> Path:
+    """Animate current/voltage time traces beside the simultaneous R(T) path."""
+
+    if frame_count < 2:
+        raise ValueError("frame_count must be at least 2")
+    if duration_s <= 0.0:
+        raise ValueError("duration_s must be positive")
+    time_us, current_uA, voltage_V, temperature_K, resistance_ohm = _current_trace_arrays(frame)
+
+    # A few thousand points preserve the waveform while keeping GIF rendering and
+    # repository size manageable for long, sub-nanosecond simulations.
+    display_indices = np.unique(np.linspace(0, len(time_us) - 1, min(len(time_us), 5000), dtype=int))
+    time_us = time_us[display_indices]
+    current_uA = current_uA[display_indices]
+    voltage_V = voltage_V[display_indices]
+    temperature_K = temperature_K[display_indices]
+    resistance_ohm = resistance_ohm[display_indices]
+    animation_indices = np.unique(np.linspace(0, len(time_us) - 1, min(frame_count, len(time_us)), dtype=int))
+
+    fig, (wave_ax, rt_ax) = plt.subplots(1, 2, figsize=(12.2, 5.2))
+    voltage_ax = wave_ax.twinx()
+    wave_ax.plot(time_us, current_uA, color=COLORS["ink"], linewidth=0.9, alpha=0.18)
+    voltage_ax.plot(time_us, voltage_V, color=COLORS["blue"], linewidth=0.9, alpha=0.18)
+    (current_line,) = wave_ax.plot([], [], color=COLORS["ink"], linewidth=1.7, label="Current")
+    (voltage_line,) = voltage_ax.plot([], [], color=COLORS["blue"], linewidth=1.6, label="Voltage")
+    cursor = wave_ax.axvline(time_us[0], color=COLORS["red"], linewidth=1.0, alpha=0.75)
+    wave_ax.set_xlim(float(time_us.min()), float(time_us.max()))
+    wave_ax.set_ylim(min(0.0, float(current_uA.min())), max(1.0, float(current_uA.max()) * 1.08))
+    voltage_ax.set_ylim(min(0.0, float(voltage_V.min())), max(1e-6, float(voltage_V.max()) * 1.08))
+    wave_ax.set_xlabel("Time (us)")
+    wave_ax.set_ylabel("Current (uA)", color=COLORS["ink"])
+    voltage_ax.set_ylabel("Voltage (V)", color=COLORS["blue"])
+    wave_ax.grid(True, color=COLORS["grid"], alpha=0.75)
+    wave_ax.legend([current_line, voltage_line], ["Current", "Voltage"], loc="upper right")
+
+    reference_temperature_K, heating_resistance_ohm, cooling_resistance_ohm = (
+        _plot_yuanhang_hysteresis_background(rt_ax)
+    )
+    rt_ax.plot(temperature_K, resistance_ohm, color=COLORS["purple"], linewidth=1.0, alpha=0.18, zorder=2)
+    (rt_line,) = rt_ax.plot([], [], color=COLORS["purple"], linewidth=1.8)
+    (rt_point,) = rt_ax.plot([], [], "o", color=COLORS["red"], markersize=6)
+    rt_ax.set_xlim(float(reference_temperature_K.min()) - 1.0, float(reference_temperature_K.max()) + 1.0)
+    reference_resistance = np.concatenate([heating_resistance_ohm, cooling_resistance_ohm, resistance_ohm])
+    rt_ax.set_ylim(float(reference_resistance.min()) * 0.85, float(reference_resistance.max()) * 1.18)
+    rt_ax.set_yscale("log")
+    rt_ax.set_xlabel("Temperature (K)")
+    rt_ax.set_ylabel("Equivalent resistance (Ohm)")
+    rt_ax.grid(True, which="both", color=COLORS["grid"], alpha=0.75)
+    rt_ax.legend(loc="upper right", fontsize=7.5)
+    time_label = rt_ax.text(0.02, 0.98, "", transform=rt_ax.transAxes, ha="left", va="top")
+    fig.suptitle(title, fontsize=14, color=COLORS["ink"])
+    fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.94))
+
+    def update(sample_index: int) -> tuple[plt.Artist, ...]:
+        stop = int(sample_index) + 1
+        current_line.set_data(time_us[:stop], current_uA[:stop])
+        voltage_line.set_data(time_us[:stop], voltage_V[:stop])
+        cursor.set_xdata([time_us[sample_index], time_us[sample_index]])
+        rt_line.set_data(temperature_K[:stop], resistance_ohm[:stop])
+        rt_point.set_data([temperature_K[sample_index]], [resistance_ohm[sample_index]])
+        time_label.set_text(f"t = {time_us[sample_index]:.2f} us")
+        return current_line, voltage_line, cursor, rt_line, rt_point, time_label
+
+    animation = FuncAnimation(fig, update, frames=animation_indices, interval=1000 * duration_s / len(animation_indices))
+    path = Path(out_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    animation.save(path, writer=PillowWriter(fps=len(animation_indices) / duration_s), dpi=105)
+    plt.close(fig)
+    return path
+
+
+def plot_voltage_run(frame: pd.DataFrame, out_path: str | Path, *, title: str) -> Path:
+    """Plot source/node voltage, VO2 current, temperature, and resistance."""
+
+    fig, axes = plt.subplots(3, 1, figsize=(11.5, 8.4), sharex=True)
+    axes[0].plot(frame["time_us"], frame["source_voltage_V"], color=COLORS["ink"], label="Source")
+    axes[0].plot(frame["time_us"], frame["voltage_V"], color=COLORS["blue"], label="VO2 node")
+    axes[0].set_ylabel("Voltage (V)")
+    axes[0].legend(loc="upper right")
+    axes[1].plot(frame["time_us"], frame["current_mA"], color=COLORS["green"])
+    axes[1].set_ylabel("VO2 current (mA)")
+    axes[2].plot(frame["time_us"], frame["temperature_K"], color=COLORS["orange"], label="Temperature")
+    axes[2].set_ylabel("Temperature (K)", color=COLORS["orange"])
+    resistance_ax = axes[2].twinx()
+    resistance_ax.plot(frame["time_us"], frame["resistance_ohm"], color=COLORS["purple"], alpha=0.8)
+    resistance_ax.set_yscale("log")
+    resistance_ax.set_ylabel("Resistance (Ohm)", color=COLORS["purple"])
+    axes[2].set_xlabel("Time (us)")
+    for axis in axes:
+        axis.grid(True, color=COLORS["grid"], alpha=0.7)
+    fig.suptitle(title, fontsize=15, color=COLORS["ink"])
+    return _finish(fig, out_path)
+
+
+def plot_sweep_summary(frame: pd.DataFrame, axes: Iterable[str], out_path: str | Path, *, title: str) -> Path:
+    """Plot a line, heatmap, or faceted heatmaps for one to three axes."""
+
+    axis_names = list(axes)
+    if len(axis_names) == 1:
+        fig, ax = plt.subplots(figsize=(9.4, 5.8))
+        x = axis_names[0]
+        ordered = frame.sort_values(x)
+        ax.plot(ordered[x], ordered["frequency_MHz"], "o-", color=COLORS["blue"])
+        ax.set_xlabel(x)
+        ax.set_ylabel("Frequency (MHz)")
+        ax.grid(True, color=COLORS["grid"])
+        ax.set_title(title)
+        return _finish(fig, out_path)
+    if len(axis_names) == 2:
+        x, y = axis_names
+        pivot = frame.pivot_table(index=y, columns=x, values="frequency_MHz", aggfunc="mean")
+        fig, ax = plt.subplots(figsize=(9.4, 6.8))
+        image = ax.imshow(pivot.to_numpy(dtype=float), origin="lower", aspect="auto", cmap="viridis")
+        ax.set_xticks(np.arange(len(pivot.columns)))
+        ax.set_xticklabels([f"{value:g}" for value in pivot.columns], rotation=35, ha="right")
+        ax.set_yticks(np.arange(len(pivot.index)))
+        ax.set_yticklabels([f"{value:g}" for value in pivot.index])
+        ax.set_xlabel(x)
+        ax.set_ylabel(y)
+        ax.set_title(title)
+        fig.colorbar(image, ax=ax, label="Frequency (MHz)")
+        return _finish(fig, out_path)
+    if len(axis_names) == 3:
+        facet, x, y = axis_names
+        facet_values = sorted(frame[facet].dropna().unique())
+        columns = min(3, len(facet_values))
+        rows = int(math.ceil(len(facet_values) / columns))
+        fig, panel = plt.subplots(rows, columns, figsize=(5.2 * columns, 4.4 * rows), squeeze=False)
+        finite = frame["frequency_MHz"].to_numpy(dtype=float)
+        vmax = float(np.nanmax(finite)) if np.any(np.isfinite(finite)) else 1.0
+        image = None
+        for axis, value in zip(panel.flat, facet_values):
+            subset = frame[frame[facet] == value]
+            pivot = subset.pivot_table(index=y, columns=x, values="frequency_MHz", aggfunc="mean")
+            image = axis.imshow(
+                pivot.to_numpy(dtype=float),
+                origin="lower",
+                aspect="auto",
+                cmap="viridis",
+                vmin=0.0,
+                vmax=max(vmax, 1e-12),
+            )
+            axis.set_xticks(np.arange(len(pivot.columns)))
+            axis.set_xticklabels([f"{item:g}" for item in pivot.columns], rotation=35, ha="right")
+            axis.set_yticks(np.arange(len(pivot.index)))
+            axis.set_yticklabels([f"{item:g}" for item in pivot.index])
+            axis.set_xlabel(x)
+            axis.set_ylabel(y)
+            axis.set_title(f"{facet} = {value:g}")
+        for axis in panel.flat[len(facet_values) :]:
+            axis.set_visible(False)
+        if image is not None:
+            fig.colorbar(image, ax=panel.ravel().tolist(), label="Frequency (MHz)", shrink=0.84)
+        fig.suptitle(title, fontsize=15)
+        path = Path(out_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(path, dpi=190, bbox_inches="tight", facecolor="white")
+        plt.close(fig)
+        return path
+    raise ValueError("Automatic sweep plotting supports up to three axes")
+
+
+def plot_lab_summary(summary: pd.DataFrame, out_path: str | Path) -> Path:
+    """Summarize the numerical current sweep in the style of paper Figure 7."""
+
+    fig, axes = plt.subplots(1, 3, figsize=(15.0, 4.8))
+    current = summary["current_plateau_uA"]
+    axes[0].plot(current, summary["voltage_plateau_mean_mV"], "o-", color=COLORS["orange"])
+    axes[0].set_xlabel("Input current (uA)")
+    axes[0].set_ylabel("Average output voltage (mV)")
+    axes[1].plot(current, summary["maximum_output_power_uW"], "s-", color=COLORS["blue"])
+    axes[1].set_xlabel("Current (uA)")
+    axes[1].set_ylabel("Maximum output power (uW)")
+    detected = summary[summary["oscillation_detected"].astype(bool)]
+    axes[2].plot(
+        detected["current_plateau_uA"],
+        detected["oscillation_frequency_MHz"],
+        "o-",
+        color=COLORS["red"],
+    )
+    axes[2].set_xlabel("Input current (uA)")
+    axes[2].set_ylabel("Oscillation frequency (MHz)")
+    for axis in axes:
+        axis.grid(True, color=COLORS["grid"])
+    fig.suptitle("Professor-supplied numerical current sweep", fontsize=15)
+    return _finish(fig, out_path)
+
+
+def _lab_detection_trace_values(
+    trace: pd.DataFrame,
+    summary: pd.Series,
+    *,
+    display_window_ns: tuple[float, float] = (-50.0, 310.0),
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return validated, baseline-corrected arrays for a detection-window plot."""
+
+    trace_columns = {"time_ns", "input_current_uA", "output_voltage_mV"}
+    summary_fields = {
+        "nominal_drive_mV",
+        "current_baseline_uA",
+        "voltage_baseline_mV",
+        "oscillation_detected",
+        "oscillation_frequency_MHz",
+        "oscillation_peak_count",
+        "oscillation_period_cv",
+    }
+    missing_trace = sorted(trace_columns.difference(trace.columns))
+    missing_summary = sorted(summary_fields.difference(summary.index))
+    if missing_trace or missing_summary:
+        missing = missing_trace + missing_summary
+        raise ValueError(f"Detection-window plot is missing fields: {', '.join(missing)}")
+
+    time_ns = trace["time_ns"].to_numpy(dtype=float)
+    current_uA = (
+        trace["input_current_uA"].to_numpy(dtype=float)
+        - float(summary["current_baseline_uA"])
+    )
+    voltage_mV = (
+        trace["output_voltage_mV"].to_numpy(dtype=float)
+        - float(summary["voltage_baseline_mV"])
+    )
+    visible = (time_ns >= display_window_ns[0]) & (time_ns <= display_window_ns[1])
+    if int(np.count_nonzero(visible)) < 2:
+        raise ValueError("Detection-window trace does not span the display window")
+    return time_ns[visible], current_uA[visible], voltage_mV[visible]
+
+
+def _lab_detection_annotation(summary: pd.Series) -> str:
+    """Describe the classifier evidence without inventing a frequency when absent."""
+
+    peaks = int(round(float(summary["oscillation_peak_count"])))
+    if bool(summary["oscillation_detected"]):
+        return (
+            f"{peaks} peaks, f = {float(summary['oscillation_frequency_MHz']):.1f} MHz, "
+            f"period CV = {100.0 * float(summary['oscillation_period_cv']):.2f}%"
+        )
+    noun = "peak" if peaks == 1 else "peaks"
+    return f"{peaks} candidate {noun}; periodic frequency unresolved"
+
+
+def _draw_lab_detection_panel(
+    axes: np.ndarray,
+    trace: pd.DataFrame,
+    summary: pd.Series,
+    *,
+    detection_window_ns: tuple[float, float],
+    display_window_ns: tuple[float, float],
+    show_window_legend: bool,
+) -> None:
+    """Draw one measured current/voltage pair on caller-owned axes."""
+
+    time_ns, current_uA, voltage_mV = _lab_detection_trace_values(
+        trace, summary, display_window_ns=display_window_ns
+    )
+    for axis in axes:
+        axis.axvspan(
+            detection_window_ns[0],
+            detection_window_ns[1],
+            color=COLORS["gray"],
+            alpha=0.13,
+            label="Oscillation-detection window",
+        )
+        axis.grid(True, color=COLORS["grid"], alpha=0.8)
+        axis.set_xlim(*display_window_ns)
+
+    axes[0].plot(time_ns, current_uA, color=COLORS["blue"], linewidth=1.35)
+    axes[0].set_ylabel("Current (uA)")
+    state = "coherent oscillation" if bool(summary["oscillation_detected"]) else "no coherent oscillation"
+    current_step_uA = float(summary["current_step_uA"])
+    source_setting_mV = float(summary["nominal_drive_mV"])
+    axes[0].set_title(
+        f"{current_step_uA:.1f} " + r"$\mu$A" +
+        f" measured step ({source_setting_mV:g} mV source setting)\n{state}"
+    )
+    if show_window_legend:
+        axes[0].legend(loc="lower right", fontsize=8.5)
+
+    axes[1].plot(time_ns, voltage_mV, color=COLORS["orange"], linewidth=1.25)
+    axes[1].set_xlabel("Time (ns)")
+    axes[1].set_ylabel("Output voltage (mV)")
+    axes[1].text(
+        0.985,
+        0.94,
+        _lab_detection_annotation(summary),
+        transform=axes[1].transAxes,
+        ha="right",
+        va="top",
+        fontsize=9,
+        color=COLORS["ink"],
+        bbox={"facecolor": "white", "edgecolor": COLORS["grid"], "alpha": 0.9},
+    )
+
+
+def plot_lab_detection_window_trace(
+    trace: pd.DataFrame,
+    summary: pd.Series,
+    out_path: str | Path,
+    *,
+    detection_window_ns: tuple[float, float] = (50.0, 250.0),
+    display_window_ns: tuple[float, float] = (-50.0, 310.0),
+) -> Path:
+    """Plot one raw measured trace under the documented oscillation criterion."""
+
+    fig, axes = plt.subplots(
+        2,
+        1,
+        figsize=(10.6, 5.0),
+        sharex=True,
+        gridspec_kw={"height_ratios": [0.85, 1.25]},
+    )
+    _draw_lab_detection_panel(
+        axes,
+        trace,
+        summary,
+        detection_window_ns=detection_window_ns,
+        display_window_ns=display_window_ns,
+        show_window_legend=True,
+    )
+    return _finish(fig, out_path)
+
+
+def plot_lab_oscillation_bracket(
+    pre_onset_trace: pd.DataFrame,
+    pre_onset_summary: pd.Series,
+    onset_trace: pd.DataFrame,
+    onset_summary: pd.Series,
+    out_path: str | Path,
+    *,
+    detection_window_ns: tuple[float, float] = (50.0, 250.0),
+    display_window_ns: tuple[float, float] = (-50.0, 310.0),
+) -> Path:
+    """Compare the adjacent non-oscillating and oscillating records on shared axes."""
+
+    fig, axes = plt.subplots(
+        2,
+        2,
+        figsize=(13.6, 5.6),
+        sharex="col",
+        sharey="row",
+        constrained_layout=True,
+        gridspec_kw={"height_ratios": [0.85, 1.25]},
+    )
+    _draw_lab_detection_panel(
+        axes[:, 0],
+        pre_onset_trace,
+        pre_onset_summary,
+        detection_window_ns=detection_window_ns,
+        display_window_ns=display_window_ns,
+        show_window_legend=False,
+    )
+    _draw_lab_detection_panel(
+        axes[:, 1],
+        onset_trace,
+        onset_summary,
+        detection_window_ns=detection_window_ns,
+        display_window_ns=display_window_ns,
+        show_window_legend=True,
+    )
+    axes[0, 1].set_ylabel("")
+    axes[1, 1].set_ylabel("")
+    fig.suptitle("Measured bracket of coherent-oscillation onset", fontsize=15)
+    return _finish(fig, out_path)
+
+
+def plot_environmental_conductance_estimate(
+    trace: pd.DataFrame,
+    result: pd.DataFrame,
+    resistance: YuanhangResistParams,
+    out_path: str | Path,
+) -> Path:
+    """Show the measured steady point and its mapping through the fitted R(T) branch."""
+
+    from .lab_estimates import heating_branch_resistance_ohm
+
+    row = result.iloc[0]
+    time_ns = trace["time_ns"].to_numpy(dtype=float)
+    current_uA = trace["current_corrected_uA"].to_numpy(dtype=float)
+    voltage_mV = trace["voltage_corrected_mV"].to_numpy(dtype=float)
+    resistance_ohm = trace["effective_resistance_ohm"].to_numpy(dtype=float)
+    power_uW = trace["corrected_power_uW"].to_numpy(dtype=float)
+    steady_start = float(row["steady_start_ns"])
+    steady_stop = float(row["steady_stop_ns"])
+
+    fig, axes = plt.subplots(1, 3, figsize=(15.8, 4.8))
+    current_axis = axes[0]
+    voltage_axis = current_axis.twinx()
+    current_axis.plot(time_ns, current_uA, color=COLORS["blue"], label="Current")
+    voltage_axis.plot(time_ns, voltage_mV, color=COLORS["orange"], label="Voltage")
+    current_axis.axvspan(steady_start, steady_stop, color=COLORS["gray"], alpha=0.16)
+    current_axis.set_xlim(-50.0, 310.0)
+    current_axis.set_xlabel("Time (ns)")
+    current_axis.set_ylabel("Baseline-corrected current (uA)", color=COLORS["blue"])
+    voltage_axis.set_ylabel("Baseline-corrected voltage (mV)", color=COLORS["orange"])
+    current_axis.set_title("Closest stable trace below onset")
+    current_axis.grid(True, color=COLORS["grid"])
+
+    resistance_axis = axes[1]
+    power_axis = resistance_axis.twinx()
+    valid = (
+        np.isfinite(resistance_ohm)
+        & (time_ns >= 0.0)
+        & (current_uA >= 0.5 * float(row["current_corrected_uA"]))
+    )
+    resistance_axis.plot(time_ns[valid], resistance_ohm[valid], color=COLORS["purple"], label="V/I")
+    power_axis.plot(time_ns, power_uW, color=COLORS["red"], alpha=0.82, label="Power")
+    resistance_axis.axvspan(steady_start, steady_stop, color=COLORS["gray"], alpha=0.16)
+    resistance_axis.axhline(
+        float(row["effective_resistance_ohm"]),
+        color=COLORS["ink"],
+        linestyle="--",
+        linewidth=1.2,
+    )
+    resistance_axis.set_xlim(0.0, 300.0)
+    resistance_axis.set_ylim(
+        0.95 * float(np.percentile(resistance_ohm[valid], 1.0)),
+        1.05 * float(np.percentile(resistance_ohm[valid], 99.0)),
+    )
+    resistance_axis.set_xlabel("Time (ns)")
+    resistance_axis.set_ylabel("Effective resistance (Ohm)", color=COLORS["purple"])
+    power_axis.set_ylabel("Device power (uW)", color=COLORS["red"])
+    resistance_axis.set_title(
+        f"Settled R drift: {100.0 * float(row['resistance_drift_fraction']):.3f}%"
+    )
+    resistance_axis.grid(True, color=COLORS["grid"])
+
+    rt_axis = axes[2]
+    ambient = float(row["ambient_temperature_K"])
+    inferred = float(row["inferred_temperature_K"])
+    temperature = np.linspace(
+        max(float(resistance.T_min_K), ambient - 2.0),
+        min(float(resistance.T_max_K), float(resistance.Tc_K + resistance.w_eff / 2.0 + 5.0)),
+        500,
+    )
+    rt_axis.plot(
+        temperature,
+        heating_branch_resistance_ohm(temperature, resistance),
+        color=COLORS["red"],
+        linewidth=2.0,
+        label="Fitted heating branch",
+    )
+    rt_axis.scatter(
+        [inferred],
+        [float(row["effective_resistance_ohm"])],
+        s=72,
+        color=COLORS["ink"],
+        zorder=5,
+        label=f"Selected point: {inferred:.2f} K",
+    )
+    rt_axis.axvline(ambient, color=COLORS["blue"], linestyle="--", label=f"T0={ambient:.1f} K")
+    rt_axis.set_yscale("log")
+    rt_axis.set_xlabel("Temperature (K)")
+    rt_axis.set_ylabel("Resistance (Ohm)")
+    rt_axis.set_title("Temperature inferred from fitted R(T)")
+    rt_axis.grid(True, color=COLORS["grid"], which="both")
+    rt_axis.legend(fontsize=8)
+
+    fig.suptitle("Environmental thermal-conductance estimate from numerical waveforms", fontsize=15)
+    return _finish(fig, out_path)
+
+
+def plot_thermal_capacitance_estimate(
+    trajectories: pd.DataFrame,
+    trace_fits: pd.DataFrame,
+    bootstrap: pd.DataFrame,
+    result: pd.DataFrame,
+    out_path: str | Path,
+) -> Path:
+    """Show reconstructed heating trajectories and the conditional C_th fit."""
+
+    row = result.iloc[0]
+    fig, axes = plt.subplots(1, 3, figsize=(16.2, 4.9))
+    palette = [COLORS["blue"], COLORS["orange"], COLORS["green"]]
+
+    selected = trajectories.loc[trajectories["included_in_primary_fit"].astype(bool)]
+    for color, (drive, trace) in zip(
+        palette,
+        selected.groupby("nominal_drive_mV", sort=True),
+    ):
+        time_ns = trace["time_ns"].to_numpy(dtype=float)
+        inferred = trace["temperature_inferred_K"].to_numpy(dtype=float)
+        modeled = trace["temperature_model_K"].to_numpy(dtype=float)
+        valid = np.isfinite(inferred) & (time_ns >= 12.0) & (time_ns <= 38.0)
+        axes[0].plot(
+            time_ns[valid],
+            inferred[valid],
+            color=color,
+            linewidth=2.0,
+            label=f"{drive:g} mV inferred",
+        )
+        axes[0].plot(
+            time_ns[valid],
+            modeled[valid],
+            color=color,
+            linewidth=1.5,
+            linestyle="--",
+            label=f"{drive:g} mV model",
+        )
+    axes[0].axvspan(
+        float(row["fit_start_ns"]),
+        float(row["fit_stop_ns"]),
+        color=COLORS["gray"],
+        alpha=0.12,
+        label="Fit window",
+    )
+    axes[0].set_xlabel("Time (ns)")
+    axes[0].set_ylabel("Temperature (K)")
+    axes[0].set_title(r"Temperature reconstructed from $V/I_R$")
+    axes[0].legend(fontsize=7.5, ncol=2)
+
+    included = trace_fits["included_in_primary_fit"].astype(bool).to_numpy()
+    x = np.arange(len(trace_fits))
+    axes[1].scatter(
+        x[included],
+        trace_fits.loc[included, "C_th_pJ_per_K"],
+        s=72,
+        color=COLORS["blue"],
+        label="Primary traces",
+        zorder=3,
+    )
+    if np.any(~included):
+        axes[1].scatter(
+            x[~included],
+            trace_fits.loc[~included, "C_th_pJ_per_K"],
+            s=82,
+            marker="D",
+            color=COLORS["red"],
+            label="Near-transition check",
+            zorder=3,
+        )
+    axes[1].axhline(
+        float(row["C_th_pJ_per_K"]),
+        color=COLORS["ink"],
+        linestyle="--",
+        label=f"Shared fit {float(row['C_th_pJ_per_K']):.4f} pJ/K",
+    )
+    axes[1].set_xticks(x)
+    axes[1].set_xticklabels(
+        [f"{value:g} mV" for value in trace_fits["nominal_drive_mV"]]
+    )
+    axes[1].set_ylabel("Thermal capacitance (pJ/K)")
+    axes[1].set_title("Per-trace robustness check")
+    axes[1].legend(fontsize=8)
+
+    axes[2].hist(
+        bootstrap["C_th_pJ_per_K"],
+        bins=32,
+        color=COLORS["purple"],
+        alpha=0.78,
+        edgecolor="white",
+    )
+    axes[2].axvline(
+        float(row["C_th_pJ_per_K"]),
+        color=COLORS["ink"],
+        linewidth=1.8,
+        label="Central fit",
+    )
+    axes[2].axvspan(
+        float(row["C_th_ci95_lower_pJ_per_K"]),
+        float(row["C_th_ci95_upper_pJ_per_K"]),
+        color=COLORS["orange"],
+        alpha=0.18,
+        label="Conditional 95% interval",
+    )
+    axes[2].set_xlabel("Thermal capacitance (pJ/K)")
+    axes[2].set_ylabel("Bootstrap samples")
+    axes[2].set_title(
+        rf"$\tau_{{th}}={float(row['tau_th_ns']):.2f}$ ns"
+    )
+    axes[2].legend(fontsize=8)
+
+    for axis in axes:
+        axis.grid(True, color=COLORS["grid"], alpha=0.72)
+    fig.suptitle("Thermal time constant and capacitance from nonswitching heating edges", fontsize=15)
+    return _finish(fig, out_path)
+
+
+def plot_lab_parameter_estimates(
+    capacitance: pd.DataFrame,
+    conductance: pd.DataFrame,
+    resistance: pd.DataFrame,
+    out_path: str | Path,
+) -> Path:
+    """Show the separately identifiable electrical, cooling, and voltage-floor quantities."""
+
+    fig, axes = plt.subplots(1, 3, figsize=(15.0, 4.8))
+    axes[0].scatter(capacitance["current_plateau_uA"], capacitance["C_slope_pF"], s=48, color=COLORS["purple"])
+    median_c = float(capacitance["C_slope_pF"].median())
+    axes[0].axhline(median_c, color=COLORS["ink"], linestyle="--", label=f"median {median_c:.1f} pF")
+    axes[0].set_xlabel("Current (uA)")
+    axes[0].set_ylabel("C from I/(dV/dt) (pF)")
+    axes[0].set_title("Cold electrical transient")
+    axes[0].legend()
+    axes[1].plot(conductance["T0_K"], conductance["S_e_mW_per_K"], "o-", color=COLORS["orange"])
+    axes[1].set_xlabel("Assumed ambient T0 (K)")
+    axes[1].set_ylabel("S_e (mW/K)")
+    axes[1].set_title("Ambient/cooling degeneracy")
+    axes[2].plot(resistance["current_plateau_uA"], resistance["R_effective_ohm"], "o-", color=COLORS["blue"])
+    axes[2].set_yscale("log")
+    axes[2].set_xlabel("Current (uA)")
+    axes[2].set_ylabel("Plateau V/I (Ohm)")
+    axes[2].set_title("Measured voltage floor")
+    for axis in axes:
+        axis.grid(True, color=COLORS["grid"])
+    fig.suptitle("Parameter estimates separated from assumptions", fontsize=15)
+    return _finish(fig, out_path)
+
+
+def plot_voltage_floor_comparison(
+    resistance: pd.DataFrame,
+    specimen_Rm_ohm: float,
+    yuanhang_Rm_ohm: float,
+    out_path: str | Path,
+) -> Path:
+    """Compare measured plateaus with the ideal-current prediction V=I*Rm."""
+
+    current = resistance["current_plateau_uA"].to_numpy(dtype=float)
+    measured = resistance["voltage_plateau_mean_mV"].to_numpy(dtype=float)
+    grid = np.linspace(0.0, max(1400.0, float(np.max(current)) * 1.03), 400)
+    fig, ax = plt.subplots(figsize=(9.8, 6.3))
+    ax.scatter(current, measured, s=32, color=COLORS["ink"], label="Measured numerical plateau", zorder=5)
+    ax.plot(
+        grid,
+        grid * specimen_Rm_ohm / 1000.0,
+        color=COLORS["red"],
+        linewidth=2.1,
+        label=f"Fitted Rm={specimen_Rm_ohm:.1f} Ohm",
+    )
+    ax.plot(
+        grid,
+        grid * yuanhang_Rm_ohm / 1000.0,
+        color=COLORS["blue"],
+        linewidth=2.1,
+        label=f"Yuanhang Rm={yuanhang_Rm_ohm:.0f} Ohm",
+    )
+    ax.set_xlim(0.0, float(np.max(grid)))
+    ax.set_ylim(bottom=0.0)
+    ax.set_xlabel("Applied current (uA)")
+    ax.set_ylabel("Voltage (mV)")
+    ax.set_title("Metallic resistance sets the ideal-current voltage floor")
+    ax.grid(True, color=COLORS["grid"])
+    ax.legend(loc="upper left")
+    ax.text(
+        0.99,
+        0.02,
+        "Capacitance changes the approach time; these steady-state lines do not depend on C.",
+        transform=ax.transAxes,
+        ha="right",
+        color="#4b5563",
+        fontsize=9,
+    )
+    return _finish(fig, out_path)
+
+
+def plot_resistance_fit(data: pd.DataFrame, prediction: np.ndarray, out_path: str | Path) -> Path:
+    """Plot measured/fitted hysteresis with a log-residual diagnostic panel."""
+
+    fig, (ax, residual_ax) = plt.subplots(
+        2,
+        1,
+        figsize=(9.8, 7.4),
+        sharex=True,
+        layout="constrained",
+        gridspec_kw={"height_ratios": [3.2, 1.0]},
+    )
+    temperature_column = "temperature_K" if "temperature_K" in data.columns else "Temperature"
+    resistance_column = "resistance_ohm" if "resistance_ohm" in data.columns else "Resistance"
+    temperature = data[temperature_column].to_numpy(dtype=float)
+    if np.nanmedian(temperature) < 200.0:
+        temperature = temperature + 273.15
+    resistance = data[resistance_column].to_numpy(dtype=float)
+    if "branch" in data.columns:
+        branch = data["branch"].astype(str).str.lower().to_numpy()
+    else:
+        direction = np.sign(np.diff(temperature, prepend=temperature[0]))
+        nonzero = np.flatnonzero(direction)
+        if nonzero.size:
+            direction[0] = direction[nonzero[0]]
+        for index in range(1, len(direction)):
+            if direction[index] == 0.0:
+                direction[index] = direction[index - 1]
+        branch = np.where(direction < 0.0, "cooling", "heating")
+    prediction = np.asarray(prediction, dtype=float)
+    for label, color in (("heating", COLORS["red"]), ("cooling", COLORS["blue"])):
+        mask = branch == label
+        if np.any(mask):
+            order = np.argsort(temperature[mask])
+            branch_temperature = temperature[mask][order]
+            branch_resistance = resistance[mask][order]
+            branch_prediction = prediction[mask][order]
+            ax.scatter(
+                branch_temperature,
+                branch_resistance,
+                s=20,
+                facecolor="white",
+                edgecolor=color,
+                linewidth=0.9,
+                alpha=0.9,
+                label=f"Measured {label}",
+                zorder=3,
+            )
+            ax.plot(
+                branch_temperature,
+                branch_prediction,
+                color=color,
+                linewidth=2.0,
+                label=f"Fitted {label}",
+                zorder=2,
+            )
+            log_residual = np.log10(np.maximum(branch_prediction, 1e-12)) - np.log10(
+                np.maximum(branch_resistance, 1e-12)
+            )
+            residual_ax.scatter(branch_temperature, log_residual, s=15, color=color, alpha=0.75)
+    full_error = np.log10(np.maximum(prediction, 1e-12)) - np.log10(np.maximum(resistance, 1e-12))
+    rmse = float(np.sqrt(np.mean(full_error * full_error)))
+    target_log = np.log10(np.maximum(resistance, 1e-12))
+    ss_total = float(np.sum((target_log - np.mean(target_log)) ** 2))
+    r_squared = float(1.0 - np.sum(full_error * full_error) / ss_total)
+    ax.set_yscale("log")
+    ax.set_ylabel("Resistance (Ohm)")
+    ax.grid(True, which="both", color=COLORS["grid"])
+    ax.legend(ncol=2, fontsize=8.5, loc="upper right")
+    ax.set_title("Measured R(T) hysteresis and fitted model")
+    ax.text(
+        0.02,
+        0.04,
+        rf"$\log_{{10}}$ RMSE = {rmse:.4f}   |   $R^2$ = {r_squared:.5f}",
+        transform=ax.transAxes,
+        color=COLORS["ink"],
+        fontsize=9,
+    )
+    residual_ax.axhline(0.0, color=COLORS["ink"], linewidth=0.9)
+    residual_ax.axhspan(-rmse, rmse, color=COLORS["grid"], alpha=0.45)
+    residual_ax.set_xlabel("Temperature (K)")
+    residual_ax.set_ylabel(r"$\log_{10}(R_{model}/R_{data})$")
+    residual_ax.grid(True, color=COLORS["grid"], alpha=0.75)
+    return _finish(fig, out_path)
+
+
+def plot_model_validation_summary(comparison: pd.DataFrame, out_path: str | Path) -> Path:
+    """Compare measured and blind-predicted operating behavior on common axes."""
+
+    current = comparison["measured_current_step_uA"].to_numpy(dtype=float)
+    measured_osc = comparison["measured_oscillation_detected"].astype(bool).to_numpy()
+    predicted_osc = comparison["predicted_oscillation_detected"].astype(bool).to_numpy()
+    fig, axes = plt.subplots(3, 1, figsize=(10.4, 8.8), sharex=True, layout="constrained")
+
+    axes[0].fill_between(
+        current,
+        comparison["measured_voltage_min_mV"],
+        comparison["measured_voltage_max_mV"],
+        color=COLORS["blue"],
+        alpha=0.18,
+        label="Measured min--max",
+    )
+    axes[0].plot(current, comparison["measured_voltage_mean_mV"], "o-", color=COLORS["blue"], label="Measured mean")
+    axes[0].fill_between(
+        current,
+        comparison["predicted_voltage_min_mV"],
+        comparison["predicted_voltage_max_mV"],
+        color=COLORS["orange"],
+        alpha=0.18,
+        label="Predicted min--max",
+    )
+    axes[0].plot(current, comparison["predicted_voltage_mean_mV"], "s-", color=COLORS["orange"], label="Predicted mean")
+    axes[0].set_ylabel("Voltage (mV)")
+    axes[0].legend(ncol=2, fontsize=8.5)
+
+    axes[1].plot(current, comparison["measured_voltage_vpp_mV"], "o-", color=COLORS["blue"], label="Measured")
+    axes[1].plot(current, comparison["predicted_voltage_vpp_mV"], "s-", color=COLORS["orange"], label="Predicted")
+    axes[1].set_ylabel("Plateau Vpp (mV)")
+    axes[1].legend(fontsize=8.5)
+
+    measured_frequency = comparison["measured_oscillation_frequency_MHz"].to_numpy(dtype=float)
+    predicted_frequency = comparison["predicted_oscillation_frequency_MHz"].to_numpy(dtype=float)
+    axes[2].plot(current[measured_osc], measured_frequency[measured_osc], "o-", color=COLORS["blue"], label="Measured oscillation")
+    if np.any(predicted_osc):
+        axes[2].plot(current[predicted_osc], predicted_frequency[predicted_osc], "s-", color=COLORS["orange"], label="Predicted oscillation")
+    else:
+        axes[2].text(
+            0.98,
+            0.82,
+            "Frozen model: no coherent oscillation detected",
+            transform=axes[2].transAxes,
+            ha="right",
+            color=COLORS["red"],
+            fontsize=9,
+        )
+    axes[2].set_ylabel("Frequency (MHz)")
+    axes[2].set_xlabel("Measured current step (uA)")
+    axes[2].legend(fontsize=8.5, loc="lower right")
+    for axis in axes:
+        axis.grid(True, color=COLORS["grid"], alpha=0.8)
+    fig.suptitle("Blind model prediction versus the measured current sweep", color=COLORS["ink"], fontsize=15)
+    return _finish(fig, out_path)
+
+
+def plot_model_validation_traces(
+    traces: pd.DataFrame,
+    comparison: pd.DataFrame,
+    out_path: str | Path,
+    *,
+    drives_mV: tuple[float, ...] = (250.0, 300.0, 500.0, 800.0),
+) -> Path:
+    """Overlay representative measured and predicted voltage records."""
+
+    fig, axes = plt.subplots(2, 2, figsize=(10.4, 6.7), sharex=True, layout="constrained")
+    for axis, drive in zip(axes.flat, drives_mV):
+        available = comparison["nominal_drive_mV"].to_numpy(dtype=float)
+        selected_drive = float(available[np.argmin(np.abs(available - drive))])
+        trace = traces.loc[np.isclose(traces["nominal_drive_mV"], selected_drive)]
+        row = comparison.loc[np.isclose(comparison["nominal_drive_mV"], selected_drive)].iloc[0]
+        axis.plot(trace["time_ns"], trace["measured_voltage_mV"], color=COLORS["blue"], linewidth=1.15, label="Measured")
+        axis.plot(trace["time_ns"], trace["predicted_voltage_mV"], color=COLORS["orange"], linewidth=1.35, label="Predicted")
+        axis.axvspan(50.0, 250.0, color=COLORS["grid"], alpha=0.28)
+        axis.set_xlim(-25.0, 300.0)
+        axis.set_title(
+            f"{float(row['measured_current_step_uA']):.1f} uA ({selected_drive:.0f} mV setting)",
+            fontsize=10,
+        )
+        axis.grid(True, color=COLORS["grid"], alpha=0.7)
+    axes[0, 0].legend(fontsize=8.5)
+    axes[0, 0].set_ylabel("Voltage (mV)")
+    axes[1, 0].set_ylabel("Voltage (mV)")
+    axes[1, 0].set_xlabel("Time (ns)")
+    axes[1, 1].set_xlabel("Time (ns)")
+    fig.suptitle("Representative traces: one parameter set, no per-trace tuning", color=COLORS["ink"], fontsize=14)
+    return _finish(fig, out_path)
+
+
+def plot_capacitance_sensitivity(
+    sensitivity: pd.DataFrame,
+    out_path: str | Path,
+    *,
+    adopted_C_pF: float,
+    adopted_C_th_pJ_per_K: float,
+    representative_current_uA: float = 380.9,
+) -> Path:
+    """Show where the model predicts oscillations as C and Cth are varied."""
+
+    cth_values = np.sort(sensitivity["thermal_capacitance_pJ_per_K"].unique())
+    adopted_cth = float(cth_values[np.argmin(np.abs(cth_values - adopted_C_th_pJ_per_K))])
+    current_values = np.sort(sensitivity["current_uA"].unique())
+    selected_current = float(current_values[np.argmin(np.abs(current_values - representative_current_uA))])
+    c_values = np.sort(sensitivity["electrical_capacitance_pF"].unique())
+
+    fixed_cth = sensitivity.loc[np.isclose(sensitivity["thermal_capacitance_pJ_per_K"], adopted_cth)]
+    current_map = fixed_cth.pivot(index="electrical_capacitance_pF", columns="current_uA", values="oscillation_frequency_MHz").reindex(index=c_values, columns=current_values)
+    fixed_current = sensitivity.loc[np.isclose(sensitivity["current_uA"], selected_current)]
+    capacitance_map = fixed_current.pivot(index="thermal_capacitance_pJ_per_K", columns="electrical_capacitance_pF", values="oscillation_frequency_MHz").reindex(index=cth_values, columns=c_values)
+
+    fig, axes = plt.subplots(1, 2, figsize=(11.2, 4.8), layout="constrained")
+    cmap = plt.get_cmap("viridis").copy()
+    cmap.set_bad("#eef2f7")
+    axes[0].imshow(np.ma.masked_invalid(current_map.to_numpy(dtype=float)), aspect="auto", origin="lower", cmap=cmap)
+    axes[0].set_xticks(range(len(current_values))[::2], [f"{value:.0f}" for value in current_values[::2]], rotation=45)
+    axes[0].set_yticks(range(len(c_values)), [f"{value:g}" for value in c_values])
+    axes[0].set_xlabel("Measured current step (uA)")
+    axes[0].set_ylabel("Electrical C (pF)")
+    axes[0].set_title(f"Cth={adopted_cth:.4g} pJ/K")
+    adopted_index = int(np.argmin(np.abs(c_values - adopted_C_pF)))
+    axes[0].axhline(adopted_index, color=COLORS["red"], linestyle="--", linewidth=1.2)
+
+    image1 = axes[1].imshow(np.ma.masked_invalid(capacitance_map.to_numpy(dtype=float)), aspect="auto", origin="lower", cmap=cmap)
+    axes[1].set_xticks(range(len(c_values)), [f"{value:g}" for value in c_values], rotation=45)
+    axes[1].set_yticks(range(len(cth_values)), [f"{value:.4g}" for value in cth_values])
+    axes[1].set_xlabel("Electrical C (pF)")
+    axes[1].set_ylabel("Thermal Cth (pJ/K)")
+    axes[1].set_title(f"Current={selected_current:.1f} uA")
+    axes[1].scatter([adopted_index], [int(np.argmin(np.abs(cth_values - adopted_C_th_pJ_per_K)))], marker="x", s=70, color=COLORS["red"], linewidth=2)
+    colorbar = fig.colorbar(image1, ax=axes, shrink=0.9)
+    colorbar.set_label("Predicted frequency (MHz); gray = no oscillation")
+    fig.suptitle("Capacitance sensitivity and the thermal-only limit", color=COLORS["ink"], fontsize=14)
+    return _finish(fig, out_path)
+
+
+def plot_inference_optimization(history: pd.DataFrame, out_path: str | Path) -> Path:
+    """Plot best objective reached versus expensive model evaluations."""
+
+    fig, axes = plt.subplots(1, 2, figsize=(10.6, 4.1), layout="constrained")
+    for mode, color in (("constrained", COLORS["orange"]), ("relaxed", COLORS["green"])):
+        frame = history.loc[history["fit_mode"] == mode].sort_values("evaluation")
+        axes[0].plot(frame["evaluation"], frame["best_total_so_far"], color=color, label=mode.capitalize())
+        axes[1].plot(frame["evaluation"], frame["objective_total"], color=color, alpha=0.3, linewidth=0.8)
+        axes[1].plot(frame["evaluation"], frame["best_total_so_far"], color=color, linewidth=1.8, label=mode.capitalize())
+    axes[0].set_title("Best objective found")
+    axes[1].set_title("Candidate evaluations and running best")
+    for axis in axes:
+        axis.set_xlabel("Model evaluations")
+        axis.set_ylabel("Weighted objective")
+        axis.set_yscale("log")
+        axis.grid(True, color=COLORS["grid"], alpha=0.8)
+        axis.legend(fontsize=8.5)
+    fig.suptitle("Global waveform-parameter optimization", fontsize=14, color=COLORS["ink"])
+    return _finish(fig, out_path)
+
+
+def plot_inference_operating_summary(trace_metrics: pd.DataFrame, out_path: str | Path) -> Path:
+    """Compare measured operating features with baseline and inferred models."""
+
+    modes = (
+        ("baseline", COLORS["gray"], "o", "Original estimates"),
+        ("constrained", COLORS["orange"], "s", "Constrained fit"),
+        ("relaxed", COLORS["green"], "^", "Relaxed diagnostic"),
+    )
+    measured = trace_metrics.loc[trace_metrics["fit_mode"] == "baseline"].sort_values("current_step_uA")
+    current = measured["current_step_uA"].to_numpy(dtype=float)
+    fig, axes = plt.subplots(3, 1, figsize=(10.4, 8.6), sharex=True, layout="constrained")
+    axes[0].plot(current, measured["measured_mean_mV"], "o-", color=COLORS["blue"], label="Measured")
+    axes[1].plot(current, measured["measured_vpp_mV"], "o-", color=COLORS["blue"], label="Measured")
+    measured_osc = measured["measured_oscillation"].astype(bool).to_numpy()
+    axes[2].plot(
+        current[measured_osc],
+        measured.loc[measured_osc, "measured_frequency_MHz"],
+        "o-",
+        color=COLORS["blue"],
+        label="Measured",
+    )
+    for mode, color, marker, label in modes:
+        frame = trace_metrics.loc[trace_metrics["fit_mode"] == mode].sort_values("current_step_uA")
+        axes[0].plot(current, frame["predicted_mean_mV"], marker=marker, color=color, linewidth=1.3, label=label)
+        axes[1].plot(current, frame["predicted_vpp_mV"], marker=marker, color=color, linewidth=1.3, label=label)
+        oscillating = frame["predicted_oscillation"].astype(bool).to_numpy()
+        if np.any(oscillating):
+            axes[2].plot(
+                current[oscillating],
+                frame.loc[oscillating, "predicted_frequency_MHz"],
+                marker=marker,
+                color=color,
+                linewidth=1.3,
+                label=label,
+            )
+    axes[0].set_ylabel("Mean voltage (mV)")
+    axes[1].set_ylabel("Plateau Vpp (mV)")
+    axes[2].set_ylabel("Frequency (MHz)")
+    axes[2].set_xlabel("Measured current step (uA)")
+    for axis in axes:
+        axis.grid(True, color=COLORS["grid"], alpha=0.8)
+        axis.legend(fontsize=8, ncol=2)
+    fig.suptitle("Shared-parameter fits across every measured current", fontsize=14, color=COLORS["ink"])
+    return _finish(fig, out_path)
+
+
+def plot_inference_representative_traces(
+    traces: pd.DataFrame,
+    out_path: str | Path,
+    *,
+    drives_mV: tuple[float, ...] = (250.0, 300.0, 500.0, 800.0),
+) -> Path:
+    """Overlay measured, constrained, and relaxed fitted waveforms."""
+
+    fig, axes = plt.subplots(2, 2, figsize=(10.5, 6.8), sharex=True, layout="constrained")
+    available = np.sort(traces["nominal_drive_mV"].unique())
+    for axis, requested in zip(axes.flat, drives_mV):
+        drive = float(available[np.argmin(np.abs(available - requested))])
+        constrained = traces.loc[
+            (traces["fit_mode"] == "constrained") & np.isclose(traces["nominal_drive_mV"], drive)
+        ]
+        relaxed = traces.loc[
+            (traces["fit_mode"] == "relaxed") & np.isclose(traces["nominal_drive_mV"], drive)
+        ]
+        current = float(np.median(constrained.loc[(constrained["time_ns"] >= 50) & (constrained["time_ns"] <= 250), "measured_current_uA"]))
+        axis.plot(constrained["time_ns"], constrained["measured_voltage_mV"], color=COLORS["blue"], linewidth=1.15, label="Measured")
+        axis.plot(constrained["time_ns"], constrained["predicted_voltage_mV"], color=COLORS["orange"], linewidth=1.25, label="Constrained")
+        axis.plot(relaxed["time_ns"], relaxed["predicted_voltage_mV"], color=COLORS["green"], linewidth=1.25, label="Relaxed")
+        axis.axvspan(50.0, 250.0, color=COLORS["grid"], alpha=0.25)
+        axis.set_xlim(-25.0, 300.0)
+        axis.set_title(f"{current:.1f} uA ({drive:.0f} mV setting)", fontsize=10)
+        axis.grid(True, color=COLORS["grid"], alpha=0.7)
+    axes[0, 0].legend(fontsize=8)
+    axes[0, 0].set_ylabel("Voltage (mV)")
+    axes[1, 0].set_ylabel("Voltage (mV)")
+    axes[1, 0].set_xlabel("Time (ns)")
+    axes[1, 1].set_xlabel("Time (ns)")
+    fig.suptitle("Representative global-fit predictions", fontsize=14, color=COLORS["ink"])
+    return _finish(fig, out_path)

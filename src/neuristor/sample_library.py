@@ -33,7 +33,7 @@ _FIT_DTYPE = np.float32
 
 
 def _utc_now() -> str:
-    return dt.datetime.now(dt.UTC).isoformat(timespec="seconds")
+    return dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
 
 
 def _slugify(text: str) -> str:

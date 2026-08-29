@@ -1,0 +1,10 @@
+{
+  "current_max_uA": 943.291300117163,
+  "current_min_uA": 41.8558134916695,
+  "oscillation_current_max_uA": 621.842683241655,
+  "oscillation_current_min_uA": 233.511368826578,
+  "oscillation_frequency_max_MHz": 62.5,
+  "oscillation_frequency_min_MHz": 41.666666666666664,
+  "samples": 22000,
+  "waveforms": 22
+}

@@ -17,13 +17,14 @@ import dataclasses
 import datetime as _dt
 import json
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy.optimize import least_squares
 
 from .model import HysteresisArray, YuanhangResistParams
 
@@ -40,18 +41,35 @@ class ResistanceFitResult:
     rmse_log10_heating: float
     source_data: str
     n_samples: int
+    fit_method: str = "stateful-random-search"
+    r2_log10: float = float("nan")
+    mean_log10_error: float = float("nan")
+    max_abs_log10_error: float = float("nan")
+    parameter_ci95: Dict[str, Dict[str, float]] = field(default_factory=dict)
+    diagnostics: Dict[str, float | int | str] = field(default_factory=dict)
 
     def to_jsonable(self) -> Dict[str, object]:
+        fit_metrics = {
+            "rmse_log10": float(self.rmse_log10),
+            "rmse_log10_cooling": float(self.rmse_log10_cooling),
+            "rmse_log10_heating": float(self.rmse_log10_heating),
+        }
+        for name, value in (
+            ("r2_log10", self.r2_log10),
+            ("mean_log10_error", self.mean_log10_error),
+            ("max_abs_log10_error", self.max_abs_log10_error),
+        ):
+            if math.isfinite(float(value)):
+                fit_metrics[name] = float(value)
         return {
-            "generated_at_utc": _dt.datetime.now(_dt.UTC).isoformat(timespec="seconds"),
+            "generated_at_utc": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
             "source_data": self.source_data,
             "n_samples": int(self.n_samples),
             "start_branch": self.start_branch,
-            "fit_metrics": {
-                "rmse_log10": float(self.rmse_log10),
-                "rmse_log10_cooling": float(self.rmse_log10_cooling),
-                "rmse_log10_heating": float(self.rmse_log10_heating),
-            },
+            "fit_method": self.fit_method,
+            "fit_metrics": fit_metrics,
+            "parameter_ci95": self.parameter_ci95,
+            "diagnostics": self.diagnostics,
             "resist_params": dataclasses.asdict(self.params),
         }
 
@@ -228,6 +246,260 @@ def _estimate_major_w_tc_from_g(
     w = abs(tc_heat - tc_cool)
     tc = 0.5 * (tc_heat + tc_cool)
     return max(float(w), 0.6), float(tc)
+
+
+def _temperature_branch_directions(temperature_K: np.ndarray) -> np.ndarray:
+    """Label every sample as cooling (-1) or heating (+1), carrying across ties."""
+
+    temperature = np.asarray(temperature_K, dtype=float)
+    if temperature.size < 3:
+        raise ValueError("At least three temperature samples are required")
+    step_direction = np.sign(np.diff(temperature))
+    nonzero = np.flatnonzero(step_direction)
+    if nonzero.size == 0:
+        raise ValueError("Temperature trace has no heating or cooling sweep")
+    sample_direction = np.empty(temperature.size, dtype=float)
+    sample_direction[0] = step_direction[nonzero[0]]
+    last = sample_direction[0]
+    for index, direction in enumerate(step_direction, start=1):
+        if direction != 0.0:
+            last = direction
+        sample_direction[index] = last
+    return sample_direction
+
+
+def is_major_loop_temperature_trace(temperature_K: np.ndarray) -> bool:
+    """Return true for one cooling/heating reversal with both major branches present."""
+
+    directions = _temperature_branch_directions(np.asarray(temperature_K, dtype=float))
+    changes = int(np.count_nonzero(directions[1:] != directions[:-1]))
+    return changes == 1 and bool(np.any(directions < 0.0)) and bool(np.any(directions > 0.0))
+
+
+def _major_loop_prediction(
+    temperature_K: np.ndarray,
+    direction: np.ndarray,
+    x: np.ndarray,
+) -> np.ndarray:
+    """Evaluate the Yuanhang major-loop law from an unconstrained fit vector."""
+
+    R0 = 10.0 ** float(x[0])
+    Ea_over_k = float(x[1])
+    Rm = 10.0 ** float(x[2])
+    width_K = float(x[3])
+    center_K = float(x[4])
+    beta_per_K = 10.0 ** float(x[5])
+    fraction = 0.5 + 0.5 * np.tanh(
+        beta_per_K * (np.asarray(direction, dtype=float) * width_K / 2.0 + center_K - temperature_K)
+    )
+    return R0 * np.exp(Ea_over_k / np.maximum(temperature_K, 1e-9)) * fraction + Rm
+
+
+def _natural_major_parameters(x: np.ndarray) -> Dict[str, float]:
+    """Convert the fit vector into named physical and derived parameters."""
+
+    center_K = float(x[4])
+    width_K = float(x[3])
+    Ea_over_k = float(x[1])
+    return {
+        "R0_ohm": float(10.0 ** x[0]),
+        "Ea_over_k_K": Ea_over_k,
+        "Ea_eV": Ea_over_k * 8.617333262e-5,
+        "Rm_ohm": float(10.0 ** x[2]),
+        "w_K": width_K,
+        "Tc_K": center_K,
+        "beta_per_K": float(10.0 ** x[5]),
+        "T_cooling_transition_K": center_K - width_K / 2.0,
+        "T_heating_transition_K": center_K + width_K / 2.0,
+    }
+
+
+def _block_resample(values: np.ndarray, size: int, *, block_size: int, rng: np.random.Generator) -> np.ndarray:
+    """Circular block bootstrap that preserves short-range sweep correlations."""
+
+    sampled: list[float] = []
+    values = np.asarray(values, dtype=float)
+    while len(sampled) < size:
+        start = int(rng.integers(0, len(values)))
+        sampled.extend(values[(start + np.arange(block_size)) % len(values)].tolist())
+    return np.asarray(sampled[:size], dtype=float)
+
+
+def fit_major_loop_resistance_params(
+    df: pd.DataFrame,
+    *,
+    seed: int = 42,
+    bootstrap_samples: int = 500,
+    bootstrap_block_size: int = 8,
+) -> Tuple[ResistanceFitResult, np.ndarray, pd.DataFrame]:
+    """Fit a complete heating/cooling major loop by bounded log-space least squares.
+
+    The measured trace must contain both monotonic branches and exactly one
+    reversal. Gamma is deliberately fixed because a major loop contains no
+    minor-loop information from which to estimate it.
+    """
+
+    temperature_K = df["Temperature"].to_numpy(dtype=float)
+    resistance_ohm = df["Resistance"].to_numpy(dtype=float)
+    if np.nanmedian(temperature_K) < 200.0:
+        temperature_K = temperature_K + 273.15
+    if np.any(~np.isfinite(temperature_K)) or np.any(~np.isfinite(resistance_ohm)):
+        raise ValueError("R(T) fit requires finite temperature and resistance values")
+    if np.any(resistance_ohm <= 0.0):
+        raise ValueError("R(T) fit requires strictly positive resistance")
+    if not is_major_loop_temperature_trace(temperature_K):
+        raise ValueError("Major-loop fitting requires exactly one heating/cooling reversal")
+
+    direction = _temperature_branch_directions(temperature_K)
+    t_min = float(np.min(temperature_K))
+    t_max = float(np.max(temperature_K))
+    r_min = float(np.min(resistance_ohm))
+    r_max = float(np.max(resistance_ohm))
+    r0_est, ea_est, rm_est = _estimate_r0_ea_rm_from_extremes(temperature_K, resistance_ohm)
+    g_seed = _compute_g_experimental(
+        temperature_K,
+        resistance_ohm,
+        r0=r0_est,
+        ea_over_k=ea_est,
+        rm=rm_est,
+    )
+    w_est, tc_est = _estimate_major_w_tc_from_g(temperature_K, g_seed)
+
+    lower = np.asarray(
+        [-10.0, 100.0, math.log10(max(0.05 * r_min, 1e-6)), 0.2, t_min + 2.0, -2.0],
+        dtype=float,
+    )
+    upper = np.asarray(
+        [math.log10(max(r_max, 10.0)), 15_000.0, math.log10(max(1.5 * r_min, 1.0)), 30.0, t_max - 2.0, 0.6],
+        dtype=float,
+    )
+    x_seed = np.asarray(
+        [math.log10(max(r0_est, 1e-10)), ea_est, math.log10(max(rm_est, 1e-6)), w_est, tc_est, math.log10(0.25)],
+        dtype=float,
+    )
+    defaults = YuanhangResistParams()
+    x_reference = np.asarray(
+        [
+            math.log10(defaults.R0),
+            defaults.Ea_over_k,
+            math.log10(defaults.Rm),
+            defaults.w_eff,
+            defaults.Tc_K,
+            math.log10(defaults.beta),
+        ],
+        dtype=float,
+    )
+    rng = np.random.default_rng(int(seed))
+    starts = [np.clip(x_seed, lower, upper), np.clip(x_reference, lower, upper)]
+    scale = np.asarray([0.8, 1200.0, 0.25, 3.0, 4.0, 0.3], dtype=float)
+    for _ in range(10):
+        starts.append(np.clip(starts[0] + rng.normal(scale=scale), lower, upper))
+
+    target_log10 = np.log10(resistance_ohm)
+
+    def residual(x: np.ndarray, target: np.ndarray = target_log10) -> np.ndarray:
+        prediction = _major_loop_prediction(temperature_K, direction, x)
+        return np.log10(np.maximum(prediction, _EPS)) - target
+
+    best = None
+    for start in starts:
+        candidate = least_squares(
+            residual,
+            start,
+            bounds=(lower, upper),
+            max_nfev=4000,
+            xtol=1e-12,
+            ftol=1e-12,
+            gtol=1e-12,
+        )
+        if best is None or float(np.sum(candidate.fun * candidate.fun)) < float(np.sum(best.fun * best.fun)):
+            best = candidate
+    assert best is not None
+    best_x = np.asarray(best.x, dtype=float)
+    prediction = _major_loop_prediction(temperature_K, direction, best_x)
+    error = np.log10(np.maximum(prediction, _EPS)) - target_log10
+
+    residual_for_bootstrap = target_log10 - np.log10(np.maximum(prediction, _EPS))
+    branch_indices = [np.flatnonzero(direction < 0.0), np.flatnonzero(direction > 0.0)]
+    bootstrap_records: list[Dict[str, float]] = []
+    for sample_index in range(max(0, int(bootstrap_samples))):
+        sampled_residual = np.empty_like(residual_for_bootstrap)
+        for indices in branch_indices:
+            sampled_residual[indices] = _block_resample(
+                residual_for_bootstrap[indices],
+                len(indices),
+                block_size=max(2, min(int(bootstrap_block_size), len(indices))),
+                rng=rng,
+            )
+        bootstrap_target = np.log10(np.maximum(prediction, _EPS)) + sampled_residual
+        candidate = least_squares(
+            lambda x: residual(x, bootstrap_target),
+            best_x,
+            bounds=(lower, upper),
+            max_nfev=700,
+            xtol=1e-10,
+            ftol=1e-10,
+            gtol=1e-10,
+        )
+        if candidate.success:
+            record = _natural_major_parameters(np.asarray(candidate.x, dtype=float))
+            record["bootstrap_sample"] = float(sample_index)
+            bootstrap_records.append(record)
+    bootstrap = pd.DataFrame(bootstrap_records)
+
+    point = _natural_major_parameters(best_x)
+    ci95: Dict[str, Dict[str, float]] = {}
+    if not bootstrap.empty:
+        for name in point:
+            lower_ci, upper_ci = np.percentile(bootstrap[name].to_numpy(dtype=float), [2.5, 97.5])
+            ci95[name] = {"lower": float(lower_ci), "upper": float(upper_ci)}
+
+    params = YuanhangResistParams(
+        R0=point["R0_ohm"],
+        Ea_over_k=point["Ea_over_k_K"],
+        Rm0=point["Rm_ohm"],
+        Rm_factor=1.0,
+        w=point["w_K"],
+        Tc_K=point["Tc_K"],
+        beta=point["beta_per_K"],
+        gamma=defaults.gamma,
+        width_factor=1.0,
+        T_min_K=t_min - 5.0,
+        T_max_K=t_max + 5.0,
+        reversal_threshold_K=defaults.reversal_threshold_K,
+    )
+    cooling = direction < 0.0
+    heating = direction > 0.0
+    target_centered = target_log10 - float(np.mean(target_log10))
+    ss_res = float(np.sum(error * error))
+    ss_tot = float(np.sum(target_centered * target_centered))
+    start_branch = "metal" if direction[0] < 0.0 else "insulator"
+    result = ResistanceFitResult(
+        params=params,
+        start_branch=start_branch,
+        rmse_log10=float(np.sqrt(np.mean(error * error))),
+        rmse_log10_cooling=float(np.sqrt(np.mean(error[cooling] ** 2))),
+        rmse_log10_heating=float(np.sqrt(np.mean(error[heating] ** 2))),
+        source_data="",
+        n_samples=int(len(df)),
+        fit_method="major-loop-log-least-squares",
+        r2_log10=float(1.0 - ss_res / ss_tot),
+        mean_log10_error=float(np.mean(error)),
+        max_abs_log10_error=float(np.max(np.abs(error))),
+        parameter_ci95=ci95,
+        diagnostics={
+            "cooling_samples": int(np.count_nonzero(cooling)),
+            "heating_samples": int(np.count_nonzero(heating)),
+            "bootstrap_samples": int(len(bootstrap)),
+            "bootstrap_block_size": int(bootstrap_block_size),
+            "T_cooling_transition_K": point["T_cooling_transition_K"],
+            "T_heating_transition_K": point["T_heating_transition_K"],
+            "Ea_eV": point["Ea_eV"],
+            "typical_multiplicative_error": float(10.0 ** np.sqrt(np.mean(error * error))),
+            "maximum_multiplicative_error": float(10.0 ** np.max(np.abs(error))),
+        },
+    )
+    return result, prediction, bootstrap
 
 
 def _fit_hysteresis_from_g(

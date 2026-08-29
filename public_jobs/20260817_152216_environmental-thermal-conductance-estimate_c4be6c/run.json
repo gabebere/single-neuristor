@@ -1,0 +1,69 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Environmental conductance estimate",
+      "media_type": "text/csv",
+      "path": "conductance_estimate.csv"
+    },
+    {
+      "label": "Selected numerical waveform",
+      "media_type": "text/csv",
+      "path": "selected_trace.csv"
+    },
+    {
+      "label": "Conductance uncertainty propagation",
+      "media_type": "text/csv",
+      "path": "conductance_bootstrap.csv"
+    },
+    {
+      "label": "Environmental conductance evidence",
+      "media_type": "image/png",
+      "path": "figures/environmental_conductance.png"
+    },
+    {
+      "label": "Conductance summary",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Scientific report",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor analyze conductance --data data/experimental/tia_current_sweep --resistance-preset presets/resistance_100425_chip1_gap3.json --resistance-bootstrap public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv --ambient-K 314.4 --ambient-interval-K 314.25,314.55 --bootstrap-samples 1000 --block-size 10 --seed 20260817 --name 'Environmental thermal-conductance estimate'",
+  "created_at": "2026-08-17T15:22:16.047424+00:00",
+  "id": "20260817_152216_environmental-thermal-conductance-estimate_c4be6c",
+  "kind": "analysis",
+  "model": "environmental-thermal-conductance",
+  "name": "Environmental thermal-conductance estimate",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "f2c535c74a22e2e745dee525c3db520fd98e88ab",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "S_e_ci95_lower_mW_per_K": 0.003434441374464172,
+    "S_e_ci95_upper_mW_per_K": 0.004085048480879843,
+    "S_e_mW_per_K": 0.003675126546984294,
+    "ambient_temperature_K": 314.4,
+    "current_corrected_uA": 190.16221538217096,
+    "effective_resistance_ohm": 1679.7588645990738,
+    "first_oscillating_trace": "300mv0_converted.csv",
+    "inferred_temperature_K": 330.9050253511536,
+    "power_uW": 60.65805682667344,
+    "resistance_drift_fraction": 0.0014547749556885372,
+    "selected_trace": "250mv0_converted.csv",
+    "voltage_corrected_mV": 319.213367,
+    "yuanhang_S_e_mW_per_K": 0.20558726
+  },
+  "updated_at": "2026-08-17T15:22:16.788011+00:00"
+}

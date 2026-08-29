@@ -46,7 +46,7 @@ start on `insulator` using the same fitted resistance parameters.
 
 The time-domain runtime has one hysteresis implementation: the accumulated
 deadband detector used by `HysteresisArray`. There is no reversal-mode setting in
-`CurrentDriveParams`, `HysteresisArray`, or the Streamlit interface.
+`CurrentDriveParams`, `HysteresisArray`, or the experiment TOML schema.
 
 `T_last` is an accepted anchor. Sub-threshold motion does not update it. Once
 accumulated displacement exceeds 0.01 K, direction is evaluated and `T_last` is
@@ -59,7 +59,7 @@ Clipping every valid near-endpoint fraction to `1e-6` was found to change a
 minor-loop resistance by as much as 56.8%. The corrected active path matches
 the upstream float32 audit trace to about 0.001 Ohm.
 
-The Samples tab has one extra compatibility layer:
+Saved sample-fit replay has one extra compatibility layer:
 `SampleFitHysteresisArray` in `src/neuristor/sample_library.py`. It is used only
 to replay saved measured R(T) fits and their stored RMSE values. Those presets
 were calibrated with a point-to-point deadband convention, so this replay keeps
@@ -117,8 +117,8 @@ temperature, resistance, phase, current, and power sample.
 Optional stochastic current-source configurations deliberately use the serial
 integrator so seeded noise streams remain stable. Dynamic-phase, double-thermal,
 multidomain, and alternate-reversal current-source modes are not part of the
-active executable model. Streamlit reuses the traces produced for GIF rendering
-when building CSV and FFT outputs, so a sweep is never simulated twice.
+active executable model. The unified workflows compute each sweep point once and
+derive its metrics and archive artifacts from that result.
 
 ## Historical artifact provenance
 
@@ -135,7 +135,7 @@ when building CSV and FFT outputs, so a sweep is never simulated twice.
 ## Verification commands
 
 ```bash
-python scripts/audit_model_fidelity.py
+python legacy_scripts/audit_model_fidelity.py
 python -m unittest discover -s tests -v
 ```
 

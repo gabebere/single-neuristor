@@ -1,0 +1,35 @@
+{
+  "S_e_mW_per_K": 0.003675126546984294,
+  "ambient_temperature_K": 314.4,
+  "baseline_window_ns": [
+    -200.0,
+    -50.0
+  ],
+  "bootstrap_samples": 1000,
+  "conductance_bootstrap": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20260817_153807_environmental-thermal-conductance-estimate_761640/conductance_bootstrap.csv",
+  "data_directory": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/data/experimental/tia_current_sweep",
+  "electrical_capacitance_pF": 0.39,
+  "fit_window_jitter_ns": 2,
+  "fit_window_ns": [
+    15.0,
+    35.0
+  ],
+  "integration_window_ns": [
+    -50.0,
+    80.0
+  ],
+  "kind": "analysis",
+  "model": "thermal-capacitance",
+  "name": "Thermal capacitance estimate with conservative 0.39 pF electrical bound",
+  "near_transition_check_mV": 250.0,
+  "resistance_bootstrap": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv",
+  "resistance_preset": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/resistance_100425_chip1_gap3.json",
+  "schema_version": 1,
+  "seed": 20260817,
+  "selected_drives_mV": [
+    100.0,
+    150.0,
+    200.0
+  ],
+  "smoothing_window": 9
+}
