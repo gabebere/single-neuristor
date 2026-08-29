@@ -1356,6 +1356,7 @@ def run_waveform_parameter_inference(
                 upper=float(row["upper"]),
                 prior_center=(float(row["prior_center"]) if "prior_center" in row else None),
                 prior_scale=(float(row["prior_scale"]) if "prior_scale" in row else None),
+                initial_value=(float(row["initial_value"]) if "initial_value" in row else None),
             )
             for row in rows
         )
@@ -1510,7 +1511,7 @@ def run_waveform_parameter_inference(
 
         convergence_rows: list[dict[str, Any]] = []
         for mode, values, parameters, include_prior in fit_definitions:
-            for dt_ns in sorted(set((search_dt_ns, 0.1, final_dt_ns)), reverse=True):
+            for dt_ns in sorted(set((search_dt_ns, 0.1, final_dt_ns, final_dt_ns / 2.0)), reverse=True):
                 objective, metrics, _, _ = evaluate_parameter_vector(
                     values,
                     parameters,
@@ -1579,6 +1580,9 @@ def run_waveform_parameter_inference(
             "holdout_drives_mV": dataset.nominal_drives_mV[dataset.test_indices].tolist(),
             "search_dt_ns": search_dt_ns,
             "final_dt_ns": final_dt_ns,
+            "objective_weights": {
+                field: float(getattr(weights, field)) for field in ObjectiveWeights.__dataclass_fields__
+            },
             "baseline_objective_all": float(all_summary.loc["baseline", "objective_total"]),
             "constrained_objective_all": float(all_summary.loc["constrained", "objective_total"]),
             "relaxed_objective_all": float(all_summary.loc["relaxed", "objective_total"]),
@@ -1589,6 +1593,14 @@ def run_waveform_parameter_inference(
             "relaxed_predicted_oscillating_traces": int(all_summary.loc["relaxed", "predicted_oscillating_traces"]),
             "constrained_evaluations": int(constrained_fit.evaluations),
             "relaxed_evaluations": int(relaxed_fit.evaluations),
+            "constrained_optimizer_messages": {
+                "global": constrained_fit.differential_evolution_message,
+                "local": constrained_fit.local_message,
+            },
+            "relaxed_optimizer_messages": {
+                "global": relaxed_fit.differential_evolution_message,
+                "local": relaxed_fit.local_message,
+            },
             "relaxed_parameters_outside_physical_bounds": relaxed_conflicts,
             "resistance_source": resistance_source,
             "start_branch": start_branch,
@@ -1601,8 +1613,10 @@ One shared eight-parameter vector was fitted to {metrics['training_traces']} tra
 the source settings {metrics['holdout_drives_mV']} mV were excluded from optimization
 and used only for validation. The objective combines normalized waveform RMSE,
 phase-tolerant oscillatory shape, plateau mean and amplitude, spectrum, frequency,
-oscillation classification, the 0--50 ns edge, and (for the constrained fit) weak
-independent-measurement priors.
+oscillation classification, sustained periodic amplitude across four plateau
+segments, the 0--50 ns edge, and (for the constrained fit) weak independent-
+measurement priors. The exact weights are archived in `resolved_config.json` and
+`metrics.json`.
 
 The original estimates give a full-data objective of
 **{metrics['baseline_objective_all']:.5g}** and classify

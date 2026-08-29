@@ -256,6 +256,21 @@ parameters leave their independently supported intervals and the model still pro
 only turn-on transients. The result is therefore evidence of model-form mismatch, not
 a replacement set of physical parameter estimates.
 
+Prioritize the measured oscillation window and persistent cycles over ordinary
+waveform error with:
+
+```bash
+neuristor analyze fit-waveforms \
+  --config experiments/current/specimen_oscillation_inference.toml
+```
+
+This diagnostic classifies 21 of 22 currents correctly and produces ten consecutive
+oscillatory records from 228.2 to 570.1 uA with no false positives. The result is stable
+at 0.025 ns, but it requires all eight shared parameters outside their independently
+supported intervals (`C=13.8 pF`) and overpredicts cycle amplitude. It demonstrates
+that the equations contain an oscillatory mechanism while exposing the remaining
+physical-model mismatch.
+
 ## Run bundles and GitHub archive
 
 Every command writes the same portable directory under `runs/`:

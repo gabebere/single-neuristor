@@ -770,6 +770,123 @@ or the actual TIA/load impedance. Notably, $\gamma$ remains near Yuanhang's valu
 both searches, so changing the minor-loop curvature alone is not the solution.
 
 \clearpage
+\section{Oscillation-priority parameter inference}
+\label{sec:oscillation_priority}
+
+The balanced objective in Section~\ref{sec:global_inference} rewards average waveform
+agreement, so the optimizer can prefer a turn-on transient over sustained oscillation.
+We therefore repeated the shared-parameter fit with oscillation tracking as the first
+priority. A sinusoid at each measured oscillation frequency is fitted separately in
+four consecutive plateau segments. A candidate receives persistence credit only when
+that periodic component remains present throughout the plateau.
+
+The final objective is
+
+\begin{equation}
+\begin{split}
+J={}&250J_{\mathrm{class}}+250J_{\mathrm{false+}}+0.50J_f
++0.50J_{\mathrm{sustain}}\\
+&+0.05J_{\mathrm{spec}}+0.02J_{\mathrm{wave}}+0.02J_{\mathrm{mean}}
++0.01J_{\mathrm{amp}}+0.01J_{\mathrm{edge}}+0.01J_{\mathrm{prior}}.
+\end{split}
+\label{eq:oscillation_priority_objective}
+\end{equation}
+
+Thus one classification error dominates all ordinary waveform terms. A false
+oscillation outside the measured window contributes to both $J_{\mathrm{class}}$ and
+$J_{\mathrm{false+}}$, so it costs twice as much as missing one boundary record. The
+search was performed directly at $\Delta t=0.05$~ns. The development sequence was:
+
+\begin{enumerate}
+\item A $0.2$~ns scouting fit produced nine apparent oscillatory records, but only
+three survived at $0.05$~ns; this candidate was rejected.
+\item A direct $0.05$~ns fit produced five consecutive oscillatory records and
+classified 16 of 22 records correctly.
+\item A full-resolution $C$--$C_{\mathrm{th}}$ neighborhood identified a training-set
+seed at $C=8$~pF and $C_{\mathrm{th}}=0.020$~pJ/K.
+\item Differential evolution and bounded local refinement optimized the remaining
+secondary errors while preserving the best classification basin.
+\end{enumerate}
+
+The final optimization still excludes the five source settings used previously for
+testing. Because those records had already been inspected during earlier model
+development, their results are useful withheld-current checks but are not claimed as
+a pristine blind test.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r r r@{}}
+\toprule
+Parameter & Independently estimated value & Physical interval & Oscillation fit \\
+\midrule
+$C$ (pF) & 0.3900 & 0--0.390 & 13.8147$^{*}$ \\
+$C_{\mathrm{th}}$ (pJ/K) & 0.04787 & 0.02192--0.09262 & 0.01626$^{*}$ \\
+$S_e$ (mW/K) & 0.003675 & 0.003434--0.004085 & 0.002736$^{*}$ \\
+$T_0$ (K) & 314.400 & 314.25--314.55 & 317.538$^{*}$ \\
+$T_c$ (K) & 333.494 & 333.137--333.838 & 332.844$^{*}$ \\
+$w$ (K) & 6.8823 & 6.6291--7.2681 & 12.7734$^{*}$ \\
+$\beta$ (K$^{-1}$) & 0.29916 & 0.28092--0.32021 & 0.39218$^{*}$ \\
+$\gamma$ & 0.95627 & 0.2--2.0 & 2.65135$^{*}$ \\
+\bottomrule
+\end{tabular}
+\caption{Classification-first shared fit. Every inferred value lies outside its
+independently supported physical interval.}
+\label{tab:oscillation_fit_parameters}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r r@{}}
+\toprule
+Quantity & Experiment & Oscillation-priority fit \\
+\midrule
+Correct classifications & 22 reference labels & 21 of 22 \\
+Oscillating records & 11 & 10 \\
+Oscillation-current interval & 228.2--606.3 $\mu$A & 228.2--570.1 $\mu$A \\
+Frequency interval & 41.7--62.5 MHz & 25.6--50.0 MHz \\
+Training classifications & 17 of 17 & 17 of 17 \\
+Withheld-current classifications & 5 reference labels & 4 of 5 \\
+False-positive oscillations & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\caption{Oscillation tracking at $\Delta t=0.05$~ns. The only classification error
+is the withheld $606.3~\mu$A boundary record.}
+\label{tab:oscillation_fit_results}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../runs/20260829_153853_oscillation-priority-global-specimen-parameter-i_fe76d2/figures/operating_summary.png}
+\caption{Measured and classification-first operating behavior. The model now
+reproduces most of the oscillation window and an increasing frequency trend, but its
+cycle amplitude is much too large and its frequency is generally too low.}
+\label{fig:oscillation_priority_summary}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{../../runs/20260829_153853_oscillation-priority-global-specimen-parameter-i_fe76d2/figures/representative_fits.png}
+\caption{Representative oscillation-priority predictions. Sustained cycles replace
+the transient-only behavior of the balanced fit, but voltage magnitude and waveform
+shape remain quantitatively incorrect.}
+\label{fig:oscillation_priority_traces}
+\end{figure}
+
+At $\Delta t=0.025$~ns, the same ten currents oscillate over the identical current
+interval; the predicted frequency range remains 25.6--50.0~MHz. The classification
+result is therefore timestep-stable. It is nevertheless a diagnostic, not a new
+parameter measurement: recovering the window requires $C$ about 35 times its timing
+upper bound and moves every fitted parameter outside its independent interval. The
+model contains the mechanism needed for collective switching, but the measured
+frequency, amplitude, and independently inferred parameter scales cannot yet be
+satisfied simultaneously. This strengthens the case for including the real TIA/load
+impedance or a dynamic switching law.
+
+\clearpage
 \appendix
 \section{Reproduction}
 
@@ -873,6 +990,24 @@ neuristor analyze fit-waveforms --config experiments/current/specimen\_waveform\
 The bundle contains the resolved objective and bounds, every fitted parameter,
 per-trace metrics and predictions, held-out validation, optimization histories,
 figures, and the three-step convergence check.
+
+The oscillation-priority inference is archived as
+
+\begin{center}
+\footnotesize
+\path{20260829_153853_oscillation-priority-global-specimen-parameter-i_fe76d2}.
+\end{center}
+
+It is reproduced with
+
+\begin{center}
+\ttfamily\small
+neuristor analyze fit-waveforms --config experiments/current/specimen\_oscillation\_inference.toml
+\end{center}
+
+Its bundle records the classification-first objective, four-segment persistence
+metric, parameter search, withheld-current results, per-trace waveforms, and
+$0.1$--$0.025$~ns convergence audit.
 
 The historical capacitance shortcut is preserved for provenance in
 

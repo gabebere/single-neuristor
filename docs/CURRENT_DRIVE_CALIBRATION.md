@@ -259,6 +259,27 @@ neuristor analyze fit-waveforms \
   --config experiments/current/specimen_waveform_inference.toml
 ```
 
+### Oscillation-priority diagnostic
+
+The balanced fit can trade every missed oscillation for smaller mean-voltage and edge
+errors. A second objective therefore makes current-by-current oscillation classification
+dominant and measures persistence by fitting the experimental-frequency component in
+four separate plateau segments. A false positive outside the measured window costs
+twice as much as one missed boundary trace.
+
+At 0.05 ns, the relaxed result classifies 21 of 22 currents correctly and predicts ten
+consecutive oscillators from 228.2 to 570.1 uA, with no false positives. The only miss
+is the 606.3 uA upper-boundary record; the same classification is obtained at 0.025 ns.
+Predicted frequency rises from 25.6 to 50.0 MHz, below the measured 41.7--62.5 MHz, and
+cycle amplitude is too large. Every fitted parameter leaves its independent interval,
+including `C=13.8 pF`, `C_th=0.0163 pJ/K`, and `gamma=2.65`. These are diagnostic
+effective values, not specimen measurements.
+
+```bash
+neuristor analyze fit-waveforms \
+  --config experiments/current/specimen_oscillation_inference.toml
+```
+
 ### What the waveforms can tell us about gamma
 
 `gamma` changes the curvature of minor hysteresis loops after a temperature reversal.

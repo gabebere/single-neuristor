@@ -84,6 +84,12 @@ claims.
   predictions, optimization history, and time-step convergence. The constrained fit
   cannot restore oscillation; the relaxed fit improves waveform statistics only by
   leaving seven of eight physical intervals and producing turn-on transients.
+- `20260829_153853_oscillation-priority-global-specimen-parameter-i_fe76d2`: current
+  oscillation-priority diagnostic. Its four-segment persistence score and asymmetric
+  classification penalty recover ten consecutive oscillatory currents with 21/22
+  classifications and no false positives. The identical window at 0.025 ns is
+  numerically stable, but all eight fitted values violate independent physical
+  intervals and the predicted amplitude remains too large.
 - `20260828_112026_thermal-capacitance-estimate-with-conservative-0_ce51fa`: earlier
   numerically identical upper-bound run retained immutably and superseded by
   `aa2469`, whose figure labels the corrected ratio as `V/I_R`.

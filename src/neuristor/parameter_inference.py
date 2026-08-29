@@ -2,9 +2,10 @@
 
 One parameter vector is shared across all fitted current traces. The objective
 combines phase-tolerant waveform mismatch with mean voltage, amplitude, spectrum,
-frequency, onset classification, edge shape, and optional independent-parameter
-priors. Differential evolution is used because hysteretic switching makes the
-objective discontinuous; a bounded Powell pass refines the best population member.
+frequency, onset classification, sustained periodic amplitude, edge shape, and
+optional independent-parameter priors. Differential evolution is used because
+hysteretic switching makes the objective discontinuous; a bounded Powell pass
+refines the best population member.
 """
 
 from __future__ import annotations
@@ -55,6 +56,7 @@ class FitParameter:
     upper: float
     prior_center: float | None = None
     prior_scale: float | None = None
+    initial_value: float | None = None
 
 
 @dataclass(frozen=True)
@@ -67,6 +69,8 @@ class ObjectiveWeights:
     spectrum: float = 0.15
     frequency: float = 0.15
     classification: float = 0.10
+    false_positive: float = 0.0
+    sustain: float = 0.0
     edge: float = 0.05
     prior: float = 0.05
 
@@ -266,6 +270,42 @@ def _spectrum_distance(measured: np.ndarray, predicted: np.ndarray) -> float:
     return float(np.mean((measured_norm - predicted_norm) ** 2) * measured_norm.size)
 
 
+def _harmonic_amplitude(time_ns: np.ndarray, voltage_mV: np.ndarray, frequency_MHz: float) -> float:
+    """Return the least-squares sinusoidal amplitude at one physical frequency."""
+
+    phase = 2.0 * np.pi * float(frequency_MHz) * np.asarray(time_ns, dtype=float) * 1e-3
+    design = np.column_stack((np.sin(phase), np.cos(phase), np.ones_like(phase)))
+    coefficients, *_ = np.linalg.lstsq(design, np.asarray(voltage_mV, dtype=float), rcond=None)
+    return float(np.hypot(coefficients[0], coefficients[1]))
+
+
+def _sustained_oscillation_loss(
+    time_ns: np.ndarray,
+    measured_mV: np.ndarray,
+    predicted_mV: np.ndarray,
+    measured_frequency_MHz: float,
+) -> tuple[float, float, float]:
+    """Compare periodic amplitude throughout the plateau, not just at turn-on.
+
+    Four separate time segments must retain the measured-frequency component. A
+    transient can therefore match at most one segment and cannot masquerade as a
+    sustained oscillation. The 25 mV scale makes a missing experimental cycle a
+    deliberately substantial but bounded contribution to the global objective.
+    """
+
+    if not np.isfinite(measured_frequency_MHz) or time_ns.size < 32:
+        return 0.0, float("nan"), float("nan")
+    segments = [segment for segment in np.array_split(np.arange(time_ns.size), 4) if segment.size >= 8]
+    measured_amplitudes = np.asarray(
+        [_harmonic_amplitude(time_ns[segment], measured_mV[segment], measured_frequency_MHz) for segment in segments]
+    )
+    predicted_amplitudes = np.asarray(
+        [_harmonic_amplitude(time_ns[segment], predicted_mV[segment], measured_frequency_MHz) for segment in segments]
+    )
+    loss = float(np.mean(np.minimum(((predicted_amplitudes - measured_amplitudes) / 25.0) ** 2, 16.0)))
+    return loss, float(np.mean(measured_amplitudes)), float(np.mean(predicted_amplitudes))
+
+
 def _prior_penalty(values: np.ndarray, parameters: Sequence[FitParameter]) -> float:
     terms = [
         ((float(value) - float(parameter.prior_center)) / float(parameter.prior_scale)) ** 2
@@ -294,6 +334,8 @@ def score_predictions(
     spectrum_terms: list[float] = []
     frequency_terms: list[float] = []
     classification_terms: list[float] = []
+    false_positive_terms: list[float] = []
+    sustain_terms: list[float] = []
     edge_terms: list[float] = []
     for local_index, global_index in enumerate(indices):
         measured = dataset.voltage_mV[:, global_index]
@@ -319,6 +361,13 @@ def score_predictions(
             else (4.0 if measured_osc != predicted_osc else 0.0)
         )
         classification_mismatch = float(measured_osc != predicted_osc)
+        false_positive = float(predicted_osc and not measured_osc)
+        sustain_loss, measured_harmonic_amplitude, predicted_harmonic_amplitude = _sustained_oscillation_loss(
+            dataset.time_ns[plateau],
+            measured[plateau],
+            predicted[plateau],
+            measured_frequency,
+        )
         edge_rmse_mV = float(np.sqrt(np.mean((measured[edge] - predicted[edge]) ** 2)))
         edge_loss = edge_rmse_mV / 100.0
         waveform_terms.append(waveform_loss)
@@ -327,6 +376,8 @@ def score_predictions(
         spectrum_terms.append(spectrum_mse)
         frequency_terms.append(frequency_mse)
         classification_terms.append(classification_mismatch)
+        false_positive_terms.append(false_positive)
+        sustain_terms.append(sustain_loss)
         edge_terms.append(edge_loss)
         rows.append(
             {
@@ -338,6 +389,8 @@ def score_predictions(
                 "predicted_oscillation": predicted_osc,
                 "measured_frequency_MHz": measured_frequency,
                 "predicted_frequency_MHz": predicted_frequency,
+                "measured_target_harmonic_amplitude_mV": measured_harmonic_amplitude,
+                "predicted_target_harmonic_amplitude_mV": predicted_harmonic_amplitude,
                 "measured_mean_mV": float(measured_summary["voltage_mean_mV"]),
                 "predicted_mean_mV": float(predicted_summary["voltage_mean_mV"]),
                 "measured_vpp_mV": float(measured_summary["voltage_vpp_mV"]),
@@ -350,6 +403,8 @@ def score_predictions(
                 "spectrum_component": spectrum_mse,
                 "frequency_component": frequency_mse,
                 "classification_component": classification_mismatch,
+                "false_positive_component": false_positive,
+                "sustain_component": sustain_loss,
                 "edge_component": edge_loss,
             }
         )
@@ -360,6 +415,8 @@ def score_predictions(
         "spectrum": float(np.mean(spectrum_terms)),
         "frequency": float(np.mean(frequency_terms)),
         "classification": float(np.mean(classification_terms)),
+        "false_positive": float(np.mean(false_positive_terms)),
+        "sustain": float(np.mean(sustain_terms)),
         "edge": float(np.mean(edge_terms)),
         "prior": float(prior_penalty),
     }
@@ -407,7 +464,15 @@ def fit_parameter_set(
     if tuple(parameter.name for parameter in parameters) != PARAMETER_NAMES:
         raise ValueError(f"Inference parameters must be ordered as {PARAMETER_NAMES}")
     bounds = [(parameter.lower, parameter.upper) for parameter in parameters]
-    initial = np.clip(parameter_vector_from_model(base), [bound[0] for bound in bounds], [bound[1] for bound in bounds])
+    base_values = parameter_vector_from_model(base)
+    initial = np.clip(
+        [
+            float(parameter.initial_value) if parameter.initial_value is not None else float(base_values[index])
+            for index, parameter in enumerate(parameters)
+        ],
+        [bound[0] for bound in bounds],
+        [bound[1] for bound in bounds],
+    )
     history: list[dict[str, float | int | str]] = []
     cache: dict[tuple[float, ...], tuple[dict[str, float], pd.DataFrame]] = {}
     evaluations = 0
