@@ -58,7 +58,7 @@ def load_converted_trace(path: str | Path) -> pd.DataFrame:
     return frame
 
 
-def _oscillation_metrics(time_ns: np.ndarray, voltage_mV: np.ndarray) -> dict[str, float | bool]:
+def oscillation_metrics(time_ns: np.ndarray, voltage_mV: np.ndarray) -> dict[str, float | bool]:
     """Return a conservative periodic-peak estimate for the pulse plateau.
 
     This detector reproduces the visibly coherent Figure 7 operating window;
@@ -128,7 +128,7 @@ def summarize_converted_trace(frame: pd.DataFrame) -> dict[str, float | str | bo
     voltage_baseline_mV = float(np.median(voltage_mV[baseline]))
     voltage_plateau_mV = float(np.mean(voltage_mV[plateau]))
     voltage_slope = float(np.polyfit(time_ns[slope_window], voltage_mV[slope_window], 1)[0])
-    oscillation = _oscillation_metrics(time_ns[plateau], voltage_mV[plateau])
+    oscillation = oscillation_metrics(time_ns[plateau], voltage_mV[plateau])
     return {
         "source_file": str(frame["source_file"].iloc[0]),
         "nominal_drive_mV": float(frame["nominal_drive_mV"].iloc[0]),
@@ -162,3 +162,9 @@ def load_converted_sweep(data_directory: str | Path) -> tuple[pd.DataFrame, pd.D
     traces = [load_converted_trace(path) for path in paths]
     summary = pd.DataFrame([summarize_converted_trace(frame) for frame in traces])
     return pd.concat(traces, ignore_index=True), summary.sort_values("current_plateau_uA").reset_index(drop=True)
+
+
+# Backward-compatible private alias for notebooks or historical imports.  New
+# analysis code should use the public name so the laboratory and model traces
+# are classified by exactly the same documented detector.
+_oscillation_metrics = oscillation_metrics

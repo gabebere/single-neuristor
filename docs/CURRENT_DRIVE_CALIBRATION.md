@@ -180,8 +180,10 @@ C=\frac{I-V/R(T)}{dV/dt}.
 
 Using the complete measured current waveform leaves the optimum at the nonnegative
 boundary `C=0`: the data do not resolve a positive electrical lag. This does not prove
-that physical capacitance is absent. It makes `C=0`, or `V=I R(T)`, the defensible
-reduced-model baseline until a faster low-amplitude calibration edge is measured.
+that physical capacitance is absent. The approximately 1 ns timing resolution gives
+the conservative bound `C <= 0.39 pF`. Sample-specific simulations adopt `0.39 pF`
+to maximize the electrical memory still compatible with the data; `C=0` remains the
+constrained best fit and the lower endpoint for sensitivity analysis.
 
 ### Environmental thermal conductance
 
@@ -208,17 +210,29 @@ Yuanhang's reference conductance, 0.205587 mW/K, is about 56 times larger.
 
 ### Thermal capacitance
 
-Electrical waveforms do not independently identify `C_th`. First measure the thermal
-recovery time from a post-pulse or pump-probe trace, then calculate
+Electrical waveforms do not independently identify `C_th` without an assumed thermal
+model. With the fitted heating branch used as a thermometer and `S_e` fixed, the
+moderate nonswitching edges give
 
 \[
-C_{th}=S_e\tau_{th}.
+C_{th}=0.047873\ \mathrm{pJ/K},\qquad
+\tau_{th}=C_{th}/S_e=13.026\ \mathrm{ns}.
 \]
 
-Using the present `S_e=0.003675 mW/K`, thermal recovery times of 20, 50, and 100 ns
-would imply `C_th=0.0735`, `0.1838`, and `0.3675 pJ/K`.
-This illustrates that waveform fitting often identifies the ratio `C_th/S_e` more
-strongly than either parameter alone.
+The conditional interval is 0.021918--0.092624 pJ/K. An independent post-pulse or
+pump-probe recovery remains the best cross-check because waveform fitting identifies
+the ratio `C_th/S_e` more strongly than either parameter alone.
+
+### Blind prediction test
+
+Replaying all 22 measured current waveforms with the frozen specimen parameters
+predicts no coherent oscillation, while 11 measured records oscillate from 228.2 to
+606.3 uA. The 189.6 uA stable pre-onset mean voltage is reproduced within 0.67 mV,
+showing that the static cold-side calibration works. The thermal-only conditions are
+incompatible (`I_heat=329.65 uA` but `I_cool=254.44 uA`), and no tested capacitance at
+or below the 0.39 pF timing bound restores oscillation. At the adopted `C_th`, the
+first oscillatory stress-test point is 7 pF. This points to missing dynamic switching
+information or the real TIA/load impedance rather than a numerical time-step error.
 
 ### What the waveforms can tell us about gamma
 

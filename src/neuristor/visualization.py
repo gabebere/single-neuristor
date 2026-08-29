@@ -380,6 +380,182 @@ def plot_lab_summary(summary: pd.DataFrame, out_path: str | Path) -> Path:
     return _finish(fig, out_path)
 
 
+def _lab_detection_trace_values(
+    trace: pd.DataFrame,
+    summary: pd.Series,
+    *,
+    display_window_ns: tuple[float, float] = (-50.0, 310.0),
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return validated, baseline-corrected arrays for a detection-window plot."""
+
+    trace_columns = {"time_ns", "input_current_uA", "output_voltage_mV"}
+    summary_fields = {
+        "nominal_drive_mV",
+        "current_baseline_uA",
+        "voltage_baseline_mV",
+        "oscillation_detected",
+        "oscillation_frequency_MHz",
+        "oscillation_peak_count",
+        "oscillation_period_cv",
+    }
+    missing_trace = sorted(trace_columns.difference(trace.columns))
+    missing_summary = sorted(summary_fields.difference(summary.index))
+    if missing_trace or missing_summary:
+        missing = missing_trace + missing_summary
+        raise ValueError(f"Detection-window plot is missing fields: {', '.join(missing)}")
+
+    time_ns = trace["time_ns"].to_numpy(dtype=float)
+    current_uA = (
+        trace["input_current_uA"].to_numpy(dtype=float)
+        - float(summary["current_baseline_uA"])
+    )
+    voltage_mV = (
+        trace["output_voltage_mV"].to_numpy(dtype=float)
+        - float(summary["voltage_baseline_mV"])
+    )
+    visible = (time_ns >= display_window_ns[0]) & (time_ns <= display_window_ns[1])
+    if int(np.count_nonzero(visible)) < 2:
+        raise ValueError("Detection-window trace does not span the display window")
+    return time_ns[visible], current_uA[visible], voltage_mV[visible]
+
+
+def _lab_detection_annotation(summary: pd.Series) -> str:
+    """Describe the classifier evidence without inventing a frequency when absent."""
+
+    peaks = int(round(float(summary["oscillation_peak_count"])))
+    if bool(summary["oscillation_detected"]):
+        return (
+            f"{peaks} peaks, f = {float(summary['oscillation_frequency_MHz']):.1f} MHz, "
+            f"period CV = {100.0 * float(summary['oscillation_period_cv']):.2f}%"
+        )
+    noun = "peak" if peaks == 1 else "peaks"
+    return f"{peaks} candidate {noun}; periodic frequency unresolved"
+
+
+def _draw_lab_detection_panel(
+    axes: np.ndarray,
+    trace: pd.DataFrame,
+    summary: pd.Series,
+    *,
+    detection_window_ns: tuple[float, float],
+    display_window_ns: tuple[float, float],
+    show_window_legend: bool,
+) -> None:
+    """Draw one measured current/voltage pair on caller-owned axes."""
+
+    time_ns, current_uA, voltage_mV = _lab_detection_trace_values(
+        trace, summary, display_window_ns=display_window_ns
+    )
+    for axis in axes:
+        axis.axvspan(
+            detection_window_ns[0],
+            detection_window_ns[1],
+            color=COLORS["gray"],
+            alpha=0.13,
+            label="Oscillation-detection window",
+        )
+        axis.grid(True, color=COLORS["grid"], alpha=0.8)
+        axis.set_xlim(*display_window_ns)
+
+    axes[0].plot(time_ns, current_uA, color=COLORS["blue"], linewidth=1.35)
+    axes[0].set_ylabel("Current (uA)")
+    state = "coherent oscillation" if bool(summary["oscillation_detected"]) else "no coherent oscillation"
+    current_step_uA = float(summary["current_step_uA"])
+    source_setting_mV = float(summary["nominal_drive_mV"])
+    axes[0].set_title(
+        f"{current_step_uA:.1f} " + r"$\mu$A" +
+        f" measured step ({source_setting_mV:g} mV source setting)\n{state}"
+    )
+    if show_window_legend:
+        axes[0].legend(loc="lower right", fontsize=8.5)
+
+    axes[1].plot(time_ns, voltage_mV, color=COLORS["orange"], linewidth=1.25)
+    axes[1].set_xlabel("Time (ns)")
+    axes[1].set_ylabel("Output voltage (mV)")
+    axes[1].text(
+        0.985,
+        0.94,
+        _lab_detection_annotation(summary),
+        transform=axes[1].transAxes,
+        ha="right",
+        va="top",
+        fontsize=9,
+        color=COLORS["ink"],
+        bbox={"facecolor": "white", "edgecolor": COLORS["grid"], "alpha": 0.9},
+    )
+
+
+def plot_lab_detection_window_trace(
+    trace: pd.DataFrame,
+    summary: pd.Series,
+    out_path: str | Path,
+    *,
+    detection_window_ns: tuple[float, float] = (50.0, 250.0),
+    display_window_ns: tuple[float, float] = (-50.0, 310.0),
+) -> Path:
+    """Plot one raw measured trace under the documented oscillation criterion."""
+
+    fig, axes = plt.subplots(
+        2,
+        1,
+        figsize=(10.6, 5.0),
+        sharex=True,
+        gridspec_kw={"height_ratios": [0.85, 1.25]},
+    )
+    _draw_lab_detection_panel(
+        axes,
+        trace,
+        summary,
+        detection_window_ns=detection_window_ns,
+        display_window_ns=display_window_ns,
+        show_window_legend=True,
+    )
+    return _finish(fig, out_path)
+
+
+def plot_lab_oscillation_bracket(
+    pre_onset_trace: pd.DataFrame,
+    pre_onset_summary: pd.Series,
+    onset_trace: pd.DataFrame,
+    onset_summary: pd.Series,
+    out_path: str | Path,
+    *,
+    detection_window_ns: tuple[float, float] = (50.0, 250.0),
+    display_window_ns: tuple[float, float] = (-50.0, 310.0),
+) -> Path:
+    """Compare the adjacent non-oscillating and oscillating records on shared axes."""
+
+    fig, axes = plt.subplots(
+        2,
+        2,
+        figsize=(13.6, 5.6),
+        sharex="col",
+        sharey="row",
+        constrained_layout=True,
+        gridspec_kw={"height_ratios": [0.85, 1.25]},
+    )
+    _draw_lab_detection_panel(
+        axes[:, 0],
+        pre_onset_trace,
+        pre_onset_summary,
+        detection_window_ns=detection_window_ns,
+        display_window_ns=display_window_ns,
+        show_window_legend=False,
+    )
+    _draw_lab_detection_panel(
+        axes[:, 1],
+        onset_trace,
+        onset_summary,
+        detection_window_ns=detection_window_ns,
+        display_window_ns=display_window_ns,
+        show_window_legend=True,
+    )
+    axes[0, 1].set_ylabel("")
+    axes[1, 1].set_ylabel("")
+    fig.suptitle("Measured bracket of coherent-oscillation onset", fontsize=15)
+    return _finish(fig, out_path)
+
+
 def plot_environmental_conductance_estimate(
     trace: pd.DataFrame,
     result: pd.DataFrame,
@@ -473,6 +649,122 @@ def plot_environmental_conductance_estimate(
     rt_axis.legend(fontsize=8)
 
     fig.suptitle("Environmental thermal-conductance estimate from numerical waveforms", fontsize=15)
+    return _finish(fig, out_path)
+
+
+def plot_thermal_capacitance_estimate(
+    trajectories: pd.DataFrame,
+    trace_fits: pd.DataFrame,
+    bootstrap: pd.DataFrame,
+    result: pd.DataFrame,
+    out_path: str | Path,
+) -> Path:
+    """Show reconstructed heating trajectories and the conditional C_th fit."""
+
+    row = result.iloc[0]
+    fig, axes = plt.subplots(1, 3, figsize=(16.2, 4.9))
+    palette = [COLORS["blue"], COLORS["orange"], COLORS["green"]]
+
+    selected = trajectories.loc[trajectories["included_in_primary_fit"].astype(bool)]
+    for color, (drive, trace) in zip(
+        palette,
+        selected.groupby("nominal_drive_mV", sort=True),
+    ):
+        time_ns = trace["time_ns"].to_numpy(dtype=float)
+        inferred = trace["temperature_inferred_K"].to_numpy(dtype=float)
+        modeled = trace["temperature_model_K"].to_numpy(dtype=float)
+        valid = np.isfinite(inferred) & (time_ns >= 12.0) & (time_ns <= 38.0)
+        axes[0].plot(
+            time_ns[valid],
+            inferred[valid],
+            color=color,
+            linewidth=2.0,
+            label=f"{drive:g} mV inferred",
+        )
+        axes[0].plot(
+            time_ns[valid],
+            modeled[valid],
+            color=color,
+            linewidth=1.5,
+            linestyle="--",
+            label=f"{drive:g} mV model",
+        )
+    axes[0].axvspan(
+        float(row["fit_start_ns"]),
+        float(row["fit_stop_ns"]),
+        color=COLORS["gray"],
+        alpha=0.12,
+        label="Fit window",
+    )
+    axes[0].set_xlabel("Time (ns)")
+    axes[0].set_ylabel("Temperature (K)")
+    axes[0].set_title(r"Temperature reconstructed from $V/I_R$")
+    axes[0].legend(fontsize=7.5, ncol=2)
+
+    included = trace_fits["included_in_primary_fit"].astype(bool).to_numpy()
+    x = np.arange(len(trace_fits))
+    axes[1].scatter(
+        x[included],
+        trace_fits.loc[included, "C_th_pJ_per_K"],
+        s=72,
+        color=COLORS["blue"],
+        label="Primary traces",
+        zorder=3,
+    )
+    if np.any(~included):
+        axes[1].scatter(
+            x[~included],
+            trace_fits.loc[~included, "C_th_pJ_per_K"],
+            s=82,
+            marker="D",
+            color=COLORS["red"],
+            label="Near-transition check",
+            zorder=3,
+        )
+    axes[1].axhline(
+        float(row["C_th_pJ_per_K"]),
+        color=COLORS["ink"],
+        linestyle="--",
+        label=f"Shared fit {float(row['C_th_pJ_per_K']):.4f} pJ/K",
+    )
+    axes[1].set_xticks(x)
+    axes[1].set_xticklabels(
+        [f"{value:g} mV" for value in trace_fits["nominal_drive_mV"]]
+    )
+    axes[1].set_ylabel("Thermal capacitance (pJ/K)")
+    axes[1].set_title("Per-trace robustness check")
+    axes[1].legend(fontsize=8)
+
+    axes[2].hist(
+        bootstrap["C_th_pJ_per_K"],
+        bins=32,
+        color=COLORS["purple"],
+        alpha=0.78,
+        edgecolor="white",
+    )
+    axes[2].axvline(
+        float(row["C_th_pJ_per_K"]),
+        color=COLORS["ink"],
+        linewidth=1.8,
+        label="Central fit",
+    )
+    axes[2].axvspan(
+        float(row["C_th_ci95_lower_pJ_per_K"]),
+        float(row["C_th_ci95_upper_pJ_per_K"]),
+        color=COLORS["orange"],
+        alpha=0.18,
+        label="Conditional 95% interval",
+    )
+    axes[2].set_xlabel("Thermal capacitance (pJ/K)")
+    axes[2].set_ylabel("Bootstrap samples")
+    axes[2].set_title(
+        rf"$\tau_{{th}}={float(row['tau_th_ns']):.2f}$ ns"
+    )
+    axes[2].legend(fontsize=8)
+
+    for axis in axes:
+        axis.grid(True, color=COLORS["grid"], alpha=0.72)
+    fig.suptitle("Thermal time constant and capacitance from nonswitching heating edges", fontsize=15)
     return _finish(fig, out_path)
 
 
@@ -635,4 +927,141 @@ def plot_resistance_fit(data: pd.DataFrame, prediction: np.ndarray, out_path: st
     residual_ax.set_xlabel("Temperature (K)")
     residual_ax.set_ylabel(r"$\log_{10}(R_{model}/R_{data})$")
     residual_ax.grid(True, color=COLORS["grid"], alpha=0.75)
+    return _finish(fig, out_path)
+
+
+def plot_model_validation_summary(comparison: pd.DataFrame, out_path: str | Path) -> Path:
+    """Compare measured and blind-predicted operating behavior on common axes."""
+
+    current = comparison["measured_current_step_uA"].to_numpy(dtype=float)
+    measured_osc = comparison["measured_oscillation_detected"].astype(bool).to_numpy()
+    predicted_osc = comparison["predicted_oscillation_detected"].astype(bool).to_numpy()
+    fig, axes = plt.subplots(3, 1, figsize=(10.4, 8.8), sharex=True, layout="constrained")
+
+    axes[0].fill_between(
+        current,
+        comparison["measured_voltage_min_mV"],
+        comparison["measured_voltage_max_mV"],
+        color=COLORS["blue"],
+        alpha=0.18,
+        label="Measured min--max",
+    )
+    axes[0].plot(current, comparison["measured_voltage_mean_mV"], "o-", color=COLORS["blue"], label="Measured mean")
+    axes[0].fill_between(
+        current,
+        comparison["predicted_voltage_min_mV"],
+        comparison["predicted_voltage_max_mV"],
+        color=COLORS["orange"],
+        alpha=0.18,
+        label="Predicted min--max",
+    )
+    axes[0].plot(current, comparison["predicted_voltage_mean_mV"], "s-", color=COLORS["orange"], label="Predicted mean")
+    axes[0].set_ylabel("Voltage (mV)")
+    axes[0].legend(ncol=2, fontsize=8.5)
+
+    axes[1].plot(current, comparison["measured_voltage_vpp_mV"], "o-", color=COLORS["blue"], label="Measured")
+    axes[1].plot(current, comparison["predicted_voltage_vpp_mV"], "s-", color=COLORS["orange"], label="Predicted")
+    axes[1].set_ylabel("Plateau Vpp (mV)")
+    axes[1].legend(fontsize=8.5)
+
+    measured_frequency = comparison["measured_oscillation_frequency_MHz"].to_numpy(dtype=float)
+    predicted_frequency = comparison["predicted_oscillation_frequency_MHz"].to_numpy(dtype=float)
+    axes[2].plot(current[measured_osc], measured_frequency[measured_osc], "o-", color=COLORS["blue"], label="Measured oscillation")
+    if np.any(predicted_osc):
+        axes[2].plot(current[predicted_osc], predicted_frequency[predicted_osc], "s-", color=COLORS["orange"], label="Predicted oscillation")
+    else:
+        axes[2].text(
+            0.98,
+            0.82,
+            "Frozen model: no coherent oscillation detected",
+            transform=axes[2].transAxes,
+            ha="right",
+            color=COLORS["red"],
+            fontsize=9,
+        )
+    axes[2].set_ylabel("Frequency (MHz)")
+    axes[2].set_xlabel("Measured current step (uA)")
+    axes[2].legend(fontsize=8.5, loc="lower right")
+    for axis in axes:
+        axis.grid(True, color=COLORS["grid"], alpha=0.8)
+    fig.suptitle("Blind model prediction versus the measured current sweep", color=COLORS["ink"], fontsize=15)
+    return _finish(fig, out_path)
+
+
+def plot_model_validation_traces(
+    traces: pd.DataFrame,
+    comparison: pd.DataFrame,
+    out_path: str | Path,
+    *,
+    drives_mV: tuple[float, ...] = (250.0, 300.0, 500.0, 800.0),
+) -> Path:
+    """Overlay representative measured and predicted voltage records."""
+
+    fig, axes = plt.subplots(2, 2, figsize=(10.4, 6.7), sharex=True, layout="constrained")
+    for axis, drive in zip(axes.flat, drives_mV):
+        available = comparison["nominal_drive_mV"].to_numpy(dtype=float)
+        selected_drive = float(available[np.argmin(np.abs(available - drive))])
+        trace = traces.loc[np.isclose(traces["nominal_drive_mV"], selected_drive)]
+        row = comparison.loc[np.isclose(comparison["nominal_drive_mV"], selected_drive)].iloc[0]
+        axis.plot(trace["time_ns"], trace["measured_voltage_mV"], color=COLORS["blue"], linewidth=1.15, label="Measured")
+        axis.plot(trace["time_ns"], trace["predicted_voltage_mV"], color=COLORS["orange"], linewidth=1.35, label="Predicted")
+        axis.axvspan(50.0, 250.0, color=COLORS["grid"], alpha=0.28)
+        axis.set_xlim(-25.0, 300.0)
+        axis.set_title(
+            f"{float(row['measured_current_step_uA']):.1f} uA ({selected_drive:.0f} mV setting)",
+            fontsize=10,
+        )
+        axis.grid(True, color=COLORS["grid"], alpha=0.7)
+    axes[0, 0].legend(fontsize=8.5)
+    axes[0, 0].set_ylabel("Voltage (mV)")
+    axes[1, 0].set_ylabel("Voltage (mV)")
+    axes[1, 0].set_xlabel("Time (ns)")
+    axes[1, 1].set_xlabel("Time (ns)")
+    fig.suptitle("Representative traces: one parameter set, no per-trace tuning", color=COLORS["ink"], fontsize=14)
+    return _finish(fig, out_path)
+
+
+def plot_capacitance_sensitivity(
+    sensitivity: pd.DataFrame,
+    out_path: str | Path,
+    *,
+    adopted_C_pF: float,
+    adopted_C_th_pJ_per_K: float,
+    representative_current_uA: float = 380.9,
+) -> Path:
+    """Show where the model predicts oscillations as C and Cth are varied."""
+
+    cth_values = np.sort(sensitivity["thermal_capacitance_pJ_per_K"].unique())
+    adopted_cth = float(cth_values[np.argmin(np.abs(cth_values - adopted_C_th_pJ_per_K))])
+    current_values = np.sort(sensitivity["current_uA"].unique())
+    selected_current = float(current_values[np.argmin(np.abs(current_values - representative_current_uA))])
+    c_values = np.sort(sensitivity["electrical_capacitance_pF"].unique())
+
+    fixed_cth = sensitivity.loc[np.isclose(sensitivity["thermal_capacitance_pJ_per_K"], adopted_cth)]
+    current_map = fixed_cth.pivot(index="electrical_capacitance_pF", columns="current_uA", values="oscillation_frequency_MHz").reindex(index=c_values, columns=current_values)
+    fixed_current = sensitivity.loc[np.isclose(sensitivity["current_uA"], selected_current)]
+    capacitance_map = fixed_current.pivot(index="thermal_capacitance_pJ_per_K", columns="electrical_capacitance_pF", values="oscillation_frequency_MHz").reindex(index=cth_values, columns=c_values)
+
+    fig, axes = plt.subplots(1, 2, figsize=(11.2, 4.8), layout="constrained")
+    cmap = plt.get_cmap("viridis").copy()
+    cmap.set_bad("#eef2f7")
+    image0 = axes[0].imshow(np.ma.masked_invalid(current_map.to_numpy(dtype=float)), aspect="auto", origin="lower", cmap=cmap)
+    axes[0].set_xticks(range(len(current_values))[::2], [f"{value:.0f}" for value in current_values[::2]], rotation=45)
+    axes[0].set_yticks(range(len(c_values)), [f"{value:g}" for value in c_values])
+    axes[0].set_xlabel("Measured current step (uA)")
+    axes[0].set_ylabel("Electrical C (pF)")
+    axes[0].set_title(f"Cth={adopted_cth:.4g} pJ/K")
+    adopted_index = int(np.argmin(np.abs(c_values - adopted_C_pF)))
+    axes[0].axhline(adopted_index, color=COLORS["red"], linestyle="--", linewidth=1.2)
+
+    image1 = axes[1].imshow(np.ma.masked_invalid(capacitance_map.to_numpy(dtype=float)), aspect="auto", origin="lower", cmap=cmap)
+    axes[1].set_xticks(range(len(c_values)), [f"{value:g}" for value in c_values], rotation=45)
+    axes[1].set_yticks(range(len(cth_values)), [f"{value:.4g}" for value in cth_values])
+    axes[1].set_xlabel("Electrical C (pF)")
+    axes[1].set_ylabel("Thermal Cth (pJ/K)")
+    axes[1].set_title(f"Current={selected_current:.1f} uA")
+    axes[1].scatter([adopted_index], [int(np.argmin(np.abs(cth_values - adopted_C_th_pJ_per_K)))], marker="x", s=70, color=COLORS["red"], linewidth=2)
+    colorbar = fig.colorbar(image1, ax=axes, shrink=0.9)
+    colorbar.set_label("Predicted frequency (MHz); gray = no oscillation")
+    fig.suptitle("Capacitance sensitivity and the thermal-only limit", color=COLORS["ink"], fontsize=14)
     return _finish(fig, out_path)

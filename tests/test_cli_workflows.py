@@ -15,6 +15,7 @@ from neuristor.config import ConfigError, apply_overrides, load_toml
 from neuristor.experimental_waveforms import load_converted_sweep
 from neuristor.lab_estimates import (
     estimate_environmental_conductance,
+    estimate_thermal_capacitance,
     heating_branch_resistance_ohm,
 )
 from neuristor.model import YuanhangResistParams
@@ -293,6 +294,185 @@ def test_environmental_conductance_cli_writes_bundle(tmp_path: Path) -> None:
     assert (bundles[0] / "figures" / "environmental_conductance.png").is_file()
 
 
+def _synthetic_thermal_waveforms(
+    params: YuanhangResistParams,
+    *,
+    ambient_K: float,
+    conductance_mW_per_K: float,
+    capacitance_pJ_per_K: float,
+    electrical_capacitance_pF: float = 0.0,
+) -> pd.DataFrame:
+    """Generate self-consistent heating edges with an optional electrical current."""
+
+    time_ns = np.arange(-200.0, 251.0)
+    frames: list[pd.DataFrame] = []
+    for drive_mV, plateau_current_uA in ((100, 80.0), (150, 100.0), (200, 120.0)):
+        resistive_current_uA = np.zeros_like(time_ns)
+        ramp = (time_ns > -15.0) & (time_ns < 15.0)
+        resistive_current_uA[ramp] = plateau_current_uA * (time_ns[ramp] + 15.0) / 30.0
+        resistive_current_uA[time_ns >= 15.0] = plateau_current_uA
+        temperature_K = np.full_like(time_ns, ambient_K)
+        voltage_mV = np.zeros_like(time_ns)
+        for index in range(len(time_ns)):
+            resistance_ohm = float(
+                heating_branch_resistance_ohm(temperature_K[index], params)
+            )
+            voltage_mV[index] = resistive_current_uA[index] * resistance_ohm / 1000.0
+            if index + 1 < len(time_ns):
+                power_mW = resistive_current_uA[index] * voltage_mV[index] * 1e-6
+                temperature_K[index + 1] = temperature_K[index] + (
+                    power_mW
+                    - conductance_mW_per_K * (temperature_K[index] - ambient_K)
+                ) / capacitance_pJ_per_K
+        measured_current_uA = (
+            resistive_current_uA
+            + float(electrical_capacitance_pF) * np.gradient(voltage_mV, time_ns)
+        )
+        frames.append(
+            pd.DataFrame(
+                {
+                    "source_file": f"{drive_mV}mv0_converted.csv",
+                    "nominal_drive_mV": float(drive_mV),
+                    "time_ns": time_ns,
+                    "input_current_uA": measured_current_uA,
+                    "output_voltage_mV": voltage_mV,
+                }
+            )
+        )
+    return pd.concat(frames, ignore_index=True)
+
+
+def test_thermal_capacitance_fit_recovers_synthetic_time_constant() -> None:
+    params = YuanhangResistParams(
+        R0=0.8,
+        Ea_over_k=2537.0,
+        Rm0=18.2,
+        Rm_factor=1.0,
+        w=6.88,
+        Tc_K=333.49,
+        beta=0.299,
+        T_min_K=285.0,
+        T_max_K=375.0,
+    )
+    ambient_K = 314.4
+    conductance = 0.003675
+    expected_capacitance = 0.05
+    traces = _synthetic_thermal_waveforms(
+        params,
+        ambient_K=ambient_K,
+        conductance_mW_per_K=conductance,
+        capacitance_pJ_per_K=expected_capacitance,
+    )
+    estimate = estimate_thermal_capacitance(
+        traces,
+        resistance=params,
+        S_e_mW_per_K=conductance,
+        ambient_temperature_K=ambient_K,
+        near_transition_check_mV=None,
+        bootstrap_samples=20,
+        fit_window_jitter_ns=0,
+    )
+    row = estimate.result.iloc[0]
+    assert float(row["C_th_pJ_per_K"]) == pytest.approx(expected_capacitance, rel=0.03)
+    assert float(row["tau_th_ns"]) == pytest.approx(
+        expected_capacitance / conductance,
+        rel=0.03,
+    )
+    assert len(estimate.trace_fits) == 3
+
+
+def test_thermal_capacitance_fit_subtracts_adopted_electrical_current() -> None:
+    params = YuanhangResistParams(
+        R0=0.8,
+        Ea_over_k=2537.0,
+        Rm0=18.2,
+        Rm_factor=1.0,
+        w=6.88,
+        Tc_K=333.49,
+        beta=0.299,
+        T_min_K=285.0,
+        T_max_K=375.0,
+    )
+    electrical_capacitance_pF = 0.39
+    expected_capacitance_pJ_per_K = 0.05
+    traces = _synthetic_thermal_waveforms(
+        params,
+        ambient_K=314.4,
+        conductance_mW_per_K=0.003675,
+        capacitance_pJ_per_K=expected_capacitance_pJ_per_K,
+        electrical_capacitance_pF=electrical_capacitance_pF,
+    )
+    estimate = estimate_thermal_capacitance(
+        traces,
+        resistance=params,
+        S_e_mW_per_K=0.003675,
+        ambient_temperature_K=314.4,
+        electrical_capacitance_pF=electrical_capacitance_pF,
+        near_transition_check_mV=None,
+        bootstrap_samples=20,
+        fit_window_jitter_ns=0,
+    )
+    row = estimate.result.iloc[0]
+    assert float(row["electrical_capacitance_pF"]) == pytest.approx(0.39)
+    assert float(row["C_th_pJ_per_K"]) == pytest.approx(expected_capacitance_pJ_per_K, rel=0.04)
+
+
+def test_thermal_capacitance_cli_writes_bundle(tmp_path: Path) -> None:
+    params = YuanhangResistParams(
+        R0=0.8,
+        Ea_over_k=2537.0,
+        Rm0=18.2,
+        Rm_factor=1.0,
+        w=6.88,
+        Tc_K=333.49,
+        beta=0.299,
+        T_min_K=285.0,
+        T_max_K=375.0,
+    )
+    traces = _synthetic_thermal_waveforms(
+        params,
+        ambient_K=314.4,
+        conductance_mW_per_K=0.003675,
+        capacitance_pJ_per_K=0.05,
+    )
+    for source_file, frame in traces.groupby("source_file"):
+        frame[["time_ns", "input_current_uA", "output_voltage_mV"]].to_csv(
+            tmp_path / str(source_file),
+            header=False,
+            index=False,
+        )
+    preset = tmp_path / "resistance.json"
+    preset.write_text(json.dumps({"resist_params": dataclasses.asdict(params)}))
+    output_root = tmp_path / "runs"
+    result = runner.invoke(
+        app,
+        [
+            "analyze",
+            "thermal-capacitance",
+            "--data",
+            str(tmp_path),
+            "--resistance-preset",
+            str(preset),
+            "--conductance-mW-per-K",
+            "0.003675",
+            "--near-transition-check-mV",
+            "200",
+            "--bootstrap-samples",
+            "20",
+            "--fit-window-jitter-ns",
+            "0",
+            "--output-root",
+            str(output_root),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    bundles = [path for path in output_root.iterdir() if path.is_dir()]
+    assert len(bundles) == 1
+    assert (bundles[0] / "thermal_capacitance_estimate.csv").is_file()
+    assert (bundles[0] / "thermal_trajectories.csv").is_file()
+    assert (bundles[0] / "figures" / "thermal_capacitance.png").is_file()
+
+
 def test_numerical_waveform_loader_preserves_units_and_computes_power(tmp_path: Path) -> None:
     time_ns = list(range(-200, 251))
     current_uA = [0.0 if time < 0 else 100.0 for time in time_ns]
@@ -305,3 +485,124 @@ def test_numerical_waveform_loader_preserves_units_and_computes_power(tmp_path: 
     assert summary.iloc[0]["current_plateau_uA"] == 100.0
     assert summary.iloc[0]["voltage_plateau_mean_mV"] == 200.0
     assert bool(summary.iloc[0]["oscillation_detected"]) is False
+
+
+def test_lab_analysis_cli_archives_first_oscillating_trace_plot(tmp_path: Path) -> None:
+    time_ns = np.arange(-200.0, 301.0)
+    stable = pd.DataFrame(
+        {
+            "time": time_ns,
+            "current": np.where(time_ns < 0.0, 0.0, 100.0),
+            "voltage": np.where(time_ns < 0.0, 0.0, 200.0),
+        }
+    )
+    oscillating_voltage = 200.0 + 35.0 * np.sin(2.0 * np.pi * time_ns / 20.0)
+    oscillating = pd.DataFrame(
+        {
+            "time": time_ns,
+            "current": np.where(time_ns < 0.0, 0.0, 120.0),
+            "voltage": np.where(time_ns < 0.0, 0.0, oscillating_voltage),
+        }
+    )
+    stable.to_csv(tmp_path / "100mv0_converted.csv", header=False, index=False)
+    oscillating.to_csv(tmp_path / "200mv0_converted.csv", header=False, index=False)
+    output_root = tmp_path / "runs"
+    result = runner.invoke(
+        app,
+        [
+            "analyze",
+            "lab",
+            "--data",
+            str(tmp_path),
+            "--output-root",
+            str(output_root),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    bundles = list(output_root.iterdir())
+    assert len(bundles) == 1
+    assert (bundles[0] / "figures" / "pre_onset_trace.png").is_file()
+    assert (bundles[0] / "figures" / "oscillation_onset_trace.png").is_file()
+    assert (bundles[0] / "figures" / "oscillation_onset_bracket.png").is_file()
+    metrics = json.loads((bundles[0] / "metrics.json").read_text())
+    assert metrics["last_nonoscillating_source_file"] == "100mv0_converted.csv"
+    assert metrics["first_oscillating_source_file"] == "200mv0_converted.csv"
+    assert metrics["last_nonoscillating_current_step_uA"] == pytest.approx(100.0)
+    assert metrics["first_oscillating_current_step_uA"] == pytest.approx(120.0)
+
+
+def test_model_validation_cli_writes_blind_comparison_bundle(tmp_path: Path) -> None:
+    time_ns = np.arange(-200.0, 301.0)
+    stable_voltage = np.where(time_ns < 0.0, 0.0, 200.0)
+    oscillating_voltage = np.where(
+        time_ns < 0.0,
+        0.0,
+        200.0 + 35.0 * np.sin(2.0 * np.pi * time_ns / 20.0),
+    )
+    for drive, current, voltage in (
+        (100, 100.0, stable_voltage),
+        (200, 120.0, oscillating_voltage),
+    ):
+        pd.DataFrame(
+            {
+                "time": time_ns,
+                "current": np.where(time_ns < 0.0, 0.0, current),
+                "voltage": voltage,
+            }
+        ).to_csv(tmp_path / f"{drive}mv0_converted.csv", header=False, index=False)
+
+    recipe = tmp_path / "validation.toml"
+    recipe.write_text(
+        f'''schema_version = 1
+name = "Tiny model validation"
+kind = "simulation"
+model = "current"
+
+[time]
+dt_ns = 1.0
+pre_us = 0.2
+duration_us = 0.3
+[input]
+amplitude_uA = 120.0
+on_us = 0.0
+off_us = 0.3
+[initial]
+temperature_K = 325.0
+[electrical]
+C_pF = 0.0
+[thermal]
+C_th_pJ_per_K = 49.62776831
+S_e_mW_per_K = 0.20558726
+T0_K = 325.0
+[resistance]
+preset = "yuanhang"
+start_branch = "insulator"
+[lab_validation]
+data_directory = "{tmp_path.as_posix()}"
+convergence_dt_ns = 0.5
+convergence_drives_mV = [100.0]
+[sensitivity]
+electrical_capacitances_pF = [0.0]
+thermal_capacitances_pJ_per_K = [49.62776831]
+pulse_duration_ns = 300.0
+pre_duration_ns = 200.0
+post_duration_ns = 50.0
+[output]
+root = "runs"
+'''
+    )
+    output_root = tmp_path / "validation-runs"
+    result = runner.invoke(
+        app,
+        ["analyze", "model-validation", "--config", str(recipe), "--output-root", str(output_root)],
+    )
+    assert result.exit_code == 0, result.output
+    bundle = next(output_root.iterdir())
+    assert (bundle / "comparison.csv").is_file()
+    assert (bundle / "capacitance_sensitivity.csv").is_file()
+    assert (bundle / "figures" / "model_vs_experiment.png").is_file()
+    assert (bundle / "figures" / "representative_traces.png").is_file()
+    assert (bundle / "figures" / "capacitance_sensitivity.png").is_file()
+    metrics = json.loads((bundle / "metrics.json").read_text())
+    assert metrics["measured_oscillating_waveforms"] == 1
+    assert metrics["waveforms"] == 2

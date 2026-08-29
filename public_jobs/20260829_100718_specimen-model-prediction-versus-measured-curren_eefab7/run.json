@@ -1,0 +1,99 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Measured versus predicted sweep",
+      "media_type": "text/csv",
+      "path": "comparison.csv"
+    },
+    {
+      "label": "Measured and predicted traces",
+      "media_type": "text/csv",
+      "path": "comparison_traces.csv"
+    },
+    {
+      "label": "Time-step convergence check",
+      "media_type": "text/csv",
+      "path": "convergence.csv"
+    },
+    {
+      "label": "C and Cth sensitivity grid",
+      "media_type": "text/csv",
+      "path": "capacitance_sensitivity.csv"
+    },
+    {
+      "label": "Model versus experiment summary",
+      "media_type": "image/png",
+      "path": "figures/model_vs_experiment.png"
+    },
+    {
+      "label": "Representative measured and predicted traces",
+      "media_type": "image/png",
+      "path": "figures/representative_traces.png"
+    },
+    {
+      "label": "Capacitance sensitivity maps",
+      "media_type": "image/png",
+      "path": "figures/capacitance_sensitivity.png"
+    },
+    {
+      "label": "Validation summary",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Scientific report",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor analyze model-validation --config experiments/current/specimen_model_validation.toml --output-root runs",
+  "created_at": "2026-08-29T10:07:18.922529+00:00",
+  "id": "20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7",
+  "kind": "analysis",
+  "model": "specimen-model-validation",
+  "name": "Specimen model prediction versus measured current sweep",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "d488609318354583aabc734763a8d13544a78496",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "adopted_electrical_capacitance_pF": 0.39,
+    "adopted_grid_oscillating_waveforms": 0,
+    "adopted_thermal_capacitance_pJ_per_K": 0.047873236,
+    "classification_matches": 11,
+    "maximum_convergence_mean_voltage_difference_mV": 0.2283384948815126,
+    "measured_energy_per_cycle_max_pJ": 1.7612759541560492,
+    "measured_energy_per_cycle_min_pJ": 1.228639133816498,
+    "measured_frequency_max_MHz": 62.5,
+    "measured_frequency_min_MHz": 41.666666666666664,
+    "measured_oscillating_waveforms": 11,
+    "measured_oscillation_current_max_uA": 606.2950294894458,
+    "measured_oscillation_current_min_uA": 228.15229898524512,
+    "median_plateau_voltage_rmse_mV": 32.38055888072701,
+    "metallic_resistance_ohm": 18.21526990911648,
+    "minimum_grid_capacitance_with_oscillation_at_adopted_C_th_pF": 7.0,
+    "minimum_grid_capacitance_with_oscillation_pF": 3.0,
+    "oscillations_anywhere_within_timing_bound": false,
+    "pre_onset_measured_voltage_mean_mV": 318.8617590398009,
+    "pre_onset_predicted_voltage_mean_mV": 319.5278642545239,
+    "pre_onset_voltage_error_mV": 0.6661052147229611,
+    "predicted_oscillating_waveforms": 0,
+    "resistance_source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/resistance_100425_chip1_gap3.json",
+    "start_branch": "insulator",
+    "thermal_only_cooling_threshold_uA": 254.43567453739573,
+    "thermal_only_heating_threshold_uA": 329.6489108907873,
+    "thermal_only_window_exists": false,
+    "thermal_time_constant_ns": 13.026282496670524,
+    "waveforms": 22
+  },
+  "updated_at": "2026-08-29T10:09:00.333513+00:00"
+}

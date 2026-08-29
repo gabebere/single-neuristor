@@ -19,9 +19,11 @@ from .visualization import animate_current_resistance_temperature, plot_resistan
 from .workflows import (
     run_environmental_conductance,
     run_lab_analysis,
+    run_model_validation,
     run_resistance_fit,
     run_simulation,
     run_sweep,
+    run_thermal_capacitance,
 )
 
 
@@ -147,6 +149,19 @@ def analyze_lab(
     _announce_bundle(bundle.root)
 
 
+@analyze_app.command("model-validation")
+def analyze_model_validation(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False, readable=True),
+    set_values: list[str] = typer.Option([], "--set", help="Override a dotted TOML path."),
+    output_root: Optional[Path] = typer.Option(None, "--output-root", help="Override [output].root."),
+) -> None:
+    """Compare one frozen specimen model with every measured current trace."""
+
+    configured = _configured(config, set_values, "current")
+    bundle = run_model_validation(configured, output_root=output_root, command=_command())
+    _announce_bundle(bundle.root)
+
+
 def _csv_numbers(text: str, option: str) -> list[float]:
     try:
         values = [float(value.strip()) for value in text.split(",") if value.strip()]
@@ -193,6 +208,69 @@ def analyze_conductance(
         steady_window_ns=(steady_bounds[0], steady_bounds[1]),
         bootstrap_samples=bootstrap_samples,
         block_size=block_size,
+        seed=seed,
+        output_root=output_root,
+        command=_command(),
+    )
+    _announce_bundle(bundle.root)
+
+
+@analyze_app.command("thermal-capacitance")
+def analyze_thermal_capacitance(
+    data_directory: Path = typer.Option(..., "--data", exists=True, file_okay=False, readable=True),
+    resistance_preset: Path = typer.Option(..., "--resistance-preset", exists=True, dir_okay=False, readable=True),
+    conductance_mW_per_K: float = typer.Option(..., "--conductance-mW-per-K", min=1e-12),
+    resistance_bootstrap: Optional[Path] = typer.Option(
+        None, "--resistance-bootstrap", exists=True, dir_okay=False, readable=True
+    ),
+    conductance_bootstrap: Optional[Path] = typer.Option(
+        None, "--conductance-bootstrap", exists=True, dir_okay=False, readable=True
+    ),
+    ambient_K: float = typer.Option(314.4, "--ambient-K"),
+    electrical_capacitance_pF: float = typer.Option(
+        0.0, "--electrical-capacitance-pF", min=0.0
+    ),
+    selected_drives_mV: str = typer.Option("100,150,200", "--selected-drives-mV"),
+    near_transition_check_mV: Optional[float] = typer.Option(250.0, "--near-transition-check-mV"),
+    baseline_window_ns: str = typer.Option("-200,-50", "--baseline-window-ns"),
+    integration_window_ns: str = typer.Option("-50,80", "--integration-window-ns"),
+    fit_window_ns: str = typer.Option("15,35", "--fit-window-ns"),
+    smoothing_window: int = typer.Option(9, "--smoothing-window", min=5),
+    bootstrap_samples: int = typer.Option(1000, "--bootstrap-samples", min=1),
+    fit_window_jitter_ns: int = typer.Option(2, "--fit-window-jitter-ns", min=0),
+    seed: int = typer.Option(20260817, "--seed"),
+    name: str = typer.Option("Thermal time constant and capacitance estimate", "--name"),
+    output_root: Path = typer.Option(Path("runs"), "--output-root"),
+) -> None:
+    """Fit the specimen thermal time constant from nonswitching heating edges."""
+
+    drives = _csv_numbers(selected_drives_mV, "--selected-drives-mV")
+    baseline_bounds = _csv_numbers(baseline_window_ns, "--baseline-window-ns")
+    integration_bounds = _csv_numbers(integration_window_ns, "--integration-window-ns")
+    fit_bounds = _csv_numbers(fit_window_ns, "--fit-window-ns")
+    if len(baseline_bounds) != 2 or len(integration_bounds) != 2 or len(fit_bounds) != 2:
+        typer.echo("Baseline, integration, and fit windows must each contain two values.", err=True)
+        raise typer.Exit(2)
+    if smoothing_window % 2 == 0:
+        typer.echo("--smoothing-window must be odd.", err=True)
+        raise typer.Exit(2)
+    bundle = run_thermal_capacitance(
+        data_directory,
+        name=name,
+        resistance_preset=resistance_preset,
+        S_e_mW_per_K=conductance_mW_per_K,
+        ambient_temperature_K=ambient_K,
+        electrical_capacitance_pF=electrical_capacitance_pF,
+        selected_drives_mV=tuple(drives),
+        near_transition_check_mV=near_transition_check_mV,
+        resistance_bootstrap=resistance_bootstrap,
+        conductance_bootstrap=conductance_bootstrap,
+        baseline_window_ns=(baseline_bounds[0], baseline_bounds[1]),
+        integration_window_ns=(integration_bounds[0], integration_bounds[1]),
+        fit_window_ns=(fit_bounds[0], fit_bounds[1]),
+        smoothing_window=smoothing_window,
+        bootstrap_samples=bootstrap_samples,
+        fit_window_jitter_ns=fit_window_jitter_ns,
         seed=seed,
         output_root=output_root,
         command=_command(),

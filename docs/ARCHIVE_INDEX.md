@@ -7,15 +7,22 @@ claims.
 
 ## Active final-project manuscript
 
+- `docs/final_project/`: human-facing final-project hub. Its README organizes the
+  editable manuscript, current PDF, raw resistance and oscilloscope data, reviewed
+  run bundles, and supplementary figures and animations without duplicating their
+  canonical sources.
 - `docs/final_project/main.tex`: working LaTeX manuscript for the VO2 automatic-gain-
   control simulation project. The Yuanhang validation and sample-specific R(T) fit are
-  complete; later thermal/electrical parameter sections remain explicitly marked as planned.
+  complete, as are the electrical-capacitance, environmental-conductance, thermal-
+  capacitance, blind current-comparison, and capacitance-sensitivity studies.
 - The Case I figure and metrics point to the immutable public run bundle
   `20260817_100102_current-step-with-a-nonzero-metallic-voltage-val_6765e0`, whose voltage
   panel includes the instantaneous metallic fixed point `I(t) R_m`, rather than duplicating
   scientific output inside the manuscript directory.
-- `docs/final_project/figures/` contains the manuscript's derived R(T) trajectory and
-  synchronized current/voltage--R(T) animation; both can be regenerated from that bundle.
+- `docs/final_project/supplementary/` presents the manuscript's derived R(T)
+  trajectory, synchronized current/voltage--R(T) animation, current evidence figures,
+  and selected historical animations. Generated evidence remains authoritative in its
+  immutable `public_jobs/` bundle.
 - `20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9` is the reviewed
   sample-specific major-loop fit, including the normalized data, fitted preset, residual
   figure, parameter table, and 1000 block-bootstrap parameter samples.
@@ -41,12 +48,44 @@ claims.
 - The numerical laboratory workflow archives measured current/voltage traces, the
   Figure 7 operating window, and a baseline-corrected environmental-conductance
   estimate in immutable `public_jobs/` bundles.
-- `20260817_134254_measured-laboratory-current-sweep_a45254`: all 22 normalized raw
-  traces, their summary table, and the measured 41.7--62.5 MHz operating-window figure.
+- `20260827_142103_measured-laboratory-current-sweep-with-current-l_ec6ec4`: canonical
+  archive of all 22 normalized traces, the measured 41.7--62.5 MHz operating window,
+  separate onset waveforms, and the shared-axis bracket used in the manuscript. Its
+  labels lead with the measured current step and retain the source-voltage setting
+  only for provenance.
+- `20260827_123959_measured-laboratory-current-sweep-with-onset-bra_82870f`: earlier
+  immutable onset-bracket archive superseded by `ec6ec4`, which clarifies the
+  measured-current versus source-setting distinction.
+- `20260827_120011_measured-laboratory-current-sweep-with-onset-tra_ecc00b`: earlier
+  archive retained immutably and superseded by `82870f`, which adds the 250 mV
+  non-oscillating control and direct shared-scale comparison.
+- `20260817_134254_measured-laboratory-current-sweep_a45254`: earlier numerically
+  identical sweep archive retained immutably and superseded by the later onset-evidence
+  bundles.
 - `20260817_153807_environmental-thermal-conductance-estimate_761640`: canonical
   clean-provenance selected settled
   pre-onset waveform, fitted R(T) temperature inversion, conditional conductance
   interval, numerical tables, and evidence figure.
+- `20260828_112314_thermal-capacitance-estimate-with-conservative-0_aa2469`: canonical
+  heating-edge reconstruction using the adopted electrical upper bound `C=0.39 pF`.
+  It subtracts `C dV/dt` before forming resistance and power, then fits the shared
+  `tau_th` and `C_th` with the conditional robustness interval and near-transition
+  sensitivity check.
+- `20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7`: canonical
+  blind prediction test. It replays all 22 measured current waveforms through one
+  frozen specimen parameter set, archives common-window measured/predicted metrics and
+  convergence evidence, and maps C--Cth sensitivity. The stable pre-onset voltage is
+  reproduced, but the adopted model predicts none of the 11 measured oscillatory runs;
+  oscillations require electrical capacitance outside the 0.39 pF timing bound.
+- `20260828_112026_thermal-capacitance-estimate-with-conservative-0_ce51fa`: earlier
+  numerically identical upper-bound run retained immutably and superseded by
+  `aa2469`, whose figure labels the corrected ratio as `V/I_R`.
+- `20260817_161851_thermal-time-constant-and-capacitance-estimate_b3833c`: earlier
+  immutable `C=0` thermal fit, retained as the lower-endpoint sensitivity analysis
+  and superseded for the manuscript by `ce51fa`.
+- `20260817_161539_thermal-time-constant-and-capacitance-estimate_c285f9`: numerically
+  identical pre-provenance run retained immutably and superseded by `b3833c`, whose
+  resolved configuration also records `C=0` and the nine-sample smoothing window.
 - `20260817_152216_environmental-thermal-conductance-estimate_c4be6c`: numerically
   identical pre-commit run retained for immutable provenance and superseded by `761640`.
 - `20260817_134254_lab-current-trace-parameter-estimates_4223e0`: superseded historical
@@ -82,6 +121,16 @@ neuristor analyze conductance \
   --resistance-preset presets/resistance_100425_chip1_gap3.json \
   --resistance-bootstrap public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
   --ambient-K 314.4 --ambient-interval-K 314.25,314.55
+neuristor analyze thermal-capacitance \
+  --data data/experimental/tia_current_sweep \
+  --resistance-preset presets/resistance_100425_chip1_gap3.json \
+  --resistance-bootstrap public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
+  --conductance-mW-per-K 0.003675126546984294 \
+  --conductance-bootstrap public_jobs/20260817_153807_environmental-thermal-conductance-estimate_761640/conductance_bootstrap.csv \
+  --ambient-K 314.4 --electrical-capacitance-pF 0.39 \
+  --selected-drives-mV 100,150,200 --fit-window-ns 15,35
+neuristor analyze model-validation \
+  --config experiments/current/specimen_model_validation.toml
 pytest -q
 neuristor validate
 ```

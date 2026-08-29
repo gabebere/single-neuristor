@@ -6,28 +6,34 @@ seed = 0
 
 [time]
 dt_ns = 0.05
-duration_us = 2.0
+pre_us = 0.2
+duration_us = 0.5
 
 [input]
-amplitude_uA = 1100.0
+amplitude_uA = 228.152299
+on_us = 0.0
+off_us = 0.3
 
 [initial]
-temperature_K = 311.21937437938016
+temperature_K = 314.4
 
 [electrical]
-C_pF = 25.930953
+# Conservative adopted value: the data resolve no positive lag, while their
+# approximately 1 ns timing resolution gives C <= 0.39 pF.
+C_pF = 0.39
 
 [thermal]
-C_th_pJ_per_K = 5.0
-S_e_mW_per_K = 0.1
-T0_K = 311.21937437938016
+C_th_pJ_per_K = 0.0478732360
+S_e_mW_per_K = 0.0036751265
+T0_K = 314.4
 
 [resistance]
 preset = "../../presets/resistance_100425_chip1_gap3.json"
 start_branch = "insulator"
 
 [analysis]
-start_us = 1.0
+start_us = 0.05
+stop_us = 0.25
 
 [output]
 root = "runs"

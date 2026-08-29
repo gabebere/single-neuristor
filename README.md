@@ -15,6 +15,12 @@ The original Yuanhang Zhang implementation is preserved under
 The last known-working pre-refactor repository is permanently tagged
 [`v0.1.0-working-baseline`](https://github.com/gabebere/single-neuristor/tree/v0.1.0-working-baseline).
 
+The current final-project report, measurements, reviewed analysis bundles, figures,
+and animations are organized from one documented entry point:
+[`docs/final_project/`](docs/final_project/). Its PDF and report-specific media are
+stored there directly; relative data links point to canonical measurements and run
+bundles so scientific evidence is not duplicated.
+
 ## Scientific result in one sentence
 
 For an ideal current source, the switched-state voltage floor is set by
@@ -78,6 +84,8 @@ Use `neuristor --help` or `neuristor <group> --help` for the complete live refer
 | Fit measured R(T) | `neuristor fit resistance --data FILE.tsv` |
 | Analyze numerical lab traces | `neuristor analyze lab --data DIRECTORY` |
 | Estimate environmental conductance | `neuristor analyze conductance --data DIRECTORY --resistance-preset FILE.json` |
+| Estimate thermal capacitance | `neuristor analyze thermal-capacitance --data DIRECTORY --resistance-preset FILE.json --conductance-mW-per-K VALUE` |
+| Validate specimen model against lab sweep | `neuristor analyze model-validation --config FILE.toml` |
 | Browse runs | `neuristor runs list` / `neuristor runs show RUN_ID` |
 | Visualize a current run | `neuristor runs visualize RUN_ID` |
 | Copy a run to the Git archive | `neuristor runs publish RUN_ID` |
@@ -194,14 +202,44 @@ settled resistance is stable, maps that resistance to temperature through the fi
 heating branch, and evaluates `S_e = P/(T-T0)`. Its conditional interval propagates
 waveform block resampling, the R(T)-fit bootstrap, and the measured ambient range.
 Electrical capacitance is not estimated from the source-limited pulse edge; the
-present traces do not resolve a positive value. Thermal capacitance still requires
-an independently measured thermal time constant.
+present traces do not resolve a positive value. The sample-specific analysis adopts
+the conservative timing-resolution upper bound `C=0.39 pF`, while `C=0` remains the
+constrained best fit.
 
-The oscillatory traces can later constrain the minor-loop parameter `gamma`, but only
-after `C`, `C_th`, `S_e`, and `T0` are fixed well enough to reconstruct resistive
-current, power, and the latent temperature trajectory. The low- and high-current
-traces constrain the other parameters; only repeated transition reversals carry
-meaningful information about `gamma`.
+With `C=0.39 pF` and `S_e` fixed, subtract `C*dV/dt` from the measured current and fit
+the moderate nonswitching heating edges to obtain the thermal time constant and
+`C_th=S_e*tau_th`:
+
+```bash
+neuristor analyze thermal-capacitance \
+  --data data/experimental/tia_current_sweep \
+  --resistance-preset presets/resistance_100425_chip1_gap3.json \
+  --resistance-bootstrap public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
+  --conductance-mW-per-K 0.003675126546984294 \
+  --conductance-bootstrap public_jobs/20260817_153807_environmental-thermal-conductance-estimate_761640/conductance_bootstrap.csv \
+  --ambient-K 314.4 --electrical-capacitance-pF 0.39 \
+  --selected-drives-mV 100,150,200 --fit-window-ns 15,35
+```
+
+The shared fit gives `tau_th=13.026 ns` and `C_th=0.047873 pJ/K`. Its conditional
+robustness interval propagates trace selection, R(T), conductance, ambient temperature,
+and small fit-window changes. The 250 mV near-transition trace is reported separately
+because its reversal biases the single-heating-branch estimate downward.
+
+Run the resulting frozen parameter set against every measured current waveform, then
+map the electrical/thermal capacitance sensitivity:
+
+```bash
+neuristor analyze model-validation \
+  --config experiments/current/specimen_model_validation.toml
+```
+
+This blind test reproduces the 189.6 uA stable pre-onset mean voltage within 0.67 mV,
+but predicts none of the 11 measured oscillatory traces. No oscillation occurs for any
+tested `C <= 0.39 pF` across the conditional `C_th` interval. At the adopted `C_th`,
+oscillations begin only at 7 pF, which contradicts the measured edge-timing bound.
+Consequently, fitting `gamma` is deferred until the dynamic switching loop or the real
+TIA/load impedance resolves this model incompatibility.
 
 ## Run bundles and GitHub archive
 

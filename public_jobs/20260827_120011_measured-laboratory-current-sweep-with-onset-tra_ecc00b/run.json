@@ -1,0 +1,68 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Measured sweep summary",
+      "media_type": "text/csv",
+      "path": "summary.csv"
+    },
+    {
+      "label": "Numerical oscilloscope traces",
+      "media_type": "text/csv",
+      "path": "traces.csv"
+    },
+    {
+      "label": "Lab sweep summary",
+      "media_type": "image/png",
+      "path": "figures/lab_summary.png"
+    },
+    {
+      "label": "First coherently oscillating measured trace",
+      "media_type": "image/png",
+      "path": "figures/oscillation_onset_trace.png"
+    },
+    {
+      "label": "Waveform metrics",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Scientific report",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor analyze lab --data data/experimental/tia_current_sweep --name 'Measured laboratory current sweep with onset trace'",
+  "created_at": "2026-08-27T12:00:11.321450+00:00",
+  "id": "20260827_120011_measured-laboratory-current-sweep-with-onset-tra_ecc00b",
+  "kind": "analysis",
+  "model": "lab-current-waveforms",
+  "name": "Measured laboratory current sweep with onset trace",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "d488609318354583aabc734763a8d13544a78496",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "current_max_uA": 943.291300117163,
+    "current_min_uA": 41.8558134916695,
+    "first_oscillating_drive_mV": 300.0,
+    "first_oscillating_peak_count": 8,
+    "first_oscillating_period_cv": 0.020257904182092133,
+    "first_oscillating_source_file": "300mv0_converted.csv",
+    "oscillation_current_max_uA": 621.842683241655,
+    "oscillation_current_min_uA": 233.511368826578,
+    "oscillation_frequency_max_MHz": 62.5,
+    "oscillation_frequency_min_MHz": 41.666666666666664,
+    "samples": 22000,
+    "waveforms": 22
+  },
+  "updated_at": "2026-08-27T12:00:11.891599+00:00"
+}
