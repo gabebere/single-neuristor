@@ -91,6 +91,12 @@ claims.
   numerically stable, but all eight fitted values violate independent physical
   intervals and the predicted amplitude remains too large. The archived optimizer
   messages also record that the finite search budget was exhausted.
+- `20260829_210212_amplitude-tuned-oscillation-priority-specimen-in_85526c`: current
+  amplitude-priority diagnostic. The median predicted/measured oscillatory Vpp ratio
+  falls from 7.15 to 2.59 and Vpp MAE falls from 280.1 to 88.5 mV, but classification
+  declines to 19/22. The same outcome at 0.0125 ns records a stable amplitude--window
+  tradeoff rather than a timestep artifact; seven of eight fitted values remain
+  outside independent intervals.
 - `20260828_112026_thermal-capacitance-estimate-with-conservative-0_ce51fa`: earlier
   numerically identical upper-bound run retained immutably and superseded by
   `aa2469`, whose figure labels the corrected ratio as `V/I_R`.

@@ -34,6 +34,7 @@ The report currently contains:
 8. Electrical/thermal capacitance dependence and the thermal-only limit.
 9. Global shared-parameter inference with held-out-current validation.
 10. Oscillation-priority inference with persistence and fine-step verification.
+11. Oscillation-amplitude tuning and the measured amplitude--classification tradeoff.
 
 ## Data map
 
@@ -47,6 +48,7 @@ The report currently contains:
 | `data/parameter_estimates/thermal_capacitance/` | Thermal fit, trajectories, uncertainty, and figure | Current reviewed result |
 | `data/parameter_estimates/global_waveform_inference/` | Shared-parameter optimization, held-out validation, and convergence | Current diagnostic result |
 | `data/parameter_estimates/oscillation_priority_inference/` | Classification-first fit, persistent oscillations, and 0.025 ns verification | Current diagnostic result |
+| `data/parameter_estimates/oscillation_amplitude_inference/` | Amplitude-priority fit, per-trace errors, and 0.0125 ns convergence check | Current diagnostic result |
 | `data/reviewed_runs/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/` | Blind prediction, common-window metrics, convergence, and C--Cth map | Current reviewed result |
 | `data/reviewed_runs/20260829_105704_global-specimen-parameter-inference-from-all-cur_8f12d6/` | Constrained and relaxed global fits, held-out validation, fitted traces, and convergence | Current reviewed result |
 | `data/reviewed_runs/` | Complete tracked run archive | Mixed current and historical evidence |

@@ -889,6 +889,92 @@ budgets both reached their configured limits, so this is the best reproducible
 candidate found, not proof of the unique global optimum.
 
 \clearpage
+\section{Oscillation-amplitude tuning}
+\label{sec:oscillation_amplitude}
+
+The classification-first fit recovers the oscillation window, but its voltage cycles
+are too large. We therefore repeated the same eight-parameter search with two explicit
+amplitude terms. The absolute term compares peak-to-peak voltages directly, while
+
+\begin{equation}
+J_{\mathrm{relamp}}=
+\left[\ln\!\left(\frac{V_{\mathrm{pp,pred}}+3~\mathrm{mV}}
+{V_{\mathrm{pp,meas}}+3~\mathrm{mV}}\right)\right]^2
+\end{equation}
+
+penalizes their ratio, so small and large measured cycles matter comparably. The
+$3$~mV floor only keeps the logarithm finite near zero. This term is evaluated only
+for experimentally oscillatory records. The objective used weights of 2500 for
+classification and false positives, 10 for relative amplitude, 1 for absolute
+amplitude, 0.5 for frequency, 0.1 each for waveform, mean voltage, and spectrum, 1
+for persistence, and 0.02 for the turn-on edge.
+
+The search used $0.05$~ns steps, and the selected vector was then evaluated at
+$0.025$ and $0.0125$~ns. Table~\ref{tab:amplitude_tradeoff} compares both diagnostic
+solutions using the same measured traces and the $0.025$~ns evaluation.
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r r@{}}
+\toprule
+Quantity & Classification-first & Amplitude-priority \\
+\midrule
+Correct classifications & 21 of 22 & 19 of 22 \\
+False positives & 0 & 1 \\
+Missed oscillatory records & 1 & 2 \\
+Amplitude records compared & 10 & 9 \\
+Median predicted/measured $V_{\mathrm{pp}}$ & $7.15\times$ & $2.59\times$ \\
+$V_{\mathrm{pp}}$ mean absolute error & 280.1 mV & 88.5 mV \\
+$V_{\mathrm{pp}}$ root-mean-square error & 285.7 mV & 90.1 mV \\
+Predicted frequency interval & 25.6--50.0 MHz & 27.8--62.5 MHz \\
+\bottomrule
+\end{tabular}
+\caption{Amplitude--classification tradeoff at $\Delta t=0.025$~ns. Each column's
+amplitude statistics use records that oscillate in both experiment and that fit.}
+\label{tab:amplitude_tradeoff}
+\end{table}
+
+The amplitude-priority fit falsely oscillates at $189.6~\mu$A and misses the
+$532.9$ and $606.3~\mu$A records. The same 19/22 classification is obtained at
+$0.0125$~ns, so this tradeoff is not removed by halving the timestep. Its fitted
+values are $C=15.672$~pF, $C_{\mathrm{th}}=0.007770$~pJ/K,
+$S_e=0.0009460$~mW/K, $T_0=318.761$~K, $T_c=337.904$~K,
+$w=12.123$~K, $\beta=0.20749$~K$^{-1}$, and $\gamma=1.45177$.
+All except $\gamma$ lie outside their independent intervals.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{../../public_jobs/20260829_210212_amplitude-tuned-oscillation-priority-specimen-in_85526c/figures/operating_summary.png}
+\caption{Amplitude-priority operating behavior. Voltage cycles and the upper
+frequency range move toward experiment, but the oscillation window becomes less
+accurate.}
+\label{fig:oscillation_amplitude_summary}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{../../public_jobs/20260829_210212_amplitude-tuned-oscillation-priority-specimen-in_85526c/figures/representative_fits.png}
+\caption{Representative amplitude-priority predictions at $0.025$~ns. The cycles
+remain too large, and the $189.6~\mu$A false positive makes the tradeoff visible.}
+\label{fig:oscillation_amplitude_traces}
+\end{figure}
+
+This search therefore improves amplitude substantially but does not provide one
+shared physical parameter vector that also preserves the measured oscillation
+window. Local moves within the classification basin produced only small amplitude
+reductions before classifications changed. This sharp observed tradeoff suggests
+missing amplitude-setting physics rather than a simple optimizer failure.
+In the ideal-current lumped model, a complete hysteretic transition produces a
+voltage span set approximately by $I\,\Delta R$. Partial or spatially nonuniform
+switching, or the actual TIA/load response, can reduce the measured span without
+requiring the same changes that move the thermal oscillation boundaries. These are
+the next model extensions to test. Both optimization stages exhausted their finite
+budgets, so the result is a reproducible Pareto endpoint rather than proof of a
+unique global optimum.
+
+\clearpage
 \appendix
 \section{Reproduction}
 
@@ -1010,6 +1096,24 @@ neuristor analyze fit-waveforms --config experiments/current/specimen\_oscillati
 Its bundle records the classification-first objective, four-segment persistence
 metric, parameter search, withheld-current results, per-trace waveforms, and
 $0.1$--$0.025$~ns convergence audit.
+
+The amplitude-priority inference is archived as
+
+\begin{center}
+\footnotesize
+\path{20260829_210212_amplitude-tuned-oscillation-priority-specimen-in_85526c}.
+\end{center}
+
+It is reproduced with
+
+\begin{center}
+\ttfamily\small
+neuristor analyze fit-waveforms --config experiments/current/specimen\_oscillation\_amplitude\_inference.toml
+\end{center}
+
+Its bundle contains the amplitude-aware objective, all fitted traces and per-trace
+metrics, parameter table, optimization history, figures, and the
+$0.1$--$0.0125$~ns convergence audit.
 
 The historical capacitance shortcut is preserved for provenance in
 

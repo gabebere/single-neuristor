@@ -86,6 +86,7 @@ Use `neuristor --help` or `neuristor <group> --help` for the complete live refer
 | Estimate environmental conductance | `neuristor analyze conductance --data DIRECTORY --resistance-preset FILE.json` |
 | Estimate thermal capacitance | `neuristor analyze thermal-capacitance --data DIRECTORY --resistance-preset FILE.json --conductance-mW-per-K VALUE` |
 | Validate specimen model against lab sweep | `neuristor analyze model-validation --config FILE.toml` |
+| Fit shared waveform parameters | `neuristor analyze fit-waveforms --config FILE.toml` |
 | Browse runs | `neuristor runs list` / `neuristor runs show RUN_ID` |
 | Visualize a current run | `neuristor runs visualize RUN_ID` |
 | Copy a run to the Git archive | `neuristor runs publish RUN_ID` |

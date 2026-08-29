@@ -280,6 +280,27 @@ neuristor analyze fit-waveforms \
   --config experiments/current/specimen_oscillation_inference.toml
 ```
 
+### Oscillation-amplitude diagnostic
+
+An amplitude-aware repeat adds a logarithmic peak-to-peak ratio loss so the small
+high-current cycles are not overwhelmed by the large onset cycles. At 0.025 ns, the
+median predicted/measured Vpp ratio improves from 7.15 to 2.59, Vpp mean absolute
+error falls from 280.1 to 88.5 mV, and the predicted frequency range reaches
+27.8--62.5 MHz. The cost is poorer oscillation tracking: 19/22 classifications, with
+a false positive at 189.6 uA and misses at 532.9 and 606.3 uA. The same result at
+0.0125 ns confirms that this is a model tradeoff rather than a timestep artifact.
+
+Local moves within the classification basin produced only small amplitude reductions
+before classifications changed. Within the present lumped ideal-current model,
+complete switching exposes the full fitted resistance contrast and sets a large
+voltage span near `I * Delta R`. Partial/nonuniform switching or the actual TIA/load
+response is therefore the next amplitude-setting physics to test.
+
+```bash
+neuristor analyze fit-waveforms \
+  --config experiments/current/specimen_oscillation_amplitude_inference.toml
+```
+
 ### What the waveforms can tell us about gamma
 
 `gamma` changes the curvature of minor hysteresis loops after a temperature reversal.
