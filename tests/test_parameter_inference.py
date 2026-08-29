@@ -2,7 +2,18 @@ from __future__ import annotations
 
 import numpy as np
 
-from neuristor.parameter_inference import _sustained_oscillation_loss
+from neuristor.parameter_inference import _relative_amplitude_loss, _sustained_oscillation_loss
+
+
+def test_relative_amplitude_loss_is_symmetric_by_ratio() -> None:
+    measured_vpp_mV = 47.0
+
+    assert _relative_amplitude_loss(measured_vpp_mV, measured_vpp_mV) == 0.0
+    assert np.isclose(
+        _relative_amplitude_loss(measured_vpp_mV, 97.0),
+        _relative_amplitude_loss(measured_vpp_mV, 22.0),
+    )
+    assert np.isfinite(_relative_amplitude_loss(measured_vpp_mV, 0.0))
 
 
 def test_sustain_loss_rejects_a_turn_on_transient() -> None:

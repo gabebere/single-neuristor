@@ -66,6 +66,7 @@ class ObjectiveWeights:
     waveform: float = 0.20
     mean_voltage: float = 0.20
     amplitude: float = 0.15
+    relative_amplitude: float = 0.0
     spectrum: float = 0.15
     frequency: float = 0.15
     classification: float = 0.10
@@ -270,6 +271,16 @@ def _spectrum_distance(measured: np.ndarray, predicted: np.ndarray) -> float:
     return float(np.mean((measured_norm - predicted_norm) ** 2) * measured_norm.size)
 
 
+def _relative_amplitude_loss(measured_vpp_mV: float, predicted_vpp_mV: float) -> float:
+    """Compare oscillation amplitudes by ratio while remaining finite near zero.
+
+    The 3 mV floor is small relative to the experimental cycles but prevents a
+    noisy, nearly flat trace from making the logarithmic ratio singular.
+    """
+
+    return float(np.log((float(predicted_vpp_mV) + 3.0) / (float(measured_vpp_mV) + 3.0)) ** 2)
+
+
 def _harmonic_amplitude(time_ns: np.ndarray, voltage_mV: np.ndarray, frequency_MHz: float) -> float:
     """Return the least-squares sinusoidal amplitude at one physical frequency."""
 
@@ -331,6 +342,7 @@ def score_predictions(
     waveform_terms: list[float] = []
     mean_terms: list[float] = []
     amplitude_terms: list[float] = []
+    relative_amplitude_terms: list[float] = []
     spectrum_terms: list[float] = []
     frequency_terms: list[float] = []
     classification_terms: list[float] = []
@@ -352,6 +364,14 @@ def score_predictions(
         waveform_loss = float(waveform_rmse_mV / 50.0)
         mean_mse = ((float(predicted_summary["voltage_mean_mV"]) - float(measured_summary["voltage_mean_mV"])) / 50.0) ** 2
         amplitude_mse = ((float(predicted_summary["voltage_vpp_mV"]) - float(measured_summary["voltage_vpp_mV"])) / 50.0) ** 2
+        relative_amplitude_mse = (
+            _relative_amplitude_loss(
+                float(measured_summary["voltage_vpp_mV"]),
+                float(predicted_summary["voltage_vpp_mV"]),
+            )
+            if measured_osc
+            else 0.0
+        )
         spectrum_mse = _spectrum_distance(measured[plateau], predicted[plateau]) if measured_osc else 0.0
         measured_frequency = float(measured_summary["oscillation_frequency_MHz"])
         predicted_frequency = float(predicted_summary["oscillation_frequency_MHz"])
@@ -373,6 +393,7 @@ def score_predictions(
         waveform_terms.append(waveform_loss)
         mean_terms.append(mean_mse)
         amplitude_terms.append(amplitude_mse)
+        relative_amplitude_terms.append(relative_amplitude_mse)
         spectrum_terms.append(spectrum_mse)
         frequency_terms.append(frequency_mse)
         classification_terms.append(classification_mismatch)
@@ -400,6 +421,7 @@ def score_predictions(
                 "waveform_component": waveform_loss,
                 "mean_voltage_component": mean_mse,
                 "amplitude_component": amplitude_mse,
+                "relative_amplitude_component": relative_amplitude_mse,
                 "spectrum_component": spectrum_mse,
                 "frequency_component": frequency_mse,
                 "classification_component": classification_mismatch,
@@ -412,6 +434,7 @@ def score_predictions(
         "waveform": float(np.mean(waveform_terms)),
         "mean_voltage": float(np.mean(mean_terms)),
         "amplitude": float(np.mean(amplitude_terms)),
+        "relative_amplitude": float(np.mean(relative_amplitude_terms)),
         "spectrum": float(np.mean(spectrum_terms)),
         "frequency": float(np.mean(frequency_terms)),
         "classification": float(np.mean(classification_terms)),
