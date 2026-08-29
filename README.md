@@ -241,6 +241,21 @@ oscillations begin only at 7 pF, which contradicts the measured edge-timing boun
 Consequently, fitting `gamma` is deferred until the dynamic switching loop or the real
 TIA/load impedance resolves this model incompatibility.
 
+Fit one shared parameter vector to all measured current/voltage waveforms, while
+reserving five source settings as a blind validation set:
+
+```bash
+neuristor analyze fit-waveforms \
+  --config experiments/current/specimen_waveform_inference.toml
+```
+
+The physically constrained fit changes the total objective by only 0.72% and still
+predicts zero oscillatory records. A relaxed diagnostic fit improves the all-trace
+objective by 22.5% and the held-out objective by 14.9%, but seven of eight fitted
+parameters leave their independently supported intervals and the model still produces
+only turn-on transients. The result is therefore evidence of model-form mismatch, not
+a replacement set of physical parameter estimates.
+
 ## Run bundles and GitHub archive
 
 Every command writes the same portable directory under `runs/`:

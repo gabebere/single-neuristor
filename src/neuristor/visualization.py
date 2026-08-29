@@ -1045,7 +1045,7 @@ def plot_capacitance_sensitivity(
     fig, axes = plt.subplots(1, 2, figsize=(11.2, 4.8), layout="constrained")
     cmap = plt.get_cmap("viridis").copy()
     cmap.set_bad("#eef2f7")
-    image0 = axes[0].imshow(np.ma.masked_invalid(current_map.to_numpy(dtype=float)), aspect="auto", origin="lower", cmap=cmap)
+    axes[0].imshow(np.ma.masked_invalid(current_map.to_numpy(dtype=float)), aspect="auto", origin="lower", cmap=cmap)
     axes[0].set_xticks(range(len(current_values))[::2], [f"{value:.0f}" for value in current_values[::2]], rotation=45)
     axes[0].set_yticks(range(len(c_values)), [f"{value:g}" for value in c_values])
     axes[0].set_xlabel("Measured current step (uA)")
@@ -1064,4 +1064,106 @@ def plot_capacitance_sensitivity(
     colorbar = fig.colorbar(image1, ax=axes, shrink=0.9)
     colorbar.set_label("Predicted frequency (MHz); gray = no oscillation")
     fig.suptitle("Capacitance sensitivity and the thermal-only limit", color=COLORS["ink"], fontsize=14)
+    return _finish(fig, out_path)
+
+
+def plot_inference_optimization(history: pd.DataFrame, out_path: str | Path) -> Path:
+    """Plot best objective reached versus expensive model evaluations."""
+
+    fig, axes = plt.subplots(1, 2, figsize=(10.6, 4.1), layout="constrained")
+    for mode, color in (("constrained", COLORS["orange"]), ("relaxed", COLORS["green"])):
+        frame = history.loc[history["fit_mode"] == mode].sort_values("evaluation")
+        axes[0].plot(frame["evaluation"], frame["best_total_so_far"], color=color, label=mode.capitalize())
+        axes[1].plot(frame["evaluation"], frame["objective_total"], color=color, alpha=0.3, linewidth=0.8)
+        axes[1].plot(frame["evaluation"], frame["best_total_so_far"], color=color, linewidth=1.8, label=mode.capitalize())
+    axes[0].set_title("Best objective found")
+    axes[1].set_title("Candidate evaluations and running best")
+    for axis in axes:
+        axis.set_xlabel("Model evaluations")
+        axis.set_ylabel("Weighted objective")
+        axis.set_yscale("log")
+        axis.grid(True, color=COLORS["grid"], alpha=0.8)
+        axis.legend(fontsize=8.5)
+    fig.suptitle("Global waveform-parameter optimization", fontsize=14, color=COLORS["ink"])
+    return _finish(fig, out_path)
+
+
+def plot_inference_operating_summary(trace_metrics: pd.DataFrame, out_path: str | Path) -> Path:
+    """Compare measured operating features with baseline and inferred models."""
+
+    modes = (
+        ("baseline", COLORS["gray"], "o", "Original estimates"),
+        ("constrained", COLORS["orange"], "s", "Constrained fit"),
+        ("relaxed", COLORS["green"], "^", "Relaxed diagnostic"),
+    )
+    measured = trace_metrics.loc[trace_metrics["fit_mode"] == "baseline"].sort_values("current_step_uA")
+    current = measured["current_step_uA"].to_numpy(dtype=float)
+    fig, axes = plt.subplots(3, 1, figsize=(10.4, 8.6), sharex=True, layout="constrained")
+    axes[0].plot(current, measured["measured_mean_mV"], "o-", color=COLORS["blue"], label="Measured")
+    axes[1].plot(current, measured["measured_vpp_mV"], "o-", color=COLORS["blue"], label="Measured")
+    measured_osc = measured["measured_oscillation"].astype(bool).to_numpy()
+    axes[2].plot(
+        current[measured_osc],
+        measured.loc[measured_osc, "measured_frequency_MHz"],
+        "o-",
+        color=COLORS["blue"],
+        label="Measured",
+    )
+    for mode, color, marker, label in modes:
+        frame = trace_metrics.loc[trace_metrics["fit_mode"] == mode].sort_values("current_step_uA")
+        axes[0].plot(current, frame["predicted_mean_mV"], marker=marker, color=color, linewidth=1.3, label=label)
+        axes[1].plot(current, frame["predicted_vpp_mV"], marker=marker, color=color, linewidth=1.3, label=label)
+        oscillating = frame["predicted_oscillation"].astype(bool).to_numpy()
+        if np.any(oscillating):
+            axes[2].plot(
+                current[oscillating],
+                frame.loc[oscillating, "predicted_frequency_MHz"],
+                marker=marker,
+                color=color,
+                linewidth=1.3,
+                label=label,
+            )
+    axes[0].set_ylabel("Mean voltage (mV)")
+    axes[1].set_ylabel("Plateau Vpp (mV)")
+    axes[2].set_ylabel("Frequency (MHz)")
+    axes[2].set_xlabel("Measured current step (uA)")
+    for axis in axes:
+        axis.grid(True, color=COLORS["grid"], alpha=0.8)
+        axis.legend(fontsize=8, ncol=2)
+    fig.suptitle("Shared-parameter fits across every measured current", fontsize=14, color=COLORS["ink"])
+    return _finish(fig, out_path)
+
+
+def plot_inference_representative_traces(
+    traces: pd.DataFrame,
+    out_path: str | Path,
+    *,
+    drives_mV: tuple[float, ...] = (250.0, 300.0, 500.0, 800.0),
+) -> Path:
+    """Overlay measured, constrained, and relaxed fitted waveforms."""
+
+    fig, axes = plt.subplots(2, 2, figsize=(10.5, 6.8), sharex=True, layout="constrained")
+    available = np.sort(traces["nominal_drive_mV"].unique())
+    for axis, requested in zip(axes.flat, drives_mV):
+        drive = float(available[np.argmin(np.abs(available - requested))])
+        constrained = traces.loc[
+            (traces["fit_mode"] == "constrained") & np.isclose(traces["nominal_drive_mV"], drive)
+        ]
+        relaxed = traces.loc[
+            (traces["fit_mode"] == "relaxed") & np.isclose(traces["nominal_drive_mV"], drive)
+        ]
+        current = float(np.median(constrained.loc[(constrained["time_ns"] >= 50) & (constrained["time_ns"] <= 250), "measured_current_uA"]))
+        axis.plot(constrained["time_ns"], constrained["measured_voltage_mV"], color=COLORS["blue"], linewidth=1.15, label="Measured")
+        axis.plot(constrained["time_ns"], constrained["predicted_voltage_mV"], color=COLORS["orange"], linewidth=1.25, label="Constrained")
+        axis.plot(relaxed["time_ns"], relaxed["predicted_voltage_mV"], color=COLORS["green"], linewidth=1.25, label="Relaxed")
+        axis.axvspan(50.0, 250.0, color=COLORS["grid"], alpha=0.25)
+        axis.set_xlim(-25.0, 300.0)
+        axis.set_title(f"{current:.1f} uA ({drive:.0f} mV setting)", fontsize=10)
+        axis.grid(True, color=COLORS["grid"], alpha=0.7)
+    axes[0, 0].legend(fontsize=8)
+    axes[0, 0].set_ylabel("Voltage (mV)")
+    axes[1, 0].set_ylabel("Voltage (mV)")
+    axes[1, 0].set_xlabel("Time (ns)")
+    axes[1, 1].set_xlabel("Time (ns)")
+    fig.suptitle("Representative global-fit predictions", fontsize=14, color=COLORS["ink"])
     return _finish(fig, out_path)

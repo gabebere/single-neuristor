@@ -20,6 +20,7 @@ from .workflows import (
     run_environmental_conductance,
     run_lab_analysis,
     run_model_validation,
+    run_waveform_parameter_inference,
     run_resistance_fit,
     run_simulation,
     run_sweep,
@@ -159,6 +160,19 @@ def analyze_model_validation(
 
     configured = _configured(config, set_values, "current")
     bundle = run_model_validation(configured, output_root=output_root, command=_command())
+    _announce_bundle(bundle.root)
+
+
+@analyze_app.command("fit-waveforms")
+def analyze_fit_waveforms(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False, readable=True),
+    set_values: list[str] = typer.Option([], "--set", help="Override a dotted TOML path."),
+    output_root: Optional[Path] = typer.Option(None, "--output-root", help="Override [output].root."),
+) -> None:
+    """Infer one shared parameter set from all measured current waveforms."""
+
+    configured = _configured(config, set_values, "current")
+    bundle = run_waveform_parameter_inference(configured, output_root=output_root, command=_command())
     _announce_bundle(bundle.root)
 
 

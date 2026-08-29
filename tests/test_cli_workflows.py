@@ -606,3 +606,97 @@ root = "runs"
     metrics = json.loads((bundle / "metrics.json").read_text())
     assert metrics["measured_oscillating_waveforms"] == 1
     assert metrics["waveforms"] == 2
+
+
+def test_waveform_inference_cli_writes_optimization_bundle(tmp_path: Path) -> None:
+    time_ns = np.arange(-200.0, 301.0)
+    for drive, current, oscillates in ((100, 100.0, False), (200, 120.0, True)):
+        plateau = 200.0 + (30.0 * np.sin(2.0 * np.pi * time_ns / 20.0) if oscillates else 0.0)
+        pd.DataFrame(
+            {
+                "time": time_ns,
+                "current": np.where(time_ns < 0.0, 0.0, current),
+                "voltage": np.where(time_ns < 0.0, 0.0, plateau),
+            }
+        ).to_csv(tmp_path / f"{drive}mv0_converted.csv", header=False, index=False)
+
+    parameter_bounds = {
+        "C_pF": (0.0, 1.0),
+        "C_th_pJ_per_K": (1.0, 100.0),
+        "S_e_mW_per_K": (0.001, 1.0),
+        "T0_K": (300.0, 340.0),
+        "Tc_K": (320.0, 350.0),
+        "w_K": (1.0, 10.0),
+        "beta_per_K": (0.1, 1.0),
+        "gamma": (0.1, 2.0),
+    }
+    parameter_tables = []
+    for table_name in ("constrained_parameters", "relaxed_parameters"):
+        for name, (lower, upper) in parameter_bounds.items():
+            parameter_tables.extend(
+                [
+                    f"[[inference.{table_name}]]",
+                    f'name = "{name}"',
+                    f"lower = {lower}",
+                    f"upper = {upper}",
+                ]
+            )
+    recipe = tmp_path / "inference.toml"
+    recipe.write_text(
+        f'''schema_version = 1
+name = "Tiny waveform inference"
+kind = "simulation"
+model = "current"
+seed = 7
+[time]
+dt_ns = 1.0
+pre_us = 0.2
+duration_us = 0.3
+[input]
+amplitude_uA = 120.0
+[initial]
+temperature_K = 325.0
+[electrical]
+C_pF = 0.5
+[thermal]
+C_th_pJ_per_K = 49.62776831
+S_e_mW_per_K = 0.20558726
+T0_K = 325.0
+[resistance]
+preset = "yuanhang"
+start_branch = "insulator"
+[inference]
+data_directory = "{tmp_path.as_posix()}"
+holdout_drives_mV = [200.0]
+search_dt_ns = 2.0
+final_dt_ns = 1.0
+[inference.optimizer]
+maxiter_constrained = 0
+maxiter_relaxed = 0
+popsize = 1
+local_max_evaluations = 1
+{chr(10).join(parameter_tables)}
+[output]
+root = "runs"
+'''
+    )
+    output_root = tmp_path / "inference-runs"
+    result = runner.invoke(
+        app,
+        ["analyze", "fit-waveforms", "--config", str(recipe), "--output-root", str(output_root)],
+    )
+    assert result.exit_code == 0, result.output
+    bundle = next(output_root.iterdir())
+    for relative in (
+        "parameter_comparison.csv",
+        "fit_summary.csv",
+        "trace_metrics.csv",
+        "optimization_history.csv",
+        "figures/optimization_history.png",
+        "figures/operating_summary.png",
+        "figures/representative_fits.png",
+    ):
+        assert (bundle / relative).is_file()
+    metrics = json.loads((bundle / "metrics.json").read_text())
+    assert metrics["training_traces"] == 1
+    assert metrics["held_out_traces"] == 1

@@ -234,6 +234,31 @@ or below the 0.39 pF timing bound restores oscillation. At the adopted `C_th`, t
 first oscillatory stress-test point is 7 pF. This points to missing dynamic switching
 information or the real TIA/load impedance rather than a numerical time-step error.
 
+### Global inverse fit
+
+A shared eight-parameter fit was performed against all 22 measured current/voltage
+waveforms, with the 200, 400, 600, 800, and 1000 mV source settings withheld during
+optimization. The measured current traces—not the source-voltage labels—were used as
+inputs. The objective combines phase-tolerant plateau waveform error, mean voltage,
+peak-to-peak amplitude, spectrum, frequency, oscillation classification, and rising-
+edge error.
+
+Within the independently supported parameter intervals, the all-trace objective falls
+only from 0.8813 to 0.8750 and the model still predicts zero of the 11 measured
+oscillatory records. Relaxed bounds lower the objective to 0.6827 and also improve the
+held-out traces, but require seven of eight parameters outside their physical intervals
+(`C=5.42 pF` among them). Those parameters create large turn-on transients rather than
+sustained oscillation. Evaluations at 0.2, 0.1, and 0.05 ns preserve this conclusion.
+Both fits leave `gamma` near the original value, so minor-loop curvature alone does not
+resolve the discrepancy.
+
+Reproduce the complete fit with:
+
+```bash
+neuristor analyze fit-waveforms \
+  --config experiments/current/specimen_waveform_inference.toml
+```
+
 ### What the waveforms can tell us about gamma
 
 `gamma` changes the curvature of minor hysteresis loops after a temperature reversal.

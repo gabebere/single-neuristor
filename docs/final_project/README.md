@@ -32,6 +32,7 @@ The report currently contains:
 6. Thermal time constant and thermal capacitance.
 7. Blind model predictions against all 22 measured current traces.
 8. Electrical/thermal capacitance dependence and the thermal-only limit.
+9. Global shared-parameter inference with held-out-current validation.
 
 ## Data map
 
@@ -43,7 +44,9 @@ The report currently contains:
 | `data/experiment_runs/normalized_current_sweep/` | Normalized traces, summary, and operating-window figure | Current reviewed result |
 | `data/parameter_estimates/environmental_conductance/` | Conductance estimate and bootstrap evidence | Current reviewed result |
 | `data/parameter_estimates/thermal_capacitance/` | Thermal fit, trajectories, uncertainty, and figure | Current reviewed result |
+| `data/parameter_estimates/global_waveform_inference/` | Shared-parameter optimization, held-out validation, and convergence | Current diagnostic result |
 | `data/reviewed_runs/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/` | Blind prediction, common-window metrics, convergence, and C--Cth map | Current reviewed result |
+| `data/reviewed_runs/20260829_104235_global-specimen-parameter-inference-from-all-cur_e3b04e/` | Constrained and relaxed global fits, held-out validation, fitted traces, and convergence | Current reviewed result |
 | `data/reviewed_runs/` | Complete tracked run archive | Mixed current and historical evidence |
 
 Every reviewed run is immutable. If an analysis changes, a new bundle is published
@@ -51,8 +54,9 @@ instead of editing the existing one.
 
 ## Supplementary media
 
-`supplementary/figures/` collects the current report figures in one place for quick
-inspection. `supplementary/animations/` contains the synchronized current/voltage and
+`supplementary/figures/` collects the current report figures, including the global-fit
+optimization and representative predictions, in one place for quick inspection.
+`supplementary/animations/` contains the synchronized current/voltage and
 R(T) animation made for this report, plus selected earlier simulation animations.
 The older presentation animations are labeled as historical and should not be treated
 as sample-specific parameter estimates.

@@ -644,6 +644,132 @@ temperature there does not reach the first heating transition; $\gamma$ acts onl
 after a hysteresis reversal.
 
 \clearpage
+\section{Global parameter inference from all measured waveforms}
+\label{sec:global_inference}
+
+We next asked whether one shared set of model parameters could be inferred directly
+from the complete current--voltage data set. This is a stricter test than fitting one
+trace: the same vector
+
+\begin{equation}
+\boldsymbol{\theta}=(C,C_{\mathrm{th}},S_e,T_0,T_c,w,\beta,\gamma)
+\end{equation}
+
+must describe all 22 measured current waveforms. The source settings at 200, 400,
+600, 800, and 1000~mV were withheld from optimization, leaving 17 training traces
+and five blind test traces. The source-setting labels only identify records; the
+measured current waveform is the model input in every case.
+
+For each candidate, the simulator uses the complete measured current transient and
+compares the predicted and measured voltage over the common 50--250~ns plateau. The
+weighted objective is
+
+\begin{equation}
+\begin{split}
+J={}&0.20J_{\mathrm{wave}}+0.20J_{\mathrm{mean}}+0.15J_{\mathrm{amp}}
++0.15J_{\mathrm{spec}}\\
+&+0.15J_f+0.10J_{\mathrm{class}}+0.05J_{\mathrm{edge}}+0.05J_{\mathrm{prior}}.
+\end{split}
+\label{eq:global_objective}
+\end{equation}
+
+Here $J_{\mathrm{wave}}$ is a normalized waveform error, with a $\pm12$~ns phase
+shift allowed only for oscillatory records; the other terms compare mean voltage,
+peak-to-peak amplitude, normalized spectrum, frequency, oscillation classification,
+and the 0--50~ns rising edge. The constrained fit includes a weak prior and keeps
+each parameter inside its independently estimated interval. A second, deliberately
+relaxed fit removes that prior and expands the bounds to test whether the model can
+fit the data only by abandoning those measurements. Differential evolution explores
+the global space, followed by bounded local refinement. Optimization uses
+$\Delta t=0.2$~ns; every reported candidate is rerun at $0.05$~ns.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r r r r@{}}
+\toprule
+Parameter & Starting value & Physical interval & Constrained fit & Relaxed fit \\
+\midrule
+$C$ (pF) & 0.3900 & 0--0.390 & 0.2408 & 5.4187$^{*}$ \\
+$C_{\mathrm{th}}$ (pJ/K) & 0.04787 & 0.02192--0.09262 & 0.06146 & 0.10643$^{*}$ \\
+$S_e$ (mW/K) & 0.003675 & 0.003434--0.004085 & 0.003621 & 0.004894$^{*}$ \\
+$T_0$ (K) & 314.400 & 314.25--314.55 & 314.416 & 317.844$^{*}$ \\
+$T_c$ (K) & 333.494 & 333.137--333.838 & 333.476 & 332.927$^{*}$ \\
+$w$ (K) & 6.8823 & 6.6291--7.2681 & 6.8726 & 2.5568$^{*}$ \\
+$\beta$ (K$^{-1}$) & 0.29916 & 0.28092--0.32021 & 0.29542 & 0.11613$^{*}$ \\
+$\gamma$ & 0.95627 & 0.2--2.0 & 0.97956 & 1.03546 \\
+\bottomrule
+\end{tabular}
+\caption{Shared parameters inferred from all training traces. An asterisk marks a
+relaxed value outside the independently supported physical interval.}
+\label{tab:global_fit_parameters}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260829_104235_global-specimen-parameter-inference-from-all-cur_e3b04e/figures/optimization_history.png}
+\caption{Optimization history for the physically constrained and relaxed searches.
+The large relaxed improvement occurs only after the search leaves the measured
+parameter region.}
+\label{fig:global_fit_optimization}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r r r r@{}}
+\toprule
+Model & Training $J$ & Held-out $J$ & All-trace $J$ & Oscillations \\
+\midrule
+Starting estimates & 0.8680 & 0.9267 & 0.8813 & 0 of 22 \\
+Constrained fit & 0.8601 & 0.9255 & 0.8750 & 0 of 22 \\
+Relaxed diagnostic & 0.6515 & 0.7888 & 0.6827 & 0 of 22 \\
+\bottomrule
+\end{tabular}
+\caption{Fit and blind-test performance. Lower objective values are better. The
+experiment contains 11 oscillatory records.}
+\label{tab:global_fit_scores}
+\end{table}
+
+The constrained fit lowers the all-trace objective by only $0.72\%$ and the held-out
+objective by $0.13\%$. It remains essentially the independently estimated model and
+still predicts no oscillations. The relaxed search lowers the all-trace objective by
+$22.5\%$ and the held-out objective by $14.9\%$, so its improvement is not confined
+to the training records. However, seven of its eight parameters lie outside their
+physical intervals, including $C=5.42$~pF, and it also predicts no coherent
+oscillation. Its reduced amplitude error comes from large turn-on transients that
+settle to steady voltages.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260829_104235_global-specimen-parameter-inference-from-all-cur_e3b04e/figures/operating_summary.png}
+\caption{Measured and fitted operating summaries. The relaxed search partially
+reproduces mean voltage and apparent amplitude, but neither fit produces the measured
+frequency branch.}
+\label{fig:global_fit_summary}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{../../public_jobs/20260829_104235_global-specimen-parameter-inference-from-all-cur_e3b04e/figures/representative_fits.png}
+\caption{Representative waveform predictions. The relaxed fit can create a large
+initial excursion, but both fitted models settle instead of sustaining the measured
+oscillations.}
+\label{fig:global_fit_traces}
+\end{figure}
+
+Repeating the final evaluation at $0.2$, $0.1$, and $0.05$~ns gives all-trace
+objectives of 0.6868, 0.6838, and 0.6827 for the relaxed fit, without changing any
+oscillation classification. The conclusion is therefore numerically converged.
+This exercise does not provide replacement physical parameter estimates: it shows
+that parameter adjustment within the present ideal-current, quasi-static-hysteresis
+model is insufficient. The likely missing information is dynamic switching behavior
+or the actual TIA/load impedance. Notably, $\gamma$ remains near Yuanhang's value in
+both searches, so changing the minor-loop curvature alone is not the solution.
+
+\clearpage
 \appendix
 \section{Reproduction}
 
@@ -729,6 +855,24 @@ They are reproduced together with
 \ttfamily\small
 neuristor analyze model-validation --config experiments/current/specimen\_model\_validation.toml
 \end{center}
+
+The global shared-parameter inference is archived as
+
+\begin{center}
+\footnotesize
+\path{20260829_104235_global-specimen-parameter-inference-from-all-cur_e3b04e}.
+\end{center}
+
+It is reproduced with
+
+\begin{center}
+\ttfamily\small
+neuristor analyze fit-waveforms --config experiments/current/specimen\_waveform\_inference.toml
+\end{center}
+
+The bundle contains the resolved objective and bounds, every fitted parameter,
+per-trace metrics and predictions, held-out validation, optimization histories,
+figures, and the three-step convergence check.
 
 The historical capacitance shortcut is preserved for provenance in
 

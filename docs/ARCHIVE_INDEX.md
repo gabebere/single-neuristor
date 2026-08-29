@@ -14,7 +14,8 @@ claims.
 - `docs/final_project/main.tex`: working LaTeX manuscript for the VO2 automatic-gain-
   control simulation project. The Yuanhang validation and sample-specific R(T) fit are
   complete, as are the electrical-capacitance, environmental-conductance, thermal-
-  capacitance, blind current-comparison, and capacitance-sensitivity studies.
+  capacitance, blind current-comparison, capacitance-sensitivity, and global inverse-
+  fitting studies.
 - The Case I figure and metrics point to the immutable public run bundle
   `20260817_100102_current-step-with-a-nonzero-metallic-voltage-val_6765e0`, whose voltage
   panel includes the instantaneous metallic fixed point `I(t) R_m`, rather than duplicating
@@ -77,6 +78,12 @@ claims.
   convergence evidence, and maps C--Cth sensitivity. The stable pre-onset voltage is
   reproduced, but the adopted model predicts none of the 11 measured oscillatory runs;
   oscillations require electrical capacitance outside the 0.39 pF timing bound.
+- `20260829_104235_global-specimen-parameter-inference-from-all-cur_e3b04e`: canonical
+  global inverse fit using 17 training and five held-out current settings. It archives
+  the complete objective, constrained and relaxed parameter searches, per-trace
+  predictions, optimization history, and time-step convergence. The constrained fit
+  cannot restore oscillation; the relaxed fit improves waveform statistics only by
+  leaving seven of eight physical intervals and producing turn-on transients.
 - `20260828_112026_thermal-capacitance-estimate-with-conservative-0_ce51fa`: earlier
   numerically identical upper-bound run retained immutably and superseded by
   `aa2469`, whose figure labels the corrected ratio as `V/I_R`.

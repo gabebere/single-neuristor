@@ -25,6 +25,16 @@ from .experimental_waveforms import load_converted_sweep
 from .metrics import current_run_metrics, voltage_run_metrics
 from .lab_estimates import estimate_environmental_conductance, estimate_thermal_capacitance
 from .model_validation import capacitance_sensitivity, compare_model_to_lab
+from .parameter_inference import (
+    PARAMETER_NAMES,
+    FitParameter,
+    ObjectiveWeights,
+    evaluate_fitted_model,
+    evaluate_parameter_vector,
+    fit_parameter_set,
+    parameter_vector_from_model,
+    prepare_inference_dataset,
+)
 from .model import YuanhangCircuitParams, YuanhangResistParams, series_first, simulate_yuanhang
 from .resistance_custom_analysis import (
     fit_major_loop_resistance_params,
@@ -42,6 +52,9 @@ from .visualization import (
     plot_capacitance_sensitivity,
     plot_model_validation_summary,
     plot_model_validation_traces,
+    plot_inference_operating_summary,
+    plot_inference_optimization,
+    plot_inference_representative_traces,
     plot_resistance_fit,
     plot_sweep_summary,
     plot_thermal_capacitance_estimate,
@@ -1304,6 +1317,308 @@ incompatibility, not a time-step artifact. Likely next tests are an independentl
 dynamic switching loop or a circuit model that includes the real TIA/load impedance;
 gamma alone cannot repair the absent onset because the first heating transition occurs
 before a minor-loop reversal.
+"""
+        bundle.write_text("report.md", report, label="Scientific report")
+        bundle.complete(summary=metrics)
+    except BaseException as exc:
+        bundle.fail(exc)
+        raise
+    return bundle
+
+
+def run_waveform_parameter_inference(
+    config: Mapping[str, Any],
+    *,
+    output_root: str | Path | None = None,
+    command: str = "neuristor analyze fit-waveforms",
+) -> RunBundle:
+    """Fit one shared parameter vector to the laboratory current sweep."""
+
+    validate_config(config)
+    if str(config.get("model", "")).lower() != "current":
+        raise ConfigError("Waveform inference requires model='current'")
+    base, _, _, resistance_source, start_branch = _current_params_from_config(config)
+    inference = _table(config, "inference")
+    data_directory = Path(str(inference.get("data_directory", ""))).expanduser()
+    if not data_directory.is_absolute():
+        data_directory = (source_directory(config) / data_directory).resolve()
+    if not data_directory.is_dir():
+        raise ConfigError(f"Laboratory data directory does not exist: {data_directory}")
+
+    def parse_parameters(key: str) -> tuple[FitParameter, ...]:
+        rows = inference.get(key)
+        if not isinstance(rows, list) or not rows:
+            raise ConfigError(f"inference.{key} must be an array of parameter tables")
+        parameters = tuple(
+            FitParameter(
+                name=str(row["name"]),
+                lower=float(row["lower"]),
+                upper=float(row["upper"]),
+                prior_center=(float(row["prior_center"]) if "prior_center" in row else None),
+                prior_scale=(float(row["prior_scale"]) if "prior_scale" in row else None),
+            )
+            for row in rows
+        )
+        if tuple(parameter.name for parameter in parameters) != PARAMETER_NAMES:
+            raise ConfigError(f"inference.{key} must be ordered as {PARAMETER_NAMES}")
+        if any(parameter.lower >= parameter.upper for parameter in parameters):
+            raise ConfigError(f"inference.{key} contains an invalid bound")
+        return parameters
+
+    constrained_parameters = parse_parameters("constrained_parameters")
+    relaxed_parameters = parse_parameters("relaxed_parameters")
+    weight_config = _table(inference, "weights")
+    weights = ObjectiveWeights(
+        **{
+            field: float(weight_config.get(field, getattr(ObjectiveWeights(), field)))
+            for field in ObjectiveWeights.__dataclass_fields__
+        }
+    )
+    optimizer = _table(inference, "optimizer")
+    search_dt_ns = float(inference.get("search_dt_ns", 0.2))
+    final_dt_ns = float(inference.get("final_dt_ns", 0.05))
+    if search_dt_ns <= 0.0 or final_dt_ns <= 0.0:
+        raise ConfigError("Inference time steps must be positive")
+    seed = int(config.get("seed", 0))
+    resolved = resolved_copy(config)
+    resolved.setdefault("inference", {})["data_directory"] = str(data_directory)
+    resolved.setdefault("resistance", {})["resolved_source"] = resistance_source
+    output = output_root or _table(config, "output").get("root", "runs")
+    bundle = RunBundle.create(
+        name=str(config["name"]),
+        model="global-waveform-parameter-inference",
+        kind="analysis",
+        config=resolved,
+        output_root=output,
+        command=command,
+    )
+    try:
+        lab_traces, _ = load_converted_sweep(data_directory)
+        dataset = prepare_inference_dataset(
+            lab_traces,
+            holdout_drives_mV=tuple(float(value) for value in inference.get("holdout_drives_mV", ())),
+        )
+        baseline_values = parameter_vector_from_model(base)
+        constrained_fit = fit_parameter_set(
+            "constrained",
+            constrained_parameters,
+            base,
+            dataset,
+            search_dt_ns=search_dt_ns,
+            weights=weights,
+            include_prior=True,
+            seed=seed,
+            maxiter=int(optimizer.get("maxiter_constrained", 5)),
+            popsize=int(optimizer.get("popsize", 4)),
+            local_max_evaluations=int(optimizer.get("local_max_evaluations", 100)),
+        )
+        relaxed_fit = fit_parameter_set(
+            "relaxed",
+            relaxed_parameters,
+            base,
+            dataset,
+            search_dt_ns=search_dt_ns,
+            weights=weights,
+            include_prior=False,
+            seed=seed + 1,
+            maxiter=int(optimizer.get("maxiter_relaxed", 8)),
+            popsize=int(optimizer.get("popsize", 4)),
+            local_max_evaluations=int(optimizer.get("local_max_evaluations", 100)),
+        )
+
+        fit_definitions = (
+            ("baseline", baseline_values, constrained_parameters, True),
+            ("constrained", constrained_fit.values, constrained_parameters, True),
+            ("relaxed", relaxed_fit.values, relaxed_parameters, False),
+        )
+        evaluations = {}
+        fit_summary_rows: list[dict[str, Any]] = []
+        trace_metrics: list[pd.DataFrame] = []
+        prediction_traces: list[pd.DataFrame] = []
+        for mode, values, parameters, include_prior in fit_definitions:
+            evaluation = evaluate_fitted_model(
+                mode,
+                values,
+                parameters,
+                base,
+                dataset,
+                dt_ns=final_dt_ns,
+                weights=weights,
+                include_prior=include_prior,
+            )
+            evaluations[mode] = evaluation
+            metrics = evaluation.trace_metrics.copy()
+            metrics.insert(0, "fit_mode", mode)
+            trace_metrics.append(metrics)
+            prediction_traces.append(evaluation.traces)
+            for split_name, indices in (
+                ("train", dataset.train_indices),
+                ("test", dataset.test_indices),
+                ("all", np.arange(len(dataset.source_files), dtype=int)),
+            ):
+                objective, split_metrics, _, _ = evaluate_parameter_vector(
+                    values,
+                    parameters,
+                    base,
+                    dataset,
+                    indices,
+                    dt_ns=final_dt_ns,
+                    weights=weights,
+                    include_prior=include_prior,
+                )
+                fit_summary_rows.append(
+                    {
+                        "fit_mode": mode,
+                        "split": split_name,
+                        "traces": int(len(indices)),
+                        "classification_matches": int(
+                            np.sum(split_metrics["measured_oscillation"] == split_metrics["predicted_oscillation"])
+                        ),
+                        "predicted_oscillating_traces": int(split_metrics["predicted_oscillation"].sum()),
+                        **{f"objective_{name}": float(value) for name, value in objective.items()},
+                    }
+                )
+        fit_summary = pd.DataFrame(fit_summary_rows)
+        trace_metrics_frame = pd.concat(trace_metrics, ignore_index=True)
+        prediction_trace_frame = pd.concat(prediction_traces, ignore_index=True)
+
+        parameter_rows: list[dict[str, Any]] = []
+        for index, name in enumerate(PARAMETER_NAMES):
+            physical = constrained_parameters[index]
+            relaxed_value = float(relaxed_fit.values[index])
+            parameter_rows.append(
+                {
+                    "parameter": name,
+                    "original_estimate": float(baseline_values[index]),
+                    "constrained_fit": float(constrained_fit.values[index]),
+                    "physical_lower": float(physical.lower),
+                    "physical_upper": float(physical.upper),
+                    "relaxed_fit": relaxed_value,
+                    "relaxed_outside_physical_bounds": bool(
+                        relaxed_value < physical.lower or relaxed_value > physical.upper
+                    ),
+                }
+            )
+        parameter_table = pd.DataFrame(parameter_rows)
+        history = pd.concat(
+            [
+                constrained_fit.history.assign(fit_mode="constrained"),
+                relaxed_fit.history.assign(fit_mode="relaxed"),
+            ],
+            ignore_index=True,
+        )
+
+        convergence_rows: list[dict[str, Any]] = []
+        for mode, values, parameters, include_prior in fit_definitions:
+            for dt_ns in sorted(set((search_dt_ns, 0.1, final_dt_ns)), reverse=True):
+                objective, metrics, _, _ = evaluate_parameter_vector(
+                    values,
+                    parameters,
+                    base,
+                    dataset,
+                    np.arange(len(dataset.source_files), dtype=int),
+                    dt_ns=dt_ns,
+                    weights=weights,
+                    include_prior=include_prior,
+                )
+                convergence_rows.append(
+                    {
+                        "fit_mode": mode,
+                        "dt_ns": float(dt_ns),
+                        "objective_total": float(objective["total"]),
+                        "classification_matches": int(
+                            np.sum(metrics["measured_oscillation"] == metrics["predicted_oscillation"])
+                        ),
+                        "predicted_oscillating_traces": int(metrics["predicted_oscillation"].sum()),
+                    }
+                )
+        convergence = pd.DataFrame(convergence_rows)
+
+        parameter_table.to_csv(
+            bundle.add_artifact("parameter_comparison.csv", label="Original and fitted shared parameters", media_type="text/csv"),
+            index=False,
+        )
+        fit_summary.to_csv(
+            bundle.add_artifact("fit_summary.csv", label="Train, test, and full objective summary", media_type="text/csv"),
+            index=False,
+        )
+        trace_metrics_frame.to_csv(
+            bundle.add_artifact("trace_metrics.csv", label="Per-trace fit evidence", media_type="text/csv"),
+            index=False,
+        )
+        prediction_trace_frame.to_csv(
+            bundle.add_artifact("fitted_traces.csv", label="Measured and globally fitted waveforms", media_type="text/csv"),
+            index=False,
+        )
+        history.to_csv(
+            bundle.add_artifact("optimization_history.csv", label="Optimizer evaluation history", media_type="text/csv"),
+            index=False,
+        )
+        convergence.to_csv(
+            bundle.add_artifact("convergence.csv", label="Fine-step fit verification", media_type="text/csv"),
+            index=False,
+        )
+        plot_inference_optimization(
+            history,
+            bundle.add_artifact("figures/optimization_history.png", label="Optimization convergence", media_type="image/png"),
+        )
+        plot_inference_operating_summary(
+            trace_metrics_frame,
+            bundle.add_artifact("figures/operating_summary.png", label="Measured and fitted operating features", media_type="image/png"),
+        )
+        plot_inference_representative_traces(
+            prediction_trace_frame,
+            bundle.add_artifact("figures/representative_fits.png", label="Representative globally fitted traces", media_type="image/png"),
+        )
+
+        all_summary = fit_summary.loc[fit_summary["split"] == "all"].set_index("fit_mode")
+        relaxed_conflicts = parameter_table.loc[parameter_table["relaxed_outside_physical_bounds"], "parameter"].tolist()
+        metrics = {
+            "training_traces": int(len(dataset.train_indices)),
+            "held_out_traces": int(len(dataset.test_indices)),
+            "holdout_drives_mV": dataset.nominal_drives_mV[dataset.test_indices].tolist(),
+            "search_dt_ns": search_dt_ns,
+            "final_dt_ns": final_dt_ns,
+            "baseline_objective_all": float(all_summary.loc["baseline", "objective_total"]),
+            "constrained_objective_all": float(all_summary.loc["constrained", "objective_total"]),
+            "relaxed_objective_all": float(all_summary.loc["relaxed", "objective_total"]),
+            "baseline_classification_matches": int(all_summary.loc["baseline", "classification_matches"]),
+            "constrained_classification_matches": int(all_summary.loc["constrained", "classification_matches"]),
+            "relaxed_classification_matches": int(all_summary.loc["relaxed", "classification_matches"]),
+            "constrained_predicted_oscillating_traces": int(all_summary.loc["constrained", "predicted_oscillating_traces"]),
+            "relaxed_predicted_oscillating_traces": int(all_summary.loc["relaxed", "predicted_oscillating_traces"]),
+            "constrained_evaluations": int(constrained_fit.evaluations),
+            "relaxed_evaluations": int(relaxed_fit.evaluations),
+            "relaxed_parameters_outside_physical_bounds": relaxed_conflicts,
+            "resistance_source": resistance_source,
+            "start_branch": start_branch,
+        }
+        bundle.write_json("metrics.json", metrics, label="Global inference summary")
+        conflicts = ", ".join(relaxed_conflicts) if relaxed_conflicts else "none"
+        report = f"""# {config['name']}
+
+One shared eight-parameter vector was fitted to {metrics['training_traces']} traces;
+the source settings {metrics['holdout_drives_mV']} mV were excluded from optimization
+and used only for validation. The objective combines normalized waveform RMSE,
+phase-tolerant oscillatory shape, plateau mean and amplitude, spectrum, frequency,
+oscillation classification, the 0--50 ns edge, and (for the constrained fit) weak
+independent-measurement priors.
+
+The original estimates give a full-data objective of
+**{metrics['baseline_objective_all']:.5g}** and classify
+**{metrics['baseline_classification_matches']}/22** traces correctly. The physically
+constrained fit gives **{metrics['constrained_objective_all']:.5g}**,
+**{metrics['constrained_classification_matches']}/22** correct classifications, and
+predicts **{metrics['constrained_predicted_oscillating_traces']}** oscillating traces.
+The relaxed diagnostic fit gives **{metrics['relaxed_objective_all']:.5g}**,
+**{metrics['relaxed_classification_matches']}/22** correct classifications, and
+predicts **{metrics['relaxed_predicted_oscillating_traces']}** oscillating traces.
+
+Relaxed values outside the independently allowed ranges: **{conflicts}**. These are
+effective values required by the present equations, not measurements. The held-out
+traces and fine-step reruns distinguish generalization from memorization and numerical
+step artifacts. No confidence intervals are assigned: this deterministic global fit
+is an identifiability diagnostic, and several parameters remain correlated.
 """
         bundle.write_text("report.md", report, label="Scientific report")
         bundle.complete(summary=metrics)
