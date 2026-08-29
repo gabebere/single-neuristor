@@ -78,7 +78,7 @@ claims.
   convergence evidence, and maps C--Cth sensitivity. The stable pre-onset voltage is
   reproduced, but the adopted model predicts none of the 11 measured oscillatory runs;
   oscillations require electrical capacitance outside the 0.39 pF timing bound.
-- `20260829_104235_global-specimen-parameter-inference-from-all-cur_e3b04e`: canonical
+- `20260829_105704_global-specimen-parameter-inference-from-all-cur_8f12d6`: canonical
   global inverse fit using 17 training and five held-out current settings. It archives
   the complete objective, constrained and relaxed parameter searches, per-trace
   predictions, optimization history, and time-step convergence. The constrained fit
