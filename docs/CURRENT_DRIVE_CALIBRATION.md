@@ -259,46 +259,35 @@ neuristor analyze fit-waveforms \
   --config experiments/current/specimen_waveform_inference.toml
 ```
 
-### Oscillation-priority diagnostic
+### Physics-anchored oscillation inference
 
-The balanced fit can trade every missed oscillation for smaller mean-voltage and edge
-errors. A second objective therefore makes current-by-current oscillation classification
-dominant and measures persistence by fitting the experimental-frequency component in
-four separate plateau segments. A false positive outside the measured window costs
-twice as much as one missed boundary trace.
+The final fit does not allow all eight quantities to compensate freely. The directly
+measured resistance scale remains fixed; `Tc`, `w`, and `beta` remain within their
+R(T)-bootstrap intervals; `T0` remains within 314.25--314.55 K; `S_e` remains within
+its conditional 0.003434--0.004085 mW/K interval; and `C_th` remains within its
+conditional 0.021918--0.092624 pJ/K interval. Only the poorly identified electrical
+`C` and specimen-specific minor-loop `gamma` are searched broadly.
 
-At 0.05 ns, the relaxed result classifies 21 of 22 currents correctly and predicts ten
-consecutive oscillators from 228.2 to 570.1 uA, with no false positives. The only miss
-is the 606.3 uA upper-boundary record; the same classification is obtained at 0.025 ns.
-Predicted frequency rises from 25.6 to 50.0 MHz, below the measured 41.7--62.5 MHz, and
-cycle amplitude is too large. Every fitted parameter leaves its independent interval,
-including `C=13.8 pF`, `C_th=0.0163 pJ/K`, and `gamma=2.65`. These are diagnostic
-effective values, not specimen measurements.
+The fit uses all known oscillatory records and withholds the 50 and 1000 mV settings
+as stable negative controls. At both 0.025 and 0.0125 ns it classifies all 22 records
+correctly and recovers the complete 228.2--606.3 uA oscillation window. The fitted
+anchors remain inside their intervals: `S_e=0.003713 mW/K`, `C_th=0.044214 pJ/K`, and
+`T0=314.363 K`. The unresolved conflict is concentrated in `C=6.8355 pF`, which is
+17.5 times the 0.39 pF timing bound, and `gamma=0.15696`, below the nominal 0.2--2.0
+range.
 
-```bash
-neuristor analyze fit-waveforms \
-  --config experiments/current/specimen_oscillation_inference.toml
-```
-
-### Oscillation-amplitude diagnostic
-
-An amplitude-aware repeat adds a logarithmic peak-to-peak ratio loss so the small
-high-current cycles are not overwhelmed by the large onset cycles. At 0.025 ns, the
-median predicted/measured Vpp ratio improves from 7.15 to 2.59, Vpp mean absolute
-error falls from 280.1 to 88.5 mV, and the predicted frequency range reaches
-27.8--62.5 MHz. The cost is poorer oscillation tracking: 19/22 classifications, with
-a false positive at 189.6 uA and misses at 532.9 and 606.3 uA. The same result at
-0.0125 ns confirms that this is a model tradeoff rather than a timestep artifact.
-
-Local moves within the classification basin produced only small amplitude reductions
-before classifications changed. Within the present lumped ideal-current model,
-complete switching exposes the full fitted resistance contrast and sets a large
-voltage span near `I * Delta R`. Partial/nonuniform switching or the actual TIA/load
-response is therefore the next amplitude-setting physics to test.
+This supersedes the earlier unrestricted classification-first result: classification
+improves from 21/22 to 22/22 and Vpp MAE falls from 280.1 to 212.5 mV without moving
+the measured thermal and major-loop parameters out of range. It is not a complete
+waveform calibration. Median amplitude remains 5.55 times experiment and frequency
+MAE is 22.7 MHz, with the predicted high-current frequency reaching 125 MHz. The
+remaining work should therefore target the actual TIA/load response, partial or
+spatially nonuniform switching, and a dynamic minor-loop measurement rather than
+widening the well-supported parameter bounds.
 
 ```bash
 neuristor analyze fit-waveforms \
-  --config experiments/current/specimen_oscillation_amplitude_inference.toml
+  --config experiments/current/specimen_physics_anchored_inference.toml
 ```
 
 ### What the waveforms can tell us about gamma

@@ -1,0 +1,47 @@
+{
+  "baseline_classification_matches": 11,
+  "baseline_objective_all": 1279.9543627983946,
+  "constrained_classification_matches": 11,
+  "constrained_evaluations": 132,
+  "constrained_objective_all": 1271.8431272977036,
+  "constrained_optimizer_messages": {
+    "global": "Maximum number of iterations has been exceeded.",
+    "local": "Maximum number of function evaluations has been exceeded."
+  },
+  "constrained_predicted_oscillating_traces": 0,
+  "final_dt_ns": 0.025,
+  "held_out_traces": 2,
+  "holdout_drives_mV": [
+    50.0,
+    1000.0
+  ],
+  "objective_weights": {
+    "amplitude": 1.0,
+    "classification": 2500.0,
+    "edge": 0.02,
+    "false_positive": 2500.0,
+    "frequency": 2.0,
+    "mean_voltage": 0.1,
+    "prior": 0.01,
+    "relative_amplitude": 10.0,
+    "spectrum": 0.1,
+    "sustain": 1.0,
+    "waveform": 0.1
+  },
+  "relaxed_classification_matches": 22,
+  "relaxed_evaluations": 452,
+  "relaxed_objective_all": 35.455342645051516,
+  "relaxed_optimizer_messages": {
+    "global": "Maximum number of iterations has been exceeded.",
+    "local": "Maximum number of function evaluations has been exceeded."
+  },
+  "relaxed_parameters_outside_physical_bounds": [
+    "C_pF",
+    "gamma"
+  ],
+  "relaxed_predicted_oscillating_traces": 11,
+  "resistance_source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/resistance_100425_chip1_gap3.json",
+  "search_dt_ns": 0.025,
+  "start_branch": "insulator",
+  "training_traces": 20
+}

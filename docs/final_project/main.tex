@@ -770,131 +770,38 @@ or the actual TIA/load impedance. Notably, $\gamma$ remains near Yuanhang's valu
 both searches, so changing the minor-loop curvature alone is not the solution.
 
 \clearpage
-\section{Oscillation-priority parameter inference}
-\label{sec:oscillation_priority}
+\section{Physics-anchored parameter inference}
+\label{sec:physics_anchored_inference}
 
-The balanced objective in Section~\ref{sec:global_inference} rewards average waveform
-agreement, so the optimizer can prefer a turn-on transient over sustained oscillation.
-We therefore repeated the shared-parameter fit with oscillation tracking as the first
-priority. A sinusoid at each measured oscillation frequency is fitted separately in
-four consecutive plateau segments. A candidate receives persistence credit only when
-that periodic component remains present throughout the plateau.
+The unrestricted searches above showed that all eight parameters can compensate for
+one another. We therefore ordered the parameters by the strength of their independent
+evidence before fitting again. The measured $R(T)$ curve is the strongest anchor:
+$R_0$, $E_a/k_B$, and $R_m$ remain fixed at their fitted values, while $T_c$, $w$,
+and $\beta$ may move only inside their bootstrap intervals. The measured ambient
+temperature is restricted to $314.25$--$314.55$~K.
 
-The final objective is
+The environmental conductance is the next strongest dynamic estimate. At the final
+stable trace before oscillation, $dT/dt\simeq0$, so
 
 \begin{equation}
-\begin{split}
-J={}&250J_{\mathrm{class}}+250J_{\mathrm{false+}}+0.50J_f
-+0.50J_{\mathrm{sustain}}\\
-&+0.05J_{\mathrm{spec}}+0.02J_{\mathrm{wave}}+0.02J_{\mathrm{mean}}
-+0.01J_{\mathrm{amp}}+0.01J_{\mathrm{edge}}+0.01J_{\mathrm{prior}}.
-\end{split}
-\label{eq:oscillation_priority_objective}
+S_e=\frac{P}{T-T_0}=0.003675~\mathrm{mW/K},
+\qquad 0.003434\le S_e\le0.004085~\mathrm{mW/K}.
 \end{equation}
 
-Thus one classification error dominates all ordinary waveform terms. A false
-oscillation outside the measured window contributes to both $J_{\mathrm{class}}$ and
-$J_{\mathrm{false+}}$, so it costs twice as much as missing one boundary record. The
-search was performed directly at $\Delta t=0.05$~ns. The development sequence was:
+This narrow interval is conditional on the $250$-setting trace being quasi-steady and
+on the static heating branch applying to the driven device. The thermal capacitance
+is less precise, but the nonswitching heating traces still support
+$0.021918\le C_{\mathrm{th}}\le0.092624$~pJ/K through
+$C_{\mathrm{th}}=S_e\tau_{\mathrm{th}}$. Only $C$ and $\gamma$ are searched broadly:
+the experiment provides an upper bound rather than a positive measurement for $C$,
+and no specimen-specific dynamic minor loops determine $\gamma$.
 
-\begin{enumerate}
-\item A $0.2$~ns scouting fit produced nine apparent oscillatory records, but only
-three survived at $0.05$~ns; this candidate was rejected.
-\item A direct $0.05$~ns fit produced five consecutive oscillatory records and
-classified 16 of 22 records correctly.
-\item A full-resolution $C$--$C_{\mathrm{th}}$ neighborhood identified a training-set
-seed at $C=8$~pF and $C_{\mathrm{th}}=0.020$~pJ/K.
-\item Differential evolution and bounded local refinement optimized the remaining
-secondary errors while preserving the best classification basin.
-\end{enumerate}
-
-The final optimization still excludes the five source settings used previously for
-testing. Because those records had already been inspected during earlier model
-development, their results are useful withheld-current checks but are not claimed as
-a pristine blind test.
-
-\begin{table}[H]
-\centering
-\scriptsize
-\rowcolors{2}{projectgray}{white}
-\begin{tabular}{@{}l r r r@{}}
-\toprule
-Parameter & Independently estimated value & Physical interval & Oscillation fit \\
-\midrule
-$C$ (pF) & 0.3900 & 0--0.390 & 13.8147$^{*}$ \\
-$C_{\mathrm{th}}$ (pJ/K) & 0.04787 & 0.02192--0.09262 & 0.01626$^{*}$ \\
-$S_e$ (mW/K) & 0.003675 & 0.003434--0.004085 & 0.002736$^{*}$ \\
-$T_0$ (K) & 314.400 & 314.25--314.55 & 317.538$^{*}$ \\
-$T_c$ (K) & 333.494 & 333.137--333.838 & 332.844$^{*}$ \\
-$w$ (K) & 6.8823 & 6.6291--7.2681 & 12.7734$^{*}$ \\
-$\beta$ (K$^{-1}$) & 0.29916 & 0.28092--0.32021 & 0.39218$^{*}$ \\
-$\gamma$ & 0.95627 & 0.2--2.0 & 2.65135$^{*}$ \\
-\bottomrule
-\end{tabular}
-\caption{Classification-first shared fit. Every inferred value lies outside its
-independently supported physical interval.}
-\label{tab:oscillation_fit_parameters}
-\end{table}
-
-\begin{table}[H]
-\centering
-\small
-\rowcolors{2}{projectgray}{white}
-\begin{tabular}{@{}l r r@{}}
-\toprule
-Quantity & Experiment & Oscillation-priority fit \\
-\midrule
-Correct classifications & 22 reference labels & 21 of 22 \\
-Oscillating records & 11 & 10 \\
-Oscillation-current interval & 228.2--606.3 $\mu$A & 228.2--570.1 $\mu$A \\
-Frequency interval & 41.7--62.5 MHz & 25.6--50.0 MHz \\
-Training classifications & 17 of 17 & 17 of 17 \\
-Withheld-current classifications & 5 reference labels & 4 of 5 \\
-False-positive oscillations & 0 & 0 \\
-\bottomrule
-\end{tabular}
-\caption{Oscillation tracking at $\Delta t=0.05$~ns. The only classification error
-is the withheld $606.3~\mu$A boundary record.}
-\label{tab:oscillation_fit_results}
-\end{table}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{../../public_jobs/20260829_160147_oscillation-priority-global-specimen-parameter-i_ac1c5e/figures/operating_summary.png}
-\caption{Measured and classification-first operating behavior. The model now
-reproduces most of the oscillation window and an increasing frequency trend, but its
-cycle amplitude is much too large and its frequency is generally too low.}
-\label{fig:oscillation_priority_summary}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.86\textwidth]{../../public_jobs/20260829_160147_oscillation-priority-global-specimen-parameter-i_ac1c5e/figures/representative_fits.png}
-\caption{Representative oscillation-priority predictions. Sustained cycles replace
-the transient-only behavior of the balanced fit, but voltage magnitude and waveform
-shape remain quantitatively incorrect.}
-\label{fig:oscillation_priority_traces}
-\end{figure}
-
-At $\Delta t=0.025$~ns, the same ten currents oscillate over the identical current
-interval; the predicted frequency range remains 25.6--50.0~MHz. The classification
-result is therefore timestep-stable. It is nevertheless a diagnostic, not a new
-parameter measurement: recovering the window requires $C$ about 35 times its timing
-upper bound and moves every fitted parameter outside its independent interval. The
-model contains the mechanism needed for collective switching, but the measured
-frequency, amplitude, and independently inferred parameter scales cannot yet be
-satisfied simultaneously. This strengthens the case for including the real TIA/load
-impedance or a dynamic switching law. The differential-evolution and local-refinement
-budgets both reached their configured limits, so this is the best reproducible
-candidate found, not proof of the unique global optimum.
-
-\clearpage
-\section{Oscillation-amplitude tuning}
-\label{sec:oscillation_amplitude}
-
-The classification-first fit recovers the oscillation window, but its voltage cycles
-are too large. We therefore repeated the same eight-parameter search with two explicit
-amplitude terms. The absolute term compares peak-to-peak voltages directly, while
+All measured oscillatory records are used during optimization. The lowest and
+highest stable source settings, 50 and 1000~mV, are withheld as negative controls;
+this is not a blind test because the remaining records were already inspected. The
+fit is performed directly at $\Delta t=0.025$~ns. Classification and false positives
+each receive weight 2500. Frequency receives weight 2, persistence and absolute
+amplitude weight 1, and the logarithmic amplitude-ratio penalty
 
 \begin{equation}
 J_{\mathrm{relamp}}=
@@ -902,16 +809,32 @@ J_{\mathrm{relamp}}=
 {V_{\mathrm{pp,meas}}+3~\mathrm{mV}}\right)\right]^2
 \end{equation}
 
-penalizes their ratio, so small and large measured cycles matter comparably. The
-$3$~mV floor only keeps the logarithm finite near zero. This term is evaluated only
-for experimentally oscillatory records. The objective used weights of 2500 for
-classification and false positives, 10 for relative amplitude, 1 for absolute
-amplitude, 0.5 for frequency, 0.1 each for waveform, mean voltage, and spectrum, 1
-for persistence, and 0.02 for the turn-on edge.
+receives weight 10. The remaining waveform, mean-voltage, spectrum, and edge terms
+act as secondary tie-breakers.
 
-The search used $0.05$~ns steps, and the selected vector was then evaluated at
-$0.025$ and $0.0125$~ns. Table~\ref{tab:amplitude_tradeoff} compares both diagnostic
-solutions using the same measured traces and the $0.025$~ns evaluation.
+\begin{table}[H]
+\centering
+\scriptsize
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r r r@{}}
+\toprule
+Parameter & Independent estimate & Allowed interval & Anchored fit \\
+\midrule
+$C$ (pF) & upper bound 0.390 & 0--30 & 6.83549$^{*}$ \\
+$C_{\mathrm{th}}$ (pJ/K) & 0.047873 & 0.021918--0.092624 & 0.044214 \\
+$S_e$ (mW/K) & 0.003675 & 0.003434--0.004085 & 0.003713 \\
+$T_0$ (K) & 314.400 & 314.25--314.55 & 314.363 \\
+$T_c$ (K) & 333.494 & 333.137--333.838 & 333.338 \\
+$w$ (K) & 6.8823 & 6.6291--7.2681 & 7.0415 \\
+$\beta$ (K$^{-1}$) & 0.29916 & 0.28092--0.32021 & 0.31444 \\
+$\gamma$ & 0.95627 (Yuanhang) & 0.1--3.0 & 0.15696$^{*}$ \\
+\bottomrule
+\end{tabular}
+\caption{Physics-anchored shared fit. Asterisks mark the two weakly identified
+quantities that conflict with current support: $C$ exceeds its timing bound and
+$\gamma$ lies below the nominal 0.2--2.0 range.}
+\label{tab:physics_anchored_parameters}
+\end{table}
 
 \begin{table}[H]
 \centering
@@ -919,60 +842,60 @@ solutions using the same measured traces and the $0.025$~ns evaluation.
 \rowcolors{2}{projectgray}{white}
 \begin{tabular}{@{}l r r@{}}
 \toprule
-Quantity & Classification-first & Amplitude-priority \\
+Quantity & Experiment & Anchored fit \\
 \midrule
-Correct classifications & 21 of 22 & 19 of 22 \\
-False positives & 0 & 1 \\
-Missed oscillatory records & 1 & 2 \\
-Amplitude records compared & 10 & 9 \\
-Median predicted/measured $V_{\mathrm{pp}}$ & $7.15\times$ & $2.59\times$ \\
-$V_{\mathrm{pp}}$ mean absolute error & 280.1 mV & 88.5 mV \\
-$V_{\mathrm{pp}}$ root-mean-square error & 285.7 mV & 90.1 mV \\
-Predicted frequency interval & 25.6--50.0 MHz & 27.8--62.5 MHz \\
+Correct classifications & 22 reference labels & 22 of 22 \\
+Oscillating records & 11 & 11 \\
+Oscillation-current interval & 228.2--606.3 $\mu$A & 228.2--606.3 $\mu$A \\
+Stable negative controls & 2 & 2 \\
+Median predicted/measured $V_{\mathrm{pp}}$ & 1 & $5.55\times$ \\
+$V_{\mathrm{pp}}$ mean absolute error & --- & 212.5 mV \\
+Mean-voltage mean absolute error & --- & 35.4 mV \\
+Frequency interval & 41.7--62.5 MHz & 32.3--125.0 MHz \\
+Frequency mean absolute error & --- & 22.7 MHz \\
 \bottomrule
 \end{tabular}
-\caption{Amplitude--classification tradeoff at $\Delta t=0.025$~ns. Each column's
-amplitude statistics use records that oscillate in both experiment and that fit.}
-\label{tab:amplitude_tradeoff}
+\caption{Physics-anchored result at $\Delta t=0.025$~ns. All oscillation labels and
+the full measured current window are recovered without a false positive.}
+\label{tab:physics_anchored_results}
 \end{table}
 
-The amplitude-priority fit falsely oscillates at $189.6~\mu$A and misses the
-$532.9$ and $606.3~\mu$A records. The same 19/22 classification is obtained at
-$0.0125$~ns, so this tradeoff is not removed by halving the timestep. Its fitted
-values are $C=15.672$~pF, $C_{\mathrm{th}}=0.007770$~pJ/K,
-$S_e=0.0009460$~mW/K, $T_0=318.761$~K, $T_c=337.904$~K,
-$w=12.123$~K, $\beta=0.20749$~K$^{-1}$, and $\gamma=1.45177$.
-All except $\gamma$ lie outside their independent intervals.
-
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.92\textwidth]{../../public_jobs/20260829_210212_amplitude-tuned-oscillation-priority-specimen-in_85526c/figures/operating_summary.png}
-\caption{Amplitude-priority operating behavior. Voltage cycles and the upper
-frequency range move toward experiment, but the oscillation window becomes less
-accurate.}
-\label{fig:oscillation_amplitude_summary}
+\includegraphics[width=0.92\textwidth]{../../public_jobs/20260907_125315_physics-anchored-specimen-waveform-inference_717797/figures/operating_summary.png}
+\caption{Measured and physics-anchored operating behavior. The complete oscillation
+window is recovered, while amplitude remains too large and high-current frequency
+rises too rapidly.}
+\label{fig:physics_anchored_summary}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.88\textwidth]{../../public_jobs/20260829_210212_amplitude-tuned-oscillation-priority-specimen-in_85526c/figures/representative_fits.png}
-\caption{Representative amplitude-priority predictions at $0.025$~ns. The cycles
-remain too large, and the $189.6~\mu$A false positive makes the tradeoff visible.}
-\label{fig:oscillation_amplitude_traces}
+\includegraphics[width=0.88\textwidth]{../../public_jobs/20260907_125315_physics-anchored-specimen-waveform-inference_717797/figures/representative_fits.png}
+\caption{Representative physics-anchored predictions. The stable pre-onset record is
+retained and sustained oscillations are recovered, but the simulated resistance
+excursion still produces excessive voltage amplitude.}
+\label{fig:physics_anchored_traces}
 \end{figure}
 
-This search therefore improves amplitude substantially but does not provide one
-shared physical parameter vector that also preserves the measured oscillation
-window. Local moves within the classification basin produced only small amplitude
-reductions before classifications changed. This sharp observed tradeoff suggests
-missing amplitude-setting physics rather than a simple optimizer failure.
-In the ideal-current lumped model, a complete hysteretic transition produces a
-voltage span set approximately by $I\,\Delta R$. Partial or spatially nonuniform
-switching, or the actual TIA/load response, can reduce the measured span without
-requiring the same changes that move the thermal oscillation boundaries. These are
-the next model extensions to test. Both optimization stages exhausted their finite
-budgets, so the result is a reproducible Pareto endpoint rather than proof of a
-unique global optimum.
+The same parameter vector gives 22/22 classifications at $\Delta t=0.0125$~ns. It
+therefore supersedes the earlier unrestricted classification-first result, improving
+its 21/22 classification and reducing amplitude MAE from 280.1 to 212.5~mV while
+keeping six fitted quantities within their independent intervals. The earlier
+amplitude-priority vector reached 88.5~mV amplitude MAE, but only by falling to 19/22
+classifications and moving seven quantities outside their intervals; it is not
+promoted as the specimen model.
+
+The remaining conflicts are now localized. The required $C=6.84$~pF is about 17.5
+times the experimental timing bound, and $\gamma=0.157$ cannot be interpreted as a
+measurement without dynamic minor-loop data. The excessive amplitude follows the
+full fitted resistance excursion, approximately $I\,\Delta R$, while the frequency
+reaches 125~MHz at the upper boundary. These errors point to partial or spatially
+nonuniform switching and the actual TIA/load dynamics as the next model extensions.
+The full-precision vector is archived because the classification basin is narrow;
+the printed digits are descriptive, not measurement precision. The optimizer reached
+its finite budget, so this is the best reproducible candidate found rather than proof
+of a unique global optimum.
 
 \clearpage
 \appendix
@@ -1079,41 +1002,25 @@ The bundle contains the resolved objective and bounds, every fitted parameter,
 per-trace metrics and predictions, held-out validation, optimization histories,
 figures, and the three-step convergence check.
 
-The oscillation-priority inference is archived as
+The physics-anchored inference is archived as
 
 \begin{center}
 \footnotesize
-\path{20260829_160147_oscillation-priority-global-specimen-parameter-i_ac1c5e}.
+\path{20260907_125315_physics-anchored-specimen-waveform-inference_717797}.
 \end{center}
 
 It is reproduced with
 
 \begin{center}
 \ttfamily\small
-neuristor analyze fit-waveforms --config experiments/current/specimen\_oscillation\_inference.toml
+neuristor analyze fit-waveforms --config experiments/current/specimen\_physics\_anchored\_inference.toml
 \end{center}
 
-Its bundle records the classification-first objective, four-segment persistence
-metric, parameter search, withheld-current results, per-trace waveforms, and
-$0.1$--$0.025$~ns convergence audit.
-
-The amplitude-priority inference is archived as
-
-\begin{center}
-\footnotesize
-\path{20260829_210212_amplitude-tuned-oscillation-priority-specimen-in_85526c}.
-\end{center}
-
-It is reproduced with
-
-\begin{center}
-\ttfamily\small
-neuristor analyze fit-waveforms --config experiments/current/specimen\_oscillation\_amplitude\_inference.toml
-\end{center}
-
-Its bundle contains the amplitude-aware objective, all fitted traces and per-trace
-metrics, parameter table, optimization history, figures, and the
-$0.1$--$0.0125$~ns convergence audit.
+Its bundle records the parameter-confidence hierarchy through explicit bounds, the
+amplitude-aware and oscillation-priority objective, both stable negative controls,
+all fitted waveforms and per-trace metrics, and the $0.1$--$0.0125$~ns convergence
+audit. Earlier unrestricted oscillation and amplitude searches remain in the public
+archive as superseded development evidence.
 
 The historical capacitance shortcut is preserved for provenance in
 

@@ -257,20 +257,20 @@ parameters leave their independently supported intervals and the model still pro
 only turn-on transients. The result is therefore evidence of model-form mismatch, not
 a replacement set of physical parameter estimates.
 
-Prioritize the measured oscillation window and persistent cycles over ordinary
-waveform error with:
+Run the confidence-ordered fit that anchors independently estimated parameters and
+searches broadly only over electrical capacitance and minor-loop curvature with:
 
 ```bash
 neuristor analyze fit-waveforms \
-  --config experiments/current/specimen_oscillation_inference.toml
+  --config experiments/current/specimen_physics_anchored_inference.toml
 ```
 
-This diagnostic classifies 21 of 22 currents correctly and produces ten consecutive
-oscillatory records from 228.2 to 570.1 uA with no false positives. The result is stable
-at 0.025 ns, but it requires all eight shared parameters outside their independently
-supported intervals (`C=13.8 pF`) and overpredicts cycle amplitude. It demonstrates
-that the equations contain an oscillatory mechanism while exposing the remaining
-physical-model mismatch.
+This diagnostic classifies all 22 records correctly at both 0.025 and 0.0125 ns and
+recovers the complete 228.2--606.3 uA oscillation window. `S_e`, `T0`, `C_th`, `Tc`,
+`w`, and `beta` remain inside their independent intervals. The remaining conflict is
+isolated to effective `C=6.8355 pF` and `gamma=0.15696`; voltage amplitude and
+high-current frequency are still too large. The result therefore narrows the next
+modeling work to the electrical/readout dynamics and dynamic switching law.
 
 ## Run bundles and GitHub archive
 

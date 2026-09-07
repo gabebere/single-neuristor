@@ -84,19 +84,21 @@ claims.
   predictions, optimization history, and time-step convergence. The constrained fit
   cannot restore oscillation; the relaxed fit improves waveform statistics only by
   leaving seven of eight physical intervals and producing turn-on transients.
-- `20260829_160147_oscillation-priority-global-specimen-parameter-i_ac1c5e`: current
-  oscillation-priority diagnostic. Its four-segment persistence score and asymmetric
-  classification penalty recover ten consecutive oscillatory currents with 21/22
-  classifications and no false positives. The identical window at 0.025 ns is
-  numerically stable, but all eight fitted values violate independent physical
-  intervals and the predicted amplitude remains too large. The archived optimizer
-  messages also record that the finite search budget was exhausted.
-- `20260829_210212_amplitude-tuned-oscillation-priority-specimen-in_85526c`: current
-  amplitude-priority diagnostic. The median predicted/measured oscillatory Vpp ratio
-  falls from 7.15 to 2.59 and Vpp MAE falls from 280.1 to 88.5 mV, but classification
-  declines to 19/22. The same outcome at 0.0125 ns records a stable amplitude--window
-  tradeoff rather than a timestep artifact; seven of eight fitted values remain
-  outside independent intervals.
+- `20260907_125315_physics-anchored-specimen-waveform-inference_717797`: current
+  physics-anchored inference. It constrains `S_e`, `T0`, `C_th`, `Tc`, `w`, and `beta`
+  to their independent intervals, recovers the complete measured oscillation window
+  with 22/22 classifications at both 0.025 and 0.0125 ns, and passes both stable
+  endpoint controls. The remaining conflict is isolated to effective `C=6.8355 pF`
+  and `gamma=0.15696`; amplitude and high-current frequency remain quantitatively
+  incorrect.
+- `20260829_160147_oscillation-priority-global-specimen-parameter-i_ac1c5e`:
+  superseded unrestricted classification-first search retained as development
+  evidence. It obtained 21/22 classifications only by moving all eight quantities
+  outside their independent intervals.
+- `20260829_210212_amplitude-tuned-oscillation-priority-specimen-in_85526c`:
+  superseded unrestricted amplitude-priority search retained as tradeoff evidence.
+  It reduced Vpp MAE to 88.5 mV but fell to 19/22 classifications and moved seven
+  quantities outside their independent intervals.
 - `20260828_112026_thermal-capacitance-estimate-with-conservative-0_ce51fa`: earlier
   numerically identical upper-bound run retained immutably and superseded by
   `aa2469`, whose figure labels the corrected ratio as `V/I_R`.
