@@ -1,0 +1,178 @@
+schema_version = 1
+name = "Physics-anchored specimen waveform inference"
+kind = "simulation"
+model = "current"
+seed = 20260907
+
+[time]
+dt_ns = 0.05
+pre_us = 0.2
+duration_us = 0.5
+
+[input]
+amplitude_uA = 228.152299
+on_us = 0.0
+off_us = 0.3
+
+[initial]
+voltage_V = 0.0
+temperature_K = 314.4
+
+[electrical]
+C_pF = 0.39
+
+[thermal]
+C_th_pJ_per_K = 0.0478732360
+S_e_mW_per_K = 0.0036751265
+T0_K = 314.4
+
+[resistance]
+preset = "../../presets/resistance_100425_chip1_gap3.json"
+start_branch = "insulator"
+
+[analysis]
+start_us = 0.05
+stop_us = 0.25
+
+[inference]
+data_directory = "../../data/experimental/tia_current_sweep"
+# Earlier interior holdouts have already been inspected during model development.
+# Retain only the two stable sweep endpoints as negative-control checks so every
+# measured oscillatory current participates in fitting the operating window.
+holdout_drives_mV = [50.0, 1000.0]
+search_dt_ns = 0.025
+final_dt_ns = 0.025
+
+# Classification remains the first requirement. Absolute and logarithmic Vpp
+# terms distinguish candidates inside the same oscillation-tracking basin.
+[inference.weights]
+waveform = 0.10
+mean_voltage = 0.10
+amplitude = 1.00
+relative_amplitude = 10.0
+spectrum = 0.10
+frequency = 2.00
+classification = 2500.0
+false_positive = 2500.0
+sustain = 1.00
+edge = 0.02
+prior = 0.01
+
+[inference.optimizer]
+maxiter_constrained = 0
+maxiter_relaxed = 10
+popsize = 4
+local_max_evaluations = 100
+
+# The fully constrained reference tests whether every independent interval can
+# already explain the waveforms, including the 0.39 pF electrical timing bound.
+[[inference.constrained_parameters]]
+name = "C_pF"
+lower = 0.0
+upper = 0.39
+prior_center = 0.0
+prior_scale = 0.39
+
+[[inference.constrained_parameters]]
+name = "C_th_pJ_per_K"
+lower = 0.0219179631
+upper = 0.0926235080
+prior_center = 0.0478732360
+prior_scale = 0.01804
+
+[[inference.constrained_parameters]]
+name = "S_e_mW_per_K"
+lower = 0.0034344414
+upper = 0.0040850485
+prior_center = 0.0036751265
+prior_scale = 0.0001661
+
+[[inference.constrained_parameters]]
+name = "T0_K"
+lower = 314.25
+upper = 314.55
+prior_center = 314.4
+prior_scale = 0.07653
+
+[[inference.constrained_parameters]]
+name = "Tc_K"
+lower = 333.1368881
+upper = 333.8383135
+prior_center = 333.4935664
+prior_scale = 0.17894
+
+[[inference.constrained_parameters]]
+name = "w_K"
+lower = 6.6290543
+upper = 7.2681478
+prior_center = 6.8823030
+prior_scale = 0.16303
+
+[[inference.constrained_parameters]]
+name = "beta_per_K"
+lower = 0.2809174
+upper = 0.3202061
+prior_center = 0.2991563
+prior_scale = 0.01002
+
+[[inference.constrained_parameters]]
+name = "gamma"
+lower = 0.2
+upper = 2.0
+prior_center = 0.9562697
+prior_scale = 0.4
+
+# Hierarchical diagnostic search. Directly measured or independently inferred
+# quantities retain their experimental intervals. Only C and gamma are widened;
+# C_th retains its larger conditional interval because it is less precise than
+# S_e but is still supported by the nonswitching heating traces.
+[[inference.relaxed_parameters]]
+name = "C_pF"
+lower = 0.0
+upper = 30.0
+initial_value = 6.835494476281914
+
+[[inference.relaxed_parameters]]
+name = "C_th_pJ_per_K"
+lower = 0.0219179631
+upper = 0.0926235080
+initial_value = 0.044214193020215925
+
+[[inference.relaxed_parameters]]
+name = "S_e_mW_per_K"
+lower = 0.0034344414
+upper = 0.0040850485
+initial_value = 0.003712762043427252
+
+[[inference.relaxed_parameters]]
+name = "T0_K"
+lower = 314.25
+upper = 314.55
+initial_value = 314.363069805982
+
+[[inference.relaxed_parameters]]
+name = "Tc_K"
+lower = 333.1368881
+upper = 333.8383135
+initial_value = 333.3384172420717
+
+[[inference.relaxed_parameters]]
+name = "w_K"
+lower = 6.6290543
+upper = 7.2681478
+initial_value = 7.041456087548133
+
+[[inference.relaxed_parameters]]
+name = "beta_per_K"
+lower = 0.2809174
+upper = 0.3202061
+initial_value = 0.314437701821341
+
+[[inference.relaxed_parameters]]
+name = "gamma"
+lower = 0.1
+upper = 3.0
+initial_value = 0.15696370990041864
+
+[output]
+root = "runs"
