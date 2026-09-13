@@ -12,6 +12,8 @@ import copy
 import dataclasses
 import itertools
 import json
+import hashlib
+import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
@@ -1334,6 +1336,7 @@ before a minor-loop reversal.
 def run_oscillation_audit(
     config: Mapping[str, Any], *, output_root: str | Path | None = None,
     command: str = "neuristor analyze oscillation-audit",
+    reuse_numerics: str | Path | None = None,
 ) -> RunBundle:
     """Audit archived persistence, map three currents, and verify shared candidates.
 
@@ -1384,6 +1387,8 @@ def run_oscillation_audit(
     bundle = RunBundle.create(name=str(config["name"]), model="oscillation-audit", kind="analysis",
                               config=resolved, output_root=output_root or config["output"]["root"], command=command)
     try:
+        if reuse_numerics is not None:
+            return _render_existing_audit(bundle, Path(reuse_numerics), resolved, reference, mode, settings)
         lab, _ = load_converted_sweep(data_directory)
         dataset = prepare_inference_dataset(lab, holdout_drives_mV=[50.0, 1000.0])
         # Full recorded prehistory is retained; data after the audit ends is not needed.
@@ -1507,6 +1512,46 @@ def run_oscillation_audit(
     except BaseException as exc:
         bundle.fail(exc)
         raise
+    return bundle
+
+
+def _render_existing_audit(bundle, source, resolved, reference, mode, settings) -> RunBundle:
+    """Re-render numerical evidence into a new bundle without mutating the source.
+
+    Exact recipe equality prevents a different grid or physics configuration from
+    being presented as a cached simulation. File hashes and the original numerical
+    code commit are retained alongside the new rendering provenance.
+    """
+
+    manifest = json.loads((source / "run.json").read_text())
+    old_config = json.loads((source / "resolved_config.json").read_text())
+    if manifest.get("status") != "completed" or manifest.get("model") != "oscillation-audit":
+        raise ConfigError("Numerical reuse requires a completed oscillation audit")
+    if old_config != resolved:
+        raise ConfigError("Numerical reuse requires the identical resolved audit recipe")
+    checksums = {}
+    for path in sorted(source.glob("*.csv")):
+        checksums[path.name] = hashlib.sha256(path.read_bytes()).hexdigest()
+        shutil.copy2(path, bundle.path(path.name))
+        bundle.register_file(path.name, label=path.stem.replace("_", " ").title(), media_type="text/csv")
+    metrics = json.loads((source / "metrics.json").read_text())
+    bundle.manifest["numerical_source"] = {
+        "id": manifest["id"], "provenance": manifest["provenance"], "sha256": checksums,
+    }
+    history = pd.read_csv(reference / "fitted_traces.csv")
+    mapped = pd.read_csv(bundle.path("parameter_map.csv"))
+    measured = pd.read_csv(bundle.path("measured_metrics.csv"))
+    traces = pd.read_csv(bundle.path("candidate_traces.csv"))
+    drives = metrics["selected_source_settings_mV"]
+    plot_oscillation_audit(history, settings, drives, bundle.path("figures/persistence_audit.png"), mode=mode)
+    plot_oscillation_parameter_maps(mapped, measured, metrics["choices"], bundle.path("figures/parameter_maps.png"))
+    plot_audit_candidate_traces(traces, drives, bundle.path("figures/candidate_comparison.png"),
+                               dt_ns=float(traces.dt_ns.min()))
+    for name in ("persistence_audit", "parameter_maps", "candidate_comparison"):
+        bundle.register_file(f"figures/{name}.png", label=name.replace("_", " ").title(), media_type="image/png")
+    bundle.write_json("metrics.json", metrics, label="Audit findings and verification")
+    bundle.write_text("report.md", _oscillation_audit_report(metrics), label="Method and results")
+    bundle.complete(summary={key: value for key, value in metrics.items() if key not in {"choices", "settings"}})
     return bundle
 
 

@@ -269,8 +269,10 @@ conditional 0.021918--0.092624 pJ/K interval. Only the poorly identified electri
 `C` and specimen-specific minor-loop `gamma` are searched broadly.
 
 The fit uses all known oscillatory records and withholds the 50 and 1000 mV settings
-as stable negative controls. At both 0.025 and 0.0125 ns it classifies all 22 records
-correctly and recovers the complete 228.2--606.3 uA oscillation window. The fitted
+as stable negative controls. At both 0.025 and 0.0125 ns it matches all 22 historical
+peak-count labels. The subsequent persistence audit shows that the 606.3 uA prediction
+decays from 50.2 mV Vpp in 50--100 ns to 0.49 mV in 200--250 ns, while the experiment
+stays near 10--12 mV. Thus this result does not recover the complete sustained window. The fitted
 anchors remain inside their intervals: `S_e=0.003713 mW/K`, `C_th=0.044214 pJ/K`, and
 `T0=314.363 K`. The unresolved conflict is concentrated in `C=6.8355 pF`, which is
 17.5 times the 0.39 pF timing bound, and `gamma=0.15696`, below the nominal 0.2--2.0
@@ -281,9 +283,11 @@ improves from 21/22 to 22/22 and Vpp MAE falls from 280.1 to 212.5 mV without mo
 the measured thermal and major-loop parameters out of range. It is not a complete
 waveform calibration. Median amplitude remains 5.55 times experiment and frequency
 MAE is 22.7 MHz, with the predicted high-current frequency reaching 125 MHz. The
-remaining work should therefore target the actual TIA/load response, partial or
-spatially nonuniform switching, and a dynamic minor-loop measurement rather than
-widening the well-supported parameter bounds.
+thermal intervals remain conditional on static R(T) thermometry, and the 0.39 pF
+bound remains conditional on channel timing and circuit interpretation. The small
+search budget and detector false success do not establish that parameter tuning is
+exhausted. Persistence-aware metrics and controlled maps should precede choosing
+between further parameter work, a dynamic switching law, and an explicit TIA model.
 
 ```bash
 neuristor analyze fit-waveforms \

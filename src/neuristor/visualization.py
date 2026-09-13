@@ -154,7 +154,7 @@ def plot_audit_candidate_traces(traces, drives, out_path, *, dt_ns) -> Path:
             ax.grid(alpha=.2)
     handles, legend_labels = axes[0, 0].get_legend_handles_labels()
     fig.legend(handles, legend_labels, loc="outside upper center", ncol=3, fontsize=10)
-    fig.suptitle(f"Same parameter vector across currents · integration step {dt_ns:g} ns", fontsize=14)
+    fig.suptitle(f"Same parameter vector across currents · integration step {dt_ns:g} ns", fontsize=14, y=1.04)
     return _finish(fig, out_path)
 
 

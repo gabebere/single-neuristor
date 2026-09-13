@@ -86,11 +86,11 @@ claims.
   leaving seven of eight physical intervals and producing turn-on transients.
 - `20260907_125315_physics-anchored-specimen-waveform-inference_717797`: current
   physics-anchored inference. It constrains `S_e`, `T0`, `C_th`, `Tc`, `w`, and `beta`
-  to their independent intervals, recovers the complete measured oscillation window
-  with 22/22 classifications at both 0.025 and 0.0125 ns, and passes both stable
-  endpoint controls. The remaining conflict is isolated to effective `C=6.8355 pF`
-  and `gamma=0.15696`; amplitude and high-current frequency remain quantitatively
-  incorrect.
+  to their conditional intervals and matches 22/22 historical peak-count labels.
+  Interpretation corrected by the later persistence audit: the 606.3 uA waveform
+  decays, so the full sustained oscillation window was not reproduced. Effective
+  `C=6.8355 pF` and `gamma=0.15696`, amplitude and frequency remain unresolved;
+  membership in the thermal intervals does not establish their physical correctness.
 - `20260829_160147_oscillation-priority-global-specimen-parameter-i_ac1c5e`:
   superseded unrestricted classification-first search retained as development
   evidence. It obtained 21/22 classifications only by moving all eight quantities

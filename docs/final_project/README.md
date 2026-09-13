@@ -33,7 +33,7 @@ The report currently contains:
 7. Blind model predictions against all 22 measured current traces.
 8. Electrical/thermal capacitance dependence and the thermal-only limit.
 9. Global shared-parameter inference with held-out-current validation.
-10. Physics-anchored inference with the full oscillation window and fine-step verification.
+10. Physics-anchored inference, with corrected interpretation of the peak-count labels.
 
 ## Data map
 
@@ -46,7 +46,7 @@ The report currently contains:
 | `data/parameter_estimates/environmental_conductance/` | Conductance estimate and bootstrap evidence | Current reviewed result |
 | `data/parameter_estimates/thermal_capacitance/` | Thermal fit, trajectories, uncertainty, and figure | Current reviewed result |
 | `data/parameter_estimates/global_waveform_inference/` | Shared-parameter optimization, held-out validation, and convergence | Current diagnostic result |
-| `data/parameter_estimates/physics_anchored_inference/` | Confidence-ordered fit, full oscillation window, and 0.0125 ns convergence check | Current diagnostic result |
+| `data/parameter_estimates/physics_anchored_inference/` | Confidence-ordered fit and timestep checks; upper-boundary persistence claim corrected | Historical diagnostic result |
 | `data/reviewed_runs/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/` | Blind prediction, common-window metrics, convergence, and C--Cth map | Current reviewed result |
 | `data/reviewed_runs/20260829_105704_global-specimen-parameter-inference-from-all-cur_8f12d6/` | Constrained and relaxed global fits, held-out validation, fitted traces, and convergence | Current reviewed result |
 | `data/reviewed_runs/` | Complete tracked run archive | Mixed current and historical evidence |

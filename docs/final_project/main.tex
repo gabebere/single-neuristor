@@ -796,8 +796,8 @@ $C_{\mathrm{th}}=S_e\tau_{\mathrm{th}}$. Only $C$ and $\gamma$ are searched broa
 the experiment provides an upper bound rather than a positive measurement for $C$,
 and no specimen-specific dynamic minor loops determine $\gamma$.
 
-All measured oscillatory records are used during optimization. The lowest and
-highest stable source settings, 50 and 1000~mV, are withheld as negative controls;
+All measured oscillatory records are used during optimization. Two stable source
+settings, 50 and 1000~mV, are withheld as negative controls;
 this is not a blind test because the remaining records were already inspected. The
 fit is performed directly at $\Delta t=0.025$~ns. Classification and false positives
 each receive weight 2500. Frequency receives weight 2, persistence and absolute
@@ -844,9 +844,9 @@ $\gamma$ lies below the nominal 0.2--2.0 range.}
 \toprule
 Quantity & Experiment & Anchored fit \\
 \midrule
-Correct classifications & 22 reference labels & 22 of 22 \\
-Oscillating records & 11 & 11 \\
-Oscillation-current interval & 228.2--606.3 $\mu$A & 228.2--606.3 $\mu$A \\
+Peak-count classifications & 22 reference labels & 22 of 22 \\
+Peak-count oscillating records & 11 & 11 \\
+Peak-count current interval & 228.2--606.3 $\mu$A & 228.2--606.3 $\mu$A \\
 Stable negative controls & 2 & 2 \\
 Median predicted/measured $V_{\mathrm{pp}}$ & 1 & $5.55\times$ \\
 $V_{\mathrm{pp}}$ mean absolute error & --- & 212.5 mV \\
@@ -855,43 +855,46 @@ Frequency interval & 41.7--62.5 MHz & 32.3--125.0 MHz \\
 Frequency mean absolute error & --- & 22.7 MHz \\
 \bottomrule
 \end{tabular}
-\caption{Physics-anchored result at $\Delta t=0.025$~ns. All oscillation labels and
-the full measured current window are recovered without a false positive.}
+\caption{Historical peak-count result at $\Delta t=0.025$~ns. The later window
+audit finds that the $606.3~\mu$A prediction decays; matching these labels does not
+establish the complete sustained oscillation window.}
 \label{tab:physics_anchored_results}
 \end{table}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{../../public_jobs/20260907_125315_physics-anchored-specimen-waveform-inference_717797/figures/operating_summary.png}
-\caption{Measured and physics-anchored operating behavior. The complete oscillation
-window is recovered, while amplitude remains too large and high-current frequency
-rises too rapidly.}
+\caption{Measured and physics-anchored operating behavior under the historical
+detector. Amplitude is too large, frequency rises too rapidly, and the last detected
+oscillation is a decaying transient.}
 \label{fig:physics_anchored_summary}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.88\textwidth]{../../public_jobs/20260907_125315_physics-anchored-specimen-waveform-inference_717797/figures/representative_fits.png}
-\caption{Representative physics-anchored predictions. The stable pre-onset record is
-retained and sustained oscillations are recovered, but the simulated resistance
-excursion still produces excessive voltage amplitude.}
+\caption{Representative physics-anchored predictions. The pre-onset record remains
+stable and several currents oscillate, but voltage amplitude is excessive and the
+$606.3~\mu$A predicted cycles fade.}
 \label{fig:physics_anchored_traces}
 \end{figure}
 
-The same parameter vector gives 22/22 classifications at $\Delta t=0.0125$~ns. It
-therefore supersedes the earlier unrestricted classification-first result, improving
-its 21/22 classification and reducing amplitude MAE from 280.1 to 212.5~mV while
+The same parameter vector gives 22/22 peak-count classifications at $\Delta t=0.0125$~ns.
+It improved the earlier unrestricted classification-first result's 21/22 labels
+and reduced amplitude MAE from 280.1 to 212.5~mV while
 keeping six fitted quantities within their independent intervals. The earlier
 amplitude-priority vector reached 88.5~mV amplitude MAE, but only by falling to 19/22
 classifications and moving seven quantities outside their intervals; it is not
 promoted as the specimen model.
 
-The remaining conflicts are now localized. The required $C=6.84$~pF is about 17.5
+The required $C=6.84$~pF is about 17.5
 times the experimental timing bound, and $\gamma=0.157$ cannot be interpreted as a
 measurement without dynamic minor-loop data. The excessive amplitude follows the
 full fitted resistance excursion, approximately $I\,\Delta R$, while the frequency
 reaches 125~MHz at the upper boundary. These errors point to partial or spatially
-nonuniform switching and the actual TIA/load dynamics as the next model extensions.
+nonuniform switching and the actual TIA/load dynamics as hypotheses to test.
+The thermal estimates remain conditional on static $R(T)$ thermometry and circuit
+interpretation; satisfying their intervals does not establish that they are correct.
 The full-precision vector is archived because the classification basin is narrow;
 the printed digits are descriptive, not measurement precision. The optimizer reached
 its finite budget, so this is the best reproducible candidate found rather than proof
