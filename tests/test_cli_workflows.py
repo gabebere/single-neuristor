@@ -73,6 +73,27 @@ def test_config_override_is_typed_and_typo_safe(tmp_path: Path) -> None:
         raise AssertionError("A misspelled override path should fail")
 
 
+def test_oscillation_audit_command_writes_reviewable_bundle(tmp_path: Path) -> None:
+    result = runner.invoke(app, [
+        "analyze", "oscillation-audit", "--config",
+        str(ROOT / "experiments/current/specimen_oscillation_audit.toml"),
+        "--set", "audit.grid.C_pF=[0.39]", "--set", "audit.grid.tau_th_ns=[13.0]",
+        "--set", "audit.grid.gamma=[0.956269682]", "--set", "audit.grid.include_reference=false",
+        "--set", "time.dt_ns=0.2", "--set", "audit.verification_dt_ns=[0.2]",
+        "--output-root", str(tmp_path / "runs"),
+    ])
+    assert result.exit_code == 0, result.output + repr(result.exception)
+    run = next((tmp_path / "runs").iterdir())
+    manifest = json.loads((run / "run.json").read_text())
+    assert manifest["status"] == "completed"
+    assert all((run / item["path"]).is_file() for item in manifest["artifacts"])
+    mapped = pd.read_csv(run / "parameter_map.csv")
+    assert len(mapped) == 3
+    assert np.allclose(mapped.C_th_pJ_per_K, mapped.tau_th_ns * .003712762043427252)
+    metrics = json.loads((run / "metrics.json").read_text())
+    assert metrics["reference_legacy_records"] > metrics["reference_sustained_records"]
+
+
 def test_current_workflow_writes_complete_bundle(tmp_path: Path) -> None:
     config = load_toml(_tiny_current_config(tmp_path))
     bundle = run_simulation(config, output_root=tmp_path / "runs", command="test")

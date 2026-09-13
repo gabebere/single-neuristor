@@ -20,6 +20,7 @@ from .workflows import (
     run_environmental_conductance,
     run_lab_analysis,
     run_model_validation,
+    run_oscillation_audit,
     run_waveform_parameter_inference,
     run_resistance_fit,
     run_simulation,
@@ -160,6 +161,19 @@ def analyze_model_validation(
 
     configured = _configured(config, set_values, "current")
     bundle = run_model_validation(configured, output_root=output_root, command=_command())
+    _announce_bundle(bundle.root)
+
+
+@analyze_app.command("oscillation-audit")
+def analyze_oscillation_audit(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False, readable=True),
+    set_values: list[str] = typer.Option([], "--set", help="Override a dotted TOML path."),
+    output_root: Optional[Path] = typer.Option(None, "--output-root", help="Override [output].root."),
+) -> None:
+    """Audit sustained cycles and map C versus thermal time at selected currents."""
+
+    bundle = run_oscillation_audit(_configured(config, set_values, "current"),
+                                   output_root=output_root, command=_command())
     _announce_bundle(bundle.root)
 
 

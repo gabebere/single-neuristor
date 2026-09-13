@@ -41,6 +41,123 @@ def _finish(fig: plt.Figure, out_path: str | Path) -> Path:
     return path
 
 
+def plot_oscillation_audit(history, settings, drives, out_path, *, mode="relaxed") -> Path:
+    """Show raw measured/reference voltages and the shrinking four-window envelope."""
+    from .oscillation_audit import audit_voltage
+
+    fig, axes = plt.subplots(2, len(drives), figsize=(14, 7.2), layout="constrained", squeeze=False)
+    for column, drive in enumerate(drives):
+        frame = history[(history.fit_mode == mode) & np.isclose(history.nominal_drive_mV, drive)]
+        frame = frame.sort_values("time_ns")
+        plateau = frame[(frame.time_ns >= 50) & (frame.time_ns <= 250)]
+        current = plateau.measured_current_uA.median()
+        for field, label, color in (("measured_voltage_mV", "Experiment", COLORS["blue"]),
+                                     ("predicted_voltage_mV", "Previous fit", COLORS["orange"])):
+            axes[0, column].plot(plateau.time_ns, plateau[field], label=label, color=color, lw=1.1)
+            _, windows = audit_voltage(frame.time_ns.to_numpy(), frame[field].to_numpy(), settings)
+            axes[1, column].plot(np.arange(4), windows.vpp_mV, "o-", label=label, color=color)
+        axes[0, column].set_title(f"{current:.1f} µA measured input")
+        for edge in settings.window_edges_ns[1:-1]:
+            axes[0, column].axvline(edge, color=COLORS["gray"], ls=":", lw=.8)
+        axes[0, column].set_xlabel("Time (ns)")
+        axes[0, column].set_ylabel("Voltage (mV)")
+        axes[1, column].set_yscale("log")
+        axes[1, column].set_xticks(np.arange(4), ["50–100", "100–150", "150–200", "200–250"])
+        axes[1, column].set_xlabel("Time window (ns)")
+        axes[1, column].set_ylabel("Raw peak-to-peak voltage (mV)")
+        for ax in axes[:, column]:
+            ax.grid(alpha=.2)
+        axes[0, column].legend(fontsize=9)
+    fig.suptitle("Counting early peaks can conceal a dying oscillation", fontsize=16)
+    return _finish(fig, out_path)
+
+
+def plot_oscillation_parameter_maps(mapped, measured, choices, out_path) -> Path:
+    """Show independent errors on categorical C/tau grids; dots mark persistence."""
+
+    from matplotlib.colors import TwoSlopeNorm
+
+    gammas = sorted(mapped.gamma.unique())
+    drives = sorted(mapped.source_setting_mV.unique())
+    fig, axes = plt.subplots(len(gammas) * len(drives), 4, figsize=(17, 3.0 * len(gammas) * len(drives)),
+                             layout="constrained", squeeze=False)
+    specifications = [("amplitude_ratio", "Late amplitude ratio (log₂)", 3.5),
+                      ("frequency_relative_error", "Late frequency ratio (log₂)", 1.5),
+                      ("retention_log_error", "Retention ratio (log₂)", 3.5),
+                      ("mean_error_mV", "Late mean-voltage error (mV)", 160)]
+    for gi, gamma in enumerate(gammas):
+        for di, drive in enumerate(drives):
+            frame = mapped[np.isclose(mapped.gamma, gamma) & np.isclose(mapped.source_setting_mV, drive)]
+            cs, taus = sorted(frame.C_pF.unique()), sorted(frame.tau_th_ns.unique())
+            for col, (field, title, limit) in enumerate(specifications):
+                ax = axes[gi * len(drives) + di, col]
+                matrix = frame.pivot(index="tau_th_ns", columns="C_pF", values=field).loc[taus, cs].to_numpy(float)
+                if field == "amplitude_ratio":
+                    matrix = np.log2(np.maximum(matrix, 1e-6))
+                elif field == "frequency_relative_error":
+                    matrix = np.log2(np.maximum(matrix + 1, 1e-6))
+                    valid = frame.pivot(index="tau_th_ns", columns="C_pF", values="frequency_comparable").loc[taus, cs]
+                    matrix[~valid.to_numpy(bool)] = np.nan
+                elif field == "retention_log_error":
+                    matrix /= np.log(2)
+                cmap = plt.get_cmap("RdBu_r").copy()
+                cmap.set_bad("#e2e8f0")
+                im = ax.imshow(matrix, origin="lower", aspect="auto", cmap=cmap,
+                               norm=TwoSlopeNorm(vmin=-limit, vcenter=0, vmax=limit))
+                for item in frame.itertuples():
+                    if item.sustained:
+                        ax.plot(cs.index(item.C_pF), taus.index(item.tau_th_ns), ".", color="black", ms=4)
+                bound_indices = [i for i, value in enumerate(cs) if value <= .39 + 1e-12]
+                if bound_indices and max(bound_indices) < len(cs) - 1:
+                    ax.axvline(max(bound_indices) + .5, color="black", ls="--", lw=1)
+                ax.set_xticks(range(len(cs)), [f"{v:.3g}" for v in cs], fontsize=8)
+                ax.set_yticks(range(len(taus)), [f"{v:.3g}" for v in taus], fontsize=8)
+                ax.set_xlabel("C (pF); dashed line = 0.39 pF bound", fontsize=8)
+                ax.set_ylabel("Thermal time Cth/Se (ns)", fontsize=8)
+                ax.set_title(f"γ={gamma:.3g}, I={frame.current_uA.iloc[0]:.1f} µA\n{title}", fontsize=10)
+                fig.colorbar(im, ax=ax, shrink=.8, extend="both")
+    fig.suptitle("Controlled parameter maps: white = matched feature; black dot = persistence check passed\n"
+                 "All other parameters fixed; gray frequency cells have no resolved coherent signal. "
+                 "Log₂ ratio +1 = twice experiment, −1 = half.", fontsize=14)
+    return _finish(fig, out_path)
+
+
+def plot_audit_candidate_traces(traces, drives, out_path, *, dt_ns) -> Path:
+    """Compare shared candidate waveforms at the finest audited integration step."""
+
+    selected = traces[np.isclose(traces.dt_ns, dt_ns)]
+    labels = {"reference": ("Previous fit", COLORS["gray"]),
+              "best_features": ("Best feature match", COLORS["orange"]),
+              "best_sustained": ("Best persistent grid point", COLORS["green"]),
+              "best_timing_bound": ("Best with C ≤ 0.39 pF", COLORS["purple"])}
+    fig, axes = plt.subplots(len(drives), 2, figsize=(14, 3.3 * len(drives)), layout="constrained", squeeze=False)
+    for row, drive in enumerate(drives):
+        frame = selected[np.isclose(selected.source_setting_mV, drive)]
+        measured = frame[frame.candidate == "reference"].sort_values("time_ns")
+        for col, limits in enumerate(((0, 250), (150, 250))):
+            ax = axes[row, col]
+            ax.plot(measured.time_ns, measured.measured_voltage_mV, color=COLORS["blue"], lw=1.8, label="Experiment")
+            for candidate, (label, color) in labels.items():
+                f = frame[frame.candidate == candidate].sort_values("time_ns")
+                if not f.empty:
+                    ax.plot(f.time_ns, f.predicted_voltage_mV, color=color, lw=.95,
+                            alpha=.85, label=label, ls="--" if candidate == "best_timing_bound" else "-")
+            ax.set_xlim(*limits)
+            if col == 1:
+                late = frame[frame.time_ns >= 150]
+                lo = min(late.measured_voltage_mV.min(), late.predicted_voltage_mV.min())
+                hi = max(late.measured_voltage_mV.max(), late.predicted_voltage_mV.max())
+                ax.set_ylim(lo - 10, hi + 10)
+            ax.set_xlabel("Time (ns)")
+            ax.set_ylabel("Voltage (mV)")
+            ax.set_title(f"{measured.current_uA.iloc[0]:.1f} µA — " + ("whole pulse" if col == 0 else "late cycles"))
+            ax.grid(alpha=.2)
+    handles, legend_labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, legend_labels, loc="outside upper center", ncol=3, fontsize=10)
+    fig.suptitle(f"Same parameter vector across currents · integration step {dt_ns:g} ns", fontsize=14)
+    return _finish(fig, out_path)
+
+
 def plot_current_run(frame: pd.DataFrame, out_path: str | Path, *, title: str) -> Path:
     """Plot imposed current, voltage, temperature, and resistance for one run."""
 

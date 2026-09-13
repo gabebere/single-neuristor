@@ -25,6 +25,7 @@ from .experimental_waveforms import load_converted_sweep
 from .metrics import current_run_metrics, voltage_run_metrics
 from .lab_estimates import estimate_environmental_conductance, estimate_thermal_capacitance
 from .model_validation import capacitance_sensitivity, compare_model_to_lab
+from .oscillation_audit import AuditSettings, audit_voltage, evaluate_candidate, parameter_map
 from .parameter_inference import (
     PARAMETER_NAMES,
     FitParameter,
@@ -33,6 +34,7 @@ from .parameter_inference import (
     evaluate_parameter_vector,
     fit_parameter_set,
     parameter_vector_from_model,
+    model_from_parameter_vector,
     prepare_inference_dataset,
 )
 from .model import YuanhangCircuitParams, YuanhangResistParams, series_first, simulate_yuanhang
@@ -59,6 +61,9 @@ from .visualization import (
     plot_sweep_summary,
     plot_thermal_capacitance_estimate,
     plot_voltage_run,
+    plot_oscillation_audit,
+    plot_oscillation_parameter_maps,
+    plot_audit_candidate_traces,
 )
 
 
@@ -1324,6 +1329,238 @@ before a minor-loop reversal.
         bundle.fail(exc)
         raise
     return bundle
+
+
+def run_oscillation_audit(
+    config: Mapping[str, Any], *, output_root: str | Path | None = None,
+    command: str = "neuristor analyze oscillation-audit",
+) -> RunBundle:
+    """Audit archived persistence, map three currents, and verify shared candidates.
+
+    Archived bundles are read only. The old detector remains available for exact
+    historical reproduction; this workflow adds independent evidence and flags its
+    finite-window false successes. Ranking uses equal continuous feature terms.
+    """
+
+    validate_config(config)
+    if config["model"] != "current":
+        raise ConfigError("Oscillation audit requires the current-source model")
+    audit = _table(config, "audit")
+
+    def local_path(key: str) -> Path:
+        value = Path(str(audit[key])).expanduser()
+        return value.resolve() if value.is_absolute() else (source_directory(config) / value).resolve()
+
+    reference = local_path("reference_bundle")
+    data_directory = local_path("data_directory")
+    mode = str(audit.get("reference_mode", "relaxed"))
+    parameters = pd.read_csv(reference / "parameter_comparison.csv").set_index("parameter")
+    values = parameters.loc[list(PARAMETER_NAMES), f"{mode}_fit"].to_numpy(float)
+    base, _, _, resistance_source, _ = _current_params_from_config(config)
+    base = model_from_parameter_vector(values, base, dt_ns=float(config["time"]["dt_ns"]))
+    settings = AuditSettings(**{key: tuple(value) if isinstance(value, list) else value
+                                for key, value in _table(audit, "metrics").items()})
+    grid = _table(audit, "grid")
+    axes = {}
+    for key, reference_value in (("C_pF", base.C_F * 1e12),
+                                 ("tau_th_ns", base.C_th_J_per_K / base.S_e_W_per_K * 1e9),
+                                 ("gamma", base.resist_params.gamma)):
+        values_axis = list(map(float, grid[key]))
+        if bool(grid.get("include_reference", True)):
+            values_axis.append(reference_value)
+        axis = np.unique(values_axis)
+        if (not len(axis) or not np.all(np.isfinite(axis)) or np.any(axis < 0)
+                or (key != "C_pF" and np.any(axis == 0))):
+            raise ConfigError(f"Invalid audit.grid.{key}")
+        axes[key] = axis.tolist()
+    steps = [float(value) for value in audit["verification_dt_ns"]]
+    if any(step <= 0 for step in steps) or base.S_e_W_per_K <= 0:
+        raise ConfigError("Audit requires positive time steps and environmental conductance")
+    resolved = resolved_copy(config)
+    resolved["audit"]["resolved_grid"] = axes
+    resolved["audit"]["reference_values"] = dict(zip(PARAMETER_NAMES, values.tolist()))
+    resolved["audit"]["resolved_reference_bundle"] = str(reference)
+    resolved["resistance"]["resolved_source"] = resistance_source
+    bundle = RunBundle.create(name=str(config["name"]), model="oscillation-audit", kind="analysis",
+                              config=resolved, output_root=output_root or config["output"]["root"], command=command)
+    try:
+        lab, _ = load_converted_sweep(data_directory)
+        dataset = prepare_inference_dataset(lab, holdout_drives_mV=[50.0, 1000.0])
+        # Full recorded prehistory is retained; data after the audit ends is not needed.
+        keep = dataset.time_ns <= settings.window_edges_ns[-1]
+        dataset = dataclasses.replace(dataset, time_ns=dataset.time_ns[keep],
+                                      current_uA=dataset.current_uA[keep], voltage_mV=dataset.voltage_mV[keep])
+        indices = []
+        for drive in audit["source_settings_mV"]:
+            found = np.flatnonzero(np.isclose(dataset.nominal_drives_mV, float(drive)))
+            if len(found) != 1:
+                raise ConfigError(f"Expected one measured record for source setting {drive}")
+            indices.append(int(found[0]))
+        indices = np.asarray(indices)
+        measured = [audit_voltage(dataset.time_ns, dataset.voltage_mV[:, i], settings)[0]
+                    for i in range(len(dataset.nominal_drives_mV))]
+        measured_table = pd.DataFrame(measured).assign(source_setting_mV=dataset.nominal_drives_mV,
+                                                     current_uA=dataset.measured_summary.current_step_uA.to_numpy())
+        history = pd.read_csv(reference / "fitted_traces.csv")
+        old_rows, old_windows = [], []
+        for (fit_mode, drive), frame in history.groupby(["fit_mode", "nominal_drive_mV"]):
+            frame = frame.sort_values("time_ns")
+            summary, window = audit_voltage(frame.time_ns.to_numpy(), frame.predicted_voltage_mV.to_numpy(), settings)
+            old_rows.append({"fit_mode": fit_mode, "source_setting_mV": drive, **summary})
+            old_windows.append(window.assign(fit_mode=fit_mode, source_setting_mV=drive))
+        archived = pd.DataFrame(old_rows)
+        archived_windows = pd.concat(old_windows, ignore_index=True)
+
+        def progress(done: int, total: int) -> None:
+            if done == 1 or done % 12 == 0 or done == total:
+                print(f"Mapped {done}/{total} shared parameter combinations", flush=True)
+
+        mapped, windows = parameter_map(dataset, base, indices, capacitances_pF=axes["C_pF"],
+                                        thermal_times_ns=axes["tau_th_ns"], gammas=axes["gamma"],
+                                        settings=settings, progress=progress)
+        ranking = mapped.groupby(["candidate_id", "C_pF", "tau_th_ns", "C_th_pJ_per_K", "gamma"], as_index=False).agg(
+            mean_feature_score=("feature_score", "mean"), sustained_currents=("sustained", "sum"),
+            worst_feature_score=("feature_score", "max"),
+        ).sort_values(["mean_feature_score", "candidate_id"])
+        choices = {"reference": {"C_pF": base.C_F * 1e12,
+                                  "tau_th_ns": base.C_th_J_per_K / base.S_e_W_per_K * 1e9,
+                                  "gamma": base.resist_params.gamma}}
+        choices["best_features"] = ranking.iloc[0].to_dict()
+        persistent = ranking[ranking.sustained_currents == len(indices)]
+        if len(persistent):
+            choices["best_sustained"] = persistent.iloc[0].to_dict()
+        bounded = ranking[ranking.C_pF <= .39 + 1e-12]
+        if len(bounded):
+            choices["best_timing_bound"] = bounded.iloc[0].to_dict()
+        # Each candidate is shared across all currents. Selection used three records;
+        # the rest are cross-current checks, not a pristine blind validation set.
+        verification, verification_windows, traces = [], [], []
+        all_indices = np.arange(len(measured))
+        for label, choice in choices.items():
+            for dt in steps:
+                params = dataclasses.replace(
+                    base, C_F=choice["C_pF"] * 1e-12, dt_s=dt * 1e-9,
+                    C_th_J_per_K=choice["tau_th_ns"] * 1e-9 * base.S_e_W_per_K,
+                    resist_params=dataclasses.replace(base.resist_params, gamma=choice["gamma"]),
+                )
+                print(f"Checking {label} at {dt:g} ns on all {len(measured)} currents", flush=True)
+                table, window, voltage = evaluate_candidate(dataset, params, all_indices, settings, measured)
+                verification.append(table.assign(candidate=label, dt_ns=dt))
+                verification_windows.append(window.assign(candidate=label, dt_ns=dt))
+                for i in range(len(measured)):
+                    mask = dataset.time_ns >= 0
+                    traces.append(pd.DataFrame({"candidate": label, "dt_ns": dt,
+                                                "source_setting_mV": dataset.nominal_drives_mV[i],
+                                                "current_uA": measured_table.current_uA.iloc[i],
+                                                "time_ns": dataset.time_ns[mask],
+                                                "measured_voltage_mV": dataset.voltage_mV[mask, i],
+                                                "predicted_voltage_mV": voltage[mask, i]}))
+        verification = pd.concat(verification, ignore_index=True)
+        verification_windows = pd.concat(verification_windows, ignore_index=True)
+        traces = pd.concat(traces, ignore_index=True)
+        threshold_rows = []
+        for floor in (4.0, 6.0, 8.0):
+            for retention in (.25, .5, .75):
+                for label, table in [("measured", measured_table), *list(archived.groupby("fit_mode"))]:
+                    count = ((table.minimum_window_periodic_vpp_mV >= floor)
+                             & (table.amplitude_retention >= retention)
+                             & (table.late_coherence >= settings.minimum_coherence)).sum()
+                    threshold_rows.append({"series": label, "minimum_periodic_vpp_mV": floor,
+                                           "minimum_retention": retention, "sustained_records": int(count)})
+        threshold = pd.DataFrame(threshold_rows)
+        for name, frame in (("measured_metrics", measured_table), ("archived_metrics", archived),
+                            ("archived_windows", archived_windows), ("parameter_map", mapped),
+                            ("map_windows", windows), ("candidate_ranking", ranking),
+                            ("verification", verification), ("verification_windows", verification_windows),
+                            ("candidate_traces", traces), ("threshold_sensitivity", threshold)):
+            path = bundle.path(f"{name}.csv")
+            frame.to_csv(path, index=False)
+            bundle.register_file(path.relative_to(bundle.root), label=name.replace("_", " ").title(), media_type="text/csv")
+        plot_oscillation_audit(history, settings, list(map(float, audit["source_settings_mV"])),
+                               bundle.path("figures/persistence_audit.png"), mode=mode)
+        plot_oscillation_parameter_maps(mapped, measured_table, choices,
+                                       bundle.path("figures/parameter_maps.png"))
+        plot_audit_candidate_traces(traces, list(map(float, audit["source_settings_mV"])),
+                                    bundle.path("figures/candidate_comparison.png"), dt_ns=min(steps))
+        for name in ("persistence_audit", "parameter_maps", "candidate_comparison"):
+            bundle.register_file(f"figures/{name}.png", label=name.replace("_", " ").title(), media_type="image/png")
+        verification_summary = []
+        for (label, dt), frame in verification.groupby(["candidate", "dt_ns"]):
+            truth = measured_table.set_index("source_setting_mV").loc[frame.source_setting_mV, "sustained"].to_numpy(bool)
+            predicted = frame.sustained.to_numpy(bool)
+            verification_summary.append({"candidate": label, "dt_ns": dt,
+                                         "matches": int(np.sum(truth == predicted)),
+                                         "misses": int(np.sum(truth & ~predicted)),
+                                         "false_positives": int(np.sum(~truth & predicted)),
+                                         "sustained_records": int(predicted.sum()),
+                                         "oscillatory_feature_score": float(frame.loc[truth, "feature_score"].mean())})
+        metrics = {"grid_combinations": len(ranking), "selected_source_settings_mV": audit["source_settings_mV"],
+                   "measured_sustained_records": int(measured_table.sustained.sum()),
+                   "reference_legacy_records": int(archived.loc[archived.fit_mode == mode, "legacy_detected"].sum()),
+                   "reference_sustained_records": int(archived.loc[archived.fit_mode == mode, "sustained"].sum()),
+                   "grid_combinations_sustained_at_all_three": len(persistent),
+                   "choices": choices, "verification": verification_summary,
+                   "settings": dataclasses.asdict(settings)}
+        bundle.write_json("metrics.json", metrics, label="Audit findings and verification")
+        bundle.write_text("report.md", _oscillation_audit_report(metrics), label="Method and results")
+        bundle.complete(summary={key: value for key, value in metrics.items() if key not in {"choices", "settings"}})
+    except BaseException as exc:
+        bundle.fail(exc)
+        raise
+    return bundle
+
+
+def _oscillation_audit_report(metrics: Mapping[str, Any]) -> str:
+    """Summarize explicit diagnostic definitions without claiming a new calibration."""
+
+    lines = ["# Sustained-oscillation audit and controlled parameter maps", "",
+             "The prior peak-count classification is not evidence of sustained oscillation. "
+             f"It accepts {metrics['reference_legacy_records']} reference traces; the window audit accepts "
+             f"{metrics['reference_sustained_records']}. The same window audit accepts "
+             f"{metrics['measured_sustained_records']} experimental traces.", "",
+             "## Method", "",
+             "Four windows cover 50–100, 100–150, 150–200 and 200–250 ns. Each reports raw "
+             "and 5–95% voltage spans, mean voltage and sinusoidal amplitude. A Hann spectrum "
+             "on 150–250 ns locates the dominant component in 10–200 MHz, followed by local "
+             "sinusoidal regression with a fitted baseline slope. The 100 ns record has about "
+             "10 MHz Fourier-bin spacing: interpolation does not create additional experimental "
+             "resolution. A separate peak-period estimate has no 8 ns minimum spacing. Frequencies "
+             "of flat/noisy signals are descriptive only and are excluded from the error term.", "",
+             "A trace passes the operational persistence check when every window has at least "
+             "6 mV fitted fundamental Vpp, the last/first robust span is at least 0.5, and the "
+             "late fundamental explains at least 40% of detrended variance. These thresholds "
+             "are not physical constants; threshold_sensitivity.csv repeats the audit at "
+             "4/6/8 mV and retention 0.25/0.5/0.75. A finite record cannot prove a limit cycle.", "",
+             "The maps replay the measured current waveforms at three settings (300, 500, "
+             "800 mV source labels; approximately 228, 381, 606 uA measured currents). "
+             "They vary electrical C and thermal time Cth/Se at several gamma values. "
+             "All other quantities are fixed to the archived reference fit. Cth is calculated "
+             "from Se times thermal time, with explicit pJ/K units in parameter_map.csv. "
+             "This is a conditional slice, not an exhaustive search over eight parameters. "
+             "C above 0.39 pF remains an exploratory violation of the prior timing estimate.", "",
+             "Each candidate is ranked by equal-weight squared errors scaled to 20% amplitude "
+             "ratio (with a 3 mV floor), 10% frequency, 20 mV mean voltage, and factor-two "
+             "retention. There is no large binary classification reward. These are engineering "
+             "scales, not measurement uncertainties. The best score, best score passing all "
+             "three persistence checks (if any), and best score within the C timing bound are "
+             "verified, along with the reference. No fit is selected independently per current.", "",
+             "## Results", "",
+             f"Mapped {metrics['grid_combinations']} shared combinations; "
+             f"{metrics['grid_combinations_sustained_at_all_three']} pass persistence at all three currents.", "",
+             "| Candidate | Step (ns) | Sustained | Misses | False positives | Feature score on measured oscillators |",
+             "|---|---:|---:|---:|---:|---:|"]
+    for row in metrics["verification"]:
+        lines.append(f"| {row['candidate']} | {row['dt_ns']:g} | {row['sustained_records']} | {row['misses']} "
+                     f"| {row['false_positives']} | {row['oscillatory_feature_score']:.3f} |")
+    lines += ["", "All 22 currents are checked at each listed step. The other currents are "
+              "cross-current checks, not pristine blind validation: earlier development already "
+              "inspected these data. Parameter choices and per-current convergence metrics are "
+              "archived. Identical labels alone do not establish waveform convergence. "
+              "Historical bundles and their objective are unchanged; this audit supplies the "
+              "corrected interpretation.", "", "![Persistence audit](figures/persistence_audit.png)", "",
+              "![Parameter maps](figures/parameter_maps.png)", "",
+              "![Candidate traces](figures/candidate_comparison.png)"]
+    return "\n".join(lines)
 
 
 def run_waveform_parameter_inference(

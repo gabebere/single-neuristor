@@ -87,6 +87,7 @@ Use `neuristor --help` or `neuristor <group> --help` for the complete live refer
 | Estimate thermal capacitance | `neuristor analyze thermal-capacitance --data DIRECTORY --resistance-preset FILE.json --conductance-mW-per-K VALUE` |
 | Validate specimen model against lab sweep | `neuristor analyze model-validation --config FILE.toml` |
 | Fit shared waveform parameters | `neuristor analyze fit-waveforms --config FILE.toml` |
+| Audit persistence and map three currents | `neuristor analyze oscillation-audit --config FILE.toml` |
 | Browse runs | `neuristor runs list` / `neuristor runs show RUN_ID` |
 | Visualize a current run | `neuristor runs visualize RUN_ID` |
 | Copy a run to the Git archive | `neuristor runs publish RUN_ID` |
@@ -265,12 +266,29 @@ neuristor analyze fit-waveforms \
   --config experiments/current/specimen_physics_anchored_inference.toml
 ```
 
-This diagnostic classifies all 22 records correctly at both 0.025 and 0.0125 ns and
-recovers the complete 228.2--606.3 uA oscillation window. `S_e`, `T0`, `C_th`, `Tc`,
+This diagnostic matches the historical peak-count labels for all 22 records at both
+0.025 and 0.0125 ns. A later window audit found that the 606.3 uA prediction decays,
+so these labels do **not** establish the complete sustained oscillation window. `S_e`, `T0`, `C_th`, `Tc`,
 `w`, and `beta` remain inside their independent intervals. The remaining conflict is
 isolated to effective `C=6.8355 pF` and `gamma=0.15696`; voltage amplitude and
 high-current frequency are still too large. The result therefore narrows the next
 modeling work to the electrical/readout dynamics and dynamic switching law.
+
+Inspect sustained cycles and controlled parameter changes with:
+
+```bash
+neuristor analyze oscillation-audit \
+  --config experiments/current/specimen_oscillation_audit.toml
+```
+
+This rechecks the archived fit in four 50 ns windows, separates late amplitude,
+frequency, mean voltage and decay, and maps `C` versus `C_th/S_e` at several `gamma`
+values using the measured inputs near 228, 381 and 606 uA. Every candidate uses one
+shared parameter vector. Selected grid points are checked on all 22 currents at
+0.025, 0.0125 and 0.00625 ns. The historical detector and bundles remain reproducible;
+the new tables explicitly distinguish regular early peaks from persistent cycles.
+The grids are conditional slices, not an exhaustive parameter search or a new
+physical calibration. See the generated report for definitions and threshold checks.
 
 ## Run bundles and GitHub archive
 
