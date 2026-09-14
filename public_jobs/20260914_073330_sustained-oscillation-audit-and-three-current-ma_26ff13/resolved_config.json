@@ -1,0 +1,119 @@
+{
+  "audit": {
+    "data_directory": "../../data/experimental/tia_current_sweep",
+    "grid": {
+      "C_pF": [
+        0.0,
+        0.39,
+        2.0,
+        4.0,
+        8.0,
+        12.0
+      ],
+      "gamma": [
+        0.5,
+        0.956269682
+      ],
+      "include_reference": true,
+      "tau_th_ns": [
+        6.0,
+        9.0,
+        13.026,
+        18.0,
+        24.0
+      ]
+    },
+    "metrics": {
+      "frequency_band_MHz": [
+        10.0,
+        200.0
+      ],
+      "minimum_coherence": 0.4,
+      "minimum_periodic_vpp_mV": 6.0,
+      "minimum_retention": 0.5,
+      "window_edges_ns": [
+        50.0,
+        100.0,
+        150.0,
+        200.0,
+        250.0
+      ]
+    },
+    "reference_bundle": "../../public_jobs/20260907_125315_physics-anchored-specimen-waveform-inference_717797",
+    "reference_mode": "relaxed",
+    "reference_values": {
+      "C_pF": 6.835494476281914,
+      "C_th_pJ_per_K": 0.0442141930202159,
+      "S_e_mW_per_K": 0.0037127620434272,
+      "T0_K": 314.363069805982,
+      "Tc_K": 333.3384172420717,
+      "beta_per_K": 0.314437701821341,
+      "gamma": 0.1569637099004186,
+      "w_K": 7.041456087548133
+    },
+    "resolved_grid": {
+      "C_pF": [
+        0.0,
+        0.39,
+        2.0,
+        4.0,
+        6.835494476281913,
+        8.0,
+        12.0
+      ],
+      "gamma": [
+        0.1569637099004186,
+        0.5,
+        0.956269682
+      ],
+      "tau_th_ns": [
+        6.0,
+        9.0,
+        11.90870637629186,
+        13.026,
+        18.0,
+        24.0
+      ]
+    },
+    "resolved_reference_bundle": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20260907_125315_physics-anchored-specimen-waveform-inference_717797",
+    "source_settings_mV": [
+      300.0,
+      500.0,
+      800.0
+    ],
+    "verification_dt_ns": [
+      0.025,
+      0.0125,
+      0.00625
+    ]
+  },
+  "electrical": {
+    "C_pF": 0.39
+  },
+  "input": {
+    "amplitude_uA": 228.152299
+  },
+  "kind": "simulation",
+  "model": "current",
+  "name": "Sustained oscillation audit and three-current maps",
+  "output": {
+    "root": "runs"
+  },
+  "resistance": {
+    "preset": "../../presets/resistance_100425_chip1_gap3.json",
+    "resolved_source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/resistance_100425_chip1_gap3.json",
+    "start_branch": "insulator"
+  },
+  "schema_version": 1,
+  "seed": 0,
+  "thermal": {
+    "C_th_pJ_per_K": 0.047873236,
+    "S_e_mW_per_K": 0.0036751265,
+    "T0_K": 314.4
+  },
+  "time": {
+    "dt_ns": 0.025,
+    "duration_us": 0.25,
+    "pre_us": 0.296
+  }
+}

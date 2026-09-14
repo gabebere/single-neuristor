@@ -25,7 +25,7 @@ from .config import ConfigError, apply_overrides, deep_set, load_toml, resolved_
 from .current_drive_sim import CurrentDriveParams, current_drive_operating_estimates, simulate_current_step
 from .experimental_waveforms import load_converted_sweep
 from .metrics import current_run_metrics, voltage_run_metrics
-from .lab_estimates import estimate_environmental_conductance, estimate_thermal_capacitance
+from .lab_estimates import estimate_environmental_conductance, estimate_thermal_capacitance, reconstruct_hysteresis
 from .model_validation import capacitance_sensitivity, compare_model_to_lab
 from .oscillation_audit import AuditSettings, audit_voltage, evaluate_candidate, parameter_map
 from .parameter_inference import (
@@ -66,6 +66,7 @@ from .visualization import (
     plot_oscillation_audit,
     plot_oscillation_parameter_maps,
     plot_audit_candidate_traces,
+    plot_reconstructed_hysteresis,
 )
 
 
@@ -1326,6 +1327,94 @@ gamma alone cannot repair the absent onset because the first heating transition 
 before a minor-loop reversal.
 """
         bundle.write_text("report.md", report, label="Scientific report")
+        bundle.complete(summary=metrics)
+    except BaseException as exc:
+        bundle.fail(exc)
+        raise
+    return bundle
+
+
+def run_hysteresis_reconstruction(
+    config: Mapping[str, Any], *, output_root: str | Path | None = None,
+    command: str = "neuristor analyze reconstruct-hysteresis",
+) -> RunBundle:
+    """Low-cost inverse consistency test using measured power, with no optimization."""
+
+    validate_config(config)
+    if config["model"] != "current":
+        raise ConfigError("Hysteresis reconstruction requires the current model")
+    params, _, rp, resistance_source, _ = _current_params_from_config(config)
+    options = _table(config, "reconstruction")
+    directory = Path(str(options["data_directory"]))
+    if not directory.is_absolute():
+        directory = (source_directory(config) / directory).resolve()
+    default_case = {"C_pF": params.C_F * 1e12, "C_th_pJ_per_K": params.C_th_J_per_K * 1e12,
+                    "S_e_mW_per_K": params.S_e_W_per_K * 1e3}
+    cases = [{**default_case, **dict(case)} for case in options["cases"]]
+    if len({case["name"] for case in cases}) != len(cases):
+        raise ConfigError("Reconstruction case names must be unique")
+    resolved = resolved_copy(config)
+    resolved["reconstruction"]["resolved_cases"] = cases
+    resolved["resistance"]["resolved_source"] = resistance_source
+    bundle = RunBundle.create(name=str(config["name"]), model="hysteresis-reconstruction", kind="analysis",
+                              config=resolved, output_root=output_root or config["output"]["root"], command=command)
+    try:
+        raw, _ = load_converted_sweep(directory)
+        summary, trajectories = reconstruct_hysteresis(
+            raw, rp, cases=cases, gammas=list(map(float, options["gamma_values"])),
+            replay_steps_ns=list(map(float, options["replay_steps_ns"])),
+            ambient_temperature_K=params.T0_K,
+        )
+        # Rank gamma on measured oscillatory records, weighting currents equally.
+        measured = prepare_inference_dataset(raw, holdout_drives_mV=[50, 1000]).measured_summary
+        oscillator_files = measured.loc[measured.oscillation_detected, "source_file"]
+        gamma_scores = summary[summary.source_file.isin(oscillator_files)].groupby(
+            ["name", "gamma", "replay_step_ns"], as_index=False,
+        ).agg(mean_log_resistance_rmse=("resistance_log_rmse", "mean"))
+        for name, frame in (("reconstruction", summary), ("trajectories", trajectories), ("gamma_scores", gamma_scores)):
+            frame.to_csv(bundle.path(f"{name}.csv"), index=False)
+            bundle.register_file(f"{name}.csv", label=name.replace("_", " ").title(), media_type="text/csv")
+        figure = "figures/reconstructed_hysteresis.png"
+        plot_reconstructed_hysteresis(trajectories, rp, bundle.path(figure),
+                                      case=str(cases[0]["name"]), drives=options["figure_source_settings_mV"])
+        bundle.register_file(figure, label="Measured resistance versus conditional temperature", media_type="image/png")
+        finest = float(summary.replay_step_ns.min())
+        central = summary[(summary.name == cases[0]["name"]) & (summary.gamma == options["gamma_values"][0])
+                          & (summary.replay_step_ns == finest)]
+        selected = central[central.source_setting_mV.isin(options["figure_source_settings_mV"])].sort_values("current_uA")
+        metrics = {"cases": len(cases), "currents": int(raw.source_file.nunique()), "replay_steps_ns": options["replay_steps_ns"],
+                   "gamma_values": options["gamma_values"], "selected_central_results": selected.to_dict("records")}
+        bundle.write_json("metrics.json", metrics, label="Reconstruction findings")
+        report = ["# Conditional reconstruction of the driven resistance law", "",
+                  "The measured channels are baseline corrected and smoothed with a five-point "
+                  "quadratic Savitzky–Golay filter (one sensitivity case uses nine points). "
+                  "The existing thermal-analysis implementation computes I_R = I - C dV/dt, "
+                  "R_eff = V/I_R and P = V I_R. Its exact piecewise-linear-power integrator "
+                  "then calculates T(t) from Cth dT/dt = P - Se(T-T0), starting at T0 at -200 ns.", "",
+                  "The authoritative Yuanhang hysteresis law is replayed on this prescribed "
+                  "temperature history. This tests its resistance response without asking an "
+                  "optimizer to repair a forward waveform. Temperature is conditional on the "
+                  "assumed lumped thermal balance, channel interpretation and parameter values; "
+                  "it is not an independent thermometer. Static R(T) is not used to reconstruct T.", "",
+                  "Sensitivity cases change C, Se, Cth or smoothing one at a time. They are "
+                  "not a joint confidence region. Gamma is scanned with the major-loop "
+                  "parameters fixed. Replays at 1, 0.5 and 0.25 ns test hysteresis sampling; "
+                  "the measured channels remain sampled at 1 ns. All 22 currents are included, "
+                  "and gamma is ranked by mean log-resistance RMSE on the 11 original oscillators.", "",
+                  "The table uses 150–250 ns, the central C=0.39 pF case and Yuanhang gamma. "
+                  "Invalid nonpositive resistive current and excursions outside the resistance "
+                  "temperature range are explicitly reported in reconstruction.csv.", "",
+                  "| Current (uA) | Conditional mean T (K) | Measured mean R (ohm) | Replayed mean R (ohm) |",
+                  "|---:|---:|---:|---:|"]
+        for row in selected.itertuples():
+            report.append(f"| {row.current_uA:.1f} | {row.temperature_mean_K:.2f} "
+                          f"| {row.measured_resistance_mean_ohm:.1f} | {row.replayed_resistance_mean_ohm:.1f} |")
+        report += ["", "A mismatch identifies a conflict among the constitutive law, thermal "
+                   "model, parameters and measured-channel interpretation; it does not uniquely "
+                   "identify which assumption is wrong. A good conditional gamma score would "
+                   "still require independent forward validation.", "",
+                   "![Reconstructed trajectories](figures/reconstructed_hysteresis.png)"]
+        bundle.write_text("report.md", "\n".join(report), label="Method and conditional results")
         bundle.complete(summary=metrics)
     except BaseException as exc:
         bundle.fail(exc)

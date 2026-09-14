@@ -84,7 +84,14 @@ claims.
   predictions, optimization history, and time-step convergence. The constrained fit
   cannot restore oscillation; the relaxed fit improves waveform statistics only by
   leaving seven of eight physical intervals and producing turn-on transients.
-- `20260907_125315_physics-anchored-specimen-waveform-inference_717797`: current
+- `20260914_073330_sustained-oscillation-audit-and-three-current-ma_26ff13`: current
+  persistence audit and 126-point controlled C/tau/gamma maps at three measured
+  currents. It corrects the previous 22/22 claim, verifies four shared candidates
+  across all 22 currents at 0.025/0.0125/0.00625 ns, and records the remaining
+  amplitude, decay and false-positive tradeoffs. No replacement calibration is
+  promoted. Numerical evidence was produced with commit `79c0692`; rendering
+  provenance and hashes preserve the exact reused numerical tables.
+- `20260907_125315_physics-anchored-specimen-waveform-inference_717797`: historical
   physics-anchored inference. It constrains `S_e`, `T0`, `C_th`, `Tc`, `w`, and `beta`
   to their conditional intervals and matches 22/22 historical peak-count labels.
   Interpretation corrected by the later persistence audit: the 606.3 uA waveform

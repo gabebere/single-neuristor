@@ -901,6 +901,90 @@ its finite budget, so this is the best reproducible candidate found rather than 
 of a unique global optimum.
 
 \clearpage
+\section{Persistence audit and controlled parameter maps}
+\label{sec:persistence_audit}
+
+The objective is to distinguish sustained experimental cycles from decaying ringing
+before searching for another parameter fit. We compare four consecutive 50~ns
+windows from 50 to 250~ns, measuring mean voltage, raw and 5--95\% voltage spans,
+and fitted periodic amplitude. Late frequency is obtained independently from the
+150--250~ns spectrum and refined by sinusoidal regression, without the old detector's
+8~ns minimum peak spacing. The 100~ns record still has approximately 10~MHz spectral
+bin spacing; numerical interpolation does not add measurement resolution.
+
+A trace passes the operational persistence check when each window retains at least
+6~mV fitted fundamental peak-to-peak amplitude, the last/first robust voltage-span
+ratio is at least 0.5, and the late fundamental explains at least 40\% of detrended
+variance. These are diagnostic thresholds: varying the amplitude threshold from
+4 to 8~mV and retention from 0.25 to 0.75 gives 9--13 measured detections, reflecting
+the small boundary signals. The nominal settings recover all 11 measured oscillators.
+
+The archived $606.3~\mu$A prediction falls from 50.2~mV raw peak-to-peak in
+50--100~ns to 0.49~mV in 200--250~ns, while the experiment remains near 10--12~mV.
+Thus the earlier 22/22 peak-count result includes a dying oscillation.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260914_073330_sustained-oscillation-audit-and-three-current-ma_26ff13/figures/persistence_audit.png}
+\caption{Window audit of the previous fit. The high-current experimental cycles
+persist while the model relaxes toward a steady voltage.}
+\end{figure}
+
+We then mapped 126 shared combinations of $C=0$--12~pF and
+$\tau_{\mathrm{th}}=C_{\mathrm{th}}/S_e=6$--24~ns at
+$\gamma=0.157$, 0.5, and 0.956, including the previous parameter vector.
+The other quantities remain fixed at that vector, including
+$S_e=0.003713$~mW/K. The three measured inputs are approximately 228, 381, and
+606~$\mu$A. All mapped $C_{\mathrm{th}}$ values remain within their conditional
+interval; $C>0.39$~pF is explicitly a diagnostic stress test.
+
+Candidates receive equal continuous penalties scaled to 20\% amplitude ratio,
+10\% frequency error, 20~mV mean-voltage error, and a factor-two retention error.
+These are comparison scales, not statistical uncertainties. Fourteen combinations
+pass persistence at all three selected currents. We verify the best feature match,
+best persistent point, best timing-bound point, and previous vector on all 22
+currents at 0.025, 0.0125, and 0.00625~ns.
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r r r r r@{}}
+\toprule
+Candidate & $C$ (pF) & $\tau_{\mathrm{th}}$ (ns) & $\gamma$ & Recovered & False+ \\
+\midrule
+Previous fit & 6.835 & 11.909 & 0.157 & 9/11 & 0 \\
+Best feature match & 8.000 & 13.026 & 0.157 & 10/11 & 0 \\
+Best persistent point & 8.000 & 9.000 & 0.956 & 11/11 & 1 \\
+Best timing-bound point & 0 & 11.909 & 0.157 & 0/11 & 0 \\
+\bottomrule
+\end{tabular}
+\caption{Persistence at the finest step, 0.00625~ns. Recovered counts refer to the
+11 experimental oscillators; false positives are counted among the other records.}
+\end{table}
+
+The persistent candidate additionally oscillates at $645.5~\mu$A and its late
+$606.3~\mu$A robust amplitude is 294.5~mV versus 9.25~mV measured
+($31.8\times$). The best feature match still decays at $606.3~\mu$A. The previous
+fit also fails the retention check at $570.1~\mu$A at the two finest steps.
+No tested point with $C\le0.39$~pF sustains cycles at any of the three mapped currents.
+
+Between 0.0125 and 0.00625~ns, the persistent candidate changes by at most 1.2\%
+in late robust amplitude and 0.9\% in frequency across its persistent currents.
+The best feature candidate changes by up to 17.3\% and 13.7\%, respectively.
+Matching labels alone therefore does not establish waveform convergence.
+No new specimen calibration is adopted: this conditional grid identifies a
+persistence--amplitude tradeoff without exhausting all parameter possibilities.
+The full four-feature maps are retained as supplementary numerical evidence.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260914_073330_sustained-oscillation-audit-and-three-current-ma_26ff13/figures/candidate_comparison.png}
+\caption{Shared candidates at 0.00625~ns. Preserving cycles can enlarge the voltage
+excursion, while the smaller-amplitude upper-boundary response still decays.}
+\end{figure}
+
+\clearpage
 \appendix
 \section{Reproduction}
 

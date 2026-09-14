@@ -88,6 +88,7 @@ Use `neuristor --help` or `neuristor <group> --help` for the complete live refer
 | Validate specimen model against lab sweep | `neuristor analyze model-validation --config FILE.toml` |
 | Fit shared waveform parameters | `neuristor analyze fit-waveforms --config FILE.toml` |
 | Audit persistence and map three currents | `neuristor analyze oscillation-audit --config FILE.toml` |
+| Reconstruct conditional driven R(T) | `neuristor analyze reconstruct-hysteresis --config FILE.toml` |
 | Browse runs | `neuristor runs list` / `neuristor runs show RUN_ID` |
 | Visualize a current run | `neuristor runs visualize RUN_ID` |
 | Copy a run to the Git archive | `neuristor runs publish RUN_ID` |
@@ -289,6 +290,27 @@ shared parameter vector. Selected grid points are checked on all 22 currents at
 the new tables explicitly distinguish regular early peaks from persistent cycles.
 The grids are conditional slices, not an exhaustive parameter search or a new
 physical calibration. See the generated report for definitions and threshold checks.
+
+The 126-point audit found no quantitatively satisfactory shared fit. Its best
+persistent candidate retains all 11 experimental oscillators but also oscillates at
+645 uA and overpredicts the late 606 uA amplitude by about 32 times. The candidate
+with the smallest three-current feature score still decays at the upper boundary.
+The old reference loses persistence at 570 uA as well at the finer steps. These
+findings and the numerical evidence are in the current audit bundle listed in
+[`docs/ARCHIVE_INDEX.md`](docs/ARCHIVE_INDEX.md).
+
+Use a cheaper inverse consistency check before another broad search:
+
+```bash
+neuristor analyze reconstruct-hysteresis \
+  --config experiments/current/specimen_hysteresis_reconstruction.toml
+```
+
+It reconstructs temperature from measured resistive power, then replays the existing
+hysteresis law on that prescribed temperature path. It varies C, Se, Cth and smoothing
+one at a time, checks four gamma values, and repeats at three sampling steps. This
+tests the resistance law without a forward optimization. Inferred temperatures and
+effective resistances remain conditional on the thermal model and channel definitions.
 
 ## Run bundles and GitHub archive
 

@@ -41,6 +41,39 @@ def _finish(fig: plt.Figure, out_path: str | Path) -> Path:
     return path
 
 
+def plot_reconstructed_hysteresis(trajectories, params, out_path, *, case, drives) -> Path:
+    """Compare measured R at conditional T to the prescribed-path hysteresis replay."""
+
+    temperatures = np.linspace(325, 350, 600)
+    branches = []
+    for branch in ("insulator", "metal"):
+        h = HysteresisArray(params, len(temperatures), start_branch=branch)
+        h.initialize(temperatures)
+        branches.append(h.evaluate(temperatures)[0])
+    fig, axes = plt.subplots(2, 2, figsize=(12, 9), layout="constrained")
+    for ax, drive in zip(axes.flat, drives):
+        frame = trajectories[(trajectories.case == case) & np.isclose(trajectories.nominal_drive_mV, drive)
+                             & (trajectories.time_ns >= 150)].sort_values("time_ns")
+        for i, branch in enumerate(branches):
+            ax.plot(temperatures, branch, color=COLORS["gray"], lw=1.0, ls="--" if i else "-",
+                    label="Static heating/cooling branches" if i == 0 else None)
+        ax.plot(frame.conditional_temperature_K, frame.effective_resistance_ohm, color=COLORS["blue"], lw=1.5,
+                label="Measured resistance at conditional T")
+        ax.plot(frame.conditional_temperature_K, frame.replayed_resistance_ohm, color=COLORS["orange"], lw=1.2,
+                label="Hysteresis law replayed on that T(t)")
+        ax.set_yscale("log")
+        ax.set_ylim(15, 2500)
+        ax.set_xlim(325, 350)
+        ax.set_xlabel("Temperature inferred from measured power (K)")
+        ax.set_ylabel("Resistance (Ω)")
+        ax.set_title(f"{frame.current_corrected_uA.median():.1f} µA · late 150–250 ns")
+        ax.grid(alpha=.2)
+    handles, labels = axes.flat[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="outside lower center", ncol=1)
+    fig.suptitle("Conditional consistency test: measured resistance versus the assumed thermal history", fontsize=14)
+    return _finish(fig, out_path)
+
+
 def plot_oscillation_audit(history, settings, drives, out_path, *, mode="relaxed") -> Path:
     """Show raw measured/reference voltages and the shrinking four-window envelope."""
     from .oscillation_audit import audit_voltage

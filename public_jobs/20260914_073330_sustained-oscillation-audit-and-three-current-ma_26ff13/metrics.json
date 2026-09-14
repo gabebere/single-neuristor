@@ -1,0 +1,175 @@
+{
+  "choices": {
+    "best_features": {
+      "C_pF": 8.0,
+      "C_th_pJ_per_K": 0.04836243837768271,
+      "candidate_id": 26.0,
+      "gamma": 0.1569637099004186,
+      "mean_feature_score": 20.447116122675677,
+      "sustained_currents": 2.0,
+      "tau_th_ns": 13.026,
+      "worst_feature_score": 33.0484067865435
+    },
+    "best_sustained": {
+      "C_pF": 8.0,
+      "C_th_pJ_per_K": 0.03341485839084481,
+      "candidate_id": 96.0,
+      "gamma": 0.956269682,
+      "mean_feature_score": 45.16358014568647,
+      "sustained_currents": 3.0,
+      "tau_th_ns": 9.0,
+      "worst_feature_score": 78.161081984815
+    },
+    "best_timing_bound": {
+      "C_pF": 0.0,
+      "C_th_pJ_per_K": 0.0442141930202159,
+      "candidate_id": 14.0,
+      "gamma": 0.1569637099004186,
+      "mean_feature_score": 63.68226651496284,
+      "sustained_currents": 0.0,
+      "tau_th_ns": 11.90870637629186,
+      "worst_feature_score": 88.05966102408591
+    },
+    "reference": {
+      "C_pF": 6.835494476281913,
+      "gamma": 0.1569637099004186,
+      "tau_th_ns": 11.90870637629186
+    }
+  },
+  "grid_combinations": 126,
+  "grid_combinations_sustained_at_all_three": 14,
+  "measured_sustained_records": 11,
+  "reference_legacy_records": 11,
+  "reference_sustained_records": 10,
+  "selected_source_settings_mV": [
+    300.0,
+    500.0,
+    800.0
+  ],
+  "settings": {
+    "frequency_band_MHz": [
+      10.0,
+      200.0
+    ],
+    "minimum_coherence": 0.4,
+    "minimum_periodic_vpp_mV": 6.0,
+    "minimum_retention": 0.5,
+    "window_edges_ns": [
+      50.0,
+      100.0,
+      150.0,
+      200.0,
+      250.0
+    ]
+  },
+  "verification": [
+    {
+      "candidate": "best_features",
+      "dt_ns": 0.00625,
+      "false_positives": 0,
+      "matches": 21,
+      "misses": 1,
+      "oscillatory_feature_score": 30.040451785895012,
+      "sustained_records": 10
+    },
+    {
+      "candidate": "best_features",
+      "dt_ns": 0.0125,
+      "false_positives": 0,
+      "matches": 21,
+      "misses": 1,
+      "oscillatory_feature_score": 30.229648252493725,
+      "sustained_records": 10
+    },
+    {
+      "candidate": "best_features",
+      "dt_ns": 0.025,
+      "false_positives": 0,
+      "matches": 21,
+      "misses": 1,
+      "oscillatory_feature_score": 30.939443059924486,
+      "sustained_records": 10
+    },
+    {
+      "candidate": "best_sustained",
+      "dt_ns": 0.00625,
+      "false_positives": 1,
+      "matches": 21,
+      "misses": 0,
+      "oscillatory_feature_score": 46.14782983663022,
+      "sustained_records": 12
+    },
+    {
+      "candidate": "best_sustained",
+      "dt_ns": 0.0125,
+      "false_positives": 1,
+      "matches": 21,
+      "misses": 0,
+      "oscillatory_feature_score": 46.25868416424848,
+      "sustained_records": 12
+    },
+    {
+      "candidate": "best_sustained",
+      "dt_ns": 0.025,
+      "false_positives": 1,
+      "matches": 21,
+      "misses": 0,
+      "oscillatory_feature_score": 46.44719339809898,
+      "sustained_records": 12
+    },
+    {
+      "candidate": "best_timing_bound",
+      "dt_ns": 0.00625,
+      "false_positives": 0,
+      "matches": 11,
+      "misses": 11,
+      "oscillatory_feature_score": 63.586352469391905,
+      "sustained_records": 0
+    },
+    {
+      "candidate": "best_timing_bound",
+      "dt_ns": 0.0125,
+      "false_positives": 0,
+      "matches": 11,
+      "misses": 11,
+      "oscillatory_feature_score": 63.420732380137935,
+      "sustained_records": 0
+    },
+    {
+      "candidate": "best_timing_bound",
+      "dt_ns": 0.025,
+      "false_positives": 0,
+      "matches": 11,
+      "misses": 11,
+      "oscillatory_feature_score": 63.309057454589556,
+      "sustained_records": 0
+    },
+    {
+      "candidate": "reference",
+      "dt_ns": 0.00625,
+      "false_positives": 0,
+      "matches": 20,
+      "misses": 2,
+      "oscillatory_feature_score": 29.497117259469885,
+      "sustained_records": 9
+    },
+    {
+      "candidate": "reference",
+      "dt_ns": 0.0125,
+      "false_positives": 0,
+      "matches": 20,
+      "misses": 2,
+      "oscillatory_feature_score": 30.139620517460436,
+      "sustained_records": 9
+    },
+    {
+      "candidate": "reference",
+      "dt_ns": 0.025,
+      "false_positives": 0,
+      "matches": 21,
+      "misses": 1,
+      "oscillatory_feature_score": 30.951824202805827,
+      "sustained_records": 10
+    }
+  ]
+}

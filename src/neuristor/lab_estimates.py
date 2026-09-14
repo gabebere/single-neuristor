@@ -9,14 +9,14 @@ to zero and evaluate ``S_e = P / (T - T0)``.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import numpy as np
 import pandas as pd
 from scipy.optimize import brentq, minimize_scalar
 from scipy.signal import savgol_filter
 
-from .model import YuanhangResistParams
+from .model import HysteresisArray, YuanhangResistParams
 
 
 @dataclass(frozen=True)
@@ -417,6 +417,92 @@ def _thermal_temperature_from_power_K(
             / float(S_e_mW_per_K)
         )
     return float(ambient_temperature_K) + temperature_rise
+
+
+def reconstruct_hysteresis(
+    traces: pd.DataFrame, resistance_params: YuanhangResistParams, *,
+    cases: list[dict], gammas: list[float], replay_steps_ns: list[float],
+    ambient_temperature_K: float, smoothing_window: int = 5,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Test the resistance law on temperature paths inferred from measured power.
+
+    This is an inverse consistency check, not a forward waveform fit or independent
+    thermometry. I_R=I-C*dV/dt and P=V*I_R assume the recorded channels correspond to
+    the modeled device. Temperature uses the existing linear thermal integrator;
+    the authoritative hysteresis implementation is replayed on that prescribed path.
+    Negative pre-pulse noise power is retained rather than clipped into positive
+    heating; nonpositive resistive current is flagged and never silently fitted.
+    """
+
+    if (not cases or not gammas or not replay_steps_ns
+            or any(not np.isfinite(v) or v <= 0 for v in [*gammas, *replay_steps_ns])):
+        raise ValueError("Reconstruction needs cases, positive gamma values and positive replay steps")
+    records = [(str(name), frame) for name, frame in traces.groupby("source_file", sort=True)]
+    all_metrics, saved_paths = [], []
+    for case in cases:
+        prepared = [_prepare_thermal_trace(
+            frame, electrical_capacitance_pF=float(case["C_pF"]),
+            baseline_window_ns=(-200.0, -50.0), integration_window_ns=(-200.0, 250.0),
+            smoothing_window=int(case.get("smoothing_window", smoothing_window)),
+        ) for _, frame in records]
+        time = prepared[0].time_ns.to_numpy(float)
+        if any(not np.array_equal(time, frame.time_ns.to_numpy(float)) for frame in prepared):
+            raise ValueError("Reconstruction requires aligned input records")
+        measured_R = np.column_stack([frame.effective_resistance_ohm for frame in prepared])
+        powers = np.column_stack([frame.power_mW for frame in prepared])
+        late = (time >= 150) & (time <= 250)
+        for step in replay_steps_ns:
+            fine_time = np.arange(time[0], time[-1] + step * .1, step)
+            if not np.isclose(fine_time[-1], time[-1]):
+                raise ValueError("Replay step must divide the integration window")
+            temperatures = np.column_stack([
+                _thermal_temperature_from_power_K(
+                    fine_time, np.interp(fine_time, time, powers[:, j]),
+                    C_th_pJ_per_K=float(case["C_th_pJ_per_K"]),
+                    S_e_mW_per_K=float(case["S_e_mW_per_K"]),
+                    ambient_temperature_K=ambient_temperature_K,
+                ) for j in range(len(records))
+            ])
+            sampled_T = np.column_stack([np.interp(time, fine_time, temperatures[:, j]) for j in range(len(records))])
+            for gamma in gammas:
+                rp = replace(resistance_params, gamma=gamma)
+                law = HysteresisArray(rp, len(records), start_branch="insulator", independent_anchors=True)
+                law.initialize(temperatures[0])
+                replayed_R = np.asarray([law.evaluate(temp)[0] for temp in temperatures], float)
+                sampled_R = np.column_stack([np.interp(time, fine_time, replayed_R[:, j]) for j in range(len(records))])
+                for j, (name, _) in enumerate(records):
+                    frame = prepared[j]
+                    good = late & np.isfinite(measured_R[:, j]) & (measured_R[:, j] > 0)
+                    if not good.any():
+                        raise ValueError(f"No positive late resistance for {name}")
+                    log_error = np.log(sampled_R[good, j] / measured_R[good, j])
+                    upper_branch = heating_branch_resistance_ohm(sampled_T[good, j], rp)
+                    all_metrics.append({
+                        **case, "gamma": gamma, "replay_step_ns": step, "source_file": name,
+                        "source_setting_mV": float(frame.nominal_drive_mV.iloc[0]),
+                        "current_uA": float(frame.current_corrected_uA[late].median()),
+                        "temperature_min_K": float(sampled_T[good, j].min()),
+                        "temperature_max_K": float(sampled_T[good, j].max()),
+                        "temperature_mean_K": float(sampled_T[good, j].mean()),
+                        "measured_resistance_mean_ohm": float(measured_R[good, j].mean()),
+                        "replayed_resistance_mean_ohm": float(sampled_R[good, j].mean()),
+                        "resistance_rmse_ohm": float(np.sqrt(np.mean((sampled_R[good, j] - measured_R[good, j]) ** 2))),
+                        "resistance_log_rmse": float(np.sqrt(np.mean(log_error ** 2))),
+                        "fraction_above_major_heating_branch": float(np.mean(measured_R[good, j] > upper_branch)),
+                        "late_invalid_resistance_fraction": float(1 - good.sum() / late.sum()),
+                        "outside_temperature_calibration_fraction": float(np.mean(
+                            (sampled_T[good, j] < rp.T_min_K) | (sampled_T[good, j] > rp.T_max_K))),
+                    })
+                    # Store one named gamma at the finest replay step; all gamma
+                    # comparisons remain in the summary table without duplicating paths.
+                    if step == min(replay_steps_ns) and gamma == gammas[0]:
+                        keep = time >= 0
+                        saved_paths.append(frame.loc[keep].assign(
+                            case=case["name"], gamma=gamma, replay_step_ns=step,
+                            conditional_temperature_K=sampled_T[keep, j],
+                            replayed_resistance_ohm=sampled_R[keep, j],
+                        ))
+    return pd.DataFrame(all_metrics), pd.concat(saved_paths, ignore_index=True)
 
 
 def _prepare_thermal_trace(
