@@ -1,5 +1,24 @@
 # Current-drive model audit and calibration notes
 
+## September 14 diagnostic update
+
+The persistence audit separates transient ringing from late oscillations. The
+126-point controlled map did not produce a satisfactory shared fit; the candidate
+that sustains all three representative oscillators greatly overpredicts amplitude.
+No new parameter set is adopted. See manuscript Section 11 and the reviewed
+`20260914_073330_sustained-oscillation-audit-and-three-current-ma_26ff13` bundle.
+
+A cheaper inverse consistency test reconstructs temperature from measured power
+using the previously estimated thermal parameters, then replays the authoritative
+hysteresis law on that prescribed temperature. At about 607 µA the measured late
+resistance is 298 Ω, compared with 26–34 Ω across four gamma values in the central
+case. Raising conductance to the previous upper bound gives 71–112 Ω, still low.
+This does not uniquely identify the incorrect assumption: channel interpretation,
+static-to-driven resistance transfer, and lumped thermal estimates remain in scope.
+The inferred temperature is conditional, not measured; one-at-a-time sensitivity
+tests are not a joint confidence region. See Section 12 and the reviewed
+`20260914_074731_conditional-hysteresis-reconstruction-from-measu_fa4b66` bundle.
+
 ## What Yuanhang's original implementation actually simulates
 
 The vendored upstream model is a voltage-source circuit, not an ideal-current circuit. A source voltage drives a VO2 device through a load resistor, with a capacitance from the VO2 node to ground:

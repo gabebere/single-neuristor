@@ -7,6 +7,14 @@ claims.
 
 ## Active final-project manuscript
 
+- `public_jobs/20260914_074731_conditional-hysteresis-reconstruction-from-measu_fa4b66/`:
+  conditional inverse hysteresis consistency test on all 22 measured records,
+  eight one-at-a-time cases, four gamma values, and three replay steps. At about
+  607 µA, measured resistance is 298 Ω versus 26–34 Ω replayed under central
+  thermal assumptions. This is a diagnostic conflict, not a new calibration or
+  independent temperature measurement. Reproduce with
+  `neuristor analyze reconstruct-hysteresis --config experiments/current/specimen_hysteresis_reconstruction.toml`.
+
 - `docs/final_project/`: human-facing final-project hub. Its README organizes the
   editable manuscript, current PDF, raw resistance and oscilloscope data, reviewed
   run bundles, and supplementary figures and animations without duplicating their

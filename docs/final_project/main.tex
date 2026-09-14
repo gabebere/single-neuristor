@@ -985,6 +985,82 @@ excursion, while the smaller-amplitude upper-boundary response still decays.}
 \end{figure}
 
 \clearpage
+\clearpage
+\section{Conditional reconstruction of the driven resistance}
+\label{sec:inverse_hysteresis}
+
+To distinguish a search problem from inconsistent assumptions, we reconstruct the
+resistance and thermal history directly from the measured channels:
+\begin{equation}
+I_R=I-C\frac{dV}{dt},\qquad R_{\mathrm{eff}}=\frac{V}{I_R},\qquad
+P=VI_R,\qquad C_{\mathrm{th}}\frac{dT}{dt}=P-S_e(T-T_0).
+\end{equation}
+We then replay the existing hysteresis law on this prescribed $T(t)$ and compare
+its resistance with $R_{\mathrm{eff}}$. Unlike a forward waveform fit, this check
+does not let an optimizer change the temperature trajectory to improve agreement.
+The reconstructed temperature is conditional on the thermal balance, parameters,
+and channel interpretation; it is not an independent temperature measurement.
+The static resistance curve is not used as a thermometer here.
+
+The central calculation uses $C=0.39$~pF, $S_e=3.6751$~$\mu$W/K,
+$C_{\mathrm{th}}=0.047873$~pJ/K, $T_0=314.4$~K, the fitted major loop,
+and Yuanhang's $\gamma=0.95627$. Baseline-corrected channels are smoothed with a
+five-point quadratic filter before differentiating voltage. We integrate from
+$-200$~ns at $T_0$, using piecewise-linear measured power, and compare the late
+$150$--$250$~ns interval. Currents below are means in this interval after
+preprocessing, so they differ slightly from the earlier run labels.
+
+\begin{table}[H]
+\centering
+\caption{Late-time mean values from the conditional reconstruction.}
+\label{tab:inverse_hysteresis}
+\begin{tabular}{rrrr}
+\toprule
+$I$ ($\mu$A) & Inferred $T$ (K) & Measured $R$ ($\Omega$) & Replayed $R$ ($\Omega$) \\
+\midrule
+189.6 & 330.91 & 1680.6 & 1679.2 \\
+228.7 & 328.96 & 1017.9 & 1762.5 \\
+381.1 & 333.64 & 488.4 & 1215.1 \\
+606.7 & 344.25 & 298.2 & 29.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The below-onset agreement is a consistency check, not independent validation:
+this same operating region helped determine $S_e$. In contrast, the oscillatory
+records expose substantial resistance discrepancies, with opposite signs at
+intermediate and high current.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260914_074731_conditional-hysteresis-reconstruction-from-measu_fa4b66/figures/reconstructed_hysteresis.png}
+\caption{Measured effective resistance (blue) and the model resistance replayed
+on the inferred thermal history (orange), with the fitted static major loop in
+the background. Only the late interval is displayed; the replay includes the
+preceding history. These are conditional trajectories, not new forward fits.}
+\label{fig:inverse_hysteresis}
+\end{figure}
+
+All 22 records were tested at $\gamma=0.15696$, $0.5$, $0.95627$, and $2$.
+At $606.7$~$\mu$A, the central replay gives only $26.4$--$33.8$~$\Omega$ across
+these values, versus $298.2$~$\Omega$ measured. One-at-a-time checks use the
+previous thermal-parameter bounds, $C=0$ and $6.8355$~pF, and nine-point
+smoothing. The largest improvement at this current comes from the upper
+$S_e=4.0850$~$\mu$W/K bound: the inferred mean temperature falls to $341.26$~K,
+but the replay still gives only $71.1$--$112.3$~$\Omega$ across the tested
+$\gamma$ values. These checks are not a joint confidence region or an exhaustive
+parameter search. Refining the replay from $0.5$ to $0.25$~ns changes mean
+resistance by at most $4.85\%$ across the tested cases and currents; it does not
+remove the large discrepancy. The underlying measured sampling remains $1$~ns.
+
+Thus, changing $\gamma$ alone did not resolve this consistency test. The next
+useful step is to check the measured-channel interpretation and the transfer of
+the static resistance law and lumped thermal parameters to driven operation,
+before another broad fit. This evidence does not uniquely distinguish an
+incorrect thermal estimate, a circuit contribution, or missing phase dynamics.
+No new calibrated parameter set is adopted.
+
+\clearpage
 \appendix
 \section{Reproduction}
 
@@ -1108,6 +1184,23 @@ amplitude-aware and oscillation-priority objective, both stable negative control
 all fitted waveforms and per-trace metrics, and the $0.1$--$0.0125$~ns convergence
 audit. Earlier unrestricted oscillation and amplitude searches remain in the public
 archive as superseded development evidence.
+
+The persistence audit and conditional reconstruction are archived as
+\begin{center}
+\footnotesize
+\path{20260914_073330_sustained-oscillation-audit-and-three-current-ma_26ff13}\\
+\path{20260914_074731_conditional-hysteresis-reconstruction-from-measu_fa4b66}.
+\end{center}
+Their numerical workflows are reproduced with
+\begin{center}
+\ttfamily\small
+neuristor analyze oscillation-audit --config\\
+experiments/current/specimen\_oscillation\_audit.toml\\[4pt]
+neuristor analyze reconstruct-hysteresis --config\\
+experiments/current/specimen\_hysteresis\_reconstruction.toml
+\end{center}
+The audit manifest separately records numerical and figure-rendering provenance.
+Both bundles include resolved inputs, numerical tables, figures, and methodology.
 
 The historical capacitance shortcut is preserved for provenance in
 

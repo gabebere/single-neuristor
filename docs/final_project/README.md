@@ -56,6 +56,13 @@ instead of editing the existing one.
 
 ## Supplementary media
 
+Sections 11–12 add the sustained-oscillation audit, controlled parameter maps, and
+conditional reconstruction of the resistance from measured power. They supersede
+the old peak-count success claim without adopting a new parameter set.
+The corresponding complete bundles are linked under
+`data/parameter_estimates/oscillation_audit/` and
+`data/parameter_estimates/hysteresis_reconstruction/`.
+
 `supplementary/figures/` collects the current report figures, including the global-fit
 optimization and representative predictions, in one place for quick inspection.
 `supplementary/animations/` contains the synchronized current/voltage and
