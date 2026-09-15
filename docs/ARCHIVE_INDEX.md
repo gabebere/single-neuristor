@@ -7,6 +7,13 @@ claims.
 
 ## Active final-project manuscript
 
+- `docs/final_project/presentation/`: eight-slide LaTeX/Beamer research presentation
+  dated 15 September 2026, with a reviewed PDF, editable source, lossless archived
+  waveform selection and slide-to-evidence map. It summarizes existing trials;
+  no new model fit is introduced. Amplitude comparisons use a common set of the
+  11 measured oscillators, and historical peak counts are distinguished from
+  persistence checks.
+
 - `public_jobs/20260914_074731_conditional-hysteresis-reconstruction-from-measu_fa4b66/`:
   conditional inverse hysteresis consistency test on all 22 measured records,
   eight one-at-a-time cases, four gamma values, and three replay steps. At about

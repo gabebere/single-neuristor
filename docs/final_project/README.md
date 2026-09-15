@@ -56,6 +56,11 @@ instead of editing the existing one.
 
 ## Supplementary media
 
+An eight-slide research presentation is available in [`presentation/`](presentation/):
+editable LaTeX, a reviewed PDF, and a slide-by-slide evidence map. It explains the
+sequence from initial calibration through waveform fitting, oscillation/amplitude
+trade-offs, persistence checks, and the conditional resistance reconstruction.
+
 Sections 11–12 add the sustained-oscillation audit, controlled parameter maps, and
 conditional reconstruction of the resistance from measured power. They supersede
 the old peak-count success claim without adopting a new parameter set.
