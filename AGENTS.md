@@ -3,6 +3,10 @@
 This file is the short operational map for humans and AI agents. Read the root
 `README.md`, this file, and the relevant experiment recipe before changing code.
 
+For research continuation, also read `docs/RESEARCH_HANDOFF.md`. It distinguishes
+current conclusions from historical fit claims and identifies the next unresolved
+question. Update it when a new result changes the handoff state.
+
 ## Source-of-truth hierarchy
 
 1. `src/neuristor/model.py` is authoritative for the Yuanhang voltage circuit and

@@ -3,6 +3,10 @@
 A reproducible research codebase for current- and voltage-driven VO₂ neuristor
 simulations, laboratory-trace analysis, parameter sweeps, and evidence archival.
 
+**Taking over the project? Start with the [research handoff](docs/RESEARCH_HANDOFF.md).**
+It records the current scientific status, parameter assumptions, trial history,
+corrected claims, reproducible commands and the next bounded investigation.
+
 The project now has one workflow:
 
 ```text

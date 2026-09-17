@@ -54,6 +54,12 @@ The report currently contains:
 Every reviewed run is immutable. If an analysis changes, a new bundle is published
 instead of editing the existing one.
 
+## Research handoff
+
+New researchers and AI agents should start with [the research handoff](../RESEARCH_HANDOFF.md).
+It consolidates data provenance, assumptions, the trial history, metric-definition
+corrections, reproduction instructions and the next proposed channel/circuit audit.
+
 ## Supplementary media
 
 An eight-slide research presentation is available in [`presentation/`](presentation/):

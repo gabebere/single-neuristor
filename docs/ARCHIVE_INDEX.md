@@ -7,6 +7,10 @@ claims.
 
 ## Active final-project manuscript
 
+- [Research handoff](RESEARCH_HANDOFF.md): consolidated entry point for continuing
+  the work, updated 17 September 2026. Read its corrected interpretation and
+  metric-denominator notes before comparing historical fit claims.
+
 - `docs/final_project/presentation/`: eight-slide LaTeX/Beamer research presentation
   dated 15 September 2026, with a reviewed PDF, editable source, lossless archived
   waveform selection and slide-to-evidence map. It summarizes existing trials;
