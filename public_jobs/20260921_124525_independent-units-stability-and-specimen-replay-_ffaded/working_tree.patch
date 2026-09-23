@@ -1,0 +1,1006 @@
+diff --git a/Simulations_on_VO2/README.md b/Simulations_on_VO2/README.md
+index 3695537..d614ef0 100644
+--- a/Simulations_on_VO2/README.md
++++ b/Simulations_on_VO2/README.md
+@@ -1,11 +1,34 @@
+-# July 2026 presentation archive
++# VO2 mechanism and parameter-estimation presentation
+ 
+-This directory preserves the source, compiled PDF, figures, and animations for the
+-July 2026 project presentation. `main.tex` is the editable Beamer source and `main.pdf`
+-is the compiled deck used at that time.
++This directory contains the editable Beamer presentation that began as the July 2026
++mechanism-validation talk and was extended in September 2026 with the specimen
++parameter-estimation evidence. `main.tex` is the source and `main.pdf` is the current
++compiled deck. The original July version remains recoverable from Git history.
+ 
+-The deck is a historical presentation snapshot, not the current quantitative model
+-authority. The August 2026 solver and calibration audit added exact frozen-coefficient
+-electrical/thermal substeps, a true `C=0` algebraic limit, corrected hysteresis endpoint
+-handling, and new lab-calibration evidence. See `docs/CURRENT_DRIVE_CALIBRATION.md` and
+-`docs/figures/current_drive/` for those current results.
++The first section demonstrates the Yuanhang mechanism under ideal current drive. The
++continuation then gives one evidence-focused slide for each experimental input or
++model parameter: measured current, ambient temperature, major-loop resistance
++parameters, minor-loop memory, environmental conductance, electrical capacitance,
++and thermal capacitance. It ends with the frozen forward comparison, which shows that
++the physically anchored parameter set does not yet reproduce the measured oscillatory
++region.
++
++The deck summarizes the evidence but is not the numerical source of truth. Current
++values, limitations, commands, and immutable bundle links live in
++`docs/RESEARCH_HANDOFF.md`; the full derivations are in
++`docs/final_project/Simulations_for_VO2_AGC.pdf`.
++
++## Continuation evidence map
++
++| Topic | Slide evidence |
++|---|---|
++| Measured current and onset bracket | `public_jobs/...ec6ec4/figures/oscillation_onset_bracket.png` |
++| Major-loop resistance fit | `public_jobs/...0849a9/figures/resistance_fit.png` |
++| Minor-loop-memory limitation | `public_jobs/...fa4b66/figures/reconstructed_hysteresis.png` |
++| Environmental conductance | `public_jobs/...761640/figures/environmental_conductance.png` |
++| Electrical-capacitance bound | `public_jobs/...eefab7/figures/capacitance_sensitivity.png` |
++| Thermal capacitance | `public_jobs/...aa2469/figures/thermal_capacitance.png` |
++| Frozen forward comparison | `public_jobs/...eefab7/figures/representative_traces.png` |
++
++The shortened bundle suffixes above are unique within `public_jobs/`; the TeX source
++contains the complete paths used to compile the deck.
+diff --git a/Simulations_on_VO2/main.pdf b/Simulations_on_VO2/main.pdf
+index ca6f7d9..1f8e399 100644
+Binary files a/Simulations_on_VO2/main.pdf and b/Simulations_on_VO2/main.pdf differ
+diff --git a/Simulations_on_VO2/main.tex b/Simulations_on_VO2/main.tex
+index a8dada4..a3a8e9a 100644
+--- a/Simulations_on_VO2/main.tex
++++ b/Simulations_on_VO2/main.tex
+@@ -43,7 +43,7 @@ Single VO\textsubscript{2} Neuristor Simulations
+ }
+ 
+ \subtitle{
+-From the Yuanhang voltage-source model to current-source oscillations
++From Yuanhang mechanism validation to specimen parameter estimation
+ }
+ 
+ \author[Gabriel Berezovsky]{
+@@ -622,31 +622,399 @@ approximately \(\SI{2}{\volt}\).
+ \end{frame}
+ 
+ % ------------------------------------------------
+-% Slide 16 (9:35-10:00)
++% Slide 16: transition from the July mechanism study to specimen calibration
+ % ------------------------------------------------
+-\begin{frame}{Conclusions and Next Steps}
++\begin{frame}{From Mechanism Demonstration to Specimen Calibration}
+ 
++\begin{columns}[T,onlytextwidth]
++\begin{column}{0.37\textwidth}
++\begin{block}{What the July study established}
++\small
++The preserved Yuanhang hysteresis mechanism can generate robust
++current-driven relaxation oscillations in a verified numerical domain.
++\end{block}
++
++\begin{alertblock}{What it did not establish}
++\small
++The illustrative parameter set did not reproduce the measured current window,
++voltage amplitude, or energy scale.
++\end{alertblock}
++\end{column}
++
++\begin{column}{0.59\textwidth}
++\textbf{Specimen-specific inference chain}
++
++\vspace{0.20cm}
++\begin{tikzpicture}[node distance=0.23cm]
++    \node[flowbox, text width=2.05cm] (input) {Measured input\\\(I(t)\), pulse timing};
++    \node[flowbox, right=of input, text width=2.05cm] (static) {Static conditions\\\(T_0\), \(R(T)\), \(\gamma\)};
++    \node[flowbox, right=of static, text width=2.05cm] (thermal) {Dynamic estimates\\\(S_e\), \(C\), \(C_{th}\)};
++    \draw[flowarrow] (input) -- (static);
++    \draw[flowarrow] (static) -- (thermal);
++\end{tikzpicture}
++
++\vspace{0.25cm}
+ \begin{enumerate}
+-    \item \textbf{Calibrate dynamics:} fit \(C\), \(C_{th}\), \(S_e\), and a non-ideal current-source output impedance to transient data.
+-    \item \textbf{Validate across samples:} compare onset current, voltage floor, frequency, amplitude, and cycle energy.
+-    \item \textbf{Quantify uncertainty:} report parameter intervals and sensitivity, not only best-fit traces.
+-    \item \textbf{Preserve reproducibility:} keep equations hardcoded, regression-tested, and every accepted run in public app History.
++    \item Estimate each quantity from the most direct available evidence.
++    \item Record whether it is fitted, adopted, bounded, or borrowed.
++    \item Freeze one parameter vector before replaying the full current sweep.
+ \end{enumerate}
++\end{column}
++\end{columns}
+ 
+-\vspace{0.35cm}
++\slidesource{Numerical evidence: reviewed bundles in \texttt{public\_jobs/}; no per-trace tuning in the final replay.}
++\note{This slide connects the original mechanism talk to the specimen-calibration work. The key methodological rule is to estimate each quantity once, record its evidence status, and only then compare against all measured traces.}
++\end{frame}
++
++% ------------------------------------------------
++% Slide 17: measured input current
++% ------------------------------------------------
++\begin{frame}{Input Current \(I(t)\): Replay the Measured Waveform}
++\centering
+ 
+-\begin{alertblock}{Takeaway}
+-We rebuilt and validated the published VO\textsubscript{2} neuristor model,
+-derived its ideal-current counterpart, and used AI-assisted but physically
+-constrained domain search to demonstrate robust current-driven relaxation
+-oscillations.
++\includegraphics[height=0.58\textheight]{../public_jobs/20260827_142103_measured-laboratory-current-sweep-with-current-l_ec6ec4/figures/oscillation_onset_bracket.png}
++
++\vspace{0.08cm}
++\begin{columns}[T,onlytextwidth]
++\begin{column}{0.47\textwidth}
++\small
++\textbf{Measured operating input}
++\[
++I_{\mathrm{model}}(t)=I_{\mathrm{measured}}(t)
++\]
++\end{column}
++\begin{column}{0.50\textwidth}
++\scriptsize
++The 250 and 300 mV source settings correspond to measured current steps of
++\(189.6\) and \(228.2~\mu\mathrm{A}\). The pulse lasts \(300\) ns, with a
++26--27 ns rise and an 18--23 ns fall.
++\end{column}
++\end{columns}
++
++\slidesource{Professor-supplied numerical traces; archived onset analysis \texttt{ec6ec4}.}
++\note{The filename voltage is only a source-setting label. The model input is the measured current waveform, including the non-instantaneous edge. The two adjacent records provide a measured onset bracket.}
++\end{frame}
++
++% ------------------------------------------------
++% Slide 18: ambient temperature
++% ------------------------------------------------
++\begin{frame}{Ambient Temperature \(T_0\): Adopted Experimental Condition}
++
++\begin{columns}[T,onlytextwidth]
++\begin{column}{0.53\textwidth}
++\begin{block}{Role in the thermal balance}
++\[
++C_{th}\frac{dT}{dt}=P-S_e(T-T_0)
++\]
++\[
++\Delta T=T-T_0
++\]
++\end{block}
++
++\small
++The TIA sweep did not contain an independent thermometer record. We therefore
++adopted the ambient range reported for the related measurements rather than
++fitting \(T_0\) from the electrical traces.
++\end{column}
++
++\begin{column}{0.43\textwidth}
++\begin{alertblock}{Adopted value}
++\centering
++\Large
++\[
++\boxed{T_0=314.4~\mathrm{K}}
++\]
++\normalsize
++reported range: 314.25--314.55 K
+ \end{alertblock}
+ 
++\vspace{0.30cm}
++\begin{center}
++\begin{tikzpicture}[x=0.40cm]
++    \draw[very thick,structure.fg] (0,0)--(10,0);
++    \draw[thick] (0,-0.15)--(0,0.15) node[below=4pt] {\scriptsize 314.25};
++    \draw[thick] (5,-0.15)--(5,0.15) node[below=4pt] {\scriptsize 314.40};
++    \draw[thick] (10,-0.15)--(10,0.15) node[below=4pt] {\scriptsize 314.55 K};
++    \fill[tracered] (5,0) circle (2.2pt);
++\end{tikzpicture}
++\end{center}
++\end{column}
++\end{columns}
++
++\vspace{0.25cm}
++\begin{alertblock}{Interpretation}
++\small
++This is an adopted boundary condition, not a specimen-specific fit. Its
++applicability to the exact TIA run remains an experimental check.
++\end{alertblock}
++
++\slidesource{Ambient range: Gildor et al., arXiv:2604.04594v1; inference status recorded in the research handoff.}
++\note{Be explicit about evidence status. T0 enters every thermal estimate through the temperature rise, but it was not inferred from the current-sweep waveforms.}
++\end{frame}
++
++% ------------------------------------------------
++% Slide 19: major-loop resistance parameters
++% ------------------------------------------------
++\begin{frame}{Resistance Parameters: Fit the Measured Major Loop}
++
++\begin{columns}[T,onlytextwidth]
++\begin{column}{0.38\textwidth}
++\scriptsize
++\[
++\min_{\theta}\sum_i
++\left[\log_{10}R_{\mathrm{model}}(T_i;\theta)
++-\log_{10}R_i\right]^2
++\]
++
++\begin{tabular}{@{}lrr@{}}
++\toprule
++\textbf{Parameter} & \textbf{Specimen} & \textbf{Yuanhang} \\
++\midrule
++\(R_0\) (\(\Omega\)) & 0.7989 & 0.00536 \\
++\(E_a/k_B\) (K) & 2536.97 & 5220.47 \\
++\(R_m\) (\(\Omega\)) & 18.215 & 1286.32 \\
++\(T_c\) (K) & 333.494 & 332.806 \\
++\(w\) (K) & 6.882 & 7.194 \\
++\(\beta\) (K\(^{-1}\)) & 0.2992 & 0.2528 \\
++\bottomrule
++\end{tabular}
++
++\vspace{0.18cm}
++\begin{block}{Fit quality}
++\centering
++\(R^2=0.99873\)\qquad
++\(\mathrm{RMSE}_{\log_{10}R}=0.03663\)
++\end{block}
++\end{column}
++
++\begin{column}{0.60\textwidth}
++\centering
++\includegraphics[width=\linewidth]{../public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/figures/resistance_fit.png}
++\end{column}
++\end{columns}
++
++\slidesource{264 measured points from sample 100425 chip1 gap3; reviewed fit bundle \texttt{0849a9}.}
++\note{The logarithmic residual gives comparable weight to both resistance decades. R0 is only the Arrhenius prefactor. The full insulating resistance includes the exponential term, so it remains far above the fitted metallic floor.}
++\end{frame}
++
++% ------------------------------------------------
++% Slide 20: gamma
++% ------------------------------------------------
++\begin{frame}{Minor-Loop Memory \(\gamma\): Not Identified by the Major Loop}
++
++\begin{columns}[T,onlytextwidth]
++\begin{column}{0.43\textwidth}
++\small
++\begin{block}{What the measurement determines}
++One complete heating branch and one complete cooling branch constrain
++\(R_0,E_a,R_m,T_c,w\), and \(\beta\).
++\end{block}
++
++\begin{alertblock}{What \(\gamma\) controls}
++\(\gamma\) changes the reversal-dependent minor-loop return. A single major loop
++contains no independent family of partial reversals, so it cannot determine
++\(\gamma\).
++\end{alertblock}
++
++\[
++\boxed{\gamma=0.95627\ \text{(borrowed from Yuanhang)}}
++\]
++
++\end{column}
++
++\begin{column}{0.55\textwidth}
++\centering
++\includegraphics[width=\linewidth]{../public_jobs/20260914_074731_conditional-hysteresis-reconstruction-from-measu_fa4b66/figures/reconstructed_hysteresis.png}
++\end{column}
++\end{columns}
++
++\slidesource{Bundle \texttt{fa4b66}: scanning \(\gamma=0.157\) to 2.0 did not repair the driven mismatch. A specimen value requires measured minor loops.}
++\note{Do not present gamma as fitted. It is inherited from Yuanhang because the available R(T) data contain only a major loop. The later scan shows that changing gamma alone does not explain the discrepancy.}
++\end{frame}
++
++% ------------------------------------------------
++% Slide 21: environmental conductance
++% ------------------------------------------------
++\begin{frame}{Environmental Conductance \(S_e\): Use the Last Stable Trace}
++\centering
++
++\includegraphics[height=0.55\textheight]{../public_jobs/20260817_153807_environmental-thermal-conductance-estimate_761640/figures/environmental_conductance.png}
++
++\vspace{0.06cm}
++\begin{columns}[T,onlytextwidth]
++\begin{column}{0.62\textwidth}
++\small
++At the settled pre-onset point, \(dT/dt\approx0\):
++\[
++S_e=\frac{P_*}{T_*-T_0}
++=\frac{60.658~\mu\mathrm{W}}{330.905-314.4~\mathrm{K}}
++\]
++\end{column}
++\begin{column}{0.35\textwidth}
++\begin{alertblock}{Result}
++\centering
++\(S_e=3.675~\mu\mathrm{W/K}\)\\
++\scriptsize conditional range 3.434--4.085 \(\mu\mathrm{W/K}\)
++\end{alertblock}
++\end{column}
++\end{columns}
++
++\slidesource{Selected record: 190.162 \(\mu\)A settled current; resistance drift 0.145\%; reviewed bundle \texttt{761640}.}
++\note{The last non-oscillating record maximizes the temperature rise while retaining a quasi-steady balance. The estimate is conditional on interpreting V over I as device resistance and transferring the static heating branch to the driven device.}
++\end{frame}
++
++% ------------------------------------------------
++% Slide 22: electrical capacitance
++% ------------------------------------------------
++\begin{frame}{Electrical Capacitance \(C\): A Timing Bound, Not a Detection}
++
++\begin{columns}[T,onlytextwidth]
++\begin{column}{0.51\textwidth}
++\small
++\textbf{Use the complete current balance}
++\[
++C\frac{dV}{dt}=I_{\mathrm{in}}-\frac{V}{R(T)}
++\]
++
++The early, non-switching edges leave no resolved positive capacitive current.
++The constrained optimum is \(C=0\). With a 1 ns timing resolution and
++\(R(T_0)=2.570~\mathrm{k}\Omega\),
++\[
++C\lesssim\frac{1~\mathrm{ns}}{2.570~\mathrm{k}\Omega}
++=0.39~\mathrm{pF}.
++\]
++
++\begin{alertblock}{Adopted modeling value}
++\centering
++\(\boxed{C=0.39~\mathrm{pF}}\) conservative upper bound
++\end{alertblock}
++\end{column}
++
++\begin{column}{0.46\textwidth}
++\centering
++\includegraphics[width=\linewidth]{../public_jobs/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/figures/capacitance_sensitivity.png}
++
++\vspace{0.08cm}
++\scriptsize
++The red dashed line marks 0.39 pF. In the frozen forward study, oscillations
++appeared only at several-pF values, outside the timing bound.
++
++\vspace{0.10cm}
++\begin{block}{Why 19.8 pF was rejected}
++\scriptsize
++\(I/(dV/dt)\) neglects the resistive current. It would imply
++\(RC=50.9\) ns, a voltage lag absent from the measured edge.
++\end{block}
++\end{column}
++\end{columns}
++
++\slidesource{Electrical-edge analysis and frozen-model sensitivity bundle \texttt{eefab7}.}
++\note{The correct conclusion is not that the physical capacitance is exactly zero. The present trace cannot resolve a positive capacitance, so 0.39 pF is an intentionally conservative upper bound.}
++\end{frame}
++
++% ------------------------------------------------
++% Slide 23: thermal capacitance
++% ------------------------------------------------
++\begin{frame}{Thermal Capacitance \(C_{th}\): Fit a Shared Heating Time}
++\centering
++
++\includegraphics[height=0.48\textheight]{../public_jobs/20260828_112314_thermal-capacitance-estimate-with-conservative-0_aa2469/figures/thermal_capacitance.png}
++
++\vspace{0.05cm}
++\begin{columns}[T,onlytextwidth]
++\begin{column}{0.62\textwidth}
++\scriptsize
++\[
++I_R=I-C\frac{dV}{dt},\qquad
++T_*=R_{\mathrm{heat}}^{-1}\!\left(\frac{V}{I_R}\right),\qquad
++C_{th}\frac{dT}{dt}=VI_R-S_e(T-T_0)
++\]
++One \(C_{th}\) fits the 76.2, 114.2, and 152.2 \(\mu\)A heating edges from
++15--35 ns. The 189.6 \(\mu\)A near-transition trace is a sensitivity check.
++\end{column}
++\begin{column}{0.35\textwidth}
++\begin{alertblock}{Result}
++\centering
++\(C_{th}=0.047873~\mathrm{pJ/K}\)\\[0.08cm]
++\(\tau_{th}=C_{th}/S_e=13.026~\mathrm{ns}\)\\[0.08cm]
++\scriptsize conditional range 0.021918--0.092624 pJ/K
++\end{alertblock}
++\end{column}
++\end{columns}
++
++\slidesource{Shared transient fit with \(C=0.39\) pF; reviewed bundle \texttt{aa2469}.}
++\note{We use the fitted heating branch as a thermometer on moderate non-switching traces, then fit one shared thermal time. The result is conditional on the adopted capacitance bound, conductance, ambient temperature, and a single lumped device temperature.}
++\end{frame}
++
++% ------------------------------------------------
++% Slide 24: blind validation
++% ------------------------------------------------
++\begin{frame}{Blind Replay: One Frozen Parameter Set Across All Currents}
++\centering
++
++\includegraphics[height=0.56\textheight]{../public_jobs/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/figures/representative_traces.png}
++
++\vspace{0.05cm}
++\begin{alertblock}{Result}
++\scriptsize
++The stable 189.6 \(\mu\)A record is reproduced closely. The frozen model predicts
++no sustained oscillation in any of the 11 measured oscillatory records and misses
++the voltage level at intermediate and high currents.
++\end{alertblock}
++
++\slidesource{No per-current tuning; frozen specimen validation bundle \texttt{eefab7}.}
++\note{This is the crucial falsification step. The parameter estimates reproduce the pre-onset stable point because that point helped anchor conductance, but the same frozen vector does not reproduce the measured oscillatory region.}
++\end{frame}
++
++% ------------------------------------------------
++% Slide 25: summary and current status
++% ------------------------------------------------
++\begin{frame}{Current Parameter Set and What It Means}
++
++\begin{columns}[T,onlytextwidth]
++\begin{column}{0.50\textwidth}
++\scriptsize
++\begin{tabular}{@{}lll@{}}
++\toprule
++\textbf{Quantity} & \textbf{Value} & \textbf{Evidence status} \\
++\midrule
++\(I(t)\) & measured waveform & direct input \\
++\(T_0\) & 314.4 K & adopted condition \\
++\(R_m\) & 18.215 \(\Omega\) & major-loop fit \\
++\(T_c\) & 333.494 K & major-loop fit \\
++\(w\) & 6.882 K & major-loop fit \\
++\(\beta\) & 0.2992 K\(^{-1}\) & major-loop fit \\
++\(\gamma\) & 0.95627 & borrowed value \\
++\(S_e\) & 3.675 \(\mu\)W/K & conditional estimate \\
++\(C\) & 0.39 pF & upper bound \\
++\(C_{th}\) & 0.047873 pJ/K & conditional fit \\
++\(\tau_{th}\) & 13.026 ns & derived \\
++\bottomrule
++\end{tabular}
++\end{column}
++
++\begin{column}{0.46\textwidth}
++\begin{block}{What the work established}
++\small
++The mechanism implementation works, the static resistance loop is tightly fit,
++and every dynamic parameter now has an explicit evidence trail.
++\end{block}
++
++\begin{alertblock}{What the mismatch tells us}
++\small
++The next decisive step is not a wider numerical search. We must first verify the
++actual VO\textsubscript{2} terminal voltage and branch current, then remeasure
++minor loops and at least one independent thermal response on the mounted device.
++\end{alertblock}
++\end{column}
++\end{columns}
++
++\vspace{0.18cm}
+ \begin{center}
+ \Large Thank you
+ \end{center}
+ 
+-\note{Close on the one-sentence contribution. The immediate experimental bridge is calibration of dynamic parameters and source non-ideality, not adding unvalidated internal states.}
++\note{End with the distinction between a documented parameter estimate and a successful predictive model. The mismatch is scientifically useful because it identifies the measurement boundary and driven device state as the next measurements to resolve.}
+ \end{frame}
+ 
+ % ------------------------------------------------
+@@ -702,10 +1070,10 @@ R(T,\mathcal H) &= R_m+R_0e^{(E_a/k_B)/T}g(T,\mathcal H).
+ 
+ \begin{itemize}
+     \item Fitted sample: \texttt{100425 chip1 gap3}.
+-    \item Public History job: \texttt{20260707\_145140\_paper\_frequency\_f881d2}.
+-    \item Public History job: \texttt{20260707\_145140\_sample\_scale\_89ffb4}.
+-    \item Each job stores parameters, trace CSVs, spectral summaries, figures, and the animation.
+-    \item Current-source regression tests cover finite traces, serial/vectorized equality, old-history compatibility, and voltage-source preservation.
++    \item Major-loop fit: \texttt{0849a9}; conductance estimate: \texttt{761640}.
++    \item Thermal-capacitance fit: \texttt{aa2469}; frozen validation: \texttt{eefab7}.
++    \item Each reviewed bundle stores resolved inputs, metrics, numerical tables, figures, and a human-readable report.
++    \item Regression tests cover voltage and current models, hysteresis fidelity, convergence, analysis workflows, and archive validation.
+ \end{itemize}
+ 
+ \begin{block}{AI-use principle}
+diff --git a/docs/ARCHIVE_INDEX.md b/docs/ARCHIVE_INDEX.md
+index 16cbb17..441c9d8 100644
+--- a/docs/ARCHIVE_INDEX.md
++++ b/docs/ARCHIVE_INDEX.md
+@@ -8,8 +8,23 @@ claims.
+ ## Active final-project manuscript
+ 
+ - [Research handoff](RESEARCH_HANDOFF.md): consolidated entry point for continuing
+-  the work, updated 17 September 2026. Read its corrected interpretation and
++  the work, updated 18 September 2026. Read its corrected interpretation and
+   metric-denominator notes before comparing historical fit claims.
++- [Experiment/model reconciliation](EXPERIMENT_MODEL_RECONCILIATION.md):
++  colleague-facing, paper-anchored comparison of the original Figure 6 panels
++  with the archived frozen ideal-current replay, assumptions, discrepancies,
++  hypotheses and three discriminating measurements. The public experimental
++  preprint contains no reproducible numerical neuristor simulation; this memo
++  does not attribute our illustrative July runs to its authors.
++- [Channel and circuit audit](CHANNEL_CIRCUIT_AUDIT.md): 18 September desk audit of
++  workbook conversions, manuscript channel descriptions, the high-current output
++  plateau, conditional thermal inconsistency, a one-parameter conductance replay,
++  and three targeted next tests. It introduces no new parameter calibration or
++  reviewed simulation bundle.
++- [Experimental preprint](final_project/references/experimental_manuscript.pdf):
++  the corrected local link now opens Gildor et al., arXiv:2604.04594v1. The
++  previous target was Almeida et al. (2002); that distinct static-hysteresis
++  reference is retained as [Almeida](final_project/references/almeida_hysteresis_model.pdf).
+ 
+ - `docs/final_project/presentation/`: eight-slide LaTeX/Beamer research presentation
+   dated 15 September 2026, with a reviewed PDF, editable source, lossless archived
+@@ -148,8 +163,10 @@ claims.
+ 
+ - `public_jobs/`: tracked reviewed evidence. The registry reads both historical July
+   2026 `job.json` records and current portable `run.json` bundles.
+-- `Simulations_on_VO2/`: July 2026 Beamer presentation source, compiled deck, figures,
+-  and animations.
++- `Simulations_on_VO2/`: Beamer presentation source, compiled deck, figures, and
++  animations. Its first section preserves the July 2026 mechanism study; the current
++  continuation documents the specimen parameter-estimation chain and frozen forward
++  comparison. The original July-only version remains recoverable from Git history.
+ - `docs/presentation/project_year_presentation_outline.md`: longer historical talk
+   outline, explicitly marked with its current-status note.
+ - Git history is the recovery path for removed experimental current-source variants and
+diff --git a/docs/RESEARCH_HANDOFF.md b/docs/RESEARCH_HANDOFF.md
+index 532a5f9..2fc49a5 100644
+--- a/docs/RESEARCH_HANDOFF.md
++++ b/docs/RESEARCH_HANDOFF.md
+@@ -1,8 +1,16 @@
+ # Research handoff: VO2 current-driven simulations
+ 
+-Updated **17 September 2026**. Scientific evidence through 14 September; the
+-eight-slide presentation was completed on 15 September. This handoff introduces
+-no new simulations or parameter estimates.
++Updated **18 September 2026**. Numerical bundle evidence through 14 September;
++the eight-slide presentation was completed on 15 September. The 18 September
++[channel/circuit audit](CHANNEL_CIRCUIT_AUDIT.md) adds a source-backed desk audit,
++a controlled one-parameter replay, and a timestep-diagnostic correction. It
++adopts no new parameter estimate.
++The [experiment/model reconciliation](EXPERIMENT_MODEL_RECONCILIATION.md)
++packages a paper-panel comparison for supervisor review. The public Gildor
++preprint reports experiments and a physical interpretation, without a
++reproducible numerical simulation; the July "paper-frequency analog" was
++our own illustrative run. A mislabeled local experimental-PDF link formerly
++opened the unrelated Almeida static-hysteresis paper and has been corrected.
+ 
+ ## 1. Start here
+ 
+@@ -21,16 +29,18 @@ realistic mean voltage, amplitude, frequency and persistence.
+ Recommended reading order:
+ 
+ 1. This handoff, especially Sections 5–8.
+-2. [Eight-slide presentation](final_project/presentation/VO2_Fitting_Journey.pdf)
++2. [Experiment/model reconciliation](EXPERIMENT_MODEL_RECONCILIATION.md):
++   colleague-facing paper-panel comparison and assumption ledger.
++3. [Eight-slide presentation](final_project/presentation/VO2_Fitting_Journey.pdf)
+    and its [source/evidence map](final_project/presentation/README.md).
+-3. [Research report](final_project/Simulations_for_VO2_AGC.pdf), especially Sections
++4. [Research report](final_project/Simulations_for_VO2_AGC.pdf), especially Sections
+    4–6 for parameter assumptions and 9–12 for fitting and the latest diagnostics.
+-4. [Archive index](ARCHIVE_INDEX.md) for current versus superseded bundles.
+-5. [Root README](../README.md), [AGENTS.md](../AGENTS.md), and the relevant recipe
++5. [Archive index](ARCHIVE_INDEX.md) for current versus superseded bundles.
++6. [Root README](../README.md), [AGENTS.md](../AGENTS.md), and the relevant recipe
+    before changing code. Read [architecture](ARCHITECTURE.md) for implementation.
+ 
+-The next recommended task is a **measurement-channel and circuit-interpretation
+-audit**, not another broad optimizer run. See Section 8 for its scope and deliverable.
++The next recommended task is **experimental confirmation of the measurement-channel
++and circuit map**, followed by a same-device thermal/dynamic check. See Section 8.
+ 
+ ## 2. Files and data: what is authoritative
+ 
+@@ -43,9 +53,10 @@ All paths in commands below are relative to the repository root.
+ | Raw oscilloscope exports | `data/experimental/tia_current_sweep/`; preserve unchanged |
+ | Experimental data provenance | The above directory's `README.md` and `SHA256SUMS` |
+ | Original reference implementation | `references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/` |
+-| Papers | `docs/final_project/references/` links to canonical local copies |
++| Papers | `docs/final_project/references/` links to canonical local copies; the experimental manuscript link was corrected on 18 September to Gildor et al. arXiv:2604.04594v1, and Almeida's distinct static-hysteresis paper retained separately |
+ | Editable report / tracked PDF | `docs/final_project/main.tex` / `Simulations_for_VO2_AGC.pdf` |
+ | Editable slides / tracked PDF | `docs/final_project/presentation/VO2_Fitting_Journey.tex` / `.pdf` |
++| Mechanism and parameter-estimation deck | `Simulations_on_VO2/main.tex` / `main.pdf`; the July mechanism talk extended with one evidence slide per specimen parameter and the frozen forward check |
+ | GIF and supplementary figures | `docs/final_project/supplementary/`; some figures link into immutable bundles |
+ | Reviewed numerical evidence | `public_jobs/`; each new-style bundle has a manifest, resolved inputs, metrics, report, tables and figures |
+ | Scratch work | Ignored `runs/`; never the only copy of an important result |
+@@ -289,32 +300,149 @@ analysis does not distinguish a thermal-estimate error from contacts/readout,
+ dynamic/partial switching or nonuniform heating. These are hypotheses, not findings
+ that license adding arbitrary degrees of freedom. **No replacement calibration is adopted.**
+ 
+-## 8. Next task: a bounded channel/circuit audit
+-
+-This is proposed work, **not completed**. First produce a short source-backed mapping
+-of each recorded column to the physical circuit and its conversion. Use the three
+-original XLSX workbooks and the experimental manuscript. Distinguish information
+-actually present there from questions requiring Amir/Yoav.
+-
+-Required output:
+-
+-1. A circuit/channel table: voltage probe nodes, current sensing/conversion equation,
+-   sign, scaling, units, channel time alignment, loading and bandwidth where known.
+-2. A check of the workbooks' conversions against the corresponding converted exports,
+-   without altering any raw data. Do not treat the 150 ns display shift as a delay.
+-3. An explicit answer, or a documented unknown: is recorded voltage directly across
+-   VO2, and is recorded current the total current entering the modeled parallel R–C
+-   branch? Does V/I include contact/load/readout contributions?
+-4. One minimal testable correction if supported, its expected effect on mean voltage,
+-   amplitude and frequency, and a comparison using the persistence audit.
+-
+-If the channels cannot be resolved from existing sources, ask for the schematic,
+-probe locations, gains/termination, current conversion and channel-delay calibration.
+-Do not silently reinterpret 250/300 mV labels as µA or tune unexplained offsets.
+-If the channel map is confirmed, the next branch is a controlled test of static-to-
+-dynamic resistance transfer or thermal-model assumptions, one change at a time.
+-New dynamic minor loops or independent temperature/capacitance information would
+-help separate gamma, thermal parameters and circuit effects.
++## 8. Channel audit completed; circuit boundary remains unresolved
++
++The [18 September desk audit](CHANNEL_CIRCUIT_AUDIT.md) checked all three original
++XLSX workbooks against their CSV exports and the experimental manuscript. The
++workbooks' numerical conversions are internally consistent: CH1 voltage maps to
++output mV by ×1000; CH2 voltage maps to input µA by approximately ×794.33; the
++second time column is exactly +150 ns for presentation. The exports match the
++workbook-derived columns to rounding precision. No raw data or bundles changed.
++
++The available files do **not** establish synchronized VO2 terminal voltages, the CH2
++current-conversion circuit, feedback-path current, sign, probe loading or calibrated
++channel skew. The manuscript identifies an active TIA feedback path, LT1228
++transconductance stage and common-base protection, but its `Vout*Iin` power
++calculation does not independently establish VO2 Joule power. A circuit correction
++cannot be adopted or tested against persistence until those nodes and currents are
++measured or documented.
++
++The paper's approximately 1.2–1.9 pJ per-oscillation result is numerically
++reproducible as **total output-derived energy per period**. On the 11 nominally
++persistent records, direct integration of the baseline-corrected channel product
++between adjacent late voltage peaks gives 1.159–1.754 pJ. The archived
++`mean power / frequency` values agree to 1.30% median and 2.76% maximum relative
++difference. Subtracting each cycle's minimum power before integration gives only
++0.044–0.313 pJ (2.5–27.0% of the full-period energy; 9.3% median). Both are valid
++definitions for different questions, but only the first reproduces Figure 7's
++scale. Calling either an intrinsic VO2 switching energy still requires the missing
++device-boundary voltage and current calibration.
++
++An additional cross-current clue: after baseline correction, the late output is
++approximately 173–188 mV from 303 to 908 µA, while apparent `V/I` falls from
++619 to 190 Ω. The 607 µA conflict is part of this whole high-current branch.
++Recorded current ripple at the 607 µA voltage frequency is about 0.08 µA
++peak-to-peak, far below the roughly 21 µA needed to explain the measured periodic
++voltage across a fixed 298 Ω. The frozen forward model at that current predicts
++about 153 mV and 339.7 K; measured output is about 181 mV. Mapping that 28 mV
++power difference through the adopted thermal balance moves the conditional
++temperature about 4.7 K and sharply lowers replayed R(T). This explains how
++the roughly tenfold *inverse* resistance gap can arise from a smaller forward
++mean-voltage error, while leaving the sustained oscillations unresolved.
++Across currents, the forward mean error changes sign, so a constant output
++offset is inadequate.
++Even fitting an affine `a+b V_model` map to all 22 means leaves 29.3 mV
++RMSE and a 62.7 mV miss at the 190 µA control; adding a linear current
++term leaves 27.0 mV RMSE. The predicted means change only 4.4 mV from
++190 to 228 µA, whereas measured means drop 83.8 mV. A simple fixed
++readout gain, offset or series term cannot repair the onset.
++
++A targeted replay changing only `S_e` from 3.675 to 4.413 µW/K makes the
++606 µA mean 181.7 mV versus 181.6 mV measured, but worsens the 228 µA
++mean error from 80 to 117 mV; at 907 µA it still misses by 44 mV. Its
++606 µA voltage span is only 1.8 mV over 50–250 ns. Conditional
++major-branch, quasi-steady inversion of the late measured `V/I` would demand
++apparent `S_e` values from roughly 2.47 to 6.09 µW/K across the sweep.
++These are diagnostics of the joint assumptions, not a replacement thermal
++calibration.
++Even freeing both constant `S_e` and `T₀` does not make the static-branch,
++quasi-steady late points consistent: `ΔP/ΔT` is 5.85 µW/K between 190 and
++606 µA but 51.0 µW/K between 606 and 908 µA. The ratio stays 7.4–10.7
++across paired static R(T) bootstrap draws. This tests the entire assumed
++measurement/constitutive/thermal chain, not thermal conductance alone.
++Crossing four pre-pulse baseline and four output averaging windows leaves
++the 800 mV apparent resistance at 296.1–301.4 Ω and the slope ratio at
++8.49–9.24. Window selection does not explain the cross-current gap within
++this conditional static-branch analysis.
++A roughly tenfold *relative* channel-resistance rescaling can equalize the
++three selected slopes, but it implies `T₀ ≈ 335.1 K` (adopted 314.4 K) and
++misses the 38 µA control's inferred temperature by about 4.4 K. This is a
++stress test of a fixed gain explanation, not a calibrated transfer factor.
++Across onset, the 250→300→350 mV labels also show both falling apparent
++resistance (1680→1017→711 Ω) and falling apparent power
++(60.73→53.23→50.76 µW). The sign persists across 16 window choices and
++cannot arise from one monotone quasi-steady heating branch with constant
++positive conductance and fixed positive channel gains. The latter two traces
++oscillate, so this tests that *joint interpretation* of the mean data, not
++the validity of the full time-dependent thermal equations.
++Avoiding the strongest midrange oscillations gives the same qualitative
++result: the 50→250 mV low-current and 900→1200 mV high-current pairs imply
++4.64 versus 55.31 µW/K under the direct-channel, quasi-steady major-branch
++reading. The slope ratio stays 11.52–12.78 across 16 time-window choices;
++its 95% range across the archived paired R(T) bootstrap is 10.73–13.14.
++The high-current records have small residual periodic output, and this
++comparison remains conditional on the channel and static-state assumptions.
++
++Pre-pulse medians vary from 3.87 to 38.23 µA and −10.32 to +19.52 mV;
++some raw voltage baselines are negative despite positive current. Per-record
++subtraction is justified as a channel normalization, but it does not tell us
++whether the reported leakage flows through and preheats VO₂. The replay's
++common cold initial state is therefore another conditional assumption.
++Treating the full recorded pre-pulse current as real VO₂ leakage makes the
++high-current incremental prediction worse: about 110 versus 181 mV at
++606 µA, and 16 versus 173 mV at 908 µA. It also predicts about 89 mV
++pre-pulse device voltage in the highest record versus 19.5 mV raw output.
++This rejects that particular full-leakage assignment under the adopted
++model, while leaving the actual current split unresolved.
++Varying the frozen model's initial temperature from 285 to 375 K while
++retaining the baseline-corrected 296 ns prehistory changes any 50–250 ns
++predicted mean by at most 0.144 mV, leaves mean RMSE near 44.82 mV and
++produces zero oscillators. Starting on the metallic rather than insulating
++major branch has the same maximum effect. The prehistory is about 22.7 times
++the adopted 13.03 ns thermal time, so ordinary modeled thermal/major-branch
++initial memory is erased. This does not test an unmodeled long-lived filament
++state; starting directly at the comparison window would be a different input.
++
++The early-heating `C_th` fit is also alignment sensitive. With all other
++assumptions fixed, synthetic shifts `I_shift(t)=I_recorded(t+shift)` of
++−2, 0 and +2 ns give `C_th = 0.06117, 0.04787, 0.03792 pJ/K`
++respectively at adopted `C=0.39 pF`; fit RMSE is 2.263, 1.145 and
++0.635 K. The original conditional interval did not vary channel delay.
++No actual delay has been measured, so these are sensitivity values rather
++than corrected parameters.
++
++The recorded turn-off edge is also inconsistent with a passive positive-R
++parallel branch if CH1 and CH2 are its actual voltage and current: 9 of 22
++records contain negative raw output voltage with more than 50 µA positive
++raw input current during 270–400 ns. The recorded current remains nearly
++linear in source setting up to about 908 µA, so the observed late voltage
++plateau is not simply clipping of that recorded current channel. These checks
++strengthen the need for a circuit-boundary measurement but do not identify
++a unique circuit or intrinsic mechanism.
++This edge flag is alignment sensitive: a synthetic 15 ns advance of the
++recorded current removes the `V < −10 mV, I > 50 µA` overlap in all nine
++records. At each first corrected voltage zero crossing, reaching under
++10 µA instead takes about 18–25 ns of current advance. Neither is a measured
++delay; the edge observation is a calibration target, not proof of a specific
++active circuit effect. The late-output mean and cross-current slope checks
++are comparatively insensitive to such shifts.
++
++At the two highest source labels, late output retains about 5.7–6.0 mV
++peak-to-peak periodic components near 69 MHz, far above the same-frequency
++pre-pulse component but below the nominal four-window persistence gate.
++Treat the high-current "stable" label as operational; a dummy feedback
++resistor and longer pulses are needed to identify this small residual signal.
++
++**Next:** request the Figure 6 board schematic, probe locations, gains/termination,
++feedback-path current conversion and channel-delay calibration from Amir/Yoav; then
++perform a simultaneous two-terminal device-voltage/current measurement with a
++known feedback resistor control at about 190, 267, 607 and 908 µA. The
++190/267 µA pair tests the onset power-ordering reversal. If those channels
++validate the simple model boundary, test same-device driven R(T), minor-loop and
++thermal assumptions one change at a time. Do not silently reinterpret source
++labels or tune an unexplained voltage offset.
++Gabriel currently does not have the schematic or scope setup; continue bounded
++tests on existing data while that external information is unavailable.
+ 
+ A useful stopping criterion: a single shared vector must improve late amplitude,
+ frequency, mean and persistence across selected low/mid/high currents, preserve
+@@ -344,6 +472,12 @@ Checks repeated on **17 September 2026** passed: **51 tests, 15 experiment recip
+ These counts are a dated baseline, not requirements to preserve
+ by suppressing new tests or evidence. Test files cover resistance fitting, hysteresis
+ reversals, simulation convergence, inference, persistence, reconstruction and CLI bundles.
++The 18 September channel audit and diagnostic correction passed **52 tests** and
++the same **15 recipes / 64 archived runs** validation gate; no scientific
++trajectory or public bundle was regenerated.
++The corrected timestep report can change automatic step choice in the standalone
++sweep-GIF helper on future runs; frozen model validation and inverse replay use
++their explicit steps and are unaffected.
+ 
+ ### Start with archived evidence; rerun only the relevant diagnostic
+ 
+@@ -482,11 +616,12 @@ be selected by lexicographic run date alone; use the status interpretation above
+ 
+ ## 11. Ready-to-use continuation brief
+ 
+-> Read README.md, AGENTS.md and docs/RESEARCH_HANDOFF.md. Continue the VO2 specimen
+-> research from the current persistence audit and conditional reconstruction, not
+-> the superseded 22/22 peak-count claim. Do not launch a broad fit or alter physical
+-> parameters yet. First inspect the supplied workbooks and experimental manuscript
+-> to map voltage/current channels, conversion formulas, probe nodes and timing to
+-> the modeled VO2 branch. Deliver a concise evidence-backed mapping, explicit
+-> unknowns, and one proposed minimal test. Preserve raw data and completed bundles;
+-> distinguish conditional thermal estimates from independent measurements.
++> Read README.md, AGENTS.md, docs/RESEARCH_HANDOFF.md and the 18 September
++> CHANNEL_CIRCUIT_AUDIT.md. Continue from the persistence audit and conditional
++> reconstruction, not the superseded 22/22 peak-count claim. The desk audit
++> verified workbook conversions and exposed a nearly flat 173–188 mV output
++> branch, but the actual VO2 terminal voltage and feedback current remain
++> unverified. Obtain the schematic/probe/current-conversion details and calibrate
++> the circuit boundary with a known resistor and simultaneous device-terminal
++> measurement before adding parameters or another broad fit. Preserve raw data
++> and completed bundles; keep thermal intervals conditional on channel meaning.
+diff --git a/docs/final_project/README.md b/docs/final_project/README.md
+index 29e337d..77d418b 100644
+--- a/docs/final_project/README.md
++++ b/docs/final_project/README.md
+@@ -8,6 +8,9 @@ remaining simulations are completed.
+ 
+ - [`Simulations_for_VO2_AGC.pdf`](Simulations_for_VO2_AGC.pdf): latest compiled report.
+ - [`main.tex`](main.tex): editable LaTeX manuscript.
++- [Experimental comparison](../EXPERIMENT_MODEL_RECONCILIATION.md):
++  paper-panel assumptions, frozen-model results and discriminating tests for
++  supervisor discussion.
+ - [`data/`](data/): raw measurements and reviewed numerical results.
+ - [`supplementary/`](supplementary/): selected figures and animations for inspection
+   and presentation.
+@@ -58,7 +61,7 @@ instead of editing the existing one.
+ 
+ New researchers and AI agents should start with [the research handoff](../RESEARCH_HANDOFF.md).
+ It consolidates data provenance, assumptions, the trial history, metric-definition
+-corrections, reproduction instructions and the next proposed channel/circuit audit.
++corrections, reproduction instructions and the completed channel/circuit audit.
+ 
+ ## Supplementary media
+ 
+diff --git a/docs/final_project/references/README.md b/docs/final_project/references/README.md
+index 9708130..231b517 100644
+--- a/docs/final_project/references/README.md
++++ b/docs/final_project/references/README.md
+@@ -1,7 +1,14 @@
+ # Project references
+ 
+-- `experimental_manuscript.pdf`: manuscript describing the laboratory device and
+-  measurements to be complemented by this simulation project.
++- `experimental_manuscript.pdf`: Gildor et al., [arXiv:2604.04594v1](https://arxiv.org/abs/2604.04594v1),
++  the experimental TIA manuscript. Its canonical local copy is
++  `references/papers/gildor2026_arxiv_2604.04594v1.pdf` (SHA-256
++  `cad51f0274a39a4cb08425c5c3ceca31945fa73c4e6afb52097fb6f029bfa1cc`).
++  The PDF is an unmodified copy of the authors' 6 April 2026 preprint, shared
++  under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
++- `almeida_hysteresis_model.pdf`: Almeida et al. (2002), the static VO₂
++  hysteresis model. The previous `experimental_manuscript.pdf` link mistakenly
++  targeted this unrelated paper; that link was corrected on 18 September 2026.
+ - `yuanhang_collective_dynamics.pdf`: Zhang et al. reference paper behind the original
+   neuristor model.
+ - `yuanhang_original_implementation/`: preserved upstream implementation used for
+diff --git a/docs/final_project/references/experimental_manuscript.pdf b/docs/final_project/references/experimental_manuscript.pdf
+index 68dc171..562341b 120000
+--- a/docs/final_project/references/experimental_manuscript.pdf
++++ b/docs/final_project/references/experimental_manuscript.pdf
+@@ -1 +1 @@
+-../../../references/papers/2582_1.pdf
+\ No newline at end of file
++../../../references/papers/gildor2026_arxiv_2604.04594v1.pdf
+\ No newline at end of file
+diff --git a/src/neuristor/current_domain_search.py b/src/neuristor/current_domain_search.py
+index 8e4afcc..745c908 100644
+--- a/src/neuristor/current_domain_search.py
++++ b/src/neuristor/current_domain_search.py
+@@ -545,6 +545,8 @@ def _candidate_dt_ns(
+ 
+     C_F = float(point.C_pF) * 1e-12
+     C_th = float(point.C_th_mW_ns_per_K) * 1e-12
++    if C_th <= 0.0:
++        raise ValueError("Candidate thermal capacitance must be positive.")
+     tau_init_ns = C_F * max(R_init, _EPS) * 1e9
+     tau_fast_ns = C_F * R_fast * 1e9
+     dt_tau_ns = float(cfg.dt_tau_target) * tau_fast_ns
+@@ -579,7 +581,9 @@ def _candidate_dt_ns(
+         "dt_ns": float(chosen_dt_ns),
+         "dt_over_tau_fast": float(chosen_dt_ns / max(tau_fast_ns, _EPS)),
+         "dt_over_tau_init": float(chosen_dt_ns / max(tau_init_ns, _EPS)),
+-        "dT_step_over_reversal": float((chosen_dt_ns * 1e-9) * p_fast_W / max(C_th * reversal_K, _EPS)),
++        # Both quantities are positive here; a 1e-12 floor on their product
++        # suppresses the diagnostic for small specimen thermal capacitances.
++        "dT_step_over_reversal": float((chosen_dt_ns * 1e-9) * p_fast_W / (C_th * reversal_K)),
+         "estimated_steps": float(total_ns / max(chosen_dt_ns, _EPS)),
+         "feasible": float(1.0 if feasible else 0.0),
+     }
+diff --git a/src/neuristor/current_drive_sim.py b/src/neuristor/current_drive_sim.py
+index ebd4e88..03f010e 100644
+--- a/src/neuristor/current_drive_sim.py
++++ b/src/neuristor/current_drive_sim.py
+@@ -157,7 +157,9 @@ def current_drive_numerics_report(
+     I_peak_A = abs(float(I_peak_uA)) * 1e-6
+     V_fast_est = I_peak_A * R_eff_fast
+     P_fast_est = (V_fast_est * V_fast_est) / max(R_metal, _EPS)
+-    C_th = max(float(params.C_th_J_per_K), _EPS)
++    # CurrentDriveParams already requires C_th > 0. The specimen estimate is
++    # below 1e-12 J/K, so a generic denominator floor would hide thermal jumps.
++    C_th = float(params.C_th_J_per_K)
+     dt_s = float(params.dt_s)
+     dT_step_est_K = (dt_s / C_th) * P_fast_est
+     reversal_thr = max(float(params.resist_params.reversal_threshold_K), _EPS)
+diff --git a/src/neuristor/model.py b/src/neuristor/model.py
+index dbf014f..cf6afed 100644
+--- a/src/neuristor/model.py
++++ b/src/neuristor/model.py
+@@ -377,8 +377,16 @@ class YuanhangArraySimulator:
+         )
+         self.S_couple = _SIM_DTYPE(self.circuit.Sth_mW_per_K * 1e-3 * self.circuit.couple_factor)
+         self.R_series_ohm = max(self.circuit.R_series_ohm, _EPS)
+-        self.C_par_F = max(self.circuit.C_par_F, _EPS)
+-        self.C_th_J_per_K = max(self.circuit.Cth_J_per_K, _EPS)
++        # A dimensionless epsilon is not a physical minimum capacitance: the
++        # specimen's inferred thermal capacity is below 1 pJ/K. Silently
++        # flooring SI values here changes the supplied circuit by orders of
++        # magnitude. The voltage ODE requires strictly positive capacities.
++        self.C_par_F = float(self.circuit.C_par_F)
++        self.C_th_J_per_K = float(self.circuit.Cth_J_per_K)
++        if not math.isfinite(self.C_par_F) or self.C_par_F <= 0.0:
++            raise ValueError("Voltage-drive C_par_pF must be finite and positive.")
++        if not math.isfinite(self.C_th_J_per_K) or self.C_th_J_per_K <= 0.0:
++            raise ValueError("Voltage-drive Cth_mW_ns_per_K must be finite and positive.")
+         self.T_base = _SIM_DTYPE(self.circuit.T_base_K)
+ 
+     def set_inputs(
+diff --git a/tests/test_simulation_convergence.py b/tests/test_simulation_convergence.py
+index 781fa34..b4a2b6b 100644
+--- a/tests/test_simulation_convergence.py
++++ b/tests/test_simulation_convergence.py
+@@ -16,14 +16,21 @@ if str(SRC) not in sys.path:
+ import neuristor.model as model
+ from neuristor.current_drive_sim import (
+     CurrentDriveParams,
++    current_drive_numerics_report,
+     current_drive_operating_estimates,
+     sanitize_current_drive_params,
+     simulate_current_step,
+     simulate_current_steps,
+     simulate_current_waveform,
+     simulate_current_waveforms,
++    stabilize_current_drive_params,
++)
++from neuristor.current_domain_search import (
++    CandidatePoint,
++    DomainSearchConfig,
++    _candidate_dt_ns,
++    analyze_current_trace,
+ )
+-from neuristor.current_domain_search import analyze_current_trace
+ from neuristor.model import (
+     YuanhangCircuitParams,
+     YuanhangResistParams,
+@@ -37,6 +44,58 @@ class SimulationConvergenceTests(unittest.TestCase):
+     def setUp(self) -> None:
+         model._TORCH_HYSTERESIS_AVAILABLE = False
+ 
++    def test_small_thermal_capacitance_reports_physical_step_jump(self) -> None:
++        resist = YuanhangResistParams(Rm0=18.21526990911648, Rm_factor=1.0)
++        params = CurrentDriveParams(
++            dt_s=0.025e-9,
++            C_F=0.39e-12,
++            C_th_J_per_K=0.047873236e-12,
++            S_e_W_per_K=0.0036751265e-3,
++            resist_params=resist,
++        )
++        report = current_drive_numerics_report(params, I_peak_uA=606.7)
++        expected = (
++            params.dt_s * (606.7e-6) ** 2 * resist.Rm
++            / (params.C_th_J_per_K * resist.reversal_threshold_K)
++        )
++        self.assertAlmostEqual(report["dT_step_over_reversal"], expected, places=12)
++        self.assertGreater(report["dT_step_over_reversal"], 0.2)
++        adjusted, _ = stabilize_current_drive_params(
++            params,
++            I_peak_uA=606.7,
++            dt_tau_target=1e9,
++            dT_ratio_target=0.2,
++        )
++        self.assertLess(adjusted.dt_s, params.dt_s)
++        adjusted_report = current_drive_numerics_report(adjusted, I_peak_uA=606.7)
++        self.assertLessEqual(adjusted_report["dT_step_over_reversal"], 0.2 + 1e-12)
++
++        point = CandidatePoint(
++            T0_K=314.4,
++            C_pF=0.39,
++            C_th_mW_ns_per_K=0.047873236,
++            S_e_mW_per_K=0.0036751265,
++            T_init_K=314.4,
++            sigma_W_sqrt_s=0.0,
++            Rm_factor_scale=1.0,
++            Tc_shift_K=0.0,
++            w_scale=1.0,
++            beta_scale=1.0,
++            reversal_threshold_K=resist.reversal_threshold_K,
++        )
++        candidate_report = _candidate_dt_ns(
++            point,
++            cfg=DomainSearchConfig(resistance_preset_path="unused"),
++            base_resist_params=resist,
++            start_branch="insulator",
++            i_peak_uA=606.7,
++        )
++        expected_candidate = (
++            candidate_report["dt_ns"] * 1e-9 * (606.7e-6) ** 2 * resist.Rm
++            / (params.C_th_J_per_K * resist.reversal_threshold_K)
++        )
++        self.assertAlmostEqual(candidate_report["dT_step_over_reversal"], expected_candidate, places=12)
++
+     def test_yuanhang_current_control_settles_across_timesteps(self) -> None:
+         payload = json.loads((ROOT / "presets" / "resistance_100425_chip1_gap3.json").read_text())
+         resist = YuanhangResistParams(**payload["resist_params"])

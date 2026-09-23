@@ -1,0 +1,53 @@
+schema_version = 1
+name = "Expanded specimen synchronized oscilloscope export"
+kind = "simulation"
+model = "current"
+seed = 20260921
+
+[time]
+dt_ns = 0.00625
+pre_us = 0.296
+duration_us = 0.25
+
+[input]
+amplitude_uA = 380.9
+
+[initial]
+voltage_V = 0.0
+temperature_K = 313.0921598073286
+
+[electrical]
+C_pF = 4.650068603358178
+
+[thermal]
+C_th_pJ_per_K = 0.04301563633071787
+S_e_mW_per_K = 0.004134104258117
+T0_K = 313.0921598073286
+
+[resistance]
+preset = "yuanhang"
+start_branch = "insulator"
+
+[resistance.parameters]
+R0 = 1.0438498936014968
+Ea_over_k = 2484.7074617150156
+Rm0 = 18.34332087986942
+Rm_factor = 1.0
+w = 6.988288287668067
+Tc_K = 332.74999240247257
+beta = 0.2803052086787129
+gamma = 0.1810504078904377
+width_factor = 1.0
+T_min_K = 284.8545
+T_max_K = 375.1625
+reversal_threshold_K = 0.01
+
+[replay]
+data_directory = "../../data/experimental/tia_current_sweep"
+generate_gifs = false
+scope_animations = true
+scope_frames = 96
+gif_frames = 24
+
+[output]
+root = "runs"

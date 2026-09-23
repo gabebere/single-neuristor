@@ -1,8 +1,128 @@
 # Research handoff: VO2 current-driven simulations
 
-Updated **17 September 2026**. Scientific evidence through 14 September; the
-eight-slide presentation was completed on 15 September. This handoff introduces
-no new simulations or parameter estimates.
+## Completed tanh pilot (23 September 2026)
+
+See [pilot review](TANH_PROXIMITY_PILOT_20260923.md). Separate tanh kernel,
+P=1-tanh(kx), k stored in gamma coordinate, was implemented and tested without
+changing the default Yuanhang mode. A 113-candidate, three-start pilot using a
+stricter persistence gate yields 9/9 sustained target traces at all three steps,
+positive proximity slope, and static RMSE 0.042914. Frequency error is 16.93%,
+but amplitude error is 646.98%; none is near-target. This is a mechanism lead,
+not a fitted calibration. No background search remains running. 77 tests pass.
+Recipe: `experiments/current/specimen_steady_tanh_pilot.toml`.
+Run: `runs/20260923_061836_tanh-proximity-bounded-pilot-labels-300-to-700_11a3f7`.
+Desktop: `VO2 Tanh Proximity Pilot`. Previous constrained sine best passes 0/9
+under the same new gate; unconstrained sine best passes 7/9, but violates proximity.
+Changing loss and kernel together prevents attributing fit differences to kernel alone.
+
+
+## Completed constrained rerun (23 September 2026, Israel time)
+
+User authorized a repeat with physically screened proximity behavior. PID 36174
+started 22 September 21:07 UTC (23 September 00:07 Israel), nominal deadline
+23:07 UTC (02:07 Israel). Eight restarts, same target/window/static constraint.
+Gamma range 0.60–0.98 plus nonnegative finite dTeff/dT checked on the actual state
+at every integration sample, including prehistory/transients. Failed candidates
+cannot enter elites or final search winners. Historical references are retained
+and their failed checks are reported rather than hidden. All-current verification
+reports the condition again at three timesteps; inspect it before adopting a fit.
+No trajectory equation changed. The audit preserves bitwise trajectories at
+three steps. 74 tests and validation passed; constrained recipe smoke passed.
+This does not guarantee all minor-loop memory/ordering properties.
+Recipe: `experiments/current/specimen_steady_monotone.toml`.
+Locator: `outputs/active_monotone_search.json`.
+Frozen source: `outputs/monotone_background_20260922_210709/source`.
+Run: `runs/20260922_210712_monotone-proximity-constrained-settled-oscillati_ffdabf`.
+Desktop: `VO2 Monotone Proximity Search`. No automatic LLM follow-up is scheduled.
+Read status.json; the local job needs no ChatGPT calls. STOP file ends it gracefully.
+
+
+## Cooling-hook diagnosis (22 September 2026)
+
+The completed steady search evaluated 5,301 candidates and all 18 verification batches.
+At 0.00625 ns, `search_1` has mean frequency error 14.9%, robust amplitude error
+109.5%, static log10 RMSE 0.04999 and zero near-target traces. See
+[the cooling-hook diagnosis](HYSTERESIS_HOOK_DIAGNOSIS_20260922.md) before adopting it.
+The fitted gamma 0.102 (and eef073 gamma 0.181) makes the LLP effective-temperature
+mapping locally nonmonotone. A cooling resistance drop is reproduced by upstream
+code and analytic/double-precision derivatives. This is a missing minor-loop
+admissibility screen in the broad search, not a local branch-sign bug. Major-loop
+R(T) constraints do not restrict gamma. No physics or archived fit was altered.
+Next bounded work: screen minor-loop shape, then compare a constrained refit;
+do not continue unconstrained gamma search or assume its lower loss is physical.
+
+
+## Background search launch record (completed; 22 September 2026)
+
+User explicitly selected **original record labels 300–700**, not measured currents.
+Detached PID 31846 started at 17:51 UTC (20:51 Israel), nominal deadline
+19:51 UTC (22:51 Israel). No automatic LLM follow-up is scheduled.
+Recipe: `experiments/current/specimen_steady_multistart.toml`; immutable launch
+snapshot: `outputs/steady_background_20260922_205149`.
+Run: `runs/20260922_175152_background-settled-oscillations-for-original-lab_f426de`. Live locator: `outputs/active_steady_search.json`.
+Read `status.json` before assuming completion. Objective excludes all startup,
+DC and phase errors; it targets 150–250 ns frequency, robust/fundamental amplitude
+and late retention. Eight independent restarts; hard static log10 RMSE <=0.05.
+Two fixed-major-loop starts plus six joint-static starts; final all-current checks
+at 0.025, 0.0125, 0.00625 ns. No new result has been adopted. This explicitly
+supersedes the earlier recommendation to avoid another broad fit for this user-
+authorized, targeted experiment. Review fine-step summary and persistence before
+claiming success; all target traces were training data. Desktop folder:
+`VO2 Background Search`. Full test suite: 72 passed; validation passed.
+
+Updated **22 September 2026**. The [expanded search and interactive laboratory](EXPANDED_SEARCH_20260922.md)
+are complete. T0 was already free (308–322 K). A larger cached DE/Powell search
+at 0.025 ns with persistence penalties recovers 7/11 oscillators with the stronger
+static constraint and 6/11 with relaxed static weight at the finest step.
+Late-mean voltage RMSE improves to 44.6/39.8 mV, but oscillating-record amplitude
+errors remain large (127.9/130.6 mV); the prior anchored vector still recovers 9/11.
+One stronger-static classification changes on final timestep refinement. No new
+calibration is adopted. Use `neuristor playground` for editable all-current V(t)/R(t)
+comparisons, bottom current slider, per-current GIFs and reproducible saved recipes.
+
+The same stronger-static parameter vector also has a synchronized scope export
+(recipe `experiments/current/specimen_scope_export.toml`) at 0.00625 ns: progressively
+drawn V(t), imposed measured I(t), and simulated R(T) with major-branch guides.
+Its 22-current replay confirms 7/11 persistence and 44.59 mV late-mean RMSE.
+An offline viewer and all-result copy were delivered to the Desktop on 22 September.
+
+User-selected visual reference: **eef073**, the exact 0.025 ns replay, rather
+than the finer-step export. `neuristor analyze export-scope --source PATH_TO_RUN`
+renders the saved samples without resimulation into vertically stacked I(t),
+V(t) and evolving R(T) GIFs. Current labels and filenames are in amperes, using
+the measured 50–250 ns plateau mean. Fine-step scientific caveats remain unchanged.
+
+Previous update: Updated **21 September 2026**. The new
+joint fit is now complete: see [budgeted joint inference](JOINT_INFERENCE_20260921.md).
+It freed all six major-loop parameters plus gamma and four circuit/thermal
+quantities in two searches totaling 240 objective calls. The static-preserving candidate
+improves the validation feature score but recovers only 4/11 persistent records;
+the relaxed-static diagnostic recovers 5/11 and worsens static R(T). Neither is
+a replacement calibration. The requested mechanism/parameter-estimation deck
+now includes the method and verified results.
+
+The
+[independent discrepancy audit](DISCREPANCY_AUDIT_20260921.md) confirms the
+current-source mismatch at three timesteps, fixes a separate voltage-source
+small-capacitance floor bug, and adds a frozen-major-branch stability calculation
+and literature-guided parameter/measurement plan. Gabriel confirmed that the
+static R(T) was measured on the **same device**; the full TIA schematic remains
+unavailable. Device identity is now confirmed; uniform versus localized driven
+heating and the terminal-channel map remain unresolved.
+The LT1228's documented 5–6 pF output capacitance is a circuit-topology clue,
+not a measured VO₂ parallel capacitance. No new physical parameter set is adopted.
+
+Prior numerical bundle evidence through 14 September;
+the eight-slide presentation was completed on 15 September. The 18 September
+[channel/circuit audit](CHANNEL_CIRCUIT_AUDIT.md) adds a source-backed desk audit,
+a controlled one-parameter replay, and a timestep-diagnostic correction. It
+adopts no new parameter estimate.
+The [experiment/model reconciliation](EXPERIMENT_MODEL_RECONCILIATION.md)
+packages a paper-panel comparison for supervisor review. The public Gildor
+preprint reports experiments and a physical interpretation, without a
+reproducible numerical simulation; the July "paper-frequency analog" was
+our own illustrative run. A mislabeled local experimental-PDF link formerly
+opened the unrelated Almeida static-hysteresis paper and has been corrected.
 
 ## 1. Start here
 
@@ -21,16 +141,18 @@ realistic mean voltage, amplitude, frequency and persistence.
 Recommended reading order:
 
 1. This handoff, especially Sections 5–8.
-2. [Eight-slide presentation](final_project/presentation/VO2_Fitting_Journey.pdf)
+2. [Experiment/model reconciliation](EXPERIMENT_MODEL_RECONCILIATION.md):
+   colleague-facing paper-panel comparison and assumption ledger.
+3. [Eight-slide presentation](final_project/presentation/VO2_Fitting_Journey.pdf)
    and its [source/evidence map](final_project/presentation/README.md).
-3. [Research report](final_project/Simulations_for_VO2_AGC.pdf), especially Sections
+4. [Research report](final_project/Simulations_for_VO2_AGC.pdf), especially Sections
    4–6 for parameter assumptions and 9–12 for fitting and the latest diagnostics.
-4. [Archive index](ARCHIVE_INDEX.md) for current versus superseded bundles.
-5. [Root README](../README.md), [AGENTS.md](../AGENTS.md), and the relevant recipe
+5. [Archive index](ARCHIVE_INDEX.md) for current versus superseded bundles.
+6. [Root README](../README.md), [AGENTS.md](../AGENTS.md), and the relevant recipe
    before changing code. Read [architecture](ARCHITECTURE.md) for implementation.
 
-The next recommended task is a **measurement-channel and circuit-interpretation
-audit**, not another broad optimizer run. See Section 8 for its scope and deliverable.
+The next recommended task is **experimental confirmation of the measurement-channel
+and circuit map**, followed by a same-device thermal/dynamic check. See Section 8.
 
 ## 2. Files and data: what is authoritative
 
@@ -43,9 +165,10 @@ All paths in commands below are relative to the repository root.
 | Raw oscilloscope exports | `data/experimental/tia_current_sweep/`; preserve unchanged |
 | Experimental data provenance | The above directory's `README.md` and `SHA256SUMS` |
 | Original reference implementation | `references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/` |
-| Papers | `docs/final_project/references/` links to canonical local copies |
+| Papers | `docs/final_project/references/` links to canonical local copies; the experimental manuscript link was corrected on 18 September to Gildor et al. arXiv:2604.04594v1, and Almeida's distinct static-hysteresis paper retained separately |
 | Editable report / tracked PDF | `docs/final_project/main.tex` / `Simulations_for_VO2_AGC.pdf` |
 | Editable slides / tracked PDF | `docs/final_project/presentation/VO2_Fitting_Journey.tex` / `.pdf` |
+| Mechanism and parameter-estimation deck | `Simulations_on_VO2/main.tex` / `main.pdf`; the July mechanism talk extended with one evidence slide per specimen parameter and the frozen forward check |
 | GIF and supplementary figures | `docs/final_project/supplementary/`; some figures link into immutable bundles |
 | Reviewed numerical evidence | `public_jobs/`; each new-style bundle has a manifest, resolved inputs, metrics, report, tables and figures |
 | Scratch work | Ignored `runs/`; never the only copy of an important result |
@@ -289,32 +412,149 @@ analysis does not distinguish a thermal-estimate error from contacts/readout,
 dynamic/partial switching or nonuniform heating. These are hypotheses, not findings
 that license adding arbitrary degrees of freedom. **No replacement calibration is adopted.**
 
-## 8. Next task: a bounded channel/circuit audit
+## 8. Channel audit completed; circuit boundary remains unresolved
 
-This is proposed work, **not completed**. First produce a short source-backed mapping
-of each recorded column to the physical circuit and its conversion. Use the three
-original XLSX workbooks and the experimental manuscript. Distinguish information
-actually present there from questions requiring Amir/Yoav.
+The [18 September desk audit](CHANNEL_CIRCUIT_AUDIT.md) checked all three original
+XLSX workbooks against their CSV exports and the experimental manuscript. The
+workbooks' numerical conversions are internally consistent: CH1 voltage maps to
+output mV by ×1000; CH2 voltage maps to input µA by approximately ×794.33; the
+second time column is exactly +150 ns for presentation. The exports match the
+workbook-derived columns to rounding precision. No raw data or bundles changed.
 
-Required output:
+The available files do **not** establish synchronized VO2 terminal voltages, the CH2
+current-conversion circuit, feedback-path current, sign, probe loading or calibrated
+channel skew. The manuscript identifies an active TIA feedback path, LT1228
+transconductance stage and common-base protection, but its `Vout*Iin` power
+calculation does not independently establish VO2 Joule power. A circuit correction
+cannot be adopted or tested against persistence until those nodes and currents are
+measured or documented.
 
-1. A circuit/channel table: voltage probe nodes, current sensing/conversion equation,
-   sign, scaling, units, channel time alignment, loading and bandwidth where known.
-2. A check of the workbooks' conversions against the corresponding converted exports,
-   without altering any raw data. Do not treat the 150 ns display shift as a delay.
-3. An explicit answer, or a documented unknown: is recorded voltage directly across
-   VO2, and is recorded current the total current entering the modeled parallel R–C
-   branch? Does V/I include contact/load/readout contributions?
-4. One minimal testable correction if supported, its expected effect on mean voltage,
-   amplitude and frequency, and a comparison using the persistence audit.
+The paper's approximately 1.2–1.9 pJ per-oscillation result is numerically
+reproducible as **total output-derived energy per period**. On the 11 nominally
+persistent records, direct integration of the baseline-corrected channel product
+between adjacent late voltage peaks gives 1.159–1.754 pJ. The archived
+`mean power / frequency` values agree to 1.30% median and 2.76% maximum relative
+difference. Subtracting each cycle's minimum power before integration gives only
+0.044–0.313 pJ (2.5–27.0% of the full-period energy; 9.3% median). Both are valid
+definitions for different questions, but only the first reproduces Figure 7's
+scale. Calling either an intrinsic VO2 switching energy still requires the missing
+device-boundary voltage and current calibration.
 
-If the channels cannot be resolved from existing sources, ask for the schematic,
-probe locations, gains/termination, current conversion and channel-delay calibration.
-Do not silently reinterpret 250/300 mV labels as µA or tune unexplained offsets.
-If the channel map is confirmed, the next branch is a controlled test of static-to-
-dynamic resistance transfer or thermal-model assumptions, one change at a time.
-New dynamic minor loops or independent temperature/capacitance information would
-help separate gamma, thermal parameters and circuit effects.
+An additional cross-current clue: after baseline correction, the late output is
+approximately 173–188 mV from 303 to 908 µA, while apparent `V/I` falls from
+619 to 190 Ω. The 607 µA conflict is part of this whole high-current branch.
+Recorded current ripple at the 607 µA voltage frequency is about 0.08 µA
+peak-to-peak, far below the roughly 21 µA needed to explain the measured periodic
+voltage across a fixed 298 Ω. The frozen forward model at that current predicts
+about 153 mV and 339.7 K; measured output is about 181 mV. Mapping that 28 mV
+power difference through the adopted thermal balance moves the conditional
+temperature about 4.7 K and sharply lowers replayed R(T). This explains how
+the roughly tenfold *inverse* resistance gap can arise from a smaller forward
+mean-voltage error, while leaving the sustained oscillations unresolved.
+Across currents, the forward mean error changes sign, so a constant output
+offset is inadequate.
+Even fitting an affine `a+b V_model` map to all 22 means leaves 29.3 mV
+RMSE and a 62.7 mV miss at the 190 µA control; adding a linear current
+term leaves 27.0 mV RMSE. The predicted means change only 4.4 mV from
+190 to 228 µA, whereas measured means drop 83.8 mV. A simple fixed
+readout gain, offset or series term cannot repair the onset.
+
+A targeted replay changing only `S_e` from 3.675 to 4.413 µW/K makes the
+606 µA mean 181.7 mV versus 181.6 mV measured, but worsens the 228 µA
+mean error from 80 to 117 mV; at 907 µA it still misses by 44 mV. Its
+606 µA voltage span is only 1.8 mV over 50–250 ns. Conditional
+major-branch, quasi-steady inversion of the late measured `V/I` would demand
+apparent `S_e` values from roughly 2.47 to 6.09 µW/K across the sweep.
+These are diagnostics of the joint assumptions, not a replacement thermal
+calibration.
+Even freeing both constant `S_e` and `T₀` does not make the static-branch,
+quasi-steady late points consistent: `ΔP/ΔT` is 5.85 µW/K between 190 and
+606 µA but 51.0 µW/K between 606 and 908 µA. The ratio stays 7.4–10.7
+across paired static R(T) bootstrap draws. This tests the entire assumed
+measurement/constitutive/thermal chain, not thermal conductance alone.
+Crossing four pre-pulse baseline and four output averaging windows leaves
+the 800 mV apparent resistance at 296.1–301.4 Ω and the slope ratio at
+8.49–9.24. Window selection does not explain the cross-current gap within
+this conditional static-branch analysis.
+A roughly tenfold *relative* channel-resistance rescaling can equalize the
+three selected slopes, but it implies `T₀ ≈ 335.1 K` (adopted 314.4 K) and
+misses the 38 µA control's inferred temperature by about 4.4 K. This is a
+stress test of a fixed gain explanation, not a calibrated transfer factor.
+Across onset, the 250→300→350 mV labels also show both falling apparent
+resistance (1680→1017→711 Ω) and falling apparent power
+(60.73→53.23→50.76 µW). The sign persists across 16 window choices and
+cannot arise from one monotone quasi-steady heating branch with constant
+positive conductance and fixed positive channel gains. The latter two traces
+oscillate, so this tests that *joint interpretation* of the mean data, not
+the validity of the full time-dependent thermal equations.
+Avoiding the strongest midrange oscillations gives the same qualitative
+result: the 50→250 mV low-current and 900→1200 mV high-current pairs imply
+4.64 versus 55.31 µW/K under the direct-channel, quasi-steady major-branch
+reading. The slope ratio stays 11.52–12.78 across 16 time-window choices;
+its 95% range across the archived paired R(T) bootstrap is 10.73–13.14.
+The high-current records have small residual periodic output, and this
+comparison remains conditional on the channel and static-state assumptions.
+
+Pre-pulse medians vary from 3.87 to 38.23 µA and −10.32 to +19.52 mV;
+some raw voltage baselines are negative despite positive current. Per-record
+subtraction is justified as a channel normalization, but it does not tell us
+whether the reported leakage flows through and preheats VO₂. The replay's
+common cold initial state is therefore another conditional assumption.
+Treating the full recorded pre-pulse current as real VO₂ leakage makes the
+high-current incremental prediction worse: about 110 versus 181 mV at
+606 µA, and 16 versus 173 mV at 908 µA. It also predicts about 89 mV
+pre-pulse device voltage in the highest record versus 19.5 mV raw output.
+This rejects that particular full-leakage assignment under the adopted
+model, while leaving the actual current split unresolved.
+Varying the frozen model's initial temperature from 285 to 375 K while
+retaining the baseline-corrected 296 ns prehistory changes any 50–250 ns
+predicted mean by at most 0.144 mV, leaves mean RMSE near 44.82 mV and
+produces zero oscillators. Starting on the metallic rather than insulating
+major branch has the same maximum effect. The prehistory is about 22.7 times
+the adopted 13.03 ns thermal time, so ordinary modeled thermal/major-branch
+initial memory is erased. This does not test an unmodeled long-lived filament
+state; starting directly at the comparison window would be a different input.
+
+The early-heating `C_th` fit is also alignment sensitive. With all other
+assumptions fixed, synthetic shifts `I_shift(t)=I_recorded(t+shift)` of
+−2, 0 and +2 ns give `C_th = 0.06117, 0.04787, 0.03792 pJ/K`
+respectively at adopted `C=0.39 pF`; fit RMSE is 2.263, 1.145 and
+0.635 K. The original conditional interval did not vary channel delay.
+No actual delay has been measured, so these are sensitivity values rather
+than corrected parameters.
+
+The recorded turn-off edge is also inconsistent with a passive positive-R
+parallel branch if CH1 and CH2 are its actual voltage and current: 9 of 22
+records contain negative raw output voltage with more than 50 µA positive
+raw input current during 270–400 ns. The recorded current remains nearly
+linear in source setting up to about 908 µA, so the observed late voltage
+plateau is not simply clipping of that recorded current channel. These checks
+strengthen the need for a circuit-boundary measurement but do not identify
+a unique circuit or intrinsic mechanism.
+This edge flag is alignment sensitive: a synthetic 15 ns advance of the
+recorded current removes the `V < −10 mV, I > 50 µA` overlap in all nine
+records. At each first corrected voltage zero crossing, reaching under
+10 µA instead takes about 18–25 ns of current advance. Neither is a measured
+delay; the edge observation is a calibration target, not proof of a specific
+active circuit effect. The late-output mean and cross-current slope checks
+are comparatively insensitive to such shifts.
+
+At the two highest source labels, late output retains about 5.7–6.0 mV
+peak-to-peak periodic components near 69 MHz, far above the same-frequency
+pre-pulse component but below the nominal four-window persistence gate.
+Treat the high-current "stable" label as operational; a dummy feedback
+resistor and longer pulses are needed to identify this small residual signal.
+
+**Next:** request the Figure 6 board schematic, probe locations, gains/termination,
+feedback-path current conversion and channel-delay calibration from Amir/Yoav; then
+perform a simultaneous two-terminal device-voltage/current measurement with a
+known feedback resistor control at about 190, 267, 607 and 908 µA. The
+190/267 µA pair tests the onset power-ordering reversal. If those channels
+validate the simple model boundary, test same-device driven R(T), minor-loop and
+thermal assumptions one change at a time. Do not silently reinterpret source
+labels or tune an unexplained voltage offset.
+Gabriel currently does not have the schematic or scope setup; continue bounded
+tests on existing data while that external information is unavailable.
 
 A useful stopping criterion: a single shared vector must improve late amplitude,
 frequency, mean and persistence across selected low/mid/high currents, preserve
@@ -344,6 +584,12 @@ Checks repeated on **17 September 2026** passed: **51 tests, 15 experiment recip
 These counts are a dated baseline, not requirements to preserve
 by suppressing new tests or evidence. Test files cover resistance fitting, hysteresis
 reversals, simulation convergence, inference, persistence, reconstruction and CLI bundles.
+The 18 September channel audit and diagnostic correction passed **52 tests** and
+the same **15 recipes / 64 archived runs** validation gate; no scientific
+trajectory or public bundle was regenerated.
+The corrected timestep report can change automatic step choice in the standalone
+sweep-GIF helper on future runs; frozen model validation and inverse replay use
+their explicit steps and are unaffected.
 
 ### Start with archived evidence; rerun only the relevant diagnostic
 
@@ -482,11 +728,12 @@ be selected by lexicographic run date alone; use the status interpretation above
 
 ## 11. Ready-to-use continuation brief
 
-> Read README.md, AGENTS.md and docs/RESEARCH_HANDOFF.md. Continue the VO2 specimen
-> research from the current persistence audit and conditional reconstruction, not
-> the superseded 22/22 peak-count claim. Do not launch a broad fit or alter physical
-> parameters yet. First inspect the supplied workbooks and experimental manuscript
-> to map voltage/current channels, conversion formulas, probe nodes and timing to
-> the modeled VO2 branch. Deliver a concise evidence-backed mapping, explicit
-> unknowns, and one proposed minimal test. Preserve raw data and completed bundles;
-> distinguish conditional thermal estimates from independent measurements.
+> Read README.md, AGENTS.md, docs/RESEARCH_HANDOFF.md and the 18 September
+> CHANNEL_CIRCUIT_AUDIT.md. Continue from the persistence audit and conditional
+> reconstruction, not the superseded 22/22 peak-count claim. The desk audit
+> verified workbook conversions and exposed a nearly flat 173–188 mV output
+> branch, but the actual VO2 terminal voltage and feedback current remain
+> unverified. Obtain the schematic/probe/current-conversion details and calibrate
+> the circuit boundary with a known resistor and simultaneous device-terminal
+> measurement before adding parameters or another broad fit. Preserve raw data
+> and completed bundles; keep thermal intervals conditional on channel meaning.

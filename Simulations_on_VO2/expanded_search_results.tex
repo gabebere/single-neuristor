@@ -1,0 +1,57 @@
+\begin{frame}{Expanded Search: Better Mean Voltage, Remaining Tradeoffs}
+\small
+\(T_0\) was already free over 308--322 K. Added persistence penalties,
+previous joint-fit seeds and a larger DE/Powell budget; search step halved to 0.025 ns.
+\vspace{0.2cm}
+\scriptsize
+\begin{tabular}{lrrrr}
+\toprule
+Candidate & Static log RMSE & Mean error (mV) & Recovered / 11 & Amplitude error (mV)\\
+\midrule
+Prior anchored & 0.0426 & 50.9 & 9 & 140.1\\
+Prior joint, stronger static & 0.0495 & 50.5 & 4 & 62.0\\
+Expanded, stronger static & 0.0489 & 44.6 & 7 & 127.9\\
+Expanded, relaxed static & 0.1473 & 39.8 & 6 & 130.6\\
+\bottomrule
+\end{tabular}
+\vspace{0.2cm}
+\begin{itemize}
+\item 456 objective calls; 400 unique candidates; 399 search simulations; 673 s.
+\item Stronger-static candidate: \(T_0=313.09\) K, \(C=4.650\) pF;
+relaxed candidate: \(T_0=315.00\) K, \(C=12.334\) pF. Neither hits the ambient bounds.
+\item Stronger-static recall falls from 8 to 7 at the finest timestep.
+No candidate resolves the voltage, amplitude and persistence mismatch together.
+\end{itemize}
+\slidesource{Bundle 694804. All results at 0.00625 ns; mean-voltage RMSE on 22 records, periodic-amplitude MAE on the same 11 measured oscillators. New loss; historical vectors re-evaluated.}
+\end{frame}
+
+\begin{frame}{Editable Laboratory: Compare Every Measured Current}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.49\textwidth}
+\begin{block}{Edit and replay}
+\small Load original or fitted parameters. Edit the resistance law separately
+from capacitance, heat capacity, thermal conductance and ambient temperature.
+Press \textbf{Run all measured currents} to use one shared parameter vector.
+\end{block}
+\begin{block}{Inspect}
+\small Voltage overlays compare experiment and simulation. A second plot shows
+simulated resistance versus time. The bottom slider selects the current;
+optional GIFs animate a time cursor over both plots.
+\end{block}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{block}{Reproduce}
+\small Each run saves numerical traces, metrics, a standalone HTML current
+slider, per-current GIFs and a parameter recipe. Completed runs are preserved.
+\end{block}
+\begin{alertblock}{Interpretation}
+\small Manual replay is exploratory. Check smaller timesteps before interpreting
+an improved fit. Exported voltage still needs circuit calibration; simulated
+resistance is not a measured voltage/current ratio.
+\end{alertblock}
+\end{column}
+\end{columns}
+\vspace{0.2cm}
+\small Start with \texttt{neuristor playground}; open \texttt{127.0.0.1:8502}.
+\slidesource{Workflow: replay-lab. Recipe: experiments/current/specimen\_lab\_replay.toml. Expanded-search notes: docs/EXPANDED\_SEARCH\_20260922.md.}
+\end{frame}

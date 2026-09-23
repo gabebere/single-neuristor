@@ -184,13 +184,16 @@ def compute_rt_fit_metrics(
     return metrics, pred, g_pred
 
 
-def params_to_dict(params: YuanhangResistParams) -> Dict[str, float]:
-    return {f.name: float(getattr(params, f.name)) for f in dataclasses.fields(YuanhangResistParams)}
+def params_to_dict(params: YuanhangResistParams) -> Dict[str, Any]:
+    return dataclasses.asdict(params)
 
 
 def params_from_dict(raw: Dict[str, Any]) -> YuanhangResistParams:
-    kwargs: Dict[str, float] = {}
+    kwargs: Dict[str, Any] = {}
     for f in dataclasses.fields(YuanhangResistParams):
+        if f.name == 'proximity_function':
+            kwargs[f.name] = str(raw.get(f.name, 'yuanhang'))
+            continue
         if f.name not in raw:
             raise ValueError(f"Missing resistance parameter: {f.name}")
         kwargs[f.name] = float(raw[f.name])

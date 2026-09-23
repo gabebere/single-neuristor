@@ -8,6 +8,9 @@ remaining simulations are completed.
 
 - [`Simulations_for_VO2_AGC.pdf`](Simulations_for_VO2_AGC.pdf): latest compiled report.
 - [`main.tex`](main.tex): editable LaTeX manuscript.
+- [Experimental comparison](../EXPERIMENT_MODEL_RECONCILIATION.md):
+  paper-panel assumptions, frozen-model results and discriminating tests for
+  supervisor discussion.
 - [`data/`](data/): raw measurements and reviewed numerical results.
 - [`supplementary/`](supplementary/): selected figures and animations for inspection
   and presentation.
@@ -58,7 +61,7 @@ instead of editing the existing one.
 
 New researchers and AI agents should start with [the research handoff](../RESEARCH_HANDOFF.md).
 It consolidates data provenance, assumptions, the trial history, metric-definition
-corrections, reproduction instructions and the next proposed channel/circuit audit.
+corrections, reproduction instructions and the completed channel/circuit audit.
 
 ## Supplementary media
 

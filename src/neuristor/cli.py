@@ -23,6 +23,10 @@ from .workflows import (
     run_oscillation_audit,
     run_hysteresis_reconstruction,
     run_waveform_parameter_inference,
+    run_joint_inference,
+    run_lab_replay,
+    run_steady_search,
+    export_saved_scope,
     run_resistance_fit,
     run_simulation,
     run_sweep,
@@ -192,6 +196,62 @@ def analyze_oscillation_audit(
 
     bundle = run_oscillation_audit(_configured(config, set_values, "current"),
                                    output_root=output_root, command=_command(), reuse_numerics=reuse_numerics)
+    _announce_bundle(bundle.root)
+
+
+@analyze_app.command("replay-lab")
+def analyze_replay_lab(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False),
+    set_values: list[str] = typer.Option([], "--set"),
+    output_root: Optional[Path] = typer.Option(None, "--output-root"),
+) -> None:
+    """Compare one editable shared model with all measured currents and render GIFs."""
+    bundle = run_lab_replay(_configured(config, set_values, "current"), output_root=output_root, command=_command())
+    _announce_bundle(bundle.root)
+
+
+@analyze_app.command("fit-steady")
+def analyze_fit_steady(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False),
+    set_values: list[str] = typer.Option([], "--set"),
+    output_root: Optional[Path] = typer.Option(None, "--output-root"),
+) -> None:
+    """Time-budgeted multi-start fitting of settled oscillation frequency/amplitude."""
+    bundle = run_steady_search(_configured(config, set_values, "current"), output_root=output_root, command=_command())
+    _announce_bundle(bundle.root)
+
+
+@analyze_app.command("export-scope")
+def analyze_export_scope(
+    source: Path = typer.Option(..., "--source", exists=True, file_okay=False),
+    output_root: Optional[Path] = typer.Option(None, "--output-root"),
+    frames: int = typer.Option(96, "--frames", min=2),
+    original_labels_uA: bool = typer.Option(False, "--original-labels-uA"),
+) -> None:
+    """Export exact saved traces as stacked GIFs named by input current in amperes."""
+    bundle = export_saved_scope(source, output_root=output_root, frames=frames, original_labels_uA=original_labels_uA, command=_command())
+    _announce_bundle(bundle.root)
+
+
+@app.command("playground")
+def playground(port: int = typer.Option(8502, "--port", min=1, max=65535)) -> None:
+    """Open the editable all-current Simulation Lab."""
+    root = find_project_root()
+    entry = Path(__file__).with_name("playground.py")
+    args = [sys.executable, "-m", "streamlit", "run", str(entry), "--server.port", str(port),
+            "--server.address", "127.0.0.1", "--browser.gatherUsageStats", "false"]
+    raise typer.Exit(subprocess.run(args, cwd=root, check=False).returncode)
+
+
+@analyze_app.command("fit-joint")
+def analyze_fit_joint(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False),
+    set_values: list[str] = typer.Option([], "--set"),
+    output_root: Optional[Path] = typer.Option(None, "--output-root"),
+) -> None:
+    """Jointly fit measured static resistance and persistent waveform features."""
+    bundle = run_joint_inference(_configured(config, set_values, "current"),
+                                 output_root=output_root, command=_command())
     _announce_bundle(bundle.root)
 
 

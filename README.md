@@ -7,6 +7,11 @@ simulations, laboratory-trace analysis, parameter sweeps, and evidence archival.
 It records the current scientific status, parameter assumptions, trial history,
 corrected claims, reproducible commands and the next bounded investigation.
 
+The [21 September discrepancy audit](docs/DISCREPANCY_AUDIT_20260921.md)
+checks units and implementation, fixes a separate small-capacitance bug in the
+voltage solver, and documents why the current-source mismatch remains, with
+new timestep evidence and a literature-guided measurement plan.
+
 The project now has one workflow:
 
 ```text
@@ -91,6 +96,7 @@ Use `neuristor --help` or `neuristor <group> --help` for the complete live refer
 | Estimate thermal capacitance | `neuristor analyze thermal-capacitance --data DIRECTORY --resistance-preset FILE.json --conductance-mW-per-K VALUE` |
 | Validate specimen model against lab sweep | `neuristor analyze model-validation --config FILE.toml` |
 | Fit shared waveform parameters | `neuristor analyze fit-waveforms --config FILE.toml` |
+| Jointly fit static R(T) and waveform features | `neuristor analyze fit-joint --config FILE.toml` |
 | Audit persistence and map three currents | `neuristor analyze oscillation-audit --config FILE.toml` |
 | Reconstruct conditional driven R(T) | `neuristor analyze reconstruct-hysteresis --config FILE.toml` |
 | Browse runs | `neuristor runs list` / `neuristor runs show RUN_ID` |
@@ -318,6 +324,27 @@ effective resistances remain conditional on the thermal model and channel defini
 
 ## Run bundles and GitHub archive
 
+### Budgeted joint resistance/dynamics fit
+
+```bash
+neuristor analyze fit-joint --config experiments/current/specimen_joint_inference.toml
+```
+
+This estimates eleven shared quantities, including all six major-loop resistance
+parameters, using the raw same-device R(T) curve and nine representative current
+records. Two short differential-evolution searches share cached evaluations and
+starting points, followed by capped Powell refinement. They differ only in the
+static-data penalty. The default budget is at most 240 objective calls, with at
+most 216 distinct candidate evaluations before screening/cache savings. No
+parallel agent or external compute service is used.
+
+Thirteen other currents are excluded from optimization; they are a validation
+subset, not a new blind dataset after earlier research. The archived references
+and both winners are checked on all 22 currents at three smaller timesteps.
+The bundle records separate static error, voltage, amplitude, frequency and
+persistence metrics, source snapshots, optimizer termination and the full loss
+definition. The TOML declares bounds, engineering weights and every budget.
+
 Every command writes the same portable directory under `runs/`:
 
 ```text
@@ -416,3 +443,101 @@ that merely “looks right” is not sufficient.
 
 Created by Gabriel Berezovsky under the supervision of PhD candidate Amir Gildor in
 the Quantum Materials for Neuromorphic Computation Lab at the Technion.
+
+### Editable all-current simulation lab
+
+Run `neuristor playground` and open http://127.0.0.1:8502. Resistance-law controls
+are separate from electrical/thermal controls, including ambient T0. Load a
+saved fit, edit values and press **Run all measured currents**. A slider below
+the plots selects the measured/simulated voltage overlay and simulated resistance.
+Each run saves optional GIFs for all currents, a ZIP, an offline interactive HTML
+comparison, numerical traces and a reproducible parameter recipe. These controls
+are separate from the read-only archive dashboard.
+
+```bash
+neuristor analyze replay-lab --config experiments/current/specimen_lab_replay.toml
+neuristor analyze fit-joint --config experiments/current/specimen_joint_expanded.toml
+```
+
+See [expanded search results and interface notes](docs/EXPANDED_SEARCH_20260922.md).
+
+To export synchronized progressively drawn V(t), measured imposed I(t), and the
+simulated R(T) trajectory over heating/cooling major branches, run:
+
+```bash
+neuristor analyze replay-lab --config experiments/current/specimen_scope_export.toml
+```
+
+The recipe uses the expanded stronger-static-fit parameters at 0.00625 ns.
+Open `scope_viewer.html` in the output bundle for an offline current slider,
+96-frame GIFs and full-trace PNGs. Playback frames are visual subsamples;
+`traces.csv` retains the results sampled on the experimental time grid.
+
+To export the **exact selected saved replay** without rerunning the simulator:
+
+```bash
+neuristor analyze export-scope --source runs/20260921_215248_interactive-specimen-laboratory-replay_eef073
+```
+
+This writes three vertically stacked panels (input current, voltage comparison,
+evolving R–T hysteresis), with GIF filenames and current labels in amperes.
+The filename current is the measured 50–250 ns pulse mean. `START_HERE.html`
+selects among currents; `All_current_GIFs.zip` contains all animations.
+
+For user-requested titles that retain the original numeric source-setting labels
+and display µA, add `--original-labels-uA`. This is a display alias rather than
+a unit conversion; a subtitle retains the actual measured plateau current, and
+all numerical axes, filenames and data retain their measured-current meaning.
+
+### Background search of settled oscillations
+
+```bash
+neuristor analyze fit-steady --config experiments/current/specimen_steady_multistart.toml
+```
+
+This standalone process targets original record labels 300–700 (actual measured
+currents approximately 228–533 µA), scoring only 150–250 ns. It uses eight
+independent DE/Powell restarts, a hard static R(T) log10-RMSE ceiling of 0.05,
+and a 110-minute search plus a 10-minute verification allowance. Startup, phase
+alignment and mean-voltage error are excluded from the objective. Full measured
+input prehistory is retained. Frequency, robust amplitude, fundamental amplitude
+and late amplitude retention determine the dynamic loss.
+
+`status.json` and `checkpoint.json` update during execution; every unique candidate
+is retained in `optimization_history.jsonl`. Create `STOP` inside the run directory
+to stop gracefully between simulations. Final `parameters.csv`, `summary.csv`,
+`verification.csv` and figures distinguish targets from out-of-band diagnostics.
+All nine target records train the search; they are not a blind validation set.
+Final candidates are checked at 0.025, 0.0125 and 0.00625 ns. The run does not call
+an LLM or API and does not promise global optimality or a near-perfect result.
+
+### Settled fit with a monotone proximity response
+
+```bash
+neuristor analyze fit-steady --config experiments/current/specimen_steady_monotone.toml
+```
+
+This repeats the two-hour, eight-restart 300–700 original-label search, with gamma
+restricted to 0.60–0.98 and a diagnostic check of dTeff/dT at every integration
+sample, including prehistory. Negative or nonfinite slopes exclude a candidate
+from the winners. The diagnostic leaves the physics trajectory unchanged. Final
+verification reports admissibility for each current and timestep, including old
+references that fail the new condition. This is a sampled monotonicity constraint,
+not proof of every hysteresis memory property. See the
+[cooling-hook diagnosis](docs/HYSTERESIS_HOOK_DIAGNOSIS_20260922.md).
+
+### Bounded tanh-proximity pilot
+
+`neuristor analyze fit-steady --config experiments/current/specimen_steady_tanh_pilot.toml`
+uses a separate `resistance.parameters.proximity_function = "tanh"` variant,
+P(x)=1−tanh(kx), with the existing gamma coordinate interpreted as k. The default
+Yuanhang function and old recipes are unchanged. The pilot searches k=0.03–0.98
+for three minutes across three starts, then checks three timesteps. It retains
+the major-loop fit and actual-path proximity checks. A 10,000 loss penalty per
+failed target requires at least three prominent peaks, peaks in both window
+halves, amplitude retention 0.75–1.333 and period CV <=0.2, in addition to the
+frequency signal gate. This operational persistence test is not infinite-time
+stability. Reference vectors in this bundle are explicitly reevaluated under
+tanh, not claimed to reproduce their original model. No wider search follows
+automatically. Almeida (2002), text preceding Eq. (19), discussed this function
+but preferred another for their specimen.

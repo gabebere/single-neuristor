@@ -7,9 +7,52 @@ claims.
 
 ## Active final-project manuscript
 
+- [Expanded search and interactive laboratory](EXPANDED_SEARCH_20260922.md):
+  reviewed bundle `20260921_210646_expanded-persistence-aware-joint-inference_694804`,
+  399 search simulations and seven vectors verified at three steps. Stronger-static
+  fit recovers 7/11 with 44.6 mV mean error; relaxed fit 6/11 with 39.8 mV.
+  Amplitude mismatch and timestep-sensitive classification remain. No calibration.
+  Editable replay is available through `neuristor playground`.
+
+
+- [Budgeted joint inference](JOINT_INFERENCE_20260921.md) and
+  `public_jobs/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f/`:
+  joint raw-static/feature fit with eleven shared parameters, two static-loss
+  weights and 201 simulated search candidates. All five reference/fitted vectors
+  were verified on 22 currents at three smaller timesteps. The static-preserving
+  result improves the excluded-current feature score but recovers only 4/11
+  persistent oscillators; the diagnostic recovers 5/11. No new calibration.
+  Methods/results were added to `Simulations_on_VO2/main.tex` and `main.pdf`.
+
 - [Research handoff](RESEARCH_HANDOFF.md): consolidated entry point for continuing
-  the work, updated 17 September 2026. Read its corrected interpretation and
+  the work, updated 21 September 2026. Read its corrected interpretation and
   metric-denominator notes before comparing historical fit claims.
+- [Independent discrepancy audit](DISCREPANCY_AUDIT_20260921.md): code and unit
+  review, separate voltage-source capacitance-floor fix, same-device confirmation,
+  LT1228 capacitance/bandwidth evidence, conditional major-branch stability
+  derivation, filament hypothesis and ordered calibration experiments.
+- `public_jobs/20260921_124525_independent-units-stability-and-specimen-replay-_ffaded/`:
+  fresh replay of all 22 measured inputs at 0.05/0.025/0.0125 ns, with zero
+  predicted versus 11 measured persistent records. Finest late-mean RMSE is
+  45.33 mV; the last refinement changes any late mean by at most 0.266 mV.
+  Frozen-memory major-branch calculations give a minimum trace-zero capacitance
+  near 2.80 pF, not a full hysteretic bifurcation boundary. Exact reproduction
+  code, input/source hashes, working-tree patch, tables and figure are included.
+- [Experiment/model reconciliation](EXPERIMENT_MODEL_RECONCILIATION.md):
+  colleague-facing, paper-anchored comparison of the original Figure 6 panels
+  with the archived frozen ideal-current replay, assumptions, discrepancies,
+  hypotheses and three discriminating measurements. The public experimental
+  preprint contains no reproducible numerical neuristor simulation; this memo
+  does not attribute our illustrative July runs to its authors.
+- [Channel and circuit audit](CHANNEL_CIRCUIT_AUDIT.md): 18 September desk audit of
+  workbook conversions, manuscript channel descriptions, the high-current output
+  plateau, conditional thermal inconsistency, a one-parameter conductance replay,
+  and three targeted next tests. It introduces no new parameter calibration or
+  reviewed simulation bundle.
+- [Experimental preprint](final_project/references/experimental_manuscript.pdf):
+  the corrected local link now opens Gildor et al., arXiv:2604.04594v1. The
+  previous target was Almeida et al. (2002); that distinct static-hysteresis
+  reference is retained as [Almeida](final_project/references/almeida_hysteresis_model.pdf).
 
 - `docs/final_project/presentation/`: eight-slide LaTeX/Beamer research presentation
   dated 15 September 2026, with a reviewed PDF, editable source, lossless archived
@@ -148,8 +191,10 @@ claims.
 
 - `public_jobs/`: tracked reviewed evidence. The registry reads both historical July
   2026 `job.json` records and current portable `run.json` bundles.
-- `Simulations_on_VO2/`: July 2026 Beamer presentation source, compiled deck, figures,
-  and animations.
+- `Simulations_on_VO2/`: Beamer presentation source, compiled deck, figures, and
+  animations. Its first section preserves the July 2026 mechanism study; the current
+  continuation documents the specimen parameter-estimation chain and frozen forward
+  comparison. The original July-only version remains recoverable from Git history.
 - `docs/presentation/project_year_presentation_outline.md`: longer historical talk
   outline, explicitly marked with its current-status note.
 - Git history is the recovery path for removed experimental current-source variants and

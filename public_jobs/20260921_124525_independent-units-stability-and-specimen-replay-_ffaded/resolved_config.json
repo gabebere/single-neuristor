@@ -1,0 +1,123 @@
+{
+  "derivative_halfwidths_K": [
+    0.01,
+    0.02,
+    0.04
+  ],
+  "dt_ns": [
+    0.05,
+    0.025,
+    0.0125
+  ],
+  "late_window_ns": [
+    150,
+    250
+  ],
+  "parameters_SI": {
+    "C_F": 3.9e-13,
+    "C_th_J_per_K": 4.7873236e-14,
+    "R_out_ohm": 0.0,
+    "S_e_W_per_K": 3.6751265e-06,
+    "T0_K": 314.4,
+    "T_init_K": 314.4,
+    "V_init_V": 0.0,
+    "dt_s": 5.000000000000001e-11,
+    "pulse_off_s": 3e-07,
+    "pulse_on_s": 0.0,
+    "resist_params": {
+      "Ea_over_k": 2536.9654457644647,
+      "R0": 0.7989227061673402,
+      "Rm0": 18.21526990911648,
+      "Rm_factor": 1.0,
+      "T_max_K": 375.1625,
+      "T_min_K": 284.8545,
+      "Tc_K": 333.49356636598696,
+      "beta": 0.2991563242902104,
+      "gamma": 0.956269682,
+      "reversal_threshold_K": 0.01,
+      "w": 6.882302959338694,
+      "width_factor": 1.0
+    },
+    "sigma_W_sqrt_s": 0.0,
+    "start_branch": "insulator",
+    "t_end_s": 5e-07,
+    "t_pre_s": 2e-07
+  },
+  "recipe": {
+    "analysis": {
+      "start_us": 0.05,
+      "stop_us": 0.25
+    },
+    "electrical": {
+      "C_pF": 0.39
+    },
+    "initial": {
+      "temperature_K": 314.4,
+      "voltage_V": 0.0
+    },
+    "input": {
+      "amplitude_uA": 228.152299,
+      "off_us": 0.3,
+      "on_us": 0.0
+    },
+    "kind": "simulation",
+    "lab_validation": {
+      "convergence_drives_mV": [
+        300.0,
+        500.0,
+        800.0
+      ],
+      "convergence_dt_ns": 0.025,
+      "data_directory": "../../data/experimental/tia_current_sweep"
+    },
+    "model": "current",
+    "name": "Specimen model prediction versus measured current sweep",
+    "output": {
+      "root": "runs"
+    },
+    "resistance": {
+      "preset": "../../presets/resistance_100425_chip1_gap3.json",
+      "start_branch": "insulator"
+    },
+    "schema_version": 1,
+    "seed": 0,
+    "sensitivity": {
+      "electrical_capacitances_pF": [
+        0.0,
+        0.1,
+        0.2,
+        0.39,
+        1.0,
+        2.0,
+        3.0,
+        5.0,
+        7.0,
+        10.0,
+        20.0,
+        50.0
+      ],
+      "post_duration_ns": 200.0,
+      "pre_duration_ns": 200.0,
+      "pulse_duration_ns": 300.0,
+      "thermal_capacitances_pJ_per_K": [
+        0.021918,
+        0.035,
+        0.047873236,
+        0.07,
+        0.092624
+      ]
+    },
+    "thermal": {
+      "C_th_pJ_per_K": 0.047873236,
+      "S_e_mW_per_K": 0.0036751265,
+      "T0_K": 314.4
+    },
+    "time": {
+      "dt_ns": 0.05,
+      "duration_us": 0.5,
+      "pre_us": 0.2
+    }
+  },
+  "stability_scope": "Fresh heating/cooling major branches, frozen memory",
+  "user_confirmation": "R(T) measured on same device; schematic unavailable"
+}

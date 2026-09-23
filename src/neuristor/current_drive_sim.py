@@ -157,7 +157,9 @@ def current_drive_numerics_report(
     I_peak_A = abs(float(I_peak_uA)) * 1e-6
     V_fast_est = I_peak_A * R_eff_fast
     P_fast_est = (V_fast_est * V_fast_est) / max(R_metal, _EPS)
-    C_th = max(float(params.C_th_J_per_K), _EPS)
+    # CurrentDriveParams already requires C_th > 0. The specimen estimate is
+    # below 1e-12 J/K, so a generic denominator floor would hide thermal jumps.
+    C_th = float(params.C_th_J_per_K)
     dt_s = float(params.dt_s)
     dT_step_est_K = (dt_s / C_th) * P_fast_est
     reversal_thr = max(float(params.resist_params.reversal_threshold_K), _EPS)
@@ -526,6 +528,7 @@ def _simulate_with_current_matrix(
     t: np.ndarray,
     I_in: np.ndarray,
     params: CurrentDriveParams,
+    *, audit_proximity: bool = False,
 ) -> List[Dict[str, np.ndarray]]:
     """Integrate independent deterministic waveforms in one vectorized pass."""
 
@@ -558,9 +561,13 @@ def _simulate_with_current_matrix(
     S_e = float(params.S_e_W_per_K)
     dt = _SIM_DTYPE(params.dt_s)
     T0 = _SIM_DTYPE(params.T0_K)
+    minimum_proximity_slope = np.ones(n_currents)
 
     for k in range(n_steps - 1):
         R_k, g_k = hyst.evaluate(T[k, :])
+        if audit_proximity:
+            minimum_proximity_slope = np.minimum(
+                minimum_proximity_slope, hyst.proximity_temperature_slope(T[k, :]))
         R_k = np.maximum(np.asarray(R_k, dtype=_SIM_DTYPE), _SIM_DTYPE(_EPS))
         g_k = np.clip(np.asarray(g_k, dtype=_SIM_DTYPE), 0.0, 1.0)
         if C == 0.0:
@@ -580,6 +587,9 @@ def _simulate_with_current_matrix(
         P[k, :] = P_k
 
     R_end, g_end = hyst.evaluate(T[-1, :])
+    if audit_proximity:
+        minimum_proximity_slope = np.minimum(
+            minimum_proximity_slope, hyst.proximity_temperature_slope(T[-1, :]))
     g_eq[-1, :] = np.clip(np.asarray(g_end, dtype=_SIM_DTYPE), 0.0, 1.0)
     R[-1, :] = np.maximum(np.asarray(R_end, dtype=_SIM_DTYPE), _SIM_DTYPE(_EPS))
     if C == 0.0:
@@ -597,6 +607,8 @@ def _simulate_with_current_matrix(
             "g_dyn": g_eq[:, idx].copy(),
             "R": R[:, idx].copy(),
             "P": P[:, idx].copy(),
+            **({"minimum_proximity_slope": np.asarray(minimum_proximity_slope[idx])}
+               if audit_proximity else {}),
         }
         for idx in range(n_currents)
     ]
@@ -607,6 +619,7 @@ def simulate_current_waveforms(
     params: CurrentDriveParams,
     *,
     waveform_time_s: np.ndarray,
+    audit_proximity: bool = False,
 ) -> List[Dict[str, np.ndarray]]:
     """Simulate many measured current records with shared times and parameters.
 
@@ -630,7 +643,8 @@ def simulate_current_waveforms(
             for idx in range(currents.shape[1])
         ]
     )
-    return _simulate_with_current_matrix(t, interpolated * 1e-6, params)
+    return _simulate_with_current_matrix(t, interpolated * 1e-6, params,
+                                         audit_proximity=audit_proximity)
 
 
 def simulate_current_steps(

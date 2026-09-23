@@ -1,0 +1,74 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Exact investigation script",
+      "media_type": "text/x-python",
+      "path": "reproduce.py"
+    },
+    {
+      "label": "Input and source SHA256",
+      "media_type": "application/json",
+      "path": "source_hashes.json"
+    },
+    {
+      "label": "Pre-existing and current working tree changes",
+      "media_type": "text/plain",
+      "path": "working_tree.patch"
+    },
+    {
+      "label": "All-current refinement and persistence",
+      "media_type": "text/csv",
+      "path": "replay.csv"
+    },
+    {
+      "label": "Conditional local stability",
+      "media_type": "text/csv",
+      "path": "major_branch_stability.csv"
+    },
+    {
+      "label": "Audit summary",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Replay and conditional stability",
+      "media_type": "image/png",
+      "path": "figures/audit.png"
+    },
+    {
+      "label": "Audit report",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "python PATH_TO_THIS_BUNDLE/reproduce.py (from repository root)",
+  "created_at": "2026-09-21T12:45:25.222024+00:00",
+  "id": "20260921_124525_independent-units-stability-and-specimen-replay-_ffaded",
+  "kind": "analysis",
+  "model": "current-audit",
+  "name": "Independent units stability and specimen replay audit",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "cfe52447282e93325b04ba4b4359eacc64c37899",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "all_major_branch_equilibria_locally_stable_at_039pF": true,
+    "conditional_active_volume_um3_at_cv_3e6": 0.015957745333333332,
+    "conditional_width_um_at_gap_02um_thickness_015um": 0.5319248444444444,
+    "late_mean_voltage_RMSE_mV": 45.33282150422331,
+    "maximum_late_mean_change_025_to_0125_mV": 0.2660387507407336,
+    "measured_persistent_count": 11,
+    "minimum_major_branch_Ccrit_pF": 2.7959080422173814,
+    "predicted_persistent_count": 0
+  },
+  "updated_at": "2026-09-21T12:45:37.682728+00:00"
+}

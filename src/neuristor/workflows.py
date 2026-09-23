@@ -127,7 +127,8 @@ def resistance_from_config(config: Mapping[str, Any]) -> tuple[YuanhangResistPar
     unknown = sorted(set(raw) - known)
     if unknown:
         raise ConfigError(f"Unknown resistance parameter(s): {', '.join(unknown)}")
-    params = YuanhangResistParams(**{key: float(value) for key, value in raw.items()})
+    params = YuanhangResistParams(**{key: str(value) if key == 'proximity_function' else float(value)
+                                   for key, value in raw.items()})
     return params, start_branch, provenance
 
 
@@ -1697,6 +1698,262 @@ def _oscillation_audit_report(metrics: Mapping[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def run_lab_replay(config, *, output_root=None, command="neuristor analyze replay-lab") -> RunBundle:
+    """Save an editable all-current comparison, HTML current slider and per-current GIFs."""
+    from .lab_replay import replay_sweep
+    from .replay_plots import comparison_figure, write_current_gif
+    import zipfile
+
+    validate_config(config)
+    params, *_ = _current_params_from_config(config)
+    rp = params.resist_params
+    numeric = [params.dt_s, params.T0_K, params.T_init_K, params.V_init_V, params.C_F,
+               params.C_th_J_per_K, params.S_e_W_per_K,
+               *[v for v in dataclasses.asdict(rp).values() if not isinstance(v, str)]]
+    if not np.all(np.isfinite(numeric)):
+        raise ValueError("All parameters must be finite")
+    if (rp.R0 < 0 or rp.Rm <= 0 or rp.beta <= 0 or rp.gamma <= 0 or rp.w_eff <= 0
+            or rp.Ea_over_k <= 0 or rp.T_min_K <= 0 or rp.T_max_K <= rp.T_min_K
+            or rp.reversal_threshold_K <= 0 or params.T0_K <= 0 or params.T_init_K <= 0):
+        raise ValueError("Resistance/temperature parameters must be physical and temperature limits ordered")
+    settings = config["replay"]
+    data = Path(settings["data_directory"])
+    if not data.is_absolute():
+        data = (source_directory(config)/data).resolve()
+    resolved = resolved_copy(config)
+    resolved["replay"]["data_directory"] = str(data)
+    resolved["resistance"] = {"preset": "yuanhang", "start_branch": params.start_branch,
+                              "parameters": dataclasses.asdict(rp)}
+    bundle = RunBundle.create(name=config["name"], model="lab-replay", kind="analysis", config=resolved,
+                              output_root=output_root or config.get("output", {}).get("root", "runs"), command=command)
+    try:
+        raw, _ = load_converted_sweep(data)
+        traces, summary = replay_sweep(raw, params)
+        traces.to_csv(bundle.add_artifact("traces.csv", label="All-current measured voltage, simulation and resistance"), index=False)
+        summary.to_csv(bundle.add_artifact("summary.csv", label="Per-current errors and persistence"), index=False)
+        comparison_figure(traces, all_currents=True).write_html(bundle.add_artifact("comparison.html", label="Offline interactive current slider"), include_plotlyjs=True)
+        if settings.get("generate_gifs", True):
+            for drive, frame in traces.groupby("source_mV"):
+                write_current_gif(frame, bundle.add_artifact(f"animations/{drive:g}mV.gif", label=f"{frame.current_step_uA.iloc[0]:.1f} µA animation"), frames=int(settings.get("gif_frames", 24)))
+            with zipfile.ZipFile(bundle.add_artifact("animations.zip", label="All current GIFs"), "w", compression=zipfile.ZIP_DEFLATED) as archive:
+                for path in bundle.path("animations").glob("*.gif"):
+                    archive.write(path, path.name)
+        if settings.get("scope_animations", False):
+            from .lab_replay import major_branches
+            from .replay_plots import write_scope_gif, scope_gallery
+            branches = major_branches(rp)
+            branches.to_csv(bundle.add_artifact("major_branches.csv", label="Heating and cooling major branches"), index=False)
+            gallery = []
+            for drive, frame in traces.groupby("source_mV"):
+                gif_name = f"scope/{drive:g}mV.gif"
+                png_name = f"scope/{drive:g}mV.png"
+                write_scope_gif(frame, branches,
+                    bundle.add_artifact(gif_name, label=f"{frame.current_step_uA.iloc[0]:.1f} µA synchronized scope"),
+                    frames=int(settings.get("scope_frames", 96)),
+                    snapshot_path=bundle.add_artifact(png_name, label="Full voltage, current and R(T) figure"))
+                gallery.append(dict(label=f"{frame.current_step_uA.iloc[0]:.1f} µA · source setting {drive:g} mV",
+                                    gif=gif_name, png=png_name))
+            bundle.write_text("scope_viewer.html", scope_gallery(gallery), label="Offline synchronized animation viewer", media_type="text/html")
+            with zipfile.ZipFile(bundle.add_artifact("scope_animations.zip", label="All synchronized GIFs and figures"), "w", compression=zipfile.ZIP_DEFLATED) as archive:
+                for path in bundle.path("scope").iterdir():
+                    archive.write(path, path.name)
+        # Export a standalone TOML with all resolved values, including units.
+        def toml_lines(table, prefix=""):
+            lines = [f"[{prefix}]"] if prefix else []
+            for k, v in table.items():
+                if not isinstance(v, dict):
+                    lines.append(f"{k} = {json.dumps(v)}")
+            for k, v in table.items():
+                if isinstance(v, dict):
+                    lines.extend(["", *toml_lines(v, f"{prefix}.{k}" if prefix else k)])
+            return lines
+        bundle.write_text("recipe.toml", "\n".join(toml_lines(resolved)), label="Reproducible edited recipe", media_type="application/toml")
+        measured = summary.measured_sustained.astype(bool)
+        predicted = summary.simulated_sustained.astype(bool)
+        metrics = dict(currents=len(summary), measured_oscillators=int(measured.sum()),
+                       recovered_oscillators=int((measured & predicted).sum()),
+                       false_positives=int((~measured & predicted).sum()),
+                       late_mean_RMSE_mV=float(np.sqrt(np.mean((summary.simulated_late_mean_mV-summary.measured_late_mean_mV)**2))),
+                       outside_calibration=bool(summary.temperature_outside_calibration.any()))
+        bundle.write_json("metrics.json", metrics, label="All-current comparison")
+        bundle.write_text("report.md", "# Manual laboratory replay\n\n"
+            "One shared vector drives every measured current record, retaining its full prehistory. "
+            "Both experimental channels have their pre-pulse median removed. Output voltage is compared as exported; "
+            "its equivalence to device terminal voltage remains conditional. Resistance is simulated, not inferred V/I.\n\n"
+            "The HTML includes a current slider. Per-current GIFs animate a time cursor across the complete voltage and resistance traces. "
+            "Editing parameters does not alter completed runs. This is a single-step exploratory replay, not a convergence certificate.\n\n"
+            + "\n".join(f"- {k}: {v}" for k,v in metrics.items())
+            + "\n\nReproduce with `neuristor analyze replay-lab --config PATH_TO_BUNDLE/recipe.toml`.", label="Manual replay report")
+        bundle.complete(summary=metrics)
+    except Exception as exc:
+        bundle.fail(exc)
+        raise
+    return bundle
+
+
+def run_joint_inference(config, *, output_root=None, command="neuristor analyze fit-joint") -> RunBundle:
+    """Fit static R(T) and dynamic features jointly with a finite simulation budget."""
+    from .joint_inference import (NAMES, fit_joint, natural_vector, joint_model,
+                                  static_rmse, rt_prediction, predict_features,
+                                  voltage_features, feature_loss, combined_feature_loss)
+    import matplotlib.pyplot as plt
+
+    base, *_ = _current_params_from_config(config)
+    settings = copy.deepcopy(config["joint"])
+    def resolve(value):
+        path = Path(value)
+        return path if path.is_absolute() else (source_directory(config)/path).resolve()
+    data_path = resolve(settings["data_directory"])
+    rt_path = resolve(settings["resistance_data"])
+    frames, _ = load_converted_sweep(data_path)
+    train = settings["training_drives_mV"]
+    holdout = [x for x in sorted(frames.nominal_drive_mV.unique()) if x not in train]
+    dataset = prepare_inference_dataset(frames, holdout_drives_mV=holdout)
+    rt = load_experimental_rt(rt_path)
+    seeds = [base]
+    seed_labels = ["frozen"]
+    seed_paths = [resolve(p) for p in settings["seed_parameter_tables"]]
+    for label, path in zip(("prior_anchored", "prior_amplitude"), seed_paths):
+        table = pd.read_csv(path).set_index("parameter")
+        seed = model_from_parameter_vector(table.loc[list(PARAMETER_NAMES), "relaxed_fit"].to_numpy(), base,
+                                           dt_ns=settings["search_dt_ns"])
+        seeds.append(seed)
+        seed_labels.append(label)
+    for spec in settings.get("joint_seeds", []):
+        path = resolve(spec["table"])
+        row = pd.read_csv(path).set_index("candidate").loc[spec["candidate"]]
+        seeds.append(joint_model(row[list(NAMES)].to_numpy(float), base, settings["search_dt_ns"]))
+        seed_labels.append(spec["label"])
+        seed_paths.append(path)
+    if len(seeds) > int(settings["population"]):
+        raise ValueError("Population must accommodate the named seeds")
+    bundle = RunBundle.create(name=config["name"], model="joint-inference", kind="analysis",
+                              config=resolved_copy(config), output_root=output_root or config.get("output", {}).get("root", "runs"),
+                              command=command)
+    try:
+        files = [rt_path, Path(config["_source"]), *seed_paths, *data_path.glob("*_converted.csv")]
+        files += list(Path(__file__).parent.glob("*.py"))
+        bundle.write_json("source_hashes.json", {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in files}, label="Input and source hashes")
+        # Preserve executable sources because the parent worktree may be dirty.
+        for path in Path(__file__).parent.glob("*.py"):
+            target = bundle.path(f"source/neuristor/{path.name}")
+            shutil.copy2(path, target)
+            bundle.register_file(f"source/neuristor/{path.name}", label=f"Source: {path.name}")
+        fits, history, budget = fit_joint(dataset, rt, base, settings, seeds,
+                    progress=lambda mode, count, best, unique: print(f"Joint {mode}: {count} objective calls, {unique} unique candidates; best={best:.4g}", flush=True))
+        history.to_csv(bundle.add_artifact("optimization_history.csv", label="Every objective evaluation"), index=False)
+        candidates = dict(zip(seed_labels, map(natural_vector, seeds)))
+        candidates.update({name: fit["values"] for name, fit in fits.items()})
+        params_table = pd.DataFrame([dict(candidate=name, **dict(zip(NAMES, v)),
+            C_th_pJ_per_K=v[1]*v[2], R0_ohm=v[8]*np.exp(-v[9]/315),
+            static_rmse_log10=static_rmse(v, rt)) for name, v in candidates.items()])
+        params_table.to_csv(bundle.add_artifact("parameters.csv", label="Shared fitted and reference parameters"), index=False)
+        measured = [voltage_features(dataset.time_ns, v) for v in dataset.voltage_mV.T]
+        rows, window_rows, trace_rows = [], [], []
+        indices = np.arange(len(dataset.nominal_drives_mV))
+        for name, values in candidates.items():
+            for dt in settings["verification_dt_ns"]:
+                features, predictions, outside = predict_features(dataset, joint_model(values, base, dt), indices)
+                for i, (summary, windows) in enumerate(features):
+                    ms = measured[i][0]
+                    errors = feature_loss(measured[i], features[i], missing_frequency_penalty=float(settings.get("missing_frequency_penalty", 0)))
+                    meta = dict(candidate=name, dt_ns=dt, source_mV=dataset.nominal_drives_mV[i],
+                                split="train" if i in dataset.train_indices else "validation")
+                    rows.append(dict(**meta, outside_domain=outside,
+                                     **{f"measured_{k}": v for k, v in ms.items()},
+                                     **{f"predicted_{k}": v for k, v in summary.items()},
+                                     feature_loss=combined_feature_loss(errors, settings)))
+                    window_rows.append(windows.assign(**meta))
+                    if dt == min(settings["verification_dt_ns"]):
+                        keep = dataset.time_ns <= 250
+                        trace_rows.append(pd.DataFrame(dict(time_ns=dataset.time_ns[keep],
+                            measured_mV=dataset.voltage_mV[keep, i], predicted_mV=predictions[:, i])).assign(**meta))
+                print(f"Verified {name}, dt={dt} ns on all {len(indices)} records", flush=True)
+        results = pd.DataFrame(rows)
+        results.to_csv(bundle.add_artifact("verification.csv", label="All-current metrics at each timestep"), index=False)
+        pd.concat(window_rows).to_csv(bundle.add_artifact("windows.csv", label="Four-window persistence evidence"), index=False)
+        traces = pd.concat(trace_rows)
+        traces.to_csv(bundle.add_artifact("traces.csv", label="Finest measured and predicted traces"), index=False)
+        summaries = []
+        for (name, dt, split), part in results.groupby(["candidate", "dt_ns", "split"]):
+            osc = part.measured_sustained.astype(bool)
+            pred = part.predicted_sustained.astype(bool)
+            comparable = osc & pred
+            summaries.append(dict(candidate=name, dt_ns=dt, split=split, records=len(part),
+                mean_feature_loss=part.feature_loss.mean(),
+                mean_voltage_RMSE_mV=np.sqrt(np.mean((part.predicted_late_mean_mV-part.measured_late_mean_mV)**2)),
+                periodic_amplitude_MAE_mV=np.mean(np.abs(part.predicted_late_periodic_vpp_mV-part.measured_late_periodic_vpp_mV)),
+                oscillators_recovered=int((osc & pred).sum()), measured_oscillators=int(osc.sum()),
+                false_positives=int((~osc & pred).sum()), frequency_comparable_count=int(comparable.sum()),
+                frequency_MAE_MHz=float(np.mean(np.abs(part.loc[comparable, "predicted_late_frequency_MHz"]-part.loc[comparable, "measured_late_frequency_MHz"]))) if comparable.any() else None))
+        summary = pd.DataFrame(summaries)
+        summary.to_csv(bundle.add_artifact("summary.csv", label="Training and validation performance"), index=False)
+        rt_table = rt[["Temperature", "Resistance"]].copy()
+        for name, values in candidates.items():
+            rt_table[name] = rt_prediction(values, rt)
+        rt_table.to_csv(bundle.add_artifact("resistance_fit.csv", label="Static-data tradeoff"), index=False)
+        # Comparison figures use identical metrics, samples and subsets.
+        finest = results[results.dt_ns == min(settings["verification_dt_ns"])]
+        fig, axes = plt.subplots(1, 3, figsize=(13, 3.8), constrained_layout=True)
+        reference = finest[finest.candidate == "frozen"]
+        axes[0].plot(rt.Temperature, rt.Resistance, ".", color="black", ms=2, label="Measured")
+        axes[1].plot(reference.source_mV, reference.measured_late_mean_mV, "k.-", label="Measured")
+        axes[2].plot(reference.source_mV, reference.measured_late_periodic_vpp_mV, "k.-", label="Measured")
+        for name in ("frozen", *fits):
+            part = finest[finest.candidate == name]
+            axes[0].plot(rt.Temperature, rt_table[name], lw=1, label=name.replace("_", " "))
+            axes[1].plot(part.source_mV, part.predicted_late_mean_mV, ".-", label=name.replace("_", " "))
+            axes[2].plot(part.source_mV, part.predicted_late_periodic_vpp_mV, ".-", label=name.replace("_", " "))
+        axes[0].set(yscale="log", xlabel="Temperature (K)", ylabel="Resistance (Ω)", title="Same-device static R(T)")
+        axes[1].set(xlabel="Source setting (mV; record identifier)", ylabel="Late mean (mV)", title="Mean voltage across all records")
+        axes[2].set(xlabel="Source setting (mV; record identifier)", ylabel="Late periodic Vpp (mV)", title="Oscillation amplitude")
+        axes[0].legend(fontsize=7)
+        fig.savefig(bundle.add_artifact("figures/joint_summary.png", label="Joint-fit tradeoff figure"), dpi=180)
+        plt.close(fig)
+        fig, axes = plt.subplots(2, 2, figsize=(11, 6), constrained_layout=True)
+        for ax, drive in zip(axes.flat, (250, 300, 500, 800)):
+            part = traces[(traces.source_mV == drive) & (traces.time_ns >= 50)]
+            m = part[part.candidate == "frozen"]
+            ax.plot(m.time_ns, m.measured_mV, "k", lw=1.2, label="Measured")
+            for name in fits:
+                x = part[part.candidate == name]
+                ax.plot(x.time_ns, x.predicted_mV, lw=.8, label=name.replace("_", " "))
+            ax.set(title=f"Source setting {drive} mV", xlabel="Time (ns)", ylabel="Voltage (mV)")
+        axes[0, 0].legend(fontsize=8)
+        fig.savefig(bundle.add_artifact("figures/joint_traces.png", label="Representative finest-step waveforms"), dpi=180)
+        plt.close(fig)
+        metrics = dict(**budget, objective_calls=len(history), fitted_parameters=list(NAMES),
+                       training_drives_mV=train, validation_drives_mV=holdout,
+                       fits={name: {**fit, "values": fit["values"].tolist()} for name, fit in fits.items()},
+                       verification=summary.to_dict("records"))
+        bundle.write_json("metrics.json", metrics, label="Budget, termination and validation")
+        bundle.write_text("report.md", "# Budgeted joint R(T)/waveform inference\n\n"
+            "One shared vector fits all static measurements and nine configured representative current records. "
+            "Other currents are excluded from optimization, but were seen in earlier research and are not pristine blind data. "
+            "The eleven free quantities include all six major-loop parameters, gamma, ambient temperature, electrical capacitance and two thermal quantities.\n\n"
+            "Mixed log/linear unit-cube coordinates reduce scale disparities. Rs at 315 K replaces the correlated R0 coordinate; "
+            "thermal time replaces Cth. Both searches share a feasible Latin-hypercube/perturbed historical-seed population and cached evaluations. "
+            "Differential evolution is followed by a strictly capped Powell refinement; no new optimizer dependency is required.\n\n"
+            "Waveform loss = mean-voltage term + 3 × windowed periodic-amplitude term + robust-amplitude term + 0.5 × gated-frequency term. "
+            "Mean scale is 20 mV, frequency scale 10 MHz, amplitudes use log ratios with a 3 mV floor. "
+            "Static loss = weight × (log10 R RMSE / 0.05)^2. Weights, bounds, static rejection ceiling and budgets are in resolved_config.json. "
+            "These are engineering preferences, not a noise likelihood or confidence intervals.\n\n"
+            f"Budget: {len(history)} objective calls; {budget['unique_candidates']} unique candidates; "
+            f"{budget['simulations']} search simulations; {budget['elapsed_s']:.1f} search seconds.\n\n"
+            "Inspect summary.csv by split and timestep; parameters.csv records static-fit degradation. "
+            f"Additional persistence weight: {settings.get('persistence_weight', 0)}; missing-frequency penalty: {settings.get('missing_frequency_penalty', 0)}. "
+            "The persistence deficit penalizes missing window amplitude, retention below 0.5 and coherence below 0.4 on measured oscillators. "
+            "Frequency error is reported only where both measured and predicted persistence pass; the denominator is explicit. "
+            "All final candidates are checked on all currents at every configured timestep. "
+            "Neither early termination nor a lower objective proves global optimality or a physical calibration. "
+            "Source snapshots and hashes preserve the dirty-worktree implementation.\n", label="Methods and limitations")
+        bundle.complete(summary={"objective_calls": len(history), **budget})
+    except Exception as exc:
+        bundle.fail(exc)
+        raise
+    return bundle
+
+
 def run_waveform_parameter_inference(
     config: Mapping[str, Any],
     *,
@@ -2008,6 +2265,257 @@ is an identifiability diagnostic, and several parameters remain correlated.
         bundle.write_text("report.md", report, label="Scientific report")
         bundle.complete(summary=metrics)
     except BaseException as exc:
+        bundle.fail(exc)
+        raise
+    return bundle
+
+
+def run_steady_search(config, *, output_root=None, command='neuristor analyze fit-steady'):
+    """Run a self-contained time-budgeted search with live durable checkpoints."""
+    from time import monotonic
+    from datetime import datetime, timezone
+    from .steady_inference import search_settled, evaluate_settled, settled_features
+    from .joint_inference import NAMES, natural_vector, static_rmse, encode
+    import matplotlib.pyplot as plt
+
+    validate_config(config)
+    settings=copy.deepcopy(config['steady'])
+    if settings['search_seconds']<=0 or settings['total_seconds']<=settings['search_seconds']:
+        raise ValueError('Total budget must exceed positive search budget')
+    if settings['window_ns'][0]>=settings['window_ns'][1]:
+        raise ValueError('Invalid settled window')
+    def resolve(value):
+        p=Path(value)
+        return p if p.is_absolute() else (source_directory(config)/p).resolve()
+    base,*_=_current_params_from_config(config)
+    data=resolve(settings['data_directory']);rt_path=resolve(settings['resistance_data'])
+    raw,_=load_converted_sweep(data)
+    all_labels=sorted(raw.nominal_drive_mV.unique())
+    target=settings['target_source_labels_mV']
+    if not set(target).issubset(all_labels):raise ValueError('Unknown target source labels')
+    dataset=prepare_inference_dataset(raw,holdout_drives_mV=[x for x in all_labels if x not in target])
+    rt=load_experimental_rt(rt_path)
+    seed_path=resolve(settings['seed_table'])
+    table=pd.read_csv(seed_path).set_index('candidate')
+    seeds=[table.loc[n,list(NAMES)].to_numpy(float) for n in settings['seed_candidates']]
+    bootstrap_path=resolve(settings['static_bootstrap'])
+    bootstrap=pd.read_csv(bootstrap_path)
+    bundle=RunBundle.create(name=config['name'],model='steady-inference',kind='analysis',
+        config=resolved_copy(config),output_root=output_root or config.get('output',{}).get('root','runs'),command=command)
+    print(f'RUN_DIRECTORY={bundle.root}',flush=True)
+    start=monotonic();deadline=start+settings['total_seconds']
+    status_path=bundle.add_artifact('status.json',label='Live status and best candidate')
+    checkpoint_path=bundle.add_artifact('checkpoint.json',label='Recoverable elite parameter vectors')
+    history_path=bundle.add_artifact('optimization_history.jsonl',label='Every unique evaluation')
+    stop_path=bundle.path('STOP')
+    def atomic(path,payload):
+        temp=path.with_suffix(path.suffix+'.tmp')
+        temp.write_text(json.dumps(payload,indent=2,allow_nan=False,default=lambda x:x.item() if hasattr(x,'item') else str(x)))
+        temp.replace(path)
+    def status(state,**extra):
+        payload=dict(state=state,updated_utc=datetime.now(timezone.utc).isoformat(),
+            elapsed_s=monotonic()-start,source_labels=target,window_ns=settings['window_ns'])
+        payload.update(extra)
+        atomic(status_path,payload)
+    try:
+        files=[Path(config['_source']),rt_path,seed_path,bootstrap_path,*data.glob('*_converted.csv')]
+        files+=list(Path(__file__).parent.glob('*.py'))
+        bundle.write_json('source_hashes.json',{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in files},label='Source and data hashes')
+        for p in Path(__file__).parent.glob('*.py'):
+            shutil.copy2(p,bundle.add_artifact(f'source/neuristor/{p.name}',label=f'Source: {p.name}'))
+        measured=[]
+        for i in dataset.train_indices:
+            f=settled_features(dataset.time_ns,dataset.voltage_mV[:,i],settings['window_ns'])
+            measured.append(dict(source_label_mV=float(dataset.nominal_drives_mV[i]),
+                measured_current_A=float(np.mean(dataset.current_uA[(dataset.time_ns>=50)&(dataset.time_ns<=250),i]))*1e-6,**f))
+        pd.DataFrame(measured).to_csv(bundle.add_artifact('targets.csv',label='Target labels, actual currents and settled features'),index=False)
+        bundle.write_text('report.md',f'''# Background settled-oscillation search (in progress)
+
+User-selected target: original file labels {target}, NOT physical current values.
+Actual plateau currents are in targets.csv in amperes. Dynamic objective uses only
+{settings['window_ns'][0]}–{settings['window_ns'][1]} ns, excluding DC offset and startup.
+The full measured current prehistory still drives the unmodified ideal-current model.
+Proximity variant: {base.resist_params.proximity_function}. For tanh, the gamma
+coordinate means k in P(x)=1-tanh(k*x); it is not the sine-kernel gamma.
+Sustained-cycle gate enabled: {settings.get('require_sustained', False)}. When enabled,
+require at least three prominent peaks, peaks in both halves, retention 0.75–1.333,
+period CV <=0.2 and the frequency signal gate. Each failed trace adds 10000 loss;
+it cannot qualify as near-target. Best available does not imply sustained success.
+Frequency and robust/fundamental amplitudes receive relative-error losses, with a
+half-window envelope penalty for decay. Flat traces cannot evade frequency error.
+Static log10 R(T) RMSE must remain <= {settings['maximum_static_rmse_log10']}.
+Require nonnegative proximity dTeff/dT at every integration sample, including
+prehistory and transients: {settings.get('require_monotone_proximity', False)}.
+When enabled, verification also reports this check on historical references;
+an accurate waveform does not override a failed proximity check. This is a
+sampled path constraint, not a proof of all possible minor-loop properties.
+The first {settings['fixed_resistance_restarts']} restarts fix all six static parameters.
+Other restarts allow them to vary, using correlated static-bootstrap starting points.
+No likelihood, confidence interval, global optimum or perfect fit is implied.
+
+This local Python process does not use ChatGPT or API calls. Check status.json and
+checkpoint.json; each unique evaluation is appended to optimization_history.jsonl.
+Create an empty STOP file in this folder to end the search gracefully.
+Nominal total budget: {settings['total_seconds']/3600:.2f} hours including verification.
+The deadline is checked between simulations, so one in-flight batch may overrun it.
+''',label='Methods and live-run guide')
+        status('searching',unique_candidates=0)
+        bundle._save_manifest()
+        last_print=[0.]
+        with history_path.open('a') as history:
+            def checkpoint(record,snapshot):
+                history.write(json.dumps(record,allow_nan=False)+'\n');history.flush()
+                atomic(checkpoint_path,snapshot)
+                best=snapshot['best']
+                status('searching',unique_candidates=snapshot['unique_candidates'],restart=snapshot['restart'],
+                    restarts=snapshot['restarts'],best_score=best['score'] if best else None,
+                    best_values=best['values'] if best else None)
+                if monotonic()-last_print[0]>30:
+                    print(f"Restart {snapshot['restart']}/{snapshot['restarts']} | unique {snapshot['unique_candidates']} | best {best['score'] if best else None}",flush=True)
+                    last_print[0]=monotonic()
+            result=search_settled(dataset,rt,base,settings,seeds,bootstrap,checkpoint,stop_path.exists)
+        bundle.write_json('search_result.json',result,label='Search winners and independent restart results')
+        # Always keep the selected eef073 vector and frozen reference. Candidates
+        # with nearby normalized vectors are deduplicated before fine verification.
+        candidates={'reference_eef073':seeds[0],'original_static':natural_vector(base)}
+        if base.resist_params.proximity_function != 'yuanhang':
+            candidates={f'{n}_under_{base.resist_params.proximity_function}':v for n,v in candidates.items()}
+        bounds=np.asarray([settings['bounds'][n] for n in NAMES])
+        for record in sorted(result['restarts']+result['elites'],key=lambda r:r['score']):
+            if len(candidates)>=settings['verification_candidates']+2:break
+            v=np.asarray(record['values'])
+            if not record['simulated'] or record['outside_domain'] or not record.get('proximity_admissible', True):continue
+            if any(np.linalg.norm(encode(v,bounds)-encode(x,bounds))<.01 for x in candidates.values()):continue
+            candidates[f"search_{len(candidates)-1}"]=v
+        pd.DataFrame([dict(candidate=n,**dict(zip(NAMES,v)),C_th_pJ_per_K=v[1]*v[2],
+            R0_ohm=v[8]*np.exp(-v[9]/315),static_rmse_log10=static_rmse(v,rt)) for n,v in candidates.items()]).to_csv(
+                bundle.add_artifact('parameters.csv',label='Candidates and fixed references'),index=False)
+        status('verifying',unique_candidates=result['unique_candidates'])
+        rows=[];traces=[]
+        for name,values in candidates.items():
+            for dt in settings['verification_dt_ns']:
+                if monotonic()>deadline or stop_path.exists():break
+                features,voltages,outside=evaluate_settled(dataset,values,base,np.arange(len(all_labels)),settings,dt)
+                for i,f in enumerate(features):
+                    f.update(candidate=name,dt_ns=dt,target=f['source_label_mV'] in target,outside_domain=outside)
+                    rows.append(f)
+                    time=dataset.time_ns[dataset.time_ns<=settings['window_ns'][1]]
+                    traces.append(pd.DataFrame(dict(time_ns=time,measured_mV=dataset.voltage_mV[:len(time),i],
+                        predicted_mV=voltages[:,i],candidate=name,dt_ns=dt,source_label_mV=dataset.nominal_drives_mV[i])))
+                pd.DataFrame(rows).to_csv(bundle.add_artifact('verification.csv',label='All-current fine-step feature checks'),index=False)
+                status('verifying',candidate=name,dt_ns=dt,completed_batches=len(rows)//len(all_labels))
+                print(f'Verified {name} dt={dt} ns on all {len(all_labels)} records',flush=True)
+        summary=[]
+        if rows:
+            df=pd.DataFrame(rows)
+            pd.concat(traces).to_csv(bundle.add_artifact('verification_traces.csv',label='Measured and simulated verification traces'),index=False)
+            for (name,dt),part in df[df.target].groupby(['candidate','dt_ns']):
+                summary.append(dict(candidate=name,dt_ns=dt,target_records=len(part),mean_dynamic_loss=float(part.loss.mean()),
+                    frequency_MAPE=float(part.frequency_relative_error.abs().mean()),
+                    amplitude_MAPE=float(part.robust_amplitude_relative_error.abs().mean()),
+                    periodic_amplitude_MAPE=float(part.periodic_amplitude_relative_error.abs().mean()),
+                    near_target_count=int(part.near_target.sum()),frequency_valid_count=int(part.frequency_valid.sum()),
+                    sustained_count=int(part.sustained.sum()),
+                    **(dict(proximity_admissible=bool(part.proximity_admissible.all()),
+                            minimum_proximity_slope=float(part.minimum_proximity_slope.min()))
+                       if 'proximity_admissible' in part else {}),
+                    static_rmse_log10=static_rmse(candidates[name],rt)))
+            pd.DataFrame(summary).to_csv(bundle.add_artifact('summary.csv',label='Target-window frequency and amplitude accuracy'),index=False)
+            finest=min(df.dt_ns)
+            chosen=df[(df.dt_ns==finest)&df.target]
+            fig,axes=plt.subplots(1,2,figsize=(11,4),constrained_layout=True)
+            for name,part in chosen.groupby('candidate'):
+                part=part.sort_values('measured_current_A');current=part.measured_current_A*1e6
+                axes[0].plot(current,part.predicted_frequency_MHz,'.-',label=name)
+                axes[1].plot(current,part.predicted_robust_vpp_mV,'.-',label=name)
+            ref=chosen[chosen.candidate==chosen.candidate.iloc[0]].sort_values('measured_current_A')
+            axes[0].plot(ref.measured_current_A*1e6,ref.measured_frequency_MHz,'ko--',label='Measured')
+            axes[1].plot(ref.measured_current_A*1e6,ref.measured_robust_vpp_mV,'ko--',label='Measured')
+            axes[0].set(xlabel='Measured current (µA)',ylabel='Settled frequency (MHz)')
+            axes[1].set(xlabel='Measured current (µA)',ylabel='Settled robust Vpp (mV)')
+            axes[0].legend(fontsize=7)
+            fig.savefig(bundle.add_artifact('figures/settled_comparison.png',label='Fine-step frequency and amplitude comparison'),dpi=150);plt.close(fig)
+        metrics=dict(unique_candidates=result['unique_candidates'],search_elapsed_s=result['elapsed_s'],
+            elapsed_s=monotonic()-start,stopped_by_user=stop_path.exists(),verified_batches=len(rows)//len(all_labels),
+            expected_verification_batches=len(candidates)*len(settings['verification_dt_ns']),target_labels=target,
+            verification_complete=len(rows)==len(candidates)*len(settings['verification_dt_ns'])*len(all_labels))
+        bundle.write_json('metrics.json',metrics,label='Budget and verification completion')
+        report=bundle.path('report.md').read_text().replace('(in progress)','(finished)')
+        report+='\n\n## Completion\n'+json.dumps(metrics,indent=2)+'\n\nInspect summary.csv at the finest timestep before selecting a result. All target records were used in optimization; other currents are diagnostics, not blind validation.\n'
+        bundle.write_text('report.md',report,label='Methods and completion report')
+        status('completed',**metrics)
+        bundle.complete(summary=metrics)
+    except Exception as exc:
+        status('failed',error=str(exc));bundle.fail(exc);raise
+    return bundle
+
+
+def export_saved_scope(source, *, output_root=None, frames=96, original_labels_uA=False, command='neuristor analyze export-scope'):
+    """Render exact saved replay samples in stacked panels, naming currents in A.
+
+    No simulation is rerun and no fitted parameter or integration step changes.
+    The current name is the saved measured 50–250 ns pulse-plateau average.
+    """
+    import shutil
+    import hashlib
+    import zipfile
+    from .lab_replay import major_branches
+    from .replay_plots import write_scope_gif, scope_gallery
+
+    source = Path(source).resolve()
+    if frames < 2:
+        raise ValueError('At least two animation frames are required')
+    config = json.loads((source/'resolved_config.json').read_text())
+    params, *_ = _current_params_from_config(config)
+    traces = pd.read_csv(source/'traces.csv')
+    bundle = RunBundle.create(name='Saved replay stacked current voltage hysteresis in amperes',
+        model='lab-replay', kind='analysis', config=config,
+        output_root=output_root or 'runs', command=command)
+    try:
+        for name in ('traces.csv', 'summary.csv', 'metrics.json', 'comparison.html', 'recipe.toml'):
+            shutil.copy2(source/name, bundle.add_artifact(name, label=f'Unchanged source {name}'))
+        branches = major_branches(params.resist_params)
+        branches.to_csv(bundle.add_artifact('major_branches.csv', label='Model heating and cooling branches'), index=False)
+        gallery, index = [], []
+        for drive, frame in traces.groupby('source_mV', sort=True):
+            current_A = float(frame.current_step_uA.iloc[0])*1e-6
+            stem = f'current_{current_A:.9f}_A'
+            gif, png = f'GIFs/{stem}.gif', f'Figures/{stem}.png'
+            write_scope_gif(frame, branches, bundle.add_artifact(gif, label=f'{current_A:.9f} A animated panels'),
+                frames=frames, stacked_amperes=True, original_label_uA=float(drive) if original_labels_uA else None,
+                snapshot_path=bundle.add_artifact(png, label=f'{current_A:.9f} A full traces'))
+            gallery.append(dict(label=(f'{drive:g} µA · original numeric label; measured {current_A*1e6:.3f} µA'
+                                          if original_labels_uA else f'{current_A:.9f} A'), gif=gif, png=png))
+            index.append(dict(current_A=current_A, original_source_label_mV=float(drive), gif=gif, figure=png))
+        pd.DataFrame(index).to_csv(bundle.add_artifact('current_index_A.csv', label='Current-to-file index in amperes'), index=False)
+        bundle.write_text('START_HERE.html', scope_gallery(gallery), label='Current selector', media_type='text/html')
+        bundle.write_json('source_provenance.json', dict(source_run=source.name, source_directory=str(source),
+            dt_ns=config['time']['dt_ns'], frames=frames, original_labels_uA=original_labels_uA,
+            traces_sha256=hashlib.sha256((source/'traces.csv').read_bytes()).hexdigest()), label='Exact saved data provenance')
+        bundle.write_text('report.md', f'''# Selected saved replay: {source.name}
+
+These are the exact saved trajectories, without resimulation. Timestep: {config['time']['dt_ns']} ns.
+Each GIF has three vertical panels: measured imposed current I(t) [A], measured/simulated
+voltage V(t) [mV], and the simulated resistance-temperature trajectory R(T) [ohms, K]
+with heating/cooling major-branch guides. Curves progressively reveal the same elapsed time.
+Original-numeric-label titles with µA requested by the user: {original_labels_uA}.
+When enabled, this is a display alias, not a voltage-to-current conversion.
+The subtitle preserves the measured current; the input-current axis and data remain unchanged.
+The endpoint on R(T) shows the current state. R and T are simulated, not measured.
+
+Filenames use the measured mean pulse current over 50–250 ns, rounded to nine decimal
+places in amperes. The experiment's source-setting mV labels are not current units.
+The numerical index keeps the unrounded current in amperes. The original traces.csv
+is unchanged for reproducibility and retains its explicitly named microampere columns.
+The visible interval is -30 to 350 ns; playback is slowed down and visually sampled.
+
+Open START_HERE.html, or open individual files in GIFs. Figures holds final PNGs.
+''', label='Export guide')
+        with zipfile.ZipFile(bundle.add_artifact('All_current_GIFs.zip', label='All 22 current GIFs'), 'w', zipfile.ZIP_DEFLATED) as archive:
+            for path in bundle.path('GIFs').glob('*.gif'):
+                archive.write(path, path.name)
+        bundle.complete(summary=dict(currents=len(index), source_run=source.name, resimulated=False))
+    except Exception as exc:
         bundle.fail(exc)
         raise
     return bundle
