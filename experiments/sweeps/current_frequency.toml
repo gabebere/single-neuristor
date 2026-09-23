@@ -1,0 +1,17 @@
+schema_version = 1
+name = "Frequency versus imposed current"
+kind = "sweep"
+model = "current"
+
+[sweep]
+base_config = "../current/sweep_base.toml"
+max_points = 100
+
+[[sweep.axes]]
+path = "input.amplitude_uA"
+start = 300.0
+stop = 800.0
+step = 50.0
+
+[output]
+root = "runs"

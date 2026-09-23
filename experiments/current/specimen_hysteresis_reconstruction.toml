@@ -1,0 +1,65 @@
+schema_version = 1
+name = "Conditional hysteresis reconstruction from measured power"
+kind = "simulation"
+model = "current"
+seed = 0
+
+[time]
+dt_ns = 0.25
+duration_us = 0.25
+
+[input]
+amplitude_uA = 228.152299
+
+[electrical]
+C_pF = 0.39
+
+[thermal]
+C_th_pJ_per_K = 0.047873236
+S_e_mW_per_K = 0.0036751265
+T0_K = 314.4
+
+[resistance]
+preset = "../../presets/resistance_100425_chip1_gap3.json"
+start_branch = "insulator"
+
+[reconstruction]
+data_directory = "../../data/experimental/tia_current_sweep"
+# The first gamma is used in trajectory plots; every gamma is tested in the tables.
+gamma_values = [0.956269682, 0.1569637099, 0.5, 2.0]
+replay_steps_ns = [1.0, 0.5, 0.25]
+figure_source_settings_mV = [250.0, 300.0, 500.0, 800.0]
+
+[[reconstruction.cases]]
+name = "central"
+
+[[reconstruction.cases]]
+name = "zero_electrical_C"
+C_pF = 0.0
+
+[[reconstruction.cases]]
+name = "large_C_diagnostic"
+C_pF = 6.8354944763
+
+[[reconstruction.cases]]
+name = "lower_Se"
+S_e_mW_per_K = 0.0034344414
+
+[[reconstruction.cases]]
+name = "upper_Se"
+S_e_mW_per_K = 0.0040850485
+
+[[reconstruction.cases]]
+name = "lower_Cth"
+C_th_pJ_per_K = 0.0219179631
+
+[[reconstruction.cases]]
+name = "upper_Cth"
+C_th_pJ_per_K = 0.0926235080
+
+[[reconstruction.cases]]
+name = "smoothing_nine_samples"
+smoothing_window = 9
+
+[output]
+root = "runs"

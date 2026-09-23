@@ -6,5 +6,6 @@ pillow
 plotly
 scipy
 streamlit
-streamlit-plotly-events
 torch
+typer>=0.12
+tomli>=2; python_version < "3.11"

@@ -1,0 +1,40 @@
+{
+  "analysis": {
+    "start_us": 20.0
+  },
+  "electrical": {
+    "C_pF": 145.34619293,
+    "R_series_kohm": 12.0
+  },
+  "initial": {
+    "temperature_K": 325.0,
+    "voltage_V": 0.0
+  },
+  "input": {
+    "amplitude_V": 14.5
+  },
+  "kind": "simulation",
+  "model": "voltage",
+  "name": "Yuanhang voltage-driven relaxation oscillator",
+  "output": {
+    "root": "runs"
+  },
+  "resistance": {
+    "preset": "yuanhang",
+    "start_branch": "insulator"
+  },
+  "schema_version": 1,
+  "seed": 0,
+  "thermal": {
+    "C_th_factor": 1.0,
+    "C_th_pJ_per_K": 49.62776831,
+    "S_e_mW_per_K": 0.20558726,
+    "T0_K": 325.0,
+    "couple_factor": 0.0,
+    "noise_K_per_ns": 0.0
+  },
+  "time": {
+    "dt_ns": 5.0,
+    "duration_us": 60.0
+  }
+}

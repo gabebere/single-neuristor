@@ -1,0 +1,33 @@
+schema_version = 1
+name = "Current-drive sweep base"
+kind = "simulation"
+model = "current"
+seed = 0
+
+[time]
+dt_ns = 0.5
+duration_us = 10.0
+
+[input]
+amplitude_uA = 600.0
+
+[initial]
+temperature_K = 324.9
+
+[electrical]
+C_pF = 145.34619293
+
+[thermal]
+C_th_pJ_per_K = 49.62776831
+S_e_mW_per_K = 0.20558726
+T0_K = 325.0
+
+[resistance]
+preset = "yuanhang"
+start_branch = "insulator"
+
+[analysis]
+start_us = 2.0
+
+[output]
+root = "runs"

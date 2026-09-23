@@ -1,0 +1,2 @@
+# Preserve professor-supplied oscilloscope exports byte for byte, including CRLF.
+data/experimental/tia_current_sweep/*.csv binary

@@ -1,0 +1,59 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Measured sweep summary",
+      "media_type": "text/csv",
+      "path": "summary.csv"
+    },
+    {
+      "label": "Numerical oscilloscope traces",
+      "media_type": "text/csv",
+      "path": "traces.csv"
+    },
+    {
+      "label": "Lab sweep summary",
+      "media_type": "image/png",
+      "path": "figures/lab_summary.png"
+    },
+    {
+      "label": "Waveform metrics",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Scientific report",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor analyze lab --data data/experimental/tia_current_sweep --output-root runs",
+  "created_at": "2026-08-17T13:42:54.446406+00:00",
+  "id": "20260817_134254_measured-laboratory-current-sweep_a45254",
+  "kind": "analysis",
+  "model": "lab-current-waveforms",
+  "name": "Measured laboratory current sweep",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "bba2fd830ad3aa8ce6fc1816996d890b5c8b50c5",
+    "dirty": false
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "current_max_uA": 943.291300117163,
+    "current_min_uA": 41.8558134916695,
+    "oscillation_current_max_uA": 621.842683241655,
+    "oscillation_current_min_uA": 233.511368826578,
+    "oscillation_frequency_max_MHz": 62.5,
+    "oscillation_frequency_min_MHz": 41.666666666666664,
+    "samples": 22000,
+    "waveforms": 22
+  },
+  "updated_at": "2026-08-17T13:42:54.851132+00:00"
+}

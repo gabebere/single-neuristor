@@ -1,0 +1,179 @@
+{
+  "analysis": {
+    "start_us": 0.05,
+    "stop_us": 0.25
+  },
+  "electrical": {
+    "C_pF": 0.39
+  },
+  "inference": {
+    "constrained_parameters": [
+      {
+        "lower": 0.0,
+        "name": "C_pF",
+        "prior_center": 0.0,
+        "prior_scale": 0.39,
+        "upper": 0.39
+      },
+      {
+        "lower": 0.021918,
+        "name": "C_th_pJ_per_K",
+        "prior_center": 0.047873236,
+        "prior_scale": 0.01804,
+        "upper": 0.092624
+      },
+      {
+        "lower": 0.003434,
+        "name": "S_e_mW_per_K",
+        "prior_center": 0.0036751265,
+        "prior_scale": 0.0001661,
+        "upper": 0.004085
+      },
+      {
+        "lower": 314.25,
+        "name": "T0_K",
+        "prior_center": 314.4,
+        "prior_scale": 0.07653,
+        "upper": 314.55
+      },
+      {
+        "lower": 333.136889,
+        "name": "Tc_K",
+        "prior_center": 333.493566,
+        "prior_scale": 0.17894,
+        "upper": 333.838313
+      },
+      {
+        "lower": 6.629055,
+        "name": "w_K",
+        "prior_center": 6.882303,
+        "prior_scale": 0.16303,
+        "upper": 7.268148
+      },
+      {
+        "lower": 0.280917,
+        "name": "beta_per_K",
+        "prior_center": 0.299156,
+        "prior_scale": 0.01002,
+        "upper": 0.320206
+      },
+      {
+        "lower": 0.2,
+        "name": "gamma",
+        "prior_center": 0.95627,
+        "prior_scale": 0.4,
+        "upper": 2.0
+      }
+    ],
+    "data_directory": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/data/experimental/tia_current_sweep",
+    "final_dt_ns": 0.05,
+    "holdout_drives_mV": [
+      200.0,
+      400.0,
+      600.0,
+      800.0,
+      1000.0
+    ],
+    "optimizer": {
+      "local_max_evaluations": 100,
+      "maxiter_constrained": 2,
+      "maxiter_relaxed": 12,
+      "popsize": 4
+    },
+    "relaxed_parameters": [
+      {
+        "initial_value": 8.0,
+        "lower": 0.0,
+        "name": "C_pF",
+        "upper": 30.0
+      },
+      {
+        "initial_value": 0.02,
+        "lower": 0.005,
+        "name": "C_th_pJ_per_K",
+        "upper": 0.2
+      },
+      {
+        "initial_value": 0.00234485695,
+        "lower": 0.0005,
+        "name": "S_e_mW_per_K",
+        "upper": 0.02
+      },
+      {
+        "initial_value": 312.997048762,
+        "lower": 310.0,
+        "name": "T0_K",
+        "upper": 320.0
+      },
+      {
+        "initial_value": 336.055647867,
+        "lower": 328.0,
+        "name": "Tc_K",
+        "upper": 342.0
+      },
+      {
+        "initial_value": 8.074174546,
+        "lower": 1.0,
+        "name": "w_K",
+        "upper": 20.0
+      },
+      {
+        "initial_value": 0.251131171,
+        "lower": 0.05,
+        "name": "beta_per_K",
+        "upper": 1.0
+      },
+      {
+        "initial_value": 0.384625921,
+        "lower": 0.1,
+        "name": "gamma",
+        "upper": 3.0
+      }
+    ],
+    "search_dt_ns": 0.05,
+    "weights": {
+      "amplitude": 0.01,
+      "classification": 250.0,
+      "edge": 0.01,
+      "false_positive": 250.0,
+      "frequency": 0.5,
+      "mean_voltage": 0.02,
+      "prior": 0.01,
+      "spectrum": 0.05,
+      "sustain": 0.5,
+      "waveform": 0.02
+    }
+  },
+  "initial": {
+    "temperature_K": 314.4,
+    "voltage_V": 0.0
+  },
+  "input": {
+    "amplitude_uA": 228.152299,
+    "off_us": 0.3,
+    "on_us": 0.0
+  },
+  "kind": "simulation",
+  "model": "current",
+  "name": "Oscillation-priority global specimen parameter inference",
+  "output": {
+    "root": "runs"
+  },
+  "resistance": {
+    "preset": "../../presets/resistance_100425_chip1_gap3.json",
+    "resolved_source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/resistance_100425_chip1_gap3.json",
+    "start_branch": "insulator"
+  },
+  "schema_version": 1,
+  "seed": 20260829,
+  "thermal": {
+    "C_th_pJ_per_K": 0.047873236,
+    "S_e_mW_per_K": 0.0036751265,
+    "T0_K": 314.4
+  },
+  "time": {
+    "dt_ns": 0.05,
+    "duration_us": 0.5,
+    "pre_us": 0.2
+  }
+}

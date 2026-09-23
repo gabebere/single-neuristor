@@ -1,0 +1,75 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Simulation traces",
+      "media_type": "text/csv",
+      "path": "traces.csv"
+    },
+    {
+      "label": "Simulation metrics",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Overview figure",
+      "media_type": "image/png",
+      "path": "figures/overview.png"
+    },
+    {
+      "label": "Scientific report",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor simulate current --config experiments/current/nonzero_voltage_valley.toml",
+  "created_at": "2026-08-17T10:01:02.806540+00:00",
+  "id": "20260817_100102_current-step-with-a-nonzero-metallic-voltage-val_6765e0",
+  "kind": "simulation",
+  "model": "current",
+  "name": "Current step with a nonzero metallic voltage valley",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "8121463d896e6be7fd107db79e96a31721e02350",
+    "dirty": false
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "cycles": 5.0,
+    "electrical_metal_time_constant_ns": 186.96120681393197,
+    "electrical_to_thermal_time_constant_ratio": 0.19362568348365855,
+    "frequency_MHz": 0.22168526029707566,
+    "maximum": 6.332810878753662,
+    "metallic_resistance_ohm": 1286.316504375,
+    "metallic_voltage_floor_V": 0.7717899026249999,
+    "minimum": 0.9056543111801147,
+    "oscillatory": true,
+    "peak_to_peak": 5.427156567573547,
+    "period_cv": 0.00017724553912569832,
+    "period_us": 4.510899816523306,
+    "power_max_uW": 13069.9755859375,
+    "power_mean_uW": 2265.10498046875,
+    "resistance_calibration_max_K": 370.0,
+    "resistance_calibration_min_K": 305.0,
+    "resistance_max_ohm": 16382.2275390625,
+    "resistance_min_ohm": 1338.59765625,
+    "resistance_source": "built-in Yuanhang Zhang parameters",
+    "start_branch": "insulator",
+    "temperature_max_K": 347.9073791503906,
+    "temperature_min_K": 330.1561584472656,
+    "temperature_outside_resistance_calibration": false,
+    "thermal_only_lower_current_uA": 382.8005346717043,
+    "thermal_only_upper_current_uA": 198.6134863926574,
+    "thermal_only_window_exists": false,
+    "thermal_time_constant_us": 0.9655806164253563,
+    "voltage_max_V": 6.332810878753662,
+    "voltage_min_V": 0.9056543111801147
+  },
+  "updated_at": "2026-08-17T10:01:10.483510+00:00"
+}

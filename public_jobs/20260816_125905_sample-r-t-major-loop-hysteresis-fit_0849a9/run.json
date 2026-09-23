@@ -1,0 +1,68 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Normalized measured R(T)",
+      "media_type": "text/csv",
+      "path": "measured.csv"
+    },
+    {
+      "label": "Fitted resistance preset",
+      "media_type": "application/json",
+      "path": "resistance_preset.json"
+    },
+    {
+      "label": "Fit metrics",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Parameter estimates",
+      "media_type": "text/csv",
+      "path": "parameter_summary.csv"
+    },
+    {
+      "label": "Block-bootstrap parameter samples",
+      "media_type": "text/csv",
+      "path": "parameter_bootstrap.csv"
+    },
+    {
+      "label": "Resistance fit",
+      "media_type": "image/png",
+      "path": "figures/resistance_fit.png"
+    },
+    {
+      "label": "Scientific report",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor fit resistance --data data/experimental/100425_chip1_gap3.tsv --name 'Sample R(T) major-loop hysteresis fit' --method major-loop --bootstrap-samples 1000 --seed 20260816 --output-root runs",
+  "created_at": "2026-08-16T12:59:05.788432+00:00",
+  "id": "20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9",
+  "kind": "fit",
+  "model": "resistance",
+  "name": "Sample R(T) major-loop hysteresis fit",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "d87b0b5aaac7e38f85db5c7d177028c37701b381",
+    "dirty": false
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "fit_method": "major-loop-log-least-squares",
+    "max_abs_log10_error": 0.12579214174304498,
+    "mean_log10_error": 1.236651437818249e-11,
+    "r2_log10": 0.9987335155210357,
+    "rmse_log10": 0.036627605227354594,
+    "rmse_log10_cooling": 0.03496239930021961,
+    "rmse_log10_heating": 0.03824413153168531
+  },
+  "updated_at": "2026-08-16T12:59:07.668154+00:00"
+}

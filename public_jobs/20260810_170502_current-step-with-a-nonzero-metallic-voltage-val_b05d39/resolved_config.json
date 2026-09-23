@@ -1,0 +1,40 @@
+{
+  "analysis": {
+    "start_us": 10.0,
+    "stop_us": 38.0
+  },
+  "electrical": {
+    "C_pF": 145.34619293
+  },
+  "initial": {
+    "temperature_K": 324.9,
+    "voltage_V": 0.0
+  },
+  "input": {
+    "amplitude_uA": 600.0,
+    "off_us": 38.0,
+    "on_us": 2.0
+  },
+  "kind": "simulation",
+  "model": "current",
+  "name": "Current step with a nonzero metallic voltage valley",
+  "output": {
+    "root": "runs"
+  },
+  "resistance": {
+    "preset": "yuanhang",
+    "start_branch": "insulator"
+  },
+  "schema_version": 1,
+  "seed": 0,
+  "thermal": {
+    "C_th_pJ_per_K": 198.51107324,
+    "S_e_mW_per_K": 0.20558726,
+    "T0_K": 325.0,
+    "noise_W_sqrt_s": 0.0
+  },
+  "time": {
+    "dt_ns": 0.5,
+    "duration_us": 40.0
+  }
+}
