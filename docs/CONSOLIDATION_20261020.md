@@ -61,7 +61,12 @@ map ZIP passed the streaming distribution inspection; it contains no unapproved
 PDF. Three fixed-scale display revisions were copied into the reviewed lane;
 their original numerical/source history remains intact.
 
-Clean-clone and remote publication verification are still pending.
+The first fresh-checkout run exposed one hidden dependency: four fitting recipes
+pointed to an ignored local run's `parameters.csv`. The exact table is now
+versioned under `presets/search_seeds/` with its source ID/hash, and those recipes
+refer to it. No seed values changed. Repository validation now also catches
+missing declared relative recipe inputs; a regression test covers this case.
+Fresh-checkout and remote verification are being repeated after this correction.
 At the starting checkpoint, `main` was `715032f` (10 August), and the research
 branch `e2dd84e` (23 September), with newer local work uncommitted. PR #3's old
 scientific description needs correction, not an unreviewed merge.

@@ -32,7 +32,7 @@ window_ns = [150.0,250.0]
 data_directory = "../../data/experimental/tia_current_sweep"
 resistance_data = "../../data/experimental/100425_chip1_gap3.tsv"
 static_bootstrap = "../../public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv"
-seed_table = "../../runs/20260922_175152_background-settled-oscillations-for-original-lab_f426de/parameters.csv"
+seed_table = "../../presets/search_seeds/f426de_parameters.csv"
 seed_candidates = ["reference_eef073","search_1","original_static","search_4"]
 seed = 20261002
 # Bounded first trial; a pilot is not a converged global calibration.

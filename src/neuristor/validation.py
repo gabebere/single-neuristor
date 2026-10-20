@@ -47,6 +47,7 @@ def validate_repository(project_root: str | Path | None = None) -> ValidationRep
     for path in sorted(experiment_root.rglob("*.toml")) if experiment_root.is_dir() else []:
         try:
             config = load_toml(path)
+            report.errors.extend(validate_recipe_inputs(config, path))
             if config.get("kind") == "sweep":
                 base_path = Path(str(config["sweep"]["base_config"]))
                 if not base_path.is_absolute():
@@ -73,6 +74,33 @@ def validate_repository(project_root: str | Path | None = None) -> ValidationRep
         if missing:
             report.errors.append(f"{record.id}: {len(missing)} declared artifact(s) are missing")
     return report
+
+
+def validate_recipe_inputs(config: dict, recipe: Path) -> list[str]:
+    """Catch missing declared relative inputs before an expensive workflow starts.
+
+    This is a file-availability check, not a fit or a permission decision. Output
+    destinations and internal loader metadata need not exist yet. Built-in preset
+    names contain no relative path and are intentionally not treated as files.
+    """
+    errors = []
+
+    def visit(value, prefix=""):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if key.startswith("_") or key == "output":
+                    continue
+                visit(item, f"{prefix}.{key}" if prefix else key)
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                visit(item, f"{prefix}[{index}]")
+        elif isinstance(value, str) and value.startswith(("../", "./")):
+            target = recipe.parent / value
+            if not target.exists():
+                errors.append(f"{recipe.name}: missing input {prefix} = {value}")
+
+    visit(config)
+    return errors
 
 
 def validate_reproduction_index(root: Path) -> tuple[int, list[str]]:

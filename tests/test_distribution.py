@@ -8,6 +8,7 @@ import tarfile
 import zipfile
 
 from neuristor.analysis.distribution import validate_distribution_file, validate_publication_index
+from neuristor.validation import validate_recipe_inputs
 
 
 def test_unapproved_pdf_even_with_an_innocent_extension(tmp_path):
@@ -95,3 +96,14 @@ def test_publication_rejects_private_or_absolute_symlink(tmp_path):
     (tmp_path / "absolute").symlink_to("/outside")
     subprocess.run(["git", "add", "reference", "absolute", "docs/distribution.toml"], cwd=tmp_path, check=True, capture_output=True)
     assert len(validate_publication_index(tmp_path)) == 2
+
+
+def test_recipe_validator_catches_unavailable_local_history(tmp_path):
+    recipe = tmp_path / "recipe.toml"
+    config = {"steady": {"seed_table": "./ignored-history/parameters.csv"},
+              "resistance": {"preset": "yuanhang"}, "output": {"root": "./new-output"}}
+    errors = validate_recipe_inputs(config, recipe)
+    assert len(errors) == 1 and "steady.seed_table" in errors[0]
+    (tmp_path / "ignored-history").mkdir()
+    (tmp_path / "ignored-history/parameters.csv").write_text("candidate\ncontrol\n")
+    assert validate_recipe_inputs(config, recipe) == []
