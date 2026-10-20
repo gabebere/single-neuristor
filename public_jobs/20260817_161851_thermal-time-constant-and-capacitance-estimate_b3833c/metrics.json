@@ -1,0 +1,19 @@
+{
+  "C_th_ci95_lower_pJ_per_K": 0.02012238146450977,
+  "C_th_ci95_upper_pJ_per_K": 0.0923531322897198,
+  "C_th_pJ_per_K": 0.04716260865806837,
+  "S_e_mW_per_K": 0.003675126546984294,
+  "ambient_temperature_K": 314.4,
+  "fit_rmse_K": 0.8062520911009592,
+  "measured_oscillation_period_max_ns": 24.0,
+  "measured_oscillation_period_min_ns": 16.0,
+  "near_transition_check_C_th_pJ_per_K": 0.022961939796479952,
+  "near_transition_check_rmse_K": 2.088957863818798,
+  "near_transition_check_trace": "250mv0_converted.csv",
+  "selected_traces": "100mv0_converted.csv,150mv0_converted.csv,200mv0_converted.csv",
+  "tau_th_ci95_lower_ns": 5.411761770234337,
+  "tau_th_ci95_upper_ns": 24.769335278780073,
+  "tau_th_ns": 12.832921004249142,
+  "yuanhang_C_th_pJ_per_K": 49.62776831,
+  "yuanhang_to_specimen_C_th_ratio": 1052.2693659675226
+}

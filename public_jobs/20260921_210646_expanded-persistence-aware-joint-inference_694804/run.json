@@ -1,0 +1,173 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Input and source hashes",
+      "media_type": "application/json",
+      "path": "source_hashes.json"
+    },
+    {
+      "label": "Source: metrics.py",
+      "path": "source/neuristor/metrics.py"
+    },
+    {
+      "label": "Source: joint_inference.py",
+      "path": "source/neuristor/joint_inference.py"
+    },
+    {
+      "label": "Source: config.py",
+      "path": "source/neuristor/config.py"
+    },
+    {
+      "label": "Source: lab_estimates.py",
+      "path": "source/neuristor/lab_estimates.py"
+    },
+    {
+      "label": "Source: __init__.py",
+      "path": "source/neuristor/__init__.py"
+    },
+    {
+      "label": "Source: visualization.py",
+      "path": "source/neuristor/visualization.py"
+    },
+    {
+      "label": "Source: model.py",
+      "path": "source/neuristor/model.py"
+    },
+    {
+      "label": "Source: current_drive_sim.py",
+      "path": "source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Source: dashboard.py",
+      "path": "source/neuristor/dashboard.py"
+    },
+    {
+      "label": "Source: plots.py",
+      "path": "source/neuristor/plots.py"
+    },
+    {
+      "label": "Source: replay_plots.py",
+      "path": "source/neuristor/replay_plots.py"
+    },
+    {
+      "label": "Source: cli.py",
+      "path": "source/neuristor/cli.py"
+    },
+    {
+      "label": "Source: parameter_inference.py",
+      "path": "source/neuristor/parameter_inference.py"
+    },
+    {
+      "label": "Source: workflows.py",
+      "path": "source/neuristor/workflows.py"
+    },
+    {
+      "label": "Source: model_validation.py",
+      "path": "source/neuristor/model_validation.py"
+    },
+    {
+      "label": "Source: resistance_custom_analysis.py",
+      "path": "source/neuristor/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Source: oscillation_audit.py",
+      "path": "source/neuristor/oscillation_audit.py"
+    },
+    {
+      "label": "Source: runs.py",
+      "path": "source/neuristor/runs.py"
+    },
+    {
+      "label": "Source: sample_library.py",
+      "path": "source/neuristor/sample_library.py"
+    },
+    {
+      "label": "Source: current_domain_search.py",
+      "path": "source/neuristor/current_domain_search.py"
+    },
+    {
+      "label": "Source: lab_replay.py",
+      "path": "source/neuristor/lab_replay.py"
+    },
+    {
+      "label": "Source: experimental_waveforms.py",
+      "path": "source/neuristor/experimental_waveforms.py"
+    },
+    {
+      "label": "Source: validation.py",
+      "path": "source/neuristor/validation.py"
+    },
+    {
+      "label": "Every objective evaluation",
+      "path": "optimization_history.csv"
+    },
+    {
+      "label": "Shared fitted and reference parameters",
+      "path": "parameters.csv"
+    },
+    {
+      "label": "All-current metrics at each timestep",
+      "path": "verification.csv"
+    },
+    {
+      "label": "Four-window persistence evidence",
+      "path": "windows.csv"
+    },
+    {
+      "label": "Finest measured and predicted traces",
+      "path": "traces.csv"
+    },
+    {
+      "label": "Training and validation performance",
+      "path": "summary.csv"
+    },
+    {
+      "label": "Static-data tradeoff",
+      "path": "resistance_fit.csv"
+    },
+    {
+      "label": "Joint-fit tradeoff figure",
+      "path": "figures/joint_summary.png"
+    },
+    {
+      "label": "Representative finest-step waveforms",
+      "path": "figures/joint_traces.png"
+    },
+    {
+      "label": "Budget, termination and validation",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Methods and limitations",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor analyze fit-joint --config experiments/current/specimen_joint_expanded.toml",
+  "created_at": "2026-09-21T21:06:46.691564+00:00",
+  "id": "20260921_210646_expanded-persistence-aware-joint-inference_694804",
+  "kind": "analysis",
+  "model": "joint-inference",
+  "name": "Expanded persistence-aware joint inference",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "cfe52447282e93325b04ba4b4359eacc64c37899",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "elapsed_s": 672.6259909590008,
+    "objective_calls": 456,
+    "simulations": 399,
+    "unique_candidates": 400
+  },
+  "updated_at": "2026-09-21T21:45:59.282641+00:00"
+}

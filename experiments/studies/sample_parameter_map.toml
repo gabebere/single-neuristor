@@ -1,0 +1,69 @@
+# Copy this recipe for a new sample. Edit paths/units/current/ambient/grid here,
+# not Python. Start small; every retained grid point receives its own GIF.
+schema_version = 1
+name = "Sample R(T) to screened map and embedded GIFs"
+kind = "simulation"
+model = "current"
+seed = 42
+
+[study]
+# Relative to THIS TOML file. CSV and TSV are supported.
+resistance_data = "../../data/experimental/100425_chip1_gap3.tsv"
+temperature_column = "Temperature"
+resistance_column = "Resistance"
+time_column = "Time"              # Use "" to preserve file acquisition order.
+temperature_unit = "K"            # K or C (Celsius)
+resistance_unit = "ohm"           # ohm or kohm
+bootstrap_samples = 0             # 0: fit only; e.g. 500: uncertainty resampling
+maximum_static_rmse_log10 = 0.05  # Reject a poor static fit before simulation.
+temperature_domain = "measured"  # No extrapolation. Optional: "fit-padded".
+
+[time]
+dt_ns = 0.05
+duration_us = 0.6
+[input]
+amplitude_uA = 500.0              # Constant ideal current, NOT a source label.
+[initial]
+voltage_V = 0.0
+temperature_K = 298.0
+[electrical]
+C_pF = 16.4
+[thermal]
+C_th_pJ_per_K = 0.047873236
+S_e_mW_per_K = 0.0036751265
+T0_K = 298.0
+[resistance]
+start_branch = "insulator"
+[resistance.parameters]
+gamma = 0.956269682               # Assumed; not identifiable from a major loop.
+proximity_function = "yuanhang"
+
+[maps]
+window_ns = [300.0, 600.0]         # Evaluate settled complete-cycle extrema only.
+maximum_frequency_MHz = 110.0     # Operational screen, NOT a universal VO2 limit.
+verification_dt_ns = [0.025, 0.0125]
+convergence_fraction = 0.05
+batch_size = 128
+max_points = 15000
+[maps.fixed_values]
+C_th_pJ_per_K = 0.047873236
+S_e_mW_per_K = 0.0036751265
+C_pF = 16.4
+# A small 3^3 grid for the first end-to-end run. One value locks that parameter.
+# For a dense map, replace values with low/high/count plus extra_values containing
+# the fixed_values entry. Example: low=0.02 high=0.5 count=21.
+[maps.axes.C_th_pJ_per_K]
+values = [0.047873236, 0.072, 0.2]
+[maps.axes.S_e_mW_per_K]
+values = [0.00268, 0.0036751265, 0.006]
+[maps.axes.C_pF]
+values = [0.39, 7.0, 16.4]         # Logarithmic maps require C>0; solver supports 0.
+
+[animations]
+dt_ns = 0.00625
+maximum_refinements = 2
+batch_size = 32
+workers = 2
+frames = 32                       # Playback only; not integration resolution.
+[output]
+root = "runs"

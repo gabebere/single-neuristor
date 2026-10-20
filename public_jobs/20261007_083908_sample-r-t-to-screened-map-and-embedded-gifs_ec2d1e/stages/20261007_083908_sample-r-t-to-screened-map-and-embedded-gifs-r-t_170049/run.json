@@ -1,0 +1,63 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Normalized measured R(T)",
+      "media_type": "text/csv",
+      "path": "measured.csv"
+    },
+    {
+      "label": "Fitted resistance preset",
+      "media_type": "application/json",
+      "path": "resistance_preset.json"
+    },
+    {
+      "label": "Fit metrics",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Parameter estimates",
+      "media_type": "text/csv",
+      "path": "parameter_summary.csv"
+    },
+    {
+      "label": "Resistance fit",
+      "media_type": "image/png",
+      "path": "figures/resistance_fit.png"
+    },
+    {
+      "label": "Scientific report",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor study run --config experiments/studies/sample_parameter_map.toml",
+  "created_at": "2026-10-07T08:39:08.216722+00:00",
+  "id": "20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-r-t_170049",
+  "kind": "fit",
+  "model": "resistance",
+  "name": "Sample R(T) to screened map and embedded GIFs - R(T) fit",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "e2dd84e2ef811fbf29e26ac8e0416ee75bacc1e5",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "local",
+  "summary": {
+    "fit_method": "major-loop-log-least-squares",
+    "max_abs_log10_error": 0.12579214083440604,
+    "mean_log10_error": 2.7683647461960035e-11,
+    "r2_log10": 0.9987335155210357,
+    "rmse_log10": 0.03662760522735458,
+    "rmse_log10_cooling": 0.034962399278823435,
+    "rmse_log10_heating": 0.03824413155154408
+  },
+  "updated_at": "2026-10-07T08:39:08.723288+00:00"
+}

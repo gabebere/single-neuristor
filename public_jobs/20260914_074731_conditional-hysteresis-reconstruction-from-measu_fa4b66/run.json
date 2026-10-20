@@ -1,0 +1,159 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Reconstruction",
+      "media_type": "text/csv",
+      "path": "reconstruction.csv"
+    },
+    {
+      "label": "Trajectories",
+      "media_type": "text/csv",
+      "path": "trajectories.csv"
+    },
+    {
+      "label": "Gamma Scores",
+      "media_type": "text/csv",
+      "path": "gamma_scores.csv"
+    },
+    {
+      "label": "Measured resistance versus conditional temperature",
+      "media_type": "image/png",
+      "path": "figures/reconstructed_hysteresis.png"
+    },
+    {
+      "label": "Reconstruction findings",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Method and conditional results",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor analyze reconstruct-hysteresis --config experiments/current/specimen_hysteresis_reconstruction.toml",
+  "created_at": "2026-09-14T07:47:31.430177+00:00",
+  "id": "20260914_074731_conditional-hysteresis-reconstruction-from-measu_fa4b66",
+  "kind": "analysis",
+  "model": "hysteresis-reconstruction",
+  "name": "Conditional hysteresis reconstruction from measured power",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "f5e05d07f0ff3d03c99544a7929e2928a5bb7c55",
+    "dirty": false
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "cases": 8,
+    "currents": 22,
+    "gamma_values": [
+      0.956269682,
+      0.1569637099,
+      0.5,
+      2.0
+    ],
+    "replay_steps_ns": [
+      1.0,
+      0.5,
+      0.25
+    ],
+    "selected_central_results": [
+      {
+        "C_pF": 0.39,
+        "C_th_pJ_per_K": 0.047873236,
+        "S_e_mW_per_K": 0.0036751265,
+        "current_uA": 189.60094286792295,
+        "fraction_above_major_heating_branch": 0.5742574257425742,
+        "gamma": 0.956269682,
+        "late_invalid_resistance_fraction": 0.0,
+        "measured_resistance_mean_ohm": 1680.6169070790982,
+        "name": "central",
+        "outside_temperature_calibration_fraction": 0.0,
+        "replay_step_ns": 0.25,
+        "replayed_resistance_mean_ohm": 1679.2300844098081,
+        "resistance_log_rmse": 0.0031422121796083878,
+        "resistance_rmse_ohm": 5.282931699632032,
+        "smoothing_window": null,
+        "source_file": "250mv0_converted.csv",
+        "source_setting_mV": 250.0,
+        "temperature_max_K": 330.95830188379824,
+        "temperature_mean_K": 330.911709241825,
+        "temperature_min_K": 330.85510861819023
+      },
+      {
+        "C_pF": 0.39,
+        "C_th_pJ_per_K": 0.047873236,
+        "S_e_mW_per_K": 0.0036751265,
+        "current_uA": 228.7136509323431,
+        "fraction_above_major_heating_branch": 0.0,
+        "gamma": 0.956269682,
+        "late_invalid_resistance_fraction": 0.0,
+        "measured_resistance_mean_ohm": 1017.9021323048438,
+        "name": "central",
+        "outside_temperature_calibration_fraction": 0.0,
+        "replay_step_ns": 0.25,
+        "replayed_resistance_mean_ohm": 1762.5249095954518,
+        "resistance_log_rmse": 0.5771726781781586,
+        "resistance_rmse_ohm": 759.1499088912165,
+        "smoothing_window": null,
+        "source_file": "300mv0_converted.csv",
+        "source_setting_mV": 300.0,
+        "temperature_max_K": 329.84989072948923,
+        "temperature_mean_K": 328.9609915993015,
+        "temperature_min_K": 328.1267434038702
+      },
+      {
+        "C_pF": 0.39,
+        "C_th_pJ_per_K": 0.047873236,
+        "S_e_mW_per_K": 0.0036751265,
+        "current_uA": 381.06588239966646,
+        "fraction_above_major_heating_branch": 0.0,
+        "gamma": 0.956269682,
+        "late_invalid_resistance_fraction": 0.0,
+        "measured_resistance_mean_ohm": 488.4121672435573,
+        "name": "central",
+        "outside_temperature_calibration_fraction": 0.0,
+        "replay_step_ns": 0.25,
+        "replayed_resistance_mean_ohm": 1215.1412776531558,
+        "resistance_log_rmse": 0.9195019604531525,
+        "resistance_rmse_ohm": 728.1810930162437,
+        "smoothing_window": null,
+        "source_file": "500mv0_converted.csv",
+        "source_setting_mV": 500.0,
+        "temperature_max_K": 334.1950301473992,
+        "temperature_mean_K": 333.6435426000716,
+        "temperature_min_K": 333.098350011837
+      },
+      {
+        "C_pF": 0.39,
+        "C_th_pJ_per_K": 0.047873236,
+        "S_e_mW_per_K": 0.0036751265,
+        "current_uA": 606.6551780288738,
+        "fraction_above_major_heating_branch": 1.0,
+        "gamma": 0.956269682,
+        "late_invalid_resistance_fraction": 0.0,
+        "measured_resistance_mean_ohm": 298.2108713285761,
+        "name": "central",
+        "outside_temperature_calibration_fraction": 0.0,
+        "replay_step_ns": 0.25,
+        "replayed_resistance_mean_ohm": 29.731730206177968,
+        "resistance_log_rmse": 2.305540999206388,
+        "resistance_rmse_ohm": 268.50734461922576,
+        "smoothing_window": null,
+        "source_file": "800mv0_converted.csv",
+        "source_setting_mV": 800.0,
+        "temperature_max_K": 344.40080780578137,
+        "temperature_mean_K": 344.25421461330257,
+        "temperature_min_K": 344.1307236082291
+      }
+    ]
+  },
+  "updated_at": "2026-09-14T07:47:43.087168+00:00"
+}

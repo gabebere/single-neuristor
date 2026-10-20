@@ -1,0 +1,253 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "All-current measured voltage, simulation and resistance",
+      "path": "traces.csv"
+    },
+    {
+      "label": "Per-current errors and persistence",
+      "path": "summary.csv"
+    },
+    {
+      "label": "Offline interactive current slider",
+      "path": "comparison.html"
+    },
+    {
+      "label": "Heating and cooling major branches",
+      "path": "major_branches.csv"
+    },
+    {
+      "label": "0.000038147 A synchronized scope",
+      "path": "GIFs/current_0.000038147_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000038147_A.png"
+    },
+    {
+      "label": "0.000076146 A synchronized scope",
+      "path": "GIFs/current_0.000076146_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000076146_A.png"
+    },
+    {
+      "label": "0.000114023 A synchronized scope",
+      "path": "GIFs/current_0.000114023_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000114023_A.png"
+    },
+    {
+      "label": "0.000152075 A synchronized scope",
+      "path": "GIFs/current_0.000152075_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000152075_A.png"
+    },
+    {
+      "label": "0.000189785 A synchronized scope",
+      "path": "GIFs/current_0.000189785_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000189785_A.png"
+    },
+    {
+      "label": "0.000228282 A synchronized scope",
+      "path": "GIFs/current_0.000228282_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000228282_A.png"
+    },
+    {
+      "label": "0.000266634 A synchronized scope",
+      "path": "GIFs/current_0.000266634_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000266634_A.png"
+    },
+    {
+      "label": "0.000303170 A synchronized scope",
+      "path": "GIFs/current_0.000303170_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000303170_A.png"
+    },
+    {
+      "label": "0.000341630 A synchronized scope",
+      "path": "GIFs/current_0.000341630_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000341630_A.png"
+    },
+    {
+      "label": "0.000380749 A synchronized scope",
+      "path": "GIFs/current_0.000380749_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000380749_A.png"
+    },
+    {
+      "label": "0.000418857 A synchronized scope",
+      "path": "GIFs/current_0.000418857_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000418857_A.png"
+    },
+    {
+      "label": "0.000457673 A synchronized scope",
+      "path": "GIFs/current_0.000457673_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000457673_A.png"
+    },
+    {
+      "label": "0.000494547 A synchronized scope",
+      "path": "GIFs/current_0.000494547_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000494547_A.png"
+    },
+    {
+      "label": "0.000532599 A synchronized scope",
+      "path": "GIFs/current_0.000532599_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000532599_A.png"
+    },
+    {
+      "label": "0.000569545 A synchronized scope",
+      "path": "GIFs/current_0.000569545_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000569545_A.png"
+    },
+    {
+      "label": "0.000606280 A synchronized scope",
+      "path": "GIFs/current_0.000606280_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000606280_A.png"
+    },
+    {
+      "label": "0.000645297 A synchronized scope",
+      "path": "GIFs/current_0.000645297_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000645297_A.png"
+    },
+    {
+      "label": "0.000682284 A synchronized scope",
+      "path": "GIFs/current_0.000682284_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000682284_A.png"
+    },
+    {
+      "label": "0.000721307 A synchronized scope",
+      "path": "GIFs/current_0.000721307_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000721307_A.png"
+    },
+    {
+      "label": "0.000757834 A synchronized scope",
+      "path": "GIFs/current_0.000757834_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000757834_A.png"
+    },
+    {
+      "label": "0.000833954 A synchronized scope",
+      "path": "GIFs/current_0.000833954_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000833954_A.png"
+    },
+    {
+      "label": "0.000907042 A synchronized scope",
+      "path": "GIFs/current_0.000907042_A.gif"
+    },
+    {
+      "label": "Full current, voltage and R(T) figure",
+      "path": "Figures/current_0.000907042_A.png"
+    },
+    {
+      "label": "Three-panel GIF current selector",
+      "media_type": "text/html",
+      "path": "START_HERE.html"
+    },
+    {
+      "label": "Three-panel GIF current selector",
+      "media_type": "text/html",
+      "path": "scope_viewer.html"
+    },
+    {
+      "label": "All three-panel current GIFs",
+      "path": "All_current_GIFs.zip"
+    },
+    {
+      "label": "Reproducible edited recipe",
+      "media_type": "application/toml",
+      "path": "recipe.toml"
+    },
+    {
+      "label": "All-current comparison",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Manual replay report",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor analyze replay-lab --config experiments/current/specimen_relative_diagnostic_replay.toml",
+  "created_at": "2026-10-03T18:39:56.856125+00:00",
+  "id": "20261003_183956_simple-loss-diagnostic-1-all-current-gif-replay-_4e79ac",
+  "kind": "analysis",
+  "model": "lab-replay",
+  "name": "Simple loss diagnostic 1 all-current GIF replay - not an accepted fit",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "e2dd84e2ef811fbf29e26ac8e0416ee75bacc1e5",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "currents": 22,
+    "false_positives": 1,
+    "late_mean_RMSE_mV": 38.25784012571174,
+    "measured_oscillators": 11,
+    "outside_calibration": false,
+    "recovered_oscillators": 10
+  },
+  "updated_at": "2026-10-03T18:41:10.934975+00:00"
+}

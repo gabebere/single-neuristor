@@ -1,0 +1,25 @@
+{
+  "ambient_interval_K": [
+    314.25,
+    314.55
+  ],
+  "ambient_temperature_K": 314.4,
+  "baseline_window_ns": [
+    -200.0,
+    -50.0
+  ],
+  "block_size": 10,
+  "bootstrap_samples": 1000,
+  "data_directory": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/data/experimental/tia_current_sweep",
+  "kind": "analysis",
+  "model": "environmental-thermal-conductance",
+  "name": "Environmental thermal-conductance estimate",
+  "resistance_bootstrap": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv",
+  "resistance_preset": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/resistance_100425_chip1_gap3.json",
+  "schema_version": 1,
+  "seed": 20260817,
+  "steady_window_ns": [
+    100.0,
+    250.0
+  ]
+}

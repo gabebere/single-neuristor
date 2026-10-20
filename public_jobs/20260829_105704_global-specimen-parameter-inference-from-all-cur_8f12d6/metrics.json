@@ -1,0 +1,34 @@
+{
+  "baseline_classification_matches": 11,
+  "baseline_objective_all": 0.8813077237653728,
+  "constrained_classification_matches": 11,
+  "constrained_evaluations": 292,
+  "constrained_objective_all": 0.8749633932661182,
+  "constrained_predicted_oscillating_traces": 0,
+  "final_dt_ns": 0.05,
+  "held_out_traces": 5,
+  "holdout_drives_mV": [
+    200.0,
+    400.0,
+    600.0,
+    800.0,
+    1000.0
+  ],
+  "relaxed_classification_matches": 11,
+  "relaxed_evaluations": 388,
+  "relaxed_objective_all": 0.6827342959504044,
+  "relaxed_parameters_outside_physical_bounds": [
+    "C_pF",
+    "C_th_pJ_per_K",
+    "S_e_mW_per_K",
+    "T0_K",
+    "Tc_K",
+    "w_K",
+    "beta_per_K"
+  ],
+  "relaxed_predicted_oscillating_traces": 0,
+  "resistance_source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/resistance_100425_chip1_gap3.json",
+  "search_dt_ns": 0.2,
+  "start_branch": "insulator",
+  "training_traces": 17
+}

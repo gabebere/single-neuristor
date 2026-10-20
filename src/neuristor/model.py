@@ -56,6 +56,13 @@ class YuanhangResistParams:
     T_min_K: float = 305.0  # clamp lower bound
     T_max_K: float = 370.0  # clamp upper bound
     reversal_threshold_K: float = 0.01  # |ΔT| needed to trigger reversal
+    proximity_function: str = "yuanhang"
+
+    def __post_init__(self) -> None:
+        if self.proximity_function not in ("yuanhang", "tanh"):
+            raise ValueError("Unknown proximity function")
+        if self.proximity_function == "tanh" and not 0 < self.gamma <= 1:
+            raise ValueError("Tanh proximity requires 0 < gamma (= k) <= 1")
 
     @property
     def w_eff(self) -> float:
@@ -244,7 +251,10 @@ class HysteresisArray:
         if _TORCH_HYSTERESIS_AVAILABLE:
             return np.asarray(self._g_torch(T_arr).numpy(), dtype=_SIM_DTYPE)
         if np.any(self.reversed):
-            Tp = self.Tpr * _P_vec((T_arr - self.Tr) / (self.Tpr + 1e-6), params.gamma) * self.reversed
+            x = (T_arr - self.Tr) / (self.Tpr + 1e-6)
+            proximity = (1-np.tanh(params.gamma*x) if params.proximity_function == "tanh"
+                         else _P_vec(x, params.gamma))
+            Tp = self.Tpr * proximity * self.reversed
         else:
             Tp = _SIM_DTYPE(0.0)
         arg = params.beta * (self.delta * params.w_eff / 2.0 + params.Tc_K - (T_arr + Tp))
@@ -263,6 +273,8 @@ class HysteresisArray:
             proximity_t = 0.5 * (1.0 - torch.sin(params.gamma * x_t)) * (
                 1.0 + torch.tanh(_PI * _PI - 2.0 * _PI * x_t)
             )
+            if params.proximity_function == "tanh":
+                proximity_t = 1.0 - torch.tanh(params.gamma * x_t)
             Tp_t = Tpr_t * proximity_t * _torch_tensor(self.reversed)
         else:
             Tp_t = 0.0
@@ -288,6 +300,28 @@ class HysteresisArray:
             Rs = np.asarray(params.R0 * np.exp(exp_arg) * g_val, dtype=_SIM_DTYPE)
         self.g_last = g_val.copy()
         return np.asarray(Rs + params.Rm, dtype=_SIM_DTYPE), g_val
+
+    def proximity_temperature_slope(self, T: np.ndarray) -> np.ndarray:
+        """Diagnostic dTeff/dT at the current anchor; never updates state.
+
+        Use float64 to inspect the existing float32 state, retaining the exact
+        1e-6 K denominator regularizer used by g. Negative slopes reverse the
+        phase response. Evaluate after evaluate(T) so reversal anchors agree.
+        """
+        temperature = _clamp_temperature_array(T, self.params).astype(float)
+        a = self.Tpr.astype(float)
+        active = self.reversed != 0
+        result = np.ones_like(a)
+        with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
+            x = (temperature[active] - self.Tr[active]) / (a[active] + 1e-6)
+            z = np.tanh(_PI**2 - 2*_PI*x)
+            gamma = self.params.gamma
+            derivative = (-.5*gamma*np.cos(gamma*x)*(1+z)
+                          - _PI*(1-np.sin(gamma*x))*(1-z*z))
+            if self.params.proximity_function == "tanh":
+                derivative = -gamma*(1-np.tanh(gamma*x)**2)
+            result[active] = 1 + a[active]/(a[active]+1e-6)*derivative
+        return result
 
     def _update_reversal(self, T_clamped: np.ndarray) -> None:
         """Detect heating/cooling changes after accumulated displacement crosses the deadband."""
@@ -377,8 +411,16 @@ class YuanhangArraySimulator:
         )
         self.S_couple = _SIM_DTYPE(self.circuit.Sth_mW_per_K * 1e-3 * self.circuit.couple_factor)
         self.R_series_ohm = max(self.circuit.R_series_ohm, _EPS)
-        self.C_par_F = max(self.circuit.C_par_F, _EPS)
-        self.C_th_J_per_K = max(self.circuit.Cth_J_per_K, _EPS)
+        # A dimensionless epsilon is not a physical minimum capacitance: the
+        # specimen's inferred thermal capacity is below 1 pJ/K. Silently
+        # flooring SI values here changes the supplied circuit by orders of
+        # magnitude. The voltage ODE requires strictly positive capacities.
+        self.C_par_F = float(self.circuit.C_par_F)
+        self.C_th_J_per_K = float(self.circuit.Cth_J_per_K)
+        if not math.isfinite(self.C_par_F) or self.C_par_F <= 0.0:
+            raise ValueError("Voltage-drive C_par_pF must be finite and positive.")
+        if not math.isfinite(self.C_th_J_per_K) or self.C_th_J_per_K <= 0.0:
+            raise ValueError("Voltage-drive Cth_mW_ns_per_K must be finite and positive.")
         self.T_base = _SIM_DTYPE(self.circuit.T_base_K)
 
     def set_inputs(

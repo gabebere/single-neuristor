@@ -1,0 +1,31 @@
+{
+  "C_F": 3e-12,
+  "C_th_J_per_K": 7.2e-14,
+  "R_out_ohm": 0.0,
+  "S_e_W_per_K": 6e-06,
+  "T0_K": 298.0,
+  "T_init_K": 298.0,
+  "V_init_V": 0.0,
+  "dt_s": 5.000000000000001e-11,
+  "pulse_off_s": null,
+  "pulse_on_s": 0.0,
+  "resist_params": {
+    "Ea_over_k": 2536.9654457644647,
+    "R0": 0.7989227061673402,
+    "Rm0": 18.21526990911648,
+    "Rm_factor": 1.0,
+    "T_max_K": 370.1625,
+    "T_min_K": 289.8545,
+    "Tc_K": 333.49356636598696,
+    "beta": 0.2991563242902104,
+    "gamma": 0.956269682,
+    "proximity_function": "yuanhang",
+    "reversal_threshold_K": 0.01,
+    "w": 6.882302959338694,
+    "width_factor": 1.0
+  },
+  "sigma_W_sqrt_s": 0.0,
+  "start_branch": "insulator",
+  "t_end_s": 6e-07,
+  "t_pre_s": 0.0
+}

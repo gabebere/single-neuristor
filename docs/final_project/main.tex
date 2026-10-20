@@ -1,0 +1,1229 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=25mm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{tabularx}
+\usepackage[table]{xcolor}
+\usepackage{hyperref}
+
+\definecolor{projectblue}{HTML}{173B57}
+\definecolor{projectgold}{HTML}{B47A16}
+\definecolor{projectgray}{HTML}{F2F5F7}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=projectblue,
+  citecolor=projectblue,
+  urlcolor=projectblue,
+  pdftitle={Simulations for Harnessing the VO2 Phase Transition for Automatic Gain Control in Transimpedance Amplifiers},
+  pdfauthor={Gabriel Berezovsky}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small VO\textsubscript{2} AGC simulations}
+\fancyhead[R]{\small Gabriel Berezovsky}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.65em}
+\emergencystretch=2em
+
+\newcommand{\vo}{VO\textsubscript{2}}
+\newcommand{\planned}{\textcolor{projectgold}{\textbf{Planned.}}}
+
+\begin{document}
+
+\hypersetup{pageanchor=false}
+\pagenumbering{gobble}
+\begin{titlepage}
+  \centering
+  \vspace*{0.15\textheight}
+  {\color{projectblue}\rule{0.84\textwidth}{1.2pt}\par}
+  \vspace{1.2cm}
+  {\Huge\bfseries
+    Simulations for Harnessing the \vo{} Phase Transition for Automatic Gain Control in Transimpedance Amplifiers\par
+  }
+  \vspace{1.2cm}
+  {\color{projectblue}\rule{0.84\textwidth}{1.2pt}\par}
+  \vspace{1.8cm}
+  {\Large Gabriel Berezovsky\par}
+  \vspace{1.2cm}
+  {\Large Supervised by\par}
+  \vspace{0.25cm}
+  {\Large Amir Gildor and Prof. Yoav Kalcheim\par}
+  \vfill
+  {\large August 2026\par}
+\end{titlepage}
+
+\hypersetup{pageanchor=true}
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+
+\section{Yuanhang-based current-drive validation}
+
+This run checks that the Yuanhang-based implementation can produce a stable current-driven oscillation with a nonzero voltage valley. It validates the simulation mechanism; it is not a fit to the experimental sample.
+
+All values were taken from Zhang \emph{et al.}\ \cite{zhang2024}, except $C_{\mathrm{th}}$. At $600~\mu$A, the nominal value ($49.6278$~pJ/K) did not sustain oscillations, so it was increased fourfold to slow the thermal response and obtain a stable validation cycle. This control value is not an estimate of our sample's thermal capacitance.
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabularx}{0.88\textwidth}{@{}l X@{}}
+\toprule
+Quantity & Value \\
+\midrule
+Current pulse & $600~\mu$A from $2$ to $38~\mu$s \\
+Simulation window & $0$--$40~\mu$s \\
+Time step & $0.5$ ns \\
+Initial state & $V(0)=0$ V, $T(0)=324.9$ K, insulating branch \\
+Electrical capacitance & $C=145.34619293$ pF \\
+Thermal capacitance & $C_{\mathrm{th}}=198.51107324$ pJ/K ($4\times$ control) \\
+Environmental conductance & $S_e=0.20558726$ mW/K \\
+Ambient temperature & $T_0=325$ K \\
+Metallic resistance & $R_m=1286.3165~\Omega$ \\
+Noise and thermal neighbor coupling & zero \\
+Analysis interval & $10$--$38~\mu$s \\
+\bottomrule
+\end{tabularx}
+\caption{Parameters used for the validation run. All unlisted resistance and hysteresis parameters retain their Yuanhang values.}
+\label{tab:validation_settings}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260817_100102_current-step-with-a-nonzero-metallic-voltage-val_6765e0/figures/overview.png}
+\caption{Applied current and simulated voltage, temperature, and resistance. The dashed orange line is the instantaneous metallic fixed point $I(t)R_m$. The analysis excludes the initial charging transient and uses the stable interval from $10$ to $38~\mu$s.}
+\label{fig:current_control}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{supplementary/figures/resistance_temperature_trajectory.png}
+\caption{Equivalent resistance versus temperature. The dashed curves and shaded band show Yuanhang's major heating and cooling hysteresis; color shows progression through the $40~\mu$s simulated trajectory.}
+\label{fig:rt_trajectory}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r@{}}
+\toprule
+Metric & Result \\
+\midrule
+Oscillation detected & yes \\
+Detected cycles & 5 \\
+Frequency & $0.221685$ MHz \\
+Period & $4.51090~\mu$s \\
+Period coefficient of variation & $1.77\times10^{-4}$ \\
+Steady voltage range & $0.905654$--$6.33281$ V \\
+Full-pulse temperature range & $324.9$--$368.8$ K \\
+Steady temperature range & $330.16$--$347.91$ K \\
+Steady resistance range & $1.339$--$16.382$ k$\Omega$ \\
+Metallic electrical time $C R_m$ & $186.961$ ns \\
+Thermal time $C_{\mathrm{th}}/S_e$ & $0.965581~\mu$s \\
+\bottomrule
+\end{tabular}
+\caption{Metrics measured from the validation run.}
+\label{tab:validation_results}
+\end{table}
+
+The metallic-state voltage is set approximately by $V=IR_m$:
+
+\begin{equation}
+V_{\mathrm{metal}}\approx I R_m
+=(600\times10^{-6}\ \mathrm{A})(1286.3165\ \Omega)
+=0.771790\ \mathrm{V}.
+\label{eq:metal_floor}
+\end{equation}
+
+The simulated minimum is $0.905654$~V; it remains above this fixed point because switching reverses before the capacitor settles. The experimental manuscript reports $40$--$60$~MHz oscillations \cite{gildor2026}, whereas this validation gives $0.221685$~MHz. Sample-specific resistance and time constants are therefore still required for a quantitative match.
+
+\section{Sample-specific resistance--temperature fit}
+
+The supplied file contains 264 measurements from one cooling sweep and one heating sweep over $289.85$--$370.16$~K at $2~\mu$A. We fitted the major-loop form
+
+\begin{equation}
+R(T,\delta)=R_m+R_0 e^{(E_a/k_B)/T}
+\left[\frac{1}{2}+\frac{1}{2}\tanh\!\left(\beta\left(\delta\frac{w}{2}+T_c-T\right)\right)\right],
+\qquad
+\delta=\begin{cases}-1,&\text{cooling},\\+1,&\text{heating}.
+\end{cases}
+\label{eq:sample_rt_fit}
+\end{equation}
+
+The fit minimizes the residual in $\log_{10}R$. The minor-loop parameter $\gamma$ was fixed to Yuanhang's value because a major loop alone does not determine it.
+
+Here $R_0$ is the Arrhenius prefactor, not the insulating resistance. On the fully insulating branch,
+
+\begin{equation}
+R_{\mathrm{ins}}(T)\approx R_m+R_0e^{(E_a/k_B)/T}.
+\end{equation}
+
+For example, the fitted sample gives $R_{\mathrm{ins}}(300~\mathrm{K})\approx3.78~\mathrm{k}\Omega$, well above the metallic floor $R_m=18.22~\Omega$.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{../../public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/figures/resistance_fit.png}
+\caption{Measured heating and cooling branches, fitted model, and log-resistance residuals.}
+\label{fig:sample_rt_fit}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r r r@{}}
+\toprule
+Parameter & Estimate & 95\% interval & Yuanhang \\
+\midrule
+$R_0$ (prefactor) & $0.7989~\Omega$ & $0.3774$--$1.8483~\Omega$ & $0.005359~\Omega$ \\
+$E_a/k_B$ & $2536.97$ K & $2272.55$--$2767.52$ K & $5220.47$ K \\
+$E_a$ & $0.21862$ eV & $0.19583$--$0.23849$ eV & $0.44987$ eV \\
+$R_m$ (metallic floor) & $18.2153~\Omega$ & $17.4943$--$18.9010~\Omega$ & $1286.32~\Omega$ \\
+$T_c$ & $333.494$ K & $333.137$--$333.838$ K & $332.806$ K \\
+$w$ & $6.8823$ K & $6.6291$--$7.2681$ K & $7.1936$ K \\
+$\beta$ & $0.29916~\mathrm{K}^{-1}$ & $0.28092$--$0.32021~\mathrm{K}^{-1}$ & $0.25280~\mathrm{K}^{-1}$ \\
+$T_{\mathrm{cool}}=T_c-w/2$ & $330.052$ K & $329.642$--$330.385$ K & $329.209$ K \\
+$T_{\mathrm{heat}}=T_c+w/2$ & $336.935$ K & $336.534$--$337.348$ K & $336.403$ K \\
+$\gamma$ & $0.95627$ (fixed) & --- & $0.95627$ \\
+\bottomrule
+\end{tabular}
+\caption{Sample-specific resistance parameters compared with Yuanhang's reference implementation, which uses the effective metallic resistance $R_m=1286.32~\Omega$. $R_0$ and $E_a/k_B$ are strongly correlated; their joint combination determines the insulating branch.}
+\label{tab:sample_rt_parameters}
+\end{table}
+
+The fit gives $R^2=0.998734$ and a $\log_{10}R$ RMSE of $0.03663$, equivalent to a typical multiplicative error of $1.088$. The largest deviation is a factor of $1.336$ inside the switching region; this residual is retained rather than adding parameters unsupported by the measurement.
+
+\section{Experimental timing and ambient temperature}
+
+The sample-specific simulations will reproduce the measured pulse timing rather than use an instantaneous current step. The TIA sweep is taken to share the ambient range reported for the related measurements \cite{gildor2026}.
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabularx}{0.78\textwidth}{@{}l X@{}}
+\toprule
+Input & Value \\
+\midrule
+Ambient temperature & $T_0\approx314.4$~K ($314.25$--$314.55$~K) \\
+Pulse width & $300$~ns \\
+Current rise time & $26$--$27$~ns ($10$--$90\%$) \\
+Current fall time & $18$--$23$~ns ($90$--$10\%$) \\
+\bottomrule
+\end{tabularx}
+\caption{Measured environmental and timing inputs retained for later simulation of the experiment.}
+\label{tab:experimental_conditions}
+\end{table}
+
+\section{Environmental thermal conductance}
+
+The objective is to estimate the environmental thermal conductance $S_e$, which
+sets the heat-loss rate $S_e(T-T_0)$. The estimate requires a hot operating point
+whose temperature is approximately stationary. We use the following procedure:
+
+\begin{enumerate}
+\item Order the measured records by their baseline-corrected input current and
+identify the last record without coherent oscillation. This gives the stable point
+closest to switching, where the temperature rise is large but a quasi-steady
+balance remains defensible.
+\item Subtract the pre-pulse current and voltage offsets and select a settled window
+in which $V/I$ is nearly constant. In this window $dV/dt\approx0$, so the measured
+input current is approximately the resistive current through the VO$_2$ device.
+\item Calculate the effective resistance $R_*=V_*/I_*$ and Joule power
+$P_*=I_*V_*$. Invert the fitted heating branch, $R_{\mathrm{heat}}(T_*)=R_*$,
+to infer the device temperature $T_*$.
+\item Apply the quasi-steady thermal balance
+$C_{\mathrm{th}}\,dT/dt=P_*-S_e(T_*-T_0)\approx0$, which gives
+$S_e=P_*/(T_*-T_0)$.
+\end{enumerate}
+
+The filenames identify the nominal source-voltage setting, not the voltage across
+the VO$_2$ device and not the simulation input. We therefore retain that setting
+only for traceability and use the measured current. Over the common $50$--$250$~ns
+analysis window, the 250 and 300~mV source settings produced baseline-corrected
+current steps of $189.6$ and $228.2~\mu$A, respectively.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260827_142103_measured-laboratory-current-sweep-with-current-l_ec6ec4/figures/oscillation_onset_bracket.png}
+\caption{Adjacent baseline-corrected records bracketing oscillation onset on shared axes. The $189.6~\mu$A measured current step (250~mV source setting) contains only one candidate peak, so no periodic frequency is assigned. At $228.2~\mu$A (300~mV source setting), eight peaks give $41.7$~MHz with a $2.03\%$ period coefficient of variation.}
+\label{fig:measured_oscillation_onset}
+\end{figure}
+
+Figure~\ref{fig:measured_oscillation_onset} implements the first step of the procedure. The $228.2~\mu$A record is the first trace with coherent oscillation, while the immediately preceding $189.6~\mu$A record does not oscillate. We therefore selected the latter as the closest measured point below switching onset. We did not use the first transition during the current edge because the device is still heating there and $dT/dt=0$ would not be justified.
+
+For the selected trace, the current and voltage offsets are their medians from $-200$ to $-50$~ns. We then use the settled $100$--$250$~ns interval. Its effective resistance changes by only $0.145\%$, supporting the quasi-steady approximation. Figure~\ref{fig:conductance_evidence} shows the waveform, the stability test, and the temperature inversion.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260817_153807_environmental-thermal-conductance-estimate_761640/figures/environmental_conductance.png}
+\caption{Environmental-conductance evidence. Gray shading marks the settled interval. The measured $R_*=V_*/I_*$ is mapped to $T_*$ through the fitted heating branch.}
+\label{fig:conductance_evidence}
+\end{figure}
+
+The baseline-corrected medians give
+
+\begin{equation}
+I_*=190.162~\mu\mathrm{A},\qquad
+V_*=319.213~\mathrm{mV},\qquad
+R_*=\frac{V_*}{I_*}=1679.759~\Omega,
+\end{equation}
+
+and
+
+\begin{equation}
+P_*=I_*V_*=60.658~\mu\mathrm{W}.
+\end{equation}
+
+Solving the fitted heating branch $R_{\mathrm{heat}}(T_*)=R_*$ gives $T_*=330.905$~K. At a quasi-steady point, the thermal equation reduces to
+
+\begin{equation}
+C_{\mathrm{th}}\frac{dT}{dt}=P_*-S_e(T_*-T_0)\approx0,
+\qquad
+S_e=\frac{P_*}{T_*-T_0}.
+\end{equation}
+
+Therefore,
+
+\begin{equation}
+S_e=\frac{60.658~\mu\mathrm{W}}{330.905~\mathrm{K}-314.4~\mathrm{K}}
+=3.675~\mu\mathrm{W/K}
+=0.003675~\mathrm{mW/K}.
+\label{eq:sample_conductance}
+\end{equation}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r@{}}
+\toprule
+Result & Value \\
+\midrule
+Selected trace & $190.162~\mu$A settled current (250~mV setting) \\
+First oscillating trace & $228.2~\mu$A current step (300~mV setting) \\
+Settled resistance drift & $0.145\%$ \\
+Inferred temperature & $330.905$ K \\
+Temperature rise & $16.505$ K \\
+$S_e$ estimate & $0.003675$ mW/K \\
+Conditional 95\% interval & $0.003434$--$0.004085$ mW/K \\
+Yuanhang reference & $0.205587$ mW/K \\
+\bottomrule
+\end{tabular}
+\caption{Environmental thermal-conductance calculation and comparison.}
+\label{tab:conductance_result}
+\end{table}
+
+The interval propagates paired waveform block resampling, the $1000$-sample $R(T)$ fit bootstrap, and the $314.25$--$314.55$~K ambient range. Omitting baseline correction gives $0.003560$~mW/K, inside the interval. The result remains conditional on the $R(T)$ curve and TIA traces belonging to the same device and on the quasi-static heating branch applying under electrical drive. Yuanhang's conductance is about $56$ times larger.
+
+\section{Electrical capacitance}
+\label{sec:electrical_capacitance}
+
+The objective is to estimate the effective electrical capacitance $C$, which stores
+charge at the device node and sets the electrical response time
+$\tau_{\mathrm{el}}=R(T)C$. In the ideal-current model, the measured input current
+splits between the VO$_2$ resistance and this capacitance:
+
+\begin{equation}
+I_{\mathrm{in}}=\frac{V}{R(T)}+C\frac{dV}{dt}.
+\end{equation}
+
+We therefore seek the part of the measured current that cannot be explained by
+the instantaneous resistive current $V/R(T)$. The analysis uses low-current,
+non-switching rising edges so that the device begins on the known cold heating
+branch and a phase transition does not complicate the electrical transient. It
+assumes that the current and voltage channels are time-aligned, their pre-pulse
+offsets are removable, $C$ is approximately constant over the fit window, and the
+reduced circuit contains the relevant current paths. The procedure is:
+
+\begin{enumerate}
+\item Subtract each trace's pre-pulse current and voltage medians and select the
+initial rising edge of the 100--250~mV source-setting records, all of which remain
+below switching.
+\item Use $C_{\mathrm{shortcut}}=\Delta I/(dV/dt)$ as a preliminary scale estimate.
+This expression is valid only if the resistive current is negligible; it must not
+be accepted before checking the full current balance.
+\item Evaluate the physically complete residual
+$I_C=I_{\mathrm{in}}-V/R(T)$ using the fitted cold resistance, and fit
+$I_C=C\,dV/dt$ over the early edge with the physical constraint $C\geq0$.
+\item Check the result independently against the measured current--voltage timing.
+If no positive lag is resolved, convert the timing resolution $\Delta t$ into an
+upper bound $C\lesssim\Delta t/R(T_0)$. We adopt that bound as a conservative
+modeling value while retaining $C=0$ as the best-fit lower endpoint.
+\end{enumerate}
+
+We first reproduce the preliminary shortcut. For each trace, $\Delta I$ is the
+baseline-to-plateau current step and $dV/dt$ is a linear fit over 0--30~ns, giving
+
+\begin{equation}
+C_{\mathrm{shortcut}}=\frac{\Delta I}{dV/dt},
+\qquad
+\frac{\mu\mathrm{A}}{\mathrm{mV/ns}}=\mathrm{pF}.
+\end{equation}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}r r r r@{}}
+\toprule
+Drive setting & $\Delta I$ ($\mu$A) & $dV/dt$ (mV/ns) & $C_{\mathrm{shortcut}}$ (pF) \\
+\midrule
+100 mV & 76.171 & 3.562 & 21.382 \\
+150 mV & 114.172 & 6.127 & 18.634 \\
+200 mV & 152.162 & 8.235 & 18.477 \\
+250 mV & 189.601 & 9.008 & 21.047 \\
+\midrule
+Median & & & 19.841 \\
+\bottomrule
+\end{tabular}
+\caption{Reconstruction of the original $19.8$~pF shortcut estimate.}
+\label{tab:discarded_capacitance}
+\end{table}
+
+The median shortcut estimate is $19.8$~pF, but it is biased because the measured current itself rises over $26$--$27$~ns and most of it flows resistively. Applying the full current balance gives
+
+\begin{equation}
+C\frac{dV}{dt}=I_{\mathrm{in}}-\frac{V}{R(T)},
+\qquad
+C=\frac{I_{\mathrm{in}}-V/R(T)}{dV/dt}.
+\end{equation}
+
+At $T_0=314.4$~K, the fitted heating branch gives $R(T_0)=2.570$~k$\Omega$. Substituting the measured current and voltage leaves no resolved capacitive current: the unconstrained early-edge fit is approximately $-0.25$ to $-0.10$~pF, depending on the fit window, and the physical nonnegative optimum is therefore $C=0$. The current and voltage 50\% crossings differ by only $-0.74$ to $+0.52$~ns. Taking 1~ns as the timing resolution gives the non-statistical bound
+
+\begin{equation}
+C\lesssim\frac{1~\mathrm{ns}}{2.570~\mathrm{k}\Omega}\approx0.39~\mathrm{pF}.
+\end{equation}
+
+In contrast, $19.8$~pF would give $R(T_0)C=50.9$~ns and a large voltage lag that is absent from the data. A larger capacitance would worsen the disagreement. This does not establish that the physical capacitance is exactly zero; it means that a positive value is not identifiable from the present traces. To avoid assuming an instantaneous electrical response, the sample-specific simulations and downstream thermal fit use the conservative upper-bound value
+
+\begin{equation}
+C_{\mathrm{adopt}}=0.39~\mathrm{pF},
+\qquad
+I_R=I_{\mathrm{in}}-C_{\mathrm{adopt}}\frac{dV}{dt}.
+\end{equation}
+
+This is not a measured central estimate: $C=0$ remains the constrained best fit,
+and $0.39$~pF intentionally maximizes the electrical memory still compatible with
+the approximately 1~ns timing resolution.
+
+This conclusion is independent of the present choice of $\gamma$. The capacitance fit uses the initial cold heating edge, before a temperature reversal; $\gamma$ modifies only minor hysteresis loops after a reversal and therefore does not enter this calculation. Changing $\gamma$ can alter later oscillation shapes and frequencies, but it cannot supply the missing early-edge voltage lag. A numerical nonzero estimate requires a faster, low-amplitude nonswitching edge with calibrated current--voltage channel timing; with $R$ approximately constant, $C=\tau_{\mathrm{el}}/R$.
+
+\section{Thermal time constant and thermal capacitance}
+\label{sec:thermal_capacitance}
+
+The objective is to estimate the effective thermal capacitance $C_{\mathrm{th}}$,
+which relates net heating power to the device's temperature rate of change. Together
+with the environmental conductance found in Section~4, it sets the thermal response
+time
+
+\begin{equation}
+\tau_{\mathrm{th}}=\frac{C_{\mathrm{th}}}{S_e}.
+\end{equation}
+
+A larger $C_{\mathrm{th}}$ means that more energy is required to change the device
+temperature and therefore produces a slower thermal response. Section~5 found no
+resolved positive electrical capacitance but established the upper bound
+$C_{\mathrm{adopt}}=0.39$~pF. We use this conservative value and first separate the
+resistive current from the capacitive current. The fitted heating branch then acts
+as a thermometer:
+
+\begin{equation}
+I_R(t)=I_*(t)-C_{\mathrm{adopt}}\frac{dV_*}{dt},
+\qquad
+R_*(t)=\frac{V_*(t)}{I_R(t)},
+\qquad
+T_*(t)=R_{\mathrm{heat}}^{-1}\!\left(R_*(t)\right).
+\end{equation}
+
+The estimate assumes a single lumped device temperature, constant $C_{\mathrm{th}}$
+and $S_e$ over the fitted interval, the same sample for the electrical and $R(T)$
+measurements, and validity of the fitted heating branch before any thermal reversal.
+It is conditional on the adopted $0.39$~pF upper bound and requires
+baseline-corrected, time-aligned current and voltage channels. The procedure is:
+
+\begin{enumerate}
+\item Select moderate non-switching traces with sufficient signal, subtract their
+pre-pulse offsets, and smooth the oscilloscope noise before evaluating $dV_*/dt$
+and forming $V_*/I_R$. We
+use measured current steps of $76.2$, $114.2$, and $152.2~\mu$A (the 100, 150,
+and 200~mV source settings); the $189.6~\mu$A record (250~mV setting) is reserved
+as a near-transition sensitivity check.
+\item Compute $I_R=I_*-C_{\mathrm{adopt}}dV_*/dt$, reconstruct the measured
+temperature trajectory from $R_*(t)=V_*(t)/I_R(t)$ and the inverse fitted heating
+branch, and calculate the applied Joule power $P_*(t)=I_R(t)V_*(t)$.
+\item For trial values of $C_{\mathrm{th}}$, integrate the thermal balance using
+the previously estimated $S_e$ and $T_0$. Fit one shared $C_{\mathrm{th}}$ by
+minimizing the temperature mismatch across all three primary traces over
+15--35~ns, then obtain $\tau_{\mathrm{th}}=C_{\mathrm{th}}/S_e$.
+\item Test robustness by fitting each trace separately, checking the excluded
+$189.6~\mu$A record, varying the fit window, and propagating the $R(T)$, $S_e$,
+ambient temperature, and waveform uncertainties.
+\end{enumerate}
+
+The thermal trajectory for each trial value is obtained from
+
+\begin{equation}
+C_{\mathrm{th}}\frac{dT}{dt}=P_*(t)-S_e(T-T_0),
+\qquad
+C_{\mathrm{th}}=S_e\tau_{\mathrm{th}}.
+\end{equation}
+
+A nine-sample, second-order Savitzky--Golay filter is used in the reconstruction.
+Because the fit ends before a thermal reversal, $\gamma$ does not enter this
+estimate. Figure~\ref{fig:thermal_capacitance} compares the temperatures inferred
+directly from the electrical measurements with the trajectories predicted by the
+shared thermal model.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260828_112314_thermal-capacitance-estimate-with-conservative-0_aa2469/figures/thermal_capacitance.png}
+\caption{Thermal-capacitance evidence conditioned on $C_{\mathrm{adopt}}=0.39$~pF. Solid curves are temperatures inferred from $V_*/I_R$; dashed curves are the shared thermal model. The $189.6~\mu$A measured current step (250~mV source setting) is retained only as a near-transition sensitivity check.}
+\label{fig:thermal_capacitance}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r@{}}
+\toprule
+Quantity & Result \\
+\midrule
+Ambient temperature & $314.4$ K \\
+Environmental conductance & $0.00367513$ mW/K \\
+Adopted electrical capacitance & $0.39$ pF (upper bound) \\
+Selected traces & $76.2$, $114.2$, and $152.2~\mu$A steps \\
+Fit interval & 15--35 ns \\
+Thermal time constant $\tau_{\mathrm{th}}$ & $13.026$ ns \\
+Conditional 95\% interval for $\tau_{\mathrm{th}}$ & $5.865$--$25.174$ ns \\
+Thermal capacitance $C_{\mathrm{th}}$ & $0.047873$ pJ/K \\
+Conditional 95\% interval for $C_{\mathrm{th}}$ & $0.021918$--$0.092624$ pJ/K \\
+Temperature-fit RMSE & $1.145$ K \\
+Individual selected-trace range & $0.043261$--$0.049830$ pJ/K \\
+$189.6~\mu$A sensitivity result & $0.022858$ pJ/K; RMSE $2.380$ K \\
+Measured oscillation period & 16--24 ns \\
+Yuanhang reference & $49.6278$ pJ/K \\
+\bottomrule
+\end{tabular}
+\caption{Thermal time-constant and capacitance results.}
+\label{tab:thermal_capacitance}
+\end{table}
+
+The conditional interval propagates trace resampling, the $R(T)$ bootstrap, the conductance bootstrap, the ambient-temperature range, and $\pm2$~ns changes to the fit window. The archived conductance samples do not retain their paired $R(T)$ parameter draws, so the two bootstraps are resampled independently; this is conservative but does not preserve their covariance. The result remains conditional on the adopted electrical-capacitance upper bound, the static heating branch describing the driven device, and the electrical and $R(T)$ measurements belonging to the same sample. Relative to the $C=0$ analysis, the upper-bound correction raises the central $C_{\mathrm{th}}$ estimate by only $1.5\%$ ($0.047163$ to $0.047873$~pJ/K), although the RMSE increases from $0.806$ to $1.145$~K. The $189.6~\mu$A trace gives a smaller value and a substantially larger error because it approaches a reversal; including it would bias the single-heating-branch fit downward. The fitted $13.0$~ns thermal time is of the same order as the measured 16--24~ns oscillation period. Yuanhang's thermal capacitance is approximately $1037$ times larger.
+
+The experimental manuscript reports a 150~nm film thickness and an approximately 200~nm electrode gap \cite{gildor2026}, but not the electrically active filament width or volume. A numerical geometry estimate $C_{\mathrm{th}}=\rho c_pV$ would therefore introduce an unconstrained volume and is not reported.
+
+\clearpage
+\section{Comparison across experimental currents}
+\label{sec:model_comparison}
+
+This is a blind prediction test: the fitted $R(T)$ curve, $T_0=314.4$~K,
+$S_e=0.00367513$~mW/K, $C=0.39$~pF, and
+$C_{\mathrm{th}}=0.047873$~pJ/K are fixed before examining the result. Each
+baseline-corrected measured current waveform is replayed through the model; no
+parameter is adjusted by current. Predicted voltages are sampled at the experimental
+1~ns times, and both data sets use the same 50--250~ns window and oscillation detector.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/figures/model_vs_experiment.png}
+\caption{Measured behavior and blind model predictions over all 22 measured current
+steps. The shaded bands show the voltage extrema in the common analysis window.}
+\label{fig:model_comparison}
+\end{figure}
+
+The experiment oscillates over 11 records, from $228.2$ to $606.3~\mu$A, with
+frequencies of $41.7$--$62.5$~MHz. The frozen model predicts no coherent
+oscillation at any measured current. It nevertheless reproduces the last stable
+pre-onset record: at $189.6~\mu$A, the measured and predicted mean voltages are
+$318.86$ and $319.53$~mV. Thus the cold-side static calibration works, whereas the
+dynamic switching window does not.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/figures/representative_traces.png}
+\caption{Representative measured and predicted voltages. The shaded interval is the
+common detection window. The $189.6~\mu$A control is reproduced closely, but the
+measured oscillations above onset are replaced by steady model solutions.}
+\label{fig:model_comparison_traces}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r r@{}}
+\toprule
+Quantity & Experiment & Frozen model \\
+\midrule
+Oscillating records & 11 of 22 & 0 of 22 \\
+Oscillation-current interval & $228.2$--$606.3~\mu$A & none \\
+Frequency interval & $41.7$--$62.5$ MHz & --- \\
+Energy per cycle in oscillating records & $1.229$--$1.761$ pJ & --- \\
+$189.6~\mu$A mean voltage & $318.86$ mV & $319.53$ mV \\
+Median plateau-voltage RMSE & \multicolumn{2}{c}{$32.38$ mV} \\
+Maximum change after halving $\Delta t$ & \multicolumn{2}{c}{$0.228$ mV} \\
+\bottomrule
+\end{tabular}
+\caption{Direct prediction results. Energy per cycle is the mean plateau power
+divided by the detected frequency.}
+\label{tab:model_comparison}
+\end{table}
+
+Halving the integration step from $0.05$ to $0.025$~ns does not change any tested
+classification and changes the representative mean voltages by at most $0.228$~mV.
+The missing oscillations are therefore not a time-step artifact.
+
+\section{Capacitance dependence and the thermal-only limit}
+\label{sec:capacitance_dependence}
+
+In the zero-capacitance limit,
+
+\begin{equation}
+C=0 \quad\Longrightarrow\quad V(t)=I_{\mathrm{in}}(t)R(T),
+\qquad
+\tau_{\mathrm{th}}=\frac{C_{\mathrm{th}}}{S_e}.
+\end{equation}
+
+A thermal relaxation cycle requires the same current to heat through the heating
+transition and then cool through the cooling transition. Using the fitted branch
+resistances at the two transition centers gives
+
+\begin{equation}
+I>I_{\mathrm{heat}}
+=\sqrt{\frac{S_e(T_{\mathrm{heat}}-T_0)}{R_{\mathrm{heat}}}}
+=329.65~\mu\mathrm{A},
+\qquad
+I<I_{\mathrm{cool}}
+=\sqrt{\frac{S_e(T_{\mathrm{cool}}-T_0)}{R_{\mathrm{cool}}}}
+=254.44~\mu\mathrm{A}.
+\end{equation}
+
+Because $I_{\mathrm{heat}}>I_{\mathrm{cool}}$, these conditions do not overlap:
+the fitted system has no thermal-only oscillation window. At the adopted
+$C=0.39$~pF, the metallic electrical time is $CR_m=7.10$~ps, compared with
+$\tau_{\mathrm{th}}=13.026$~ns. The ratio is $5.45\times10^{-4}$, so this
+capacitance supplies negligible electrical memory and does not alter the steady
+thermal thresholds.
+
+The numerical study varies $C$ from $0$ to $50$~pF and $C_{\mathrm{th}}$ across
+its conditional $0.021918$--$0.092624$~pJ/K interval while holding every other
+parameter fixed. The experimentally admissible range $0\le C\le0.39$~pF produces
+no oscillation anywhere in that interval. Oscillations first appear at $3$~pF only
+at the lowest tested $C_{\mathrm{th}}$; at the adopted $C_{\mathrm{th}}$, they first
+appear at $7$~pF. Both values exceed the electrical timing bound and would create a
+voltage lag absent from the measured edge.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/figures/capacitance_sensitivity.png}
+\caption{Predicted frequency under capacitance variation. Gray denotes no coherent
+oscillation. The dashed line and red cross identify the adopted electrical and thermal
+capacitances; larger electrical values are stress tests outside the timing bound.}
+\label{fig:capacitance_sensitivity}
+\end{figure}
+
+The present parameter set therefore matches the stable pre-onset voltage but cannot
+reproduce the measured oscillatory regime without an electrical capacitance that
+contradicts the edge timing. The next useful tests are an independently measured
+dynamic switching loop and inclusion of the actual TIA/load impedance. Changing
+$\gamma$ alone cannot explain the onset at $228.2~\mu$A, because the predicted
+temperature there does not reach the first heating transition; $\gamma$ acts only
+after a hysteresis reversal.
+
+\clearpage
+\section{Global parameter inference from all measured waveforms}
+\label{sec:global_inference}
+
+We next asked whether one shared set of model parameters could be inferred directly
+from the complete current--voltage data set. This is a stricter test than fitting one
+trace: the same vector
+
+\begin{equation}
+\boldsymbol{\theta}=(C,C_{\mathrm{th}},S_e,T_0,T_c,w,\beta,\gamma)
+\end{equation}
+
+must describe all 22 measured current waveforms. The source settings at 200, 400,
+600, 800, and 1000~mV were withheld from optimization, leaving 17 training traces
+and five blind test traces. The source-setting labels only identify records; the
+measured current waveform is the model input in every case.
+
+For each candidate, the simulator uses the complete measured current transient and
+compares the predicted and measured voltage over the common 50--250~ns plateau. The
+weighted objective is
+
+\begin{equation}
+\begin{split}
+J={}&0.20J_{\mathrm{wave}}+0.20J_{\mathrm{mean}}+0.15J_{\mathrm{amp}}
++0.15J_{\mathrm{spec}}\\
+&+0.15J_f+0.10J_{\mathrm{class}}+0.05J_{\mathrm{edge}}+0.05J_{\mathrm{prior}}.
+\end{split}
+\label{eq:global_objective}
+\end{equation}
+
+Here $J_{\mathrm{wave}}$ is a normalized waveform error, with a $\pm12$~ns phase
+shift allowed only for oscillatory records; the other terms compare mean voltage,
+peak-to-peak amplitude, normalized spectrum, frequency, oscillation classification,
+and the 0--50~ns rising edge. The constrained fit includes a weak prior and keeps
+each parameter inside its independently estimated interval. A second, deliberately
+relaxed fit removes that prior and expands the bounds to test whether the model can
+fit the data only by abandoning those measurements. Differential evolution explores
+the global space, followed by bounded local refinement. Optimization uses
+$\Delta t=0.2$~ns; every reported candidate is rerun at $0.05$~ns.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r r r r@{}}
+\toprule
+Parameter & Starting value & Physical interval & Constrained fit & Relaxed fit \\
+\midrule
+$C$ (pF) & 0.3900 & 0--0.390 & 0.2408 & 5.4187$^{*}$ \\
+$C_{\mathrm{th}}$ (pJ/K) & 0.04787 & 0.02192--0.09262 & 0.06146 & 0.10643$^{*}$ \\
+$S_e$ (mW/K) & 0.003675 & 0.003434--0.004085 & 0.003621 & 0.004894$^{*}$ \\
+$T_0$ (K) & 314.400 & 314.25--314.55 & 314.416 & 317.844$^{*}$ \\
+$T_c$ (K) & 333.494 & 333.137--333.838 & 333.476 & 332.927$^{*}$ \\
+$w$ (K) & 6.8823 & 6.6291--7.2681 & 6.8726 & 2.5568$^{*}$ \\
+$\beta$ (K$^{-1}$) & 0.29916 & 0.28092--0.32021 & 0.29542 & 0.11613$^{*}$ \\
+$\gamma$ & 0.95627 & 0.2--2.0 & 0.97956 & 1.03546 \\
+\bottomrule
+\end{tabular}
+\caption{Shared parameters inferred from all training traces. An asterisk marks a
+relaxed value outside the independently supported physical interval.}
+\label{tab:global_fit_parameters}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260829_105704_global-specimen-parameter-inference-from-all-cur_8f12d6/figures/optimization_history.png}
+\caption{Optimization history for the physically constrained and relaxed searches.
+The large relaxed improvement occurs only after the search leaves the measured
+parameter region.}
+\label{fig:global_fit_optimization}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r r r r@{}}
+\toprule
+Model & Training $J$ & Held-out $J$ & All-trace $J$ & Oscillations \\
+\midrule
+Starting estimates & 0.8680 & 0.9267 & 0.8813 & 0 of 22 \\
+Constrained fit & 0.8601 & 0.9255 & 0.8750 & 0 of 22 \\
+Relaxed diagnostic & 0.6515 & 0.7888 & 0.6827 & 0 of 22 \\
+\bottomrule
+\end{tabular}
+\caption{Fit and blind-test performance. Lower objective values are better. The
+experiment contains 11 oscillatory records.}
+\label{tab:global_fit_scores}
+\end{table}
+
+The constrained fit lowers the all-trace objective by only $0.72\%$ and the held-out
+objective by $0.13\%$. It remains essentially the independently estimated model and
+still predicts no oscillations. The relaxed search lowers the all-trace objective by
+$22.5\%$ and the held-out objective by $14.9\%$, so its improvement is not confined
+to the training records. However, seven of its eight parameters lie outside their
+physical intervals, including $C=5.42$~pF, and it also predicts no coherent
+oscillation. Its reduced amplitude error comes from large turn-on transients that
+settle to steady voltages.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260829_105704_global-specimen-parameter-inference-from-all-cur_8f12d6/figures/operating_summary.png}
+\caption{Measured and fitted operating summaries. The relaxed search partially
+reproduces mean voltage and apparent amplitude, but neither fit produces the measured
+frequency branch.}
+\label{fig:global_fit_summary}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{../../public_jobs/20260829_105704_global-specimen-parameter-inference-from-all-cur_8f12d6/figures/representative_fits.png}
+\caption{Representative waveform predictions. The relaxed fit can create a large
+initial excursion, but both fitted models settle instead of sustaining the measured
+oscillations.}
+\label{fig:global_fit_traces}
+\end{figure}
+
+Repeating the final evaluation at $0.2$, $0.1$, and $0.05$~ns gives all-trace
+objectives of 0.6868, 0.6838, and 0.6827 for the relaxed fit, without changing any
+oscillation classification. The conclusion is therefore numerically converged.
+This exercise does not provide replacement physical parameter estimates: it shows
+that parameter adjustment within the present ideal-current, quasi-static-hysteresis
+model is insufficient. The likely missing information is dynamic switching behavior
+or the actual TIA/load impedance. Notably, $\gamma$ remains near Yuanhang's value in
+both searches, so changing the minor-loop curvature alone is not the solution.
+
+\clearpage
+\section{Physics-anchored parameter inference}
+\label{sec:physics_anchored_inference}
+
+The unrestricted searches above showed that all eight parameters can compensate for
+one another. We therefore ordered the parameters by the strength of their independent
+evidence before fitting again. The measured $R(T)$ curve is the strongest anchor:
+$R_0$, $E_a/k_B$, and $R_m$ remain fixed at their fitted values, while $T_c$, $w$,
+and $\beta$ may move only inside their bootstrap intervals. The measured ambient
+temperature is restricted to $314.25$--$314.55$~K.
+
+The environmental conductance is the next strongest dynamic estimate. At the final
+stable trace before oscillation, $dT/dt\simeq0$, so
+
+\begin{equation}
+S_e=\frac{P}{T-T_0}=0.003675~\mathrm{mW/K},
+\qquad 0.003434\le S_e\le0.004085~\mathrm{mW/K}.
+\end{equation}
+
+This narrow interval is conditional on the $250$-setting trace being quasi-steady and
+on the static heating branch applying to the driven device. The thermal capacitance
+is less precise, but the nonswitching heating traces still support
+$0.021918\le C_{\mathrm{th}}\le0.092624$~pJ/K through
+$C_{\mathrm{th}}=S_e\tau_{\mathrm{th}}$. Only $C$ and $\gamma$ are searched broadly:
+the experiment provides an upper bound rather than a positive measurement for $C$,
+and no specimen-specific dynamic minor loops determine $\gamma$.
+
+All measured oscillatory records are used during optimization. Two stable source
+settings, 50 and 1000~mV, are withheld as negative controls;
+this is not a blind test because the remaining records were already inspected. The
+fit is performed directly at $\Delta t=0.025$~ns. Classification and false positives
+each receive weight 2500. Frequency receives weight 2, persistence and absolute
+amplitude weight 1, and the logarithmic amplitude-ratio penalty
+
+\begin{equation}
+J_{\mathrm{relamp}}=
+\left[\ln\!\left(\frac{V_{\mathrm{pp,pred}}+3~\mathrm{mV}}
+{V_{\mathrm{pp,meas}}+3~\mathrm{mV}}\right)\right]^2
+\end{equation}
+
+receives weight 10. The remaining waveform, mean-voltage, spectrum, and edge terms
+act as secondary tie-breakers.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r r r@{}}
+\toprule
+Parameter & Independent estimate & Allowed interval & Anchored fit \\
+\midrule
+$C$ (pF) & upper bound 0.390 & 0--30 & 6.83549$^{*}$ \\
+$C_{\mathrm{th}}$ (pJ/K) & 0.047873 & 0.021918--0.092624 & 0.044214 \\
+$S_e$ (mW/K) & 0.003675 & 0.003434--0.004085 & 0.003713 \\
+$T_0$ (K) & 314.400 & 314.25--314.55 & 314.363 \\
+$T_c$ (K) & 333.494 & 333.137--333.838 & 333.338 \\
+$w$ (K) & 6.8823 & 6.6291--7.2681 & 7.0415 \\
+$\beta$ (K$^{-1}$) & 0.29916 & 0.28092--0.32021 & 0.31444 \\
+$\gamma$ & 0.95627 (Yuanhang) & 0.1--3.0 & 0.15696$^{*}$ \\
+\bottomrule
+\end{tabular}
+\caption{Physics-anchored shared fit. Asterisks mark the two weakly identified
+quantities that conflict with current support: $C$ exceeds its timing bound and
+$\gamma$ lies below the nominal 0.2--2.0 range.}
+\label{tab:physics_anchored_parameters}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r r@{}}
+\toprule
+Quantity & Experiment & Anchored fit \\
+\midrule
+Peak-count classifications & 22 reference labels & 22 of 22 \\
+Peak-count oscillating records & 11 & 11 \\
+Peak-count current interval & 228.2--606.3 $\mu$A & 228.2--606.3 $\mu$A \\
+Stable negative controls & 2 & 2 \\
+Median predicted/measured $V_{\mathrm{pp}}$ & 1 & $5.55\times$ \\
+$V_{\mathrm{pp}}$ mean absolute error & --- & 212.5 mV \\
+Mean-voltage mean absolute error & --- & 35.4 mV \\
+Frequency interval & 41.7--62.5 MHz & 32.3--125.0 MHz \\
+Frequency mean absolute error & --- & 22.7 MHz \\
+\bottomrule
+\end{tabular}
+\caption{Historical peak-count result at $\Delta t=0.025$~ns. The later window
+audit finds that the $606.3~\mu$A prediction decays; matching these labels does not
+establish the complete sustained oscillation window.}
+\label{tab:physics_anchored_results}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{../../public_jobs/20260907_125315_physics-anchored-specimen-waveform-inference_717797/figures/operating_summary.png}
+\caption{Measured and physics-anchored operating behavior under the historical
+detector. Amplitude is too large, frequency rises too rapidly, and the last detected
+oscillation is a decaying transient.}
+\label{fig:physics_anchored_summary}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{../../public_jobs/20260907_125315_physics-anchored-specimen-waveform-inference_717797/figures/representative_fits.png}
+\caption{Representative physics-anchored predictions. The pre-onset record remains
+stable and several currents oscillate, but voltage amplitude is excessive and the
+$606.3~\mu$A predicted cycles fade.}
+\label{fig:physics_anchored_traces}
+\end{figure}
+
+The same parameter vector gives 22/22 peak-count classifications at $\Delta t=0.0125$~ns.
+It improved the earlier unrestricted classification-first result's 21/22 labels
+and reduced amplitude MAE from 280.1 to 212.5~mV while
+keeping six fitted quantities within their independent intervals. The earlier
+amplitude-priority vector reached 88.5~mV amplitude MAE, but only by falling to 19/22
+classifications and moving seven quantities outside their intervals; it is not
+promoted as the specimen model.
+
+The required $C=6.84$~pF is about 17.5
+times the experimental timing bound, and $\gamma=0.157$ cannot be interpreted as a
+measurement without dynamic minor-loop data. The excessive amplitude follows the
+full fitted resistance excursion, approximately $I\,\Delta R$, while the frequency
+reaches 125~MHz at the upper boundary. These errors point to partial or spatially
+nonuniform switching and the actual TIA/load dynamics as hypotheses to test.
+The thermal estimates remain conditional on static $R(T)$ thermometry and circuit
+interpretation; satisfying their intervals does not establish that they are correct.
+The full-precision vector is archived because the classification basin is narrow;
+the printed digits are descriptive, not measurement precision. The optimizer reached
+its finite budget, so this is the best reproducible candidate found rather than proof
+of a unique global optimum.
+
+\clearpage
+\section{Persistence audit and controlled parameter maps}
+\label{sec:persistence_audit}
+
+The objective is to distinguish sustained experimental cycles from decaying ringing
+before searching for another parameter fit. We compare four consecutive 50~ns
+windows from 50 to 250~ns, measuring mean voltage, raw and 5--95\% voltage spans,
+and fitted periodic amplitude. Late frequency is obtained independently from the
+150--250~ns spectrum and refined by sinusoidal regression, without the old detector's
+8~ns minimum peak spacing. The 100~ns record still has approximately 10~MHz spectral
+bin spacing; numerical interpolation does not add measurement resolution.
+
+A trace passes the operational persistence check when each window retains at least
+6~mV fitted fundamental peak-to-peak amplitude, the last/first robust voltage-span
+ratio is at least 0.5, and the late fundamental explains at least 40\% of detrended
+variance. These are diagnostic thresholds: varying the amplitude threshold from
+4 to 8~mV and retention from 0.25 to 0.75 gives 9--13 measured detections, reflecting
+the small boundary signals. The nominal settings recover all 11 measured oscillators.
+
+The archived $606.3~\mu$A prediction falls from 50.2~mV raw peak-to-peak in
+50--100~ns to 0.49~mV in 200--250~ns, while the experiment remains near 10--12~mV.
+Thus the earlier 22/22 peak-count result includes a dying oscillation.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260914_073330_sustained-oscillation-audit-and-three-current-ma_26ff13/figures/persistence_audit.png}
+\caption{Window audit of the previous fit. The high-current experimental cycles
+persist while the model relaxes toward a steady voltage.}
+\end{figure}
+
+We then mapped 126 shared combinations of $C=0$--12~pF and
+$\tau_{\mathrm{th}}=C_{\mathrm{th}}/S_e=6$--24~ns at
+$\gamma=0.157$, 0.5, and 0.956, including the previous parameter vector.
+The other quantities remain fixed at that vector, including
+$S_e=0.003713$~mW/K. The three measured inputs are approximately 228, 381, and
+606~$\mu$A. All mapped $C_{\mathrm{th}}$ values remain within their conditional
+interval; $C>0.39$~pF is explicitly a diagnostic stress test.
+
+Candidates receive equal continuous penalties scaled to 20\% amplitude ratio,
+10\% frequency error, 20~mV mean-voltage error, and a factor-two retention error.
+These are comparison scales, not statistical uncertainties. Fourteen combinations
+pass persistence at all three selected currents. We verify the best feature match,
+best persistent point, best timing-bound point, and previous vector on all 22
+currents at 0.025, 0.0125, and 0.00625~ns.
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{projectgray}{white}
+\begin{tabular}{@{}l r r r r r@{}}
+\toprule
+Candidate & $C$ (pF) & $\tau_{\mathrm{th}}$ (ns) & $\gamma$ & Recovered & False+ \\
+\midrule
+Previous fit & 6.835 & 11.909 & 0.157 & 9/11 & 0 \\
+Best feature match & 8.000 & 13.026 & 0.157 & 10/11 & 0 \\
+Best persistent point & 8.000 & 9.000 & 0.956 & 11/11 & 1 \\
+Best timing-bound point & 0 & 11.909 & 0.157 & 0/11 & 0 \\
+\bottomrule
+\end{tabular}
+\caption{Persistence at the finest step, 0.00625~ns. Recovered counts refer to the
+11 experimental oscillators; false positives are counted among the other records.}
+\end{table}
+
+The persistent candidate additionally oscillates at $645.5~\mu$A and its late
+$606.3~\mu$A robust amplitude is 294.5~mV versus 9.25~mV measured
+($31.8\times$). The best feature match still decays at $606.3~\mu$A. The previous
+fit also fails the retention check at $570.1~\mu$A at the two finest steps.
+No tested point with $C\le0.39$~pF sustains cycles at any of the three mapped currents.
+
+Between 0.0125 and 0.00625~ns, the persistent candidate changes by at most 1.2\%
+in late robust amplitude and 0.9\% in frequency across its persistent currents.
+The best feature candidate changes by up to 17.3\% and 13.7\%, respectively.
+Matching labels alone therefore does not establish waveform convergence.
+No new specimen calibration is adopted: this conditional grid identifies a
+persistence--amplitude tradeoff without exhausting all parameter possibilities.
+The full four-feature maps are retained as supplementary numerical evidence.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260914_073330_sustained-oscillation-audit-and-three-current-ma_26ff13/figures/candidate_comparison.png}
+\caption{Shared candidates at 0.00625~ns. Preserving cycles can enlarge the voltage
+excursion, while the smaller-amplitude upper-boundary response still decays.}
+\end{figure}
+
+\clearpage
+\clearpage
+\section{Conditional reconstruction of the driven resistance}
+\label{sec:inverse_hysteresis}
+
+To distinguish a search problem from inconsistent assumptions, we reconstruct the
+resistance and thermal history directly from the measured channels:
+\begin{equation}
+I_R=I-C\frac{dV}{dt},\qquad R_{\mathrm{eff}}=\frac{V}{I_R},\qquad
+P=VI_R,\qquad C_{\mathrm{th}}\frac{dT}{dt}=P-S_e(T-T_0).
+\end{equation}
+We then replay the existing hysteresis law on this prescribed $T(t)$ and compare
+its resistance with $R_{\mathrm{eff}}$. Unlike a forward waveform fit, this check
+does not let an optimizer change the temperature trajectory to improve agreement.
+The reconstructed temperature is conditional on the thermal balance, parameters,
+and channel interpretation; it is not an independent temperature measurement.
+The static resistance curve is not used as a thermometer here.
+
+The central calculation uses $C=0.39$~pF, $S_e=3.6751$~$\mu$W/K,
+$C_{\mathrm{th}}=0.047873$~pJ/K, $T_0=314.4$~K, the fitted major loop,
+and Yuanhang's $\gamma=0.95627$. Baseline-corrected channels are smoothed with a
+five-point quadratic filter before differentiating voltage. We integrate from
+$-200$~ns at $T_0$, using piecewise-linear measured power, and compare the late
+$150$--$250$~ns interval. Currents below are means in this interval after
+preprocessing, so they differ slightly from the earlier run labels.
+
+\begin{table}[H]
+\centering
+\caption{Late-time mean values from the conditional reconstruction.}
+\label{tab:inverse_hysteresis}
+\begin{tabular}{rrrr}
+\toprule
+$I$ ($\mu$A) & Inferred $T$ (K) & Measured $R$ ($\Omega$) & Replayed $R$ ($\Omega$) \\
+\midrule
+189.6 & 330.91 & 1680.6 & 1679.2 \\
+228.7 & 328.96 & 1017.9 & 1762.5 \\
+381.1 & 333.64 & 488.4 & 1215.1 \\
+606.7 & 344.25 & 298.2 & 29.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The below-onset agreement is a consistency check, not independent validation:
+this same operating region helped determine $S_e$. In contrast, the oscillatory
+records expose substantial resistance discrepancies, with opposite signs at
+intermediate and high current.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../../public_jobs/20260914_074731_conditional-hysteresis-reconstruction-from-measu_fa4b66/figures/reconstructed_hysteresis.png}
+\caption{Measured effective resistance (blue) and the model resistance replayed
+on the inferred thermal history (orange), with the fitted static major loop in
+the background. Only the late interval is displayed; the replay includes the
+preceding history. These are conditional trajectories, not new forward fits.}
+\label{fig:inverse_hysteresis}
+\end{figure}
+
+All 22 records were tested at $\gamma=0.15696$, $0.5$, $0.95627$, and $2$.
+At $606.7$~$\mu$A, the central replay gives only $26.4$--$33.8$~$\Omega$ across
+these values, versus $298.2$~$\Omega$ measured. One-at-a-time checks use the
+previous thermal-parameter bounds, $C=0$ and $6.8355$~pF, and nine-point
+smoothing. The largest improvement at this current comes from the upper
+$S_e=4.0850$~$\mu$W/K bound: the inferred mean temperature falls to $341.26$~K,
+but the replay still gives only $71.1$--$112.3$~$\Omega$ across the tested
+$\gamma$ values. These checks are not a joint confidence region or an exhaustive
+parameter search. Refining the replay from $0.5$ to $0.25$~ns changes mean
+resistance by at most $4.85\%$ across the tested cases and currents; it does not
+remove the large discrepancy. The underlying measured sampling remains $1$~ns.
+
+Thus, changing $\gamma$ alone did not resolve this consistency test. The next
+useful step is to check the measured-channel interpretation and the transfer of
+the static resistance law and lumped thermal parameters to driven operation,
+before another broad fit. This evidence does not uniquely distinguish an
+incorrect thermal estimate, a circuit contribution, or missing phase dynamics.
+No new calibrated parameter set is adopted.
+
+\clearpage
+\appendix
+\section{Reproduction}
+
+The validation run is archived as
+
+\begin{center}
+\footnotesize
+\path{20260817_100102_current-step-with-a-nonzero-metallic-voltage-val_6765e0}.
+\end{center}
+
+It can be reproduced from the repository root with
+
+\begin{center}
+\ttfamily\small
+neuristor simulate current --config experiments/current/nonzero\_voltage\_valley.toml
+\end{center}
+
+The archived bundle contains the resolved configuration, traces, metrics, figure, and repository provenance. A fresh execution produced identical metrics and byte-identical trace data.
+
+The resistance--temperature figure and synchronized GIF are regenerated from the same archived traces with \texttt{neuristor runs visualize}.
+
+The sample resistance fit is archived as
+
+\begin{center}
+\footnotesize
+\path{20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9}.
+\end{center}
+
+It is reproduced with
+
+\begin{center}
+\ttfamily\small
+neuristor fit resistance --data data/experimental/100425\_chip1\_gap3.tsv --method major-loop --bootstrap-samples 1000
+\end{center}
+
+The environmental-conductance analysis is archived as
+
+\begin{center}
+\footnotesize
+\path{20260817_153807_environmental-thermal-conductance-estimate_761640}.
+\end{center}
+
+It is reproduced with
+
+\begin{center}
+\ttfamily\footnotesize
+neuristor analyze conductance --data data/experimental/tia\_current\_sweep \\
+--resistance-preset presets/resistance\_100425\_chip1\_gap3.json \\
+--resistance-bootstrap public\_jobs/20260816\_125905\_sample-r-t-major-loop-hysteresis-fit\_0849a9/parameter\_bootstrap.csv \\
+--ambient-K 314.4 --ambient-interval-K 314.25,314.55
+\end{center}
+
+The thermal-capacitance analysis is archived as
+
+\begin{center}
+\footnotesize
+\path{20260828_112314_thermal-capacitance-estimate-with-conservative-0_aa2469}.
+\end{center}
+
+It is reproduced with
+
+\begin{center}
+\ttfamily\scriptsize
+neuristor analyze thermal-capacitance --data data/experimental/tia\_current\_sweep \\
+--resistance-preset presets/resistance\_100425\_chip1\_gap3.json \\
+--resistance-bootstrap public\_jobs/20260816\_125905\_sample-r-t-major-loop-hysteresis-fit\_0849a9/parameter\_bootstrap.csv \\
+--conductance-mW-per-K 0.003675126546984294 \\
+--conductance-bootstrap public\_jobs/20260817\_153807\_environmental-thermal-conductance-estimate\_761640/conductance\_bootstrap.csv \\
+--ambient-K 314.4 --electrical-capacitance-pF 0.39 \\
+--selected-drives-mV 100,150,200 --fit-window-ns 15,35
+\end{center}
+
+The blind model comparison and capacitance study are archived as
+
+\begin{center}
+\footnotesize
+\path{20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7}.
+\end{center}
+
+They are reproduced together with
+
+\begin{center}
+\ttfamily\small
+neuristor analyze model-validation --config experiments/current/specimen\_model\_validation.toml
+\end{center}
+
+The global shared-parameter inference is archived as
+
+\begin{center}
+\footnotesize
+\path{20260829_105704_global-specimen-parameter-inference-from-all-cur_8f12d6}.
+\end{center}
+
+It is reproduced with
+
+\begin{center}
+\ttfamily\small
+neuristor analyze fit-waveforms --config experiments/current/specimen\_waveform\_inference.toml
+\end{center}
+
+The bundle contains the resolved objective and bounds, every fitted parameter,
+per-trace metrics and predictions, held-out validation, optimization histories,
+figures, and the three-step convergence check.
+
+The physics-anchored inference is archived as
+
+\begin{center}
+\footnotesize
+\path{20260907_125315_physics-anchored-specimen-waveform-inference_717797}.
+\end{center}
+
+It is reproduced with
+
+\begin{center}
+\ttfamily\small
+neuristor analyze fit-waveforms --config experiments/current/specimen\_physics\_anchored\_inference.toml
+\end{center}
+
+Its bundle records the parameter-confidence hierarchy through explicit bounds, the
+amplitude-aware and oscillation-priority objective, both stable negative controls,
+all fitted waveforms and per-trace metrics, and the $0.1$--$0.0125$~ns convergence
+audit. Earlier unrestricted oscillation and amplitude searches remain in the public
+archive as superseded development evidence.
+
+The persistence audit and conditional reconstruction are archived as
+\begin{center}
+\footnotesize
+\path{20260914_073330_sustained-oscillation-audit-and-three-current-ma_26ff13}\\
+\path{20260914_074731_conditional-hysteresis-reconstruction-from-measu_fa4b66}.
+\end{center}
+Their numerical workflows are reproduced with
+\begin{center}
+\ttfamily\small
+neuristor analyze oscillation-audit --config\\
+experiments/current/specimen\_oscillation\_audit.toml\\[4pt]
+neuristor analyze reconstruct-hysteresis --config\\
+experiments/current/specimen\_hysteresis\_reconstruction.toml
+\end{center}
+The audit manifest separately records numerical and figure-rendering provenance.
+Both bundles include resolved inputs, numerical tables, figures, and methodology.
+
+The historical capacitance shortcut is preserved for provenance in
+
+\begin{center}
+\footnotesize
+\path{20260817_134254_lab-current-trace-parameter-estimates_4223e0}.
+\end{center}
+
+Its \path{electrical_capacitance.csv} contains the four values reconstructed in Table~\ref{tab:discarded_capacitance}. The bundle is retained as evidence of how $19.8$~pF was obtained, but that estimate is superseded by the full current-balance analysis in Section~\ref{sec:electrical_capacitance}.
+
+\begin{thebibliography}{9}
+
+\bibitem{zhang2024}
+Y.-H. Zhang, C. Sipling, E. Qiu, I. K. Schuller, and M. Di Ventra,
+``Collective dynamics and long-range order in thermal neuristor networks,''
+\emph{Nature Communications}, vol. 15, art. 6986, 2024.
+\href{https://doi.org/10.1038/s41467-024-51254-4}{doi:10.1038/s41467-024-51254-4}.
+
+\bibitem{gildor2026}
+A. Gildor, S. Hodisan, S. Kvatinsky, and Y. Kalcheim,
+``Harnessing the \vo{} Phase Transition for Automatic Gain Control in Transimpedance Amplifiers,''
+manuscript, arXiv:2604.04594v1, 2026.
+
+\end{thebibliography}
+
+\end{document}

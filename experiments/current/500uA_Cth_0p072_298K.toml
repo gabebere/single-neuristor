@@ -1,0 +1,52 @@
+schema_version = 1
+name = "500 uA with Cth 0.072 pJ per K at 298 K"
+kind = "simulation"
+model = "current"
+seed = 20260923
+
+[time]
+dt_ns = 0.002
+duration_us = 0.8
+
+[input]
+amplitude_uA = 500.0
+
+[initial]
+voltage_V = 0.0
+temperature_K = 298.0
+
+[electrical]
+C_pF = 7.2
+
+[thermal]
+C_th_pJ_per_K = 0.072
+S_e_mW_per_K = 0.0100
+T0_K = 298.0
+
+[resistance]
+preset = "yuanhang"
+start_branch = "insulator"
+
+# Resistance and hysteresis parameters from the eef073 replay.
+[resistance.parameters]
+R0 = 1.0438498936014968
+Ea_over_k = 2484.7074617150156
+Rm0 = 18.34332087986942
+Rm_factor = 1.0
+w = 6.988288287668067
+Tc_K = 332.74999240247257
+beta = 0.2803052086787129
+gamma = 0.1810504078904377
+width_factor = 1.0
+T_min_K = 284.8545
+T_max_K = 375.1625
+reversal_threshold_K = 0.01
+
+[analysis]
+start_us = 0.3
+stop_us = 0.8
+
+[output]
+root = "runs"
+scope_gif = true
+scope_frames = 96

@@ -1,0 +1,51 @@
+schema_version = 1
+name = "Sustained oscillation audit and three-current maps"
+kind = "simulation"
+model = "current"
+seed = 0
+
+[time]
+dt_ns = 0.025
+pre_us = 0.296
+duration_us = 0.25
+
+[input]
+amplitude_uA = 228.152299
+
+[electrical]
+C_pF = 0.39
+
+[thermal]
+C_th_pJ_per_K = 0.0478732360
+S_e_mW_per_K = 0.0036751265
+T0_K = 314.4
+
+[resistance]
+preset = "../../presets/resistance_100425_chip1_gap3.json"
+start_branch = "insulator"
+
+[audit]
+data_directory = "../../data/experimental/tia_current_sweep"
+reference_bundle = "../../public_jobs/20260907_125315_physics-anchored-specimen-waveform-inference_717797"
+reference_mode = "relaxed"
+# These labels identify records; the measured currents are the simulation inputs.
+source_settings_mV = [300.0, 500.0, 800.0]
+verification_dt_ns = [0.025, 0.0125, 0.00625]
+
+[audit.grid]
+# Every non-scanned parameter comes from the archived reference vector.
+# C above 0.39 pF is a diagnostic stress test, not a measured specimen value.
+C_pF = [0.0, 0.39, 2.0, 4.0, 8.0, 12.0]
+tau_th_ns = [6.0, 9.0, 13.026, 18.0, 24.0]
+gamma = [0.5, 0.956269682]
+include_reference = true
+
+[audit.metrics]
+window_edges_ns = [50.0, 100.0, 150.0, 200.0, 250.0]
+frequency_band_MHz = [10.0, 200.0]
+minimum_periodic_vpp_mV = 6.0
+minimum_retention = 0.5
+minimum_coherence = 0.4
+
+[output]
+root = "runs"

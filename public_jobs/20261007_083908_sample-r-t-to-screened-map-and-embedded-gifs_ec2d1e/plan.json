@@ -1,0 +1,21 @@
+{
+  "bootstrap_samples": 0,
+  "current_uA": 500.0,
+  "finest_possible_gif_dt_ns": 0.0015625,
+  "gif_integration_steps_upper_bound": 18144000,
+  "grid_points": 27,
+  "input_rows": 264,
+  "interpretation": "Conditional constant-current exploration, not a fitted laboratory circuit",
+  "map_dt_ns": [
+    0.05,
+    0.025,
+    0.0125
+  ],
+  "map_integration_steps_upper_bound": 2268000,
+  "maximum_frequency_MHz": 110.0,
+  "measured_temperature_range_K": [
+    289.8545,
+    370.1625
+  ],
+  "resistance_data": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/data/experimental/100425_chip1_gap3.tsv"
+}

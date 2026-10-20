@@ -1,0 +1,57 @@
+\clearpage
+\section{Numerical update procedure}
+\label{sec:numerical_update}
+
+The simulation uses timesteps $t_n=n\Delta t$. During each step, the input
+current and the resistance evaluated at the beginning of the step are held
+constant while the next voltage and temperature are calculated. Starting from
+$(V_n,T_n,\mathcal H_n)$, each timestep proceeds as follows:
+
+\begin{enumerate}
+    \item Evaluate the hysteretic resistance. If the trajectory has not yet
+    reversed, $T_{p,n}=0$; after a reversal,
+    \begin{align}
+        x_n&=\frac{T_n-T_{r,n}}{T_{pr,n}},\\
+        T_{p,n}&=\frac{T_{pr,n}}{2}
+        \left[1-\sin(\gamma x_n)\right]
+        \left[1+\tanh\!\left(\pi^2-2\pi x_n\right)\right],\\
+        g_n&=\frac{1}{2}+\frac{1}{2}\tanh\!\left[
+        \beta\left(\delta_n\frac{w}{2}+T_c-(T_n+T_{p,n})\right)\right],\\
+        R_n&=R_m+R_0\exp\!\left(\frac{E_a/k_B}{T_n}\right)g_n,
+        \qquad
+        P_{\mathrm J,n}=\frac{V_n^2}{R_n}.
+        \label{eq:discrete_resistance_power}
+    \end{align}
+
+    \item Set $V_{\infty,n}=I_{\mathrm{in},n}R_n$ and advance the voltage:
+    \begin{equation}
+        V_{n+1}=V_{\infty,n}
+        +\left(V_n-V_{\infty,n}\right)
+        \exp\!\left(-\frac{\Delta t}{R_nC}\right).
+        \label{eq:discrete_voltage}
+    \end{equation}
+
+    \item Set $T_{\infty,n}=T_0+P_{\mathrm J,n}/S_e$ and advance the
+    temperature:
+    \begin{equation}
+        T_{n+1}=T_{\infty,n}
+        +\left(T_n-T_{\infty,n}\right)
+        \exp\!\left(-\frac{S_e\Delta t}{C_{\mathrm{th}}}\right)
+        +\frac{\sigma}{C_{\mathrm{th}}}\sqrt{\Delta t}\,\xi_n,
+        \qquad \xi_n\sim\mathcal N(0,1).
+        \label{eq:discrete_temperature}
+    \end{equation}
+    The stochastic term vanishes in the deterministic simulations because
+    $\sigma=0$.
+
+    \item Update the hysteresis memory from the temperature change and proceed
+    to the next measured current value:
+    \begin{equation}
+        \mathcal H_{n+1}
+        =\operatorname{Update}\!\left(\mathcal H_n,T_n,T_{n+1}\right).
+        \label{eq:discrete_hysteresis_update}
+    \end{equation}
+\end{enumerate}
+
+These steps fully specify the simulated trajectory once the input waveform,
+initial conditions, timestep, and sample-dependent parameters are supplied.

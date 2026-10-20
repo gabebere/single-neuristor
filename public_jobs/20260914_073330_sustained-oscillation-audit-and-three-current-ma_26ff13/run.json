@@ -1,0 +1,241 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Archived Metrics",
+      "media_type": "text/csv",
+      "path": "archived_metrics.csv"
+    },
+    {
+      "label": "Archived Windows",
+      "media_type": "text/csv",
+      "path": "archived_windows.csv"
+    },
+    {
+      "label": "Candidate Ranking",
+      "media_type": "text/csv",
+      "path": "candidate_ranking.csv"
+    },
+    {
+      "label": "Candidate Traces",
+      "media_type": "text/csv",
+      "path": "candidate_traces.csv"
+    },
+    {
+      "label": "Map Windows",
+      "media_type": "text/csv",
+      "path": "map_windows.csv"
+    },
+    {
+      "label": "Measured Metrics",
+      "media_type": "text/csv",
+      "path": "measured_metrics.csv"
+    },
+    {
+      "label": "Parameter Map",
+      "media_type": "text/csv",
+      "path": "parameter_map.csv"
+    },
+    {
+      "label": "Threshold Sensitivity",
+      "media_type": "text/csv",
+      "path": "threshold_sensitivity.csv"
+    },
+    {
+      "label": "Verification",
+      "media_type": "text/csv",
+      "path": "verification.csv"
+    },
+    {
+      "label": "Verification Windows",
+      "media_type": "text/csv",
+      "path": "verification_windows.csv"
+    },
+    {
+      "label": "Persistence Audit",
+      "media_type": "image/png",
+      "path": "figures/persistence_audit.png"
+    },
+    {
+      "label": "Parameter Maps",
+      "media_type": "image/png",
+      "path": "figures/parameter_maps.png"
+    },
+    {
+      "label": "Candidate Comparison",
+      "media_type": "image/png",
+      "path": "figures/candidate_comparison.png"
+    },
+    {
+      "label": "Audit findings and verification",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Method and results",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor analyze oscillation-audit --config experiments/current/specimen_oscillation_audit.toml --reuse-numerics runs/20260913_122332_sustained-oscillation-audit-and-three-current-ma_8d97ef",
+  "created_at": "2026-09-14T07:33:30.481027+00:00",
+  "id": "20260914_073330_sustained-oscillation-audit-and-three-current-ma_26ff13",
+  "kind": "analysis",
+  "model": "oscillation-audit",
+  "name": "Sustained oscillation audit and three-current maps",
+  "numerical_source": {
+    "id": "20260913_122332_sustained-oscillation-audit-and-three-current-ma_8d97ef",
+    "provenance": {
+      "branch": "codex/unified-cli-dashboard-refactor",
+      "commit": "79c06924fb6eb6b3fe9f4f0b65eb120e7d32e668",
+      "dirty": false
+    },
+    "sha256": {
+      "archived_metrics.csv": "be3d628afcc1215c412fdf9f9029b4c3f784aae0d2fb55be51a533bfae3aed6e",
+      "archived_windows.csv": "562e17bfabe494eee5bfe45d27659938384796abf21790623cf5872653a19502",
+      "candidate_ranking.csv": "f679cf72dc95248cf0516d4a61f51b294e6c345d444470b826535dfebe5eec85",
+      "candidate_traces.csv": "c7d8145a793bdec5e9480c69b610b30a16398bf0c6cafe8a7637c1ae9459a92b",
+      "map_windows.csv": "84563b1ecca2f66d39796e913f1211af688e4b5de6bdf9f099a6d5d5a925c5e1",
+      "measured_metrics.csv": "8c6eeff4cffe9347475438295d983b3a471236e5d1adabcc05df53be1607e852",
+      "parameter_map.csv": "fa89d97558eccfe4b9b541c980d42eb74e308cc3baeedb5bc2094903df8f0b04",
+      "threshold_sensitivity.csv": "4343e37101e49c7743ab3424191833dad31eb5aa90e2e15617e2ae3ff10eebf0",
+      "verification.csv": "0fa007c89a13b9a52fe99db278a86debb5237f9acc255a05b578d82710ca7793",
+      "verification_windows.csv": "74fd82e30533f929956eceb1c3752f5a05dcb9dea095e86fe6a59fb909d0b328"
+    }
+  },
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "96c6dfa869dfaf54d60b9300f16131cbd6352da4",
+    "dirty": false
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "grid_combinations": 126,
+    "grid_combinations_sustained_at_all_three": 14,
+    "measured_sustained_records": 11,
+    "reference_legacy_records": 11,
+    "reference_sustained_records": 10,
+    "selected_source_settings_mV": [
+      300.0,
+      500.0,
+      800.0
+    ],
+    "verification": [
+      {
+        "candidate": "best_features",
+        "dt_ns": 0.00625,
+        "false_positives": 0,
+        "matches": 21,
+        "misses": 1,
+        "oscillatory_feature_score": 30.040451785895012,
+        "sustained_records": 10
+      },
+      {
+        "candidate": "best_features",
+        "dt_ns": 0.0125,
+        "false_positives": 0,
+        "matches": 21,
+        "misses": 1,
+        "oscillatory_feature_score": 30.229648252493725,
+        "sustained_records": 10
+      },
+      {
+        "candidate": "best_features",
+        "dt_ns": 0.025,
+        "false_positives": 0,
+        "matches": 21,
+        "misses": 1,
+        "oscillatory_feature_score": 30.939443059924486,
+        "sustained_records": 10
+      },
+      {
+        "candidate": "best_sustained",
+        "dt_ns": 0.00625,
+        "false_positives": 1,
+        "matches": 21,
+        "misses": 0,
+        "oscillatory_feature_score": 46.14782983663022,
+        "sustained_records": 12
+      },
+      {
+        "candidate": "best_sustained",
+        "dt_ns": 0.0125,
+        "false_positives": 1,
+        "matches": 21,
+        "misses": 0,
+        "oscillatory_feature_score": 46.25868416424848,
+        "sustained_records": 12
+      },
+      {
+        "candidate": "best_sustained",
+        "dt_ns": 0.025,
+        "false_positives": 1,
+        "matches": 21,
+        "misses": 0,
+        "oscillatory_feature_score": 46.44719339809898,
+        "sustained_records": 12
+      },
+      {
+        "candidate": "best_timing_bound",
+        "dt_ns": 0.00625,
+        "false_positives": 0,
+        "matches": 11,
+        "misses": 11,
+        "oscillatory_feature_score": 63.586352469391905,
+        "sustained_records": 0
+      },
+      {
+        "candidate": "best_timing_bound",
+        "dt_ns": 0.0125,
+        "false_positives": 0,
+        "matches": 11,
+        "misses": 11,
+        "oscillatory_feature_score": 63.420732380137935,
+        "sustained_records": 0
+      },
+      {
+        "candidate": "best_timing_bound",
+        "dt_ns": 0.025,
+        "false_positives": 0,
+        "matches": 11,
+        "misses": 11,
+        "oscillatory_feature_score": 63.309057454589556,
+        "sustained_records": 0
+      },
+      {
+        "candidate": "reference",
+        "dt_ns": 0.00625,
+        "false_positives": 0,
+        "matches": 20,
+        "misses": 2,
+        "oscillatory_feature_score": 29.497117259469885,
+        "sustained_records": 9
+      },
+      {
+        "candidate": "reference",
+        "dt_ns": 0.0125,
+        "false_positives": 0,
+        "matches": 20,
+        "misses": 2,
+        "oscillatory_feature_score": 30.139620517460436,
+        "sustained_records": 9
+      },
+      {
+        "candidate": "reference",
+        "dt_ns": 0.025,
+        "false_positives": 0,
+        "matches": 21,
+        "misses": 1,
+        "oscillatory_feature_score": 30.951824202805827,
+        "sustained_records": 10
+      }
+    ]
+  },
+  "updated_at": "2026-09-14T07:33:35.290394+00:00"
+}

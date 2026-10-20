@@ -1,0 +1,18 @@
+# Only these exact authored PDF bytes are approved, not third-party references.
+schema_version = 1
+
+[[authored_pdf]]
+path = "Simulations_on_VO2/main.pdf"
+sha256 = "0993578e2ff1811061cdabe4477e68c0f90ad7a2d45224ccbdaf30a546638c72"
+
+[[authored_pdf]]
+path = "docs/final_project/Simulations_for_VO2_AGC.pdf"
+sha256 = "5effe7f4f7e5d961bc4f0b47cbaa515122efadc25f697f19e8b5875ef04b7f83"
+
+[[authored_pdf]]
+path = "docs/final_project/presentation/VO2_Fitting_Journey.pdf"
+sha256 = "6df94e4e2cfd5506feb517c590a9927dd491e669ed39b8e4fa5f4a8e5a84e67c"
+
+[[authored_pdf]]
+path = "docs/manuscript/theory_behind_simulations.pdf"
+sha256 = "0cd90a3251e6f8539a1f03ea2448d00a167835dfc32d5fba737b99c7b2981a4e"

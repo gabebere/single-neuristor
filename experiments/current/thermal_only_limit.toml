@@ -1,0 +1,34 @@
+schema_version = 1
+name = "Current drive in the zero-capacitance thermal limit"
+kind = "simulation"
+model = "current"
+seed = 0
+
+[time]
+dt_ns = 0.1
+duration_us = 2.0
+
+[input]
+amplitude_uA = 600.0
+
+[initial]
+temperature_K = 324.9
+
+[electrical]
+# C=0 removes the electrical state exactly: V(t) = I(t) R(T).
+C_pF = 0.0
+
+[thermal]
+C_th_pJ_per_K = 49.62776831
+S_e_mW_per_K = 0.20558726
+T0_K = 325.0
+
+[resistance]
+preset = "yuanhang"
+start_branch = "insulator"
+
+[analysis]
+start_us = 0.5
+
+[output]
+root = "runs"

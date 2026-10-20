@@ -1,0 +1,54 @@
+\clearpage
+\section{Current-source formulation}
+\label{sec:current_source}
+
+Our objective is to reproduce and predict the current-driven \VOtwo{} response
+measured by Gildor \emph{et al.} in their transimpedance-amplifier experiments
+\cite{gildor2026}. We therefore replace Zhang's voltage source and load
+resistor with an ideal source that imposes the experimental current waveform
+$I_{\mathrm{in}}(t)$. The \VOtwo{} element itself is unchanged: its capacitance
+and hysteretic resistance remain connected in parallel.
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[scale=0.9]
+        \coordinate (Sbot) at (0,-2.0);
+        \node[draw,circle,minimum size=0.75cm,inner sep=0pt] (Isrc) at (0,-0.8) {};
+        \draw (Sbot) -- (Isrc.south);
+        \draw (Isrc.north) -- (0,0) -- (2.4,0)
+              node[circ]{} node[above left]{\(V\)} coordinate (Vnode);
+        \draw[->] (0,-1.0) -- (0,-0.6);
+        \node[left] at (-0.15,-0.8) {\(I_{\mathrm{in}}(t)\)};
+
+        \coordinate (LeftTop) at (2.4,0.8);
+        \coordinate (LeftBot) at (2.4,-0.8);
+        \coordinate (RightTop) at (4.7,0.8);
+        \coordinate (RightMid) at (4.7,0.0);
+        \coordinate (RightBot) at (4.7,-0.8);
+        \draw (LeftTop) -- (Vnode) -- (LeftBot);
+        \draw (RightTop) -- (RightMid) -- (RightBot);
+        \draw (LeftTop) to[C, l=\(C\)] (RightTop);
+        \draw (LeftBot) to[R, l={\(R(T,\mathcal H)\)}] (RightBot);
+        \draw (RightMid) -- (5.4,0) -- (5.4,-2.0) -- (Sbot);
+        \draw (2.9,-2.0) node[ground]{};
+    \end{circuitikz}
+    \caption{Ideal current-driven \VOtwo{} circuit used in the model.}
+    \label{fig:current_source_circuit}
+\end{figure}
+
+At node $V$, the imposed current divides between the capacitive and resistive
+branches. Kirchhoff's current law therefore gives
+
+\begin{equation}
+    I_{\mathrm{in}}(t)
+    =C\frac{\dd V}{\dd t}+\frac{V}{R(T,\mathcal H)},
+    \qquad\Longrightarrow\qquad
+    C\frac{\dd V}{\dd t}
+    =I_{\mathrm{in}}(t)-\frac{V}{R(T,\mathcal H)}.
+    \label{eq:current_source_balance}
+\end{equation}
+
+An external series resistor may change the voltage required from the source,
+but it does not change the imposed current and therefore does not enter
+Eq.~\eqref{eq:current_source_balance}. The thermal balance and hysteretic
+resistance law remain unchanged.

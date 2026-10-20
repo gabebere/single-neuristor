@@ -1,0 +1,109 @@
+% Numerical source: immutable joint-fit bundle 6b5d8f, 21 September 2026.
+\newcommand{\jointbundle}{../public_jobs/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f}
+
+\begin{frame}{Joint Fitting Improves a Score, but Not Every Requirement}
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Shared candidate & Static RMSE & Mean RMSE & Amplitude MAE & Recovered \\
+ & (decades) & (mV) & (mV) & /11 \\
+\midrule
+Frozen estimates & 0.0366 & 45.3 & 44.3 & 0 \\
+Prior anchored, replayed & 0.0426 & 50.9 & 140.1 & 9 \\
+Joint: static-preserving & 0.0495 & 50.5 & 62.0 & 4 \\
+Joint: dynamic diagnostic & 0.1433 & 60.2 & 90.3 & 5 \\
+\bottomrule
+\end{tabular}
+\vspace{0.3cm}
+\begin{block}{Useful improvement}
+The static-preserving fit reduces the validation feature score from 15.16
+(prior anchored) to 10.07: a 33.5\% improvement on the thirteen excluded currents.
+\end{block}
+\begin{alertblock}{Unresolved tradeoff}
+Smaller amplitude errors come with fewer sustained oscillators. Mean voltage
+does not improve over the frozen baseline. No new physical calibration is adopted.
+\end{alertblock}
+\slidesource{0.00625 ns. Mean error: 22 records. Periodic-amplitude error: the same 11 measured oscillators. Zero false positives. Bundle 6b5d8f.}
+\end{frame}
+
+\begin{frame}{Static Resistance and Dynamic Waveforms Compete}
+\centering
+\includegraphics[width=\textwidth]{\jointbundle/figures/joint_summary.png}
+\begin{block}{Interpretation}
+Allowing all resistance parameters to move is not enough, within this budget,
+to match static R(T), the output plateau and the full oscillation window together.
+\end{block}
+\slidesource{Plots use one parameter vector per candidate and all 22 records. Horizontal source settings identify records; the simulated input is the measured current waveform.}
+\end{frame}
+
+\begin{frame}{Representative Waveforms: The Remaining Failures Are Visible}
+\centering
+\includegraphics[height=0.77\textheight]{\jointbundle/figures/joint_traces.png}
+\slidesource{0.00625 ns; no per-current fitting or phase alignment. Settings 250/300/500/800 mV identify measured current steps near 190/228/381/606 microampere.}
+\end{frame}
+
+\begin{frame}{What the Optimizer Changed}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.62\textwidth}
+\scriptsize
+\begin{tabular}{lrrr}
+\toprule
+Parameter & Frozen & Static-preserving & Diagnostic \\
+\midrule
+\(R_0\) (\(\Omega\)) & 0.7989 & 0.6893 & 0.8620 \\
+\(E_a/k_B\) (K) & 2537.0 & 2575.1 & 2485.1 \\
+\(R_m\) (\(\Omega\)) & 18.22 & 20.06 & 17.57 \\
+\(T_c\) (K) & 333.49 & 333.31 & 332.18 \\
+\(w\) (K) & 6.882 & 6.371 & 7.243 \\
+\(\beta\) (K\(^{-1}\)) & 0.2992 & 0.2800 & 0.3639 \\
+\(\gamma\) & 0.9563 & 0.1757 & 0.1787 \\
+\(T_0\) (K) & 314.40 & 314.53 & 313.90 \\
+\(C\) (pF) & 0.390 & 6.806 & 4.964 \\
+\(S_e\) (\(\mu\)W/K) & 3.675 & 3.738 & 3.519 \\
+\(C_{th}\) (pJ/K) & 0.04787 & 0.05928 & 0.03970 \\
+\(\tau_{th}\) (ns), derived & 13.03 & 15.86 & 11.28 \\
+\bottomrule
+\end{tabular}
+\end{column}
+\begin{column}{0.35\textwidth}
+\begin{block}{Recurring conflict}
+\small Both fits favor electrical capacitance well above the conditional
+0.39 pF timing bound and a much smaller minor-loop parameter.
+\end{block}
+\begin{alertblock}{Effective values}
+\small These values minimize the chosen objective. They are not independent
+measurements of device capacitance, heat capacity or filament properties.
+\end{alertblock}
+\end{column}
+\end{columns}
+\slidesource{All six major-loop quantities were free; numerical values from parameters.csv. Same-device identity was confirmed by Gabriel.}
+\end{frame}
+
+\begin{frame}{Verification and the Decision After This Search}
+\footnotesize
+\begin{tabular}{lrr}
+\toprule
+Last refinement: 0.0125 to 0.00625 ns & Static-preserving & Diagnostic \\
+\midrule
+Maximum late-mean change, all currents & 0.34 mV & 4.04 mV \\
+Maximum periodic-amplitude change, persistent records & 2.52\% & 1.95\% \\
+Maximum frequency change, persistent records & 0.16\% & 0.44\% \\
+Persistent records at both fine steps & 4 & 5 \\
+\bottomrule
+\end{tabular}
+\vspace{0.15cm}
+\begin{itemize}
+\item 240 objective calls, 214 unique candidates, 201 search simulations;
+search wall time 153 s on this machine. Both optimizers exhausted their caps.
+\item Static-preserving search loss improved 15.1\% over its best starting
+candidate; diagnostic search loss improved 18.7\%. These are coarse-search scores.
+\item Final selection must use fine-step feature errors \emph{and} persistence.
+No candidate meets the complete experimental target.
+\end{itemize}
+\begin{block}{Next decision}
+Preserve these candidates as tradeoff evidence. Calibrate the TIA/device boundary
+and driven switching law before treating a more flexible fit as physical truth.
+\end{block}
+\slidesource{Amplitude/frequency changes use records persistent at both fine steps. Full verification: all 22 records at three steps.}
+\end{frame}

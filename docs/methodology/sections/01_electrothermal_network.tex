@@ -1,0 +1,121 @@
+\section{Starting electrothermal model}
+\label{sec:starting_model}
+
+The starting point of our simulations combines two inherited model components.
+Zhang \emph{et al.} formulated the electrical ordinary differential equation
+and lumped thermal stochastic differential equation for a \VOtwo{} neuristor
+\cite{zhang2024collective}, whereas Almeida \emph{et al.} developed the
+history-dependent resistance law used to represent its thermal hysteresis
+\cite{almeida2002hysteretic}. We briefly state these equations for a single
+neuristor, omitting device indices, before deriving our current-source
+formulation.
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}
+        \draw (0,0) node[ocirc]{} node[left]{\(V^{\mathrm{in}}\)}
+              to[R, l=\(R^{\mathrm{load}}\)] (3,0)
+              node[circ]{} node[above left]{\(V\)} coordinate (Vnode);
+
+        \coordinate (LeftTop) at (3.0,0.9);
+        \coordinate (LeftBot) at (3.0,-0.9);
+        \coordinate (RightTop) at (5.4,0.9);
+        \coordinate (RightMid) at (5.4,0.0);
+        \coordinate (RightBot) at (5.4,-0.9);
+
+        \draw (LeftTop) -- (Vnode) -- (LeftBot);
+        \draw (RightTop) -- (RightMid) -- (RightBot);
+        \draw (LeftTop) to[C, l=\(C\)] (RightTop);
+        \draw (LeftBot) to[R, l={\(R(T,\mathcal{H})\)}] (RightBot);
+        \draw (RightMid) -- (6.2,0) -- (6.2,-2.2) node[ground]{};
+    \end{circuitikz}
+    \caption{Single-neuristor equivalent circuit inherited from Zhang
+    \emph{et al.} The \VOtwo{} element is represented by capacitive and
+    hysteretic resistive branches connected in parallel.}
+    \label{fig:single_neuristor_model}
+\end{figure}
+
+\subsection{Electrical balance}
+
+The original circuit is voltage driven. A source $V^{\mathrm{in}}(t)$ is
+connected to the neuristor node through a load resistance
+$R^{\mathrm{load}}$. The \VOtwo{} element is represented by a capacitance
+$C$ in parallel with its temperature- and history-dependent resistive branch
+$R$. Applying Kirchhoff's current law at the node gives
+
+\begin{equation}
+    C\frac{\dd V}{\dd t}
+    =
+    \frac{V^{\mathrm{in}}-V}{R^{\mathrm{load}}}
+    -\frac{V}{R}.
+    \label{eq:voltage_balance_physical}
+\end{equation}
+
+The first term in Eq.~\eqref{eq:voltage_balance_physical} is the current
+delivered by the source through the load resistor. The second is the current
+through the resistive branch of the \VOtwo{} element. Their difference charges
+or discharges its capacitive branch.
+
+\subsection{Thermal balance}
+
+The neuristor temperature follows the lumped energy balance
+
+\begin{equation}
+    C_{\mathrm{th}}\frac{\dd T}{\dd t}
+    =
+    \frac{V^2}{R}
+    -S_e\left(T-T_0\right)
+    +\sigma\eta(t).
+    \label{eq:thermal_balance}
+\end{equation}
+
+Here $C_{\mathrm{th}}$ is the effective thermal capacitance, $V^2/R$ is the
+Joule-heating power, and $S_e(T-T_0)$ is the heat transferred from the device
+to its surroundings at temperature $T_0$. The term $\sigma\eta(t)$ represents
+optional thermal noise; we set $\sigma=0$ in the deterministic simulations.
+
+\subsection{Hysteretic resistance}
+
+The resistance model follows Almeida \emph{et al.}~\cite{almeida2002hysteretic}
+in the form implemented by Zhang \emph{et al.}:
+
+\begin{align}
+    R(T,\mathcal H)
+    &=R_m+R_0\exp\!\left(\frac{E_a/k_B}{T}\right)g(T,\mathcal H),
+    \label{eq:almeida_resistance}\\
+    g_{\mathrm{major}}(T,\delta)
+    &=\frac{1}{2}+\frac{1}{2}\tanh\!\left[
+        \beta\left(\delta\frac{w}{2}+T_c-T\right)
+    \right],
+    \qquad
+    \delta=\begin{cases}+1,&\text{heating},\\-1,&\text{cooling}.
+    \end{cases}
+    \label{eq:almeida_major}
+\end{align}
+
+Here $g$ is the semiconducting fraction, $R_m$ is the metallic resistance,
+and the two values of $\delta$ define the heating and cooling branches. At a
+reversal temperature $T_r$, the model chooses $T_{pr}$ to keep $g$ continuous
+and evaluates the same branch at a shifted temperature:
+
+\begin{equation}
+    g(T,\mathcal H)=g_{\mathrm{major}}(T+T_p,\delta),
+    \qquad
+    T_p=T_{pr}P(x),
+    \qquad
+    x=\frac{T-T_r}{T_{pr}}.
+    \label{eq:almeida_minor_loop}
+\end{equation}
+
+The shift is controlled by the proximity function
+
+\begin{equation}
+    P(x)=\frac{1}{2}\left[1-\sin(\gamma x)\right]
+    \left[1+\tanh\!\left(\pi^2-2\pi x\right)\right].
+    \label{eq:almeida_proximity}
+\end{equation}
+
+Thus $P(x)$ enters the resistance through the temperature shift $T_p$: it is
+approximately one at the reversal and decreases as the trajectory moves away,
+allowing the minor loop to approach the new major branch smoothly. The
+parameter $\gamma$ controls this approach.

@@ -1,0 +1,15 @@
+{
+  "S_e_ci95_lower_mW_per_K": 0.003434441374464172,
+  "S_e_ci95_upper_mW_per_K": 0.004085048480879843,
+  "S_e_mW_per_K": 0.003675126546984294,
+  "ambient_temperature_K": 314.4,
+  "current_corrected_uA": 190.16221538217096,
+  "effective_resistance_ohm": 1679.7588645990738,
+  "first_oscillating_trace": "300mv0_converted.csv",
+  "inferred_temperature_K": 330.9050253511536,
+  "power_uW": 60.65805682667344,
+  "resistance_drift_fraction": 0.0014547749556885372,
+  "selected_trace": "250mv0_converted.csv",
+  "voltage_corrected_mV": 319.213367,
+  "yuanhang_S_e_mW_per_K": 0.20558726
+}

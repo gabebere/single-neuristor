@@ -1,0 +1,52 @@
+schema_version = 1
+name = "Simple loss diagnostic 1 all-current GIF replay - not an accepted fit"
+kind = "simulation"
+model = "current"
+seed = 20260921
+
+[time]
+dt_ns = 0.00625
+pre_us = 0.296
+duration_us = 0.25
+
+[input]
+amplitude_uA = 380.9
+
+[initial]
+voltage_V = 0.0
+temperature_K = 317.4565718976869
+
+[electrical]
+C_pF = 3.744741140702404
+
+[thermal]
+C_th_pJ_per_K = 0.015325536542379852
+S_e_mW_per_K = 0.004846582194328268
+T0_K = 317.4565718976869
+
+[resistance]
+preset = "yuanhang"
+start_branch = "insulator"
+
+[resistance.parameters]
+R0 = 0.7989227061673402
+Ea_over_k = 2536.9654457644647
+Rm0 = 18.21526990911648
+Rm_factor = 1.0
+w = 6.882302959338694
+Tc_K = 333.49356636598696
+beta = 0.2991563242902104
+gamma = 0.7553336160763308
+width_factor = 1.0
+T_min_K = 284.8545
+T_max_K = 375.1625
+reversal_threshold_K = 0.01
+proximity_function = "yuanhang"
+
+[replay]
+data_directory = "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/data/experimental/tia_current_sweep"
+scope_frames = 48
+legacy_cursor_animations = false
+
+[output]
+root = "runs"

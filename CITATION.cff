@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "Cite this software separately from the primary physics and experimental papers. Review release metadata before publication."
+title: "Single VO2 Neuristor: Reproducible Electrothermal Simulation Library"
+type: software
+authors:
+  - family-names: Berezovsky
+    given-names: Gabriel
+repository-code: "https://github.com/gabebere/single-neuristor"
+license: MIT
+keywords:
+  - VO2
+  - electrothermal simulation
+  - hysteresis
+  - neuristor
+abstract: "Voltage- and ideal-current-driven VO2 simulations, measured resistance fitting, screened parameter maps, and reproducible research artifacts. Quantitative TIA sample calibration remains unresolved."

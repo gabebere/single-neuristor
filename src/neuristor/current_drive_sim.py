@@ -96,15 +96,17 @@ def _advance_voltage_exact(
     R: np.ndarray | np.float32,
     *,
     dt_s: float,
-    C_F: float,
+    C_F: float | np.ndarray,
 ) -> np.ndarray | np.float32:
     """Advance ``C dV/dt = I - V/R`` exactly while I and R are frozen."""
 
     target = np.asarray(I_in, dtype=_SIM_DTYPE) * np.asarray(R, dtype=_SIM_DTYPE)
-    if float(C_F) == 0.0:
+    if np.ndim(C_F) == 0 and float(C_F) == 0.0:
         return target
-    tau = _SIM_DTYPE(float(C_F)) * np.asarray(R, dtype=_SIM_DTYPE)
-    alpha = -np.expm1(-_SIM_DTYPE(float(dt_s)) / tau)
+    capacitance = np.asarray(C_F, dtype=_SIM_DTYPE)
+    tau = capacitance * np.asarray(R, dtype=_SIM_DTYPE)
+    with np.errstate(divide="ignore"):
+        alpha = -np.expm1(-_SIM_DTYPE(float(dt_s)) / tau)
     return np.asarray(V, dtype=_SIM_DTYPE) + alpha * (target - np.asarray(V, dtype=_SIM_DTYPE))
 
 
@@ -114,21 +116,26 @@ def _advance_temperature_exact(
     *,
     T0_K: float,
     dt_s: float,
-    C_th_J_per_K: float,
-    S_e_W_per_K: float,
+    C_th_J_per_K: float | np.ndarray,
+    S_e_W_per_K: float | np.ndarray,
 ) -> np.ndarray | np.float32:
     """Advance the linear cooling equation exactly while Joule power is frozen."""
 
     T_arr = np.asarray(T, dtype=_SIM_DTYPE)
     P_arr = np.asarray(P, dtype=_SIM_DTYPE)
-    C_th = _SIM_DTYPE(float(C_th_J_per_K))
-    S_e = _SIM_DTYPE(float(S_e_W_per_K))
+    C_th = np.asarray(C_th_J_per_K, dtype=_SIM_DTYPE)
+    S_e = np.asarray(S_e_W_per_K, dtype=_SIM_DTYPE)
     dt = _SIM_DTYPE(float(dt_s))
-    if float(S_e) == 0.0:
+    if np.ndim(S_e) == 0 and float(S_e) == 0.0:
         return T_arr + (dt / C_th) * P_arr
     alpha = -np.expm1(-(dt * S_e) / C_th)
-    target = _SIM_DTYPE(float(T0_K)) + P_arr / S_e
-    return T_arr + alpha * (target - T_arr)
+    if np.ndim(S_e) == 0:
+        target = _SIM_DTYPE(float(T0_K)) + P_arr / S_e
+        return T_arr + alpha * (target - T_arr)
+    # The zero-conductance columns retain their exact no-cooling limit.
+    positive = S_e > 0
+    target = _SIM_DTYPE(float(T0_K)) + P_arr / np.where(positive, S_e, _SIM_DTYPE(1.0))
+    return np.where(positive, T_arr + alpha * (target - T_arr), T_arr + (dt / C_th) * P_arr)
 
 
 def current_drive_numerics_report(
@@ -157,7 +164,9 @@ def current_drive_numerics_report(
     I_peak_A = abs(float(I_peak_uA)) * 1e-6
     V_fast_est = I_peak_A * R_eff_fast
     P_fast_est = (V_fast_est * V_fast_est) / max(R_metal, _EPS)
-    C_th = max(float(params.C_th_J_per_K), _EPS)
+    # CurrentDriveParams already requires C_th > 0. The specimen estimate is
+    # below 1e-12 J/K, so a generic denominator floor would hide thermal jumps.
+    C_th = float(params.C_th_J_per_K)
     dt_s = float(params.dt_s)
     dT_step_est_K = (dt_s / C_th) * P_fast_est
     reversal_thr = max(float(params.resist_params.reversal_threshold_K), _EPS)
@@ -522,6 +531,167 @@ def simulate_current_step(I_uA: float, params: CurrentDriveParams, seed: Optiona
     return _simulate_with_current_trace(t=t, I_in=I_in, params=params, seed=seed)
 
 
+def _simulate_with_current_matrix(
+    t: np.ndarray,
+    I_in: np.ndarray,
+    params: CurrentDriveParams,
+    *, audit_proximity: bool = False,
+    parameter_columns: Dict[str, np.ndarray] | None = None,
+) -> List[Dict[str, np.ndarray]]:
+    """Integrate independent deterministic waveforms in one vectorized pass."""
+
+    if I_in.ndim != 2 or I_in.shape[0] != t.size:
+        raise ValueError("I_in must have shape (time, independent waveforms)")
+    if float(params.sigma_W_sqrt_s) != 0.0:
+        raise ValueError("Vectorized arbitrary waveforms require zero thermal noise")
+    n_steps, n_currents = I_in.shape
+    if n_currents == 0:
+        return []
+    I_in = np.asarray(I_in, dtype=_SIM_DTYPE)
+    shape = (n_steps, n_currents)
+    V = np.zeros(shape, dtype=_SIM_DTYPE)
+    T = np.zeros(shape, dtype=_SIM_DTYPE)
+    g_eq = np.zeros(shape, dtype=_SIM_DTYPE)
+    R = np.zeros(shape, dtype=_SIM_DTYPE)
+    P = np.zeros(shape, dtype=_SIM_DTYPE)
+    V[0, :] = _SIM_DTYPE(params.V_init_V)
+    T[0, :] = _SIM_DTYPE(params.T_init_K)
+
+    hyst = HysteresisArray(
+        params.resist_params,
+        size=n_currents,
+        start_branch=params.start_branch,
+        independent_anchors=True,
+    )
+    hyst.initialize(T[0, :])
+    C = float(params.C_F)
+    C_th = float(params.C_th_J_per_K)
+    S_e = float(params.S_e_W_per_K)
+    if parameter_columns is not None:
+        C = np.asarray(parameter_columns["C_F"], dtype=_SIM_DTYPE)
+        C_th = np.asarray(parameter_columns["C_th_J_per_K"], dtype=_SIM_DTYPE)
+        S_e = np.asarray(parameter_columns["S_e_W_per_K"], dtype=_SIM_DTYPE)
+        if any(a.shape != (n_currents,) for a in (C, C_th, S_e)):
+            raise ValueError("Parameter columns must match the number of waveforms")
+    algebraic = C == 0.0
+    dt = _SIM_DTYPE(params.dt_s)
+    T0 = _SIM_DTYPE(params.T0_K)
+    minimum_proximity_slope = np.ones(n_currents)
+
+    for k in range(n_steps - 1):
+        R_k, g_k = hyst.evaluate(T[k, :])
+        if audit_proximity:
+            minimum_proximity_slope = np.minimum(
+                minimum_proximity_slope, hyst.proximity_temperature_slope(T[k, :]))
+        R_k = np.maximum(np.asarray(R_k, dtype=_SIM_DTYPE), _SIM_DTYPE(_EPS))
+        g_k = np.clip(np.asarray(g_k, dtype=_SIM_DTYPE), 0.0, 1.0)
+        if np.any(algebraic):
+            V[k, :] = np.where(algebraic, I_in[k, :] * R_k, V[k, :])
+        P_k = (V[k, :] * V[k, :]) / R_k
+        V[k + 1, :] = _advance_voltage_exact(V[k, :], I_in[k, :], R_k, dt_s=float(dt), C_F=C)
+        T[k + 1, :] = _advance_temperature_exact(
+            T[k, :],
+            P_k,
+            T0_K=float(T0),
+            dt_s=float(dt),
+            C_th_J_per_K=C_th,
+            S_e_W_per_K=S_e,
+        )
+        g_eq[k, :] = g_k
+        R[k, :] = R_k
+        P[k, :] = P_k
+
+    R_end, g_end = hyst.evaluate(T[-1, :])
+    if audit_proximity:
+        minimum_proximity_slope = np.minimum(
+            minimum_proximity_slope, hyst.proximity_temperature_slope(T[-1, :]))
+    g_eq[-1, :] = np.clip(np.asarray(g_end, dtype=_SIM_DTYPE), 0.0, 1.0)
+    R[-1, :] = np.maximum(np.asarray(R_end, dtype=_SIM_DTYPE), _SIM_DTYPE(_EPS))
+    if np.any(algebraic):
+        V[-1, :] = np.where(algebraic, I_in[-1, :] * R[-1, :], V[-1, :])
+    P[-1, :] = (V[-1, :] * V[-1, :]) / R[-1, :]
+    return [
+        {
+            "t": t,
+            "I_in": I_in[:, idx].copy(),
+            "V_vo2": V[:, idx].copy(),
+            "T": T[:, idx].copy(),
+            "T_hot": T[:, idx].copy(),
+            "T_sub": T[:, idx].copy(),
+            "g_eq": g_eq[:, idx].copy(),
+            "g_dyn": g_eq[:, idx].copy(),
+            "R": R[:, idx].copy(),
+            "P": P[:, idx].copy(),
+            **({"minimum_proximity_slope": np.asarray(minimum_proximity_slope[idx])}
+               if audit_proximity else {}),
+        }
+        for idx in range(n_currents)
+    ]
+
+
+def simulate_current_parameter_grid(
+    I_uA: float,
+    params: CurrentDriveParams,
+    *,
+    C_F: np.ndarray,
+    C_th_J_per_K: np.ndarray,
+    S_e_W_per_K: np.ndarray,
+) -> List[Dict[str, np.ndarray]]:
+    """Batch independent C/Cth/Se points through the authoritative time updates.
+
+    All columns share resistance parameters, ambient temperature, initial state,
+    timestep and imposed current. Independent hysteresis anchors prevent one
+    grid point from modifying another point's reversal history.
+    """
+    columns = {"C_F": np.asarray(C_F, float).reshape(-1),
+               "C_th_J_per_K": np.asarray(C_th_J_per_K, float).reshape(-1),
+               "S_e_W_per_K": np.asarray(S_e_W_per_K, float).reshape(-1)}
+    n = len(columns["C_F"])
+    if any(len(a) != n or not np.isfinite(a).all() for a in columns.values()):
+        raise ValueError("Grid columns must have equal lengths and finite values")
+    if np.any(columns["C_F"] < 0) or np.any(columns["C_th_J_per_K"] <= 0) or np.any(columns["S_e_W_per_K"] < 0):
+        raise ValueError("Require C >= 0, Cth > 0 and Se >= 0")
+    if n == 0:
+        return []
+    t = _time_grid(params.dt_s, params.t_end_s, params.t_pre_s)
+    current = _build_current_waveform(t, I_uA * 1e-6, params.pulse_on_s, params.pulse_off_s)
+    return _simulate_with_current_matrix(t, np.repeat(current[:, None], n, axis=1),
+        params, audit_proximity=True, parameter_columns=columns)
+
+
+def simulate_current_waveforms(
+    currents_uA: np.ndarray,
+    params: CurrentDriveParams,
+    *,
+    waveform_time_s: np.ndarray,
+    audit_proximity: bool = False,
+) -> List[Dict[str, np.ndarray]]:
+    """Simulate many measured current records with shared times and parameters.
+
+    Columns are independent devices/traces. This is mathematically identical to
+    repeated ``simulate_current_waveform`` calls when thermal noise is disabled,
+    but makes global parameter inference computationally practical.
+    """
+
+    currents = np.asarray(currents_uA, dtype=float)
+    if currents.ndim == 1:
+        currents = currents[:, np.newaxis]
+    times = np.asarray(waveform_time_s, dtype=float).reshape(-1)
+    if currents.ndim != 2 or currents.shape[0] != times.size:
+        raise ValueError("currents_uA must have shape (waveform time, traces)")
+    if times.size < 2 or np.any(np.diff(times) <= 0.0):
+        raise ValueError("waveform_time_s must increase strictly")
+    t = _time_grid(params.dt_s, params.t_end_s, params.t_pre_s)
+    interpolated = np.column_stack(
+        [
+            np.interp(t.astype(float), times, currents[:, idx], left=currents[0, idx], right=currents[-1, idx])
+            for idx in range(currents.shape[1])
+        ]
+    )
+    return _simulate_with_current_matrix(t, interpolated * 1e-6, params,
+                                         audit_proximity=audit_proximity)
+
+
 def simulate_current_steps(
     currents_uA: List[float],
     params: CurrentDriveParams,
@@ -552,72 +722,7 @@ def simulate_current_steps(
     currents_A = np.asarray(currents * 1e-6, dtype=_SIM_DTYPE)
     I_in[active, :] = currents_A[np.newaxis, :]
 
-    shape = (n_steps, n_currents)
-    V = np.zeros(shape, dtype=_SIM_DTYPE)
-    T = np.zeros(shape, dtype=_SIM_DTYPE)
-    g_eq = np.zeros(shape, dtype=_SIM_DTYPE)
-    R = np.zeros(shape, dtype=_SIM_DTYPE)
-    P = np.zeros(shape, dtype=_SIM_DTYPE)
-    V[0, :] = _SIM_DTYPE(params.V_init_V)
-    T[0, :] = _SIM_DTYPE(params.T_init_K)
-
-    hyst = HysteresisArray(
-        params.resist_params,
-        size=n_currents,
-        start_branch=params.start_branch,
-        independent_anchors=True,
-    )
-    hyst.initialize(T[0, :])
-
-    C = float(params.C_F)
-    C_th = float(params.C_th_J_per_K)
-    S_e = float(params.S_e_W_per_K)
-    dt = _SIM_DTYPE(params.dt_s)
-    T0 = _SIM_DTYPE(params.T0_K)
-
-    for k in range(n_steps - 1):
-        R_k, g_k = hyst.evaluate(T[k, :])
-        R_k = np.maximum(np.asarray(R_k, dtype=_SIM_DTYPE), _SIM_DTYPE(_EPS))
-        g_k = np.clip(np.asarray(g_k, dtype=_SIM_DTYPE), 0.0, 1.0)
-        if C == 0.0:
-            V[k, :] = I_in[k, :] * R_k
-        P_k = (V[k, :] * V[k, :]) / R_k
-        V[k + 1, :] = _advance_voltage_exact(V[k, :], I_in[k, :], R_k, dt_s=float(dt), C_F=C)
-        T[k + 1, :] = _advance_temperature_exact(
-            T[k, :],
-            P_k,
-            T0_K=float(T0),
-            dt_s=float(dt),
-            C_th_J_per_K=C_th,
-            S_e_W_per_K=S_e,
-        )
-
-        g_eq[k, :] = g_k
-        R[k, :] = R_k
-        P[k, :] = P_k
-
-    R_end, g_end = hyst.evaluate(T[-1, :])
-    g_eq[-1, :] = np.clip(np.asarray(g_end, dtype=_SIM_DTYPE), 0.0, 1.0)
-    R[-1, :] = np.maximum(np.asarray(R_end, dtype=_SIM_DTYPE), _SIM_DTYPE(_EPS))
-    if C == 0.0:
-        V[-1, :] = I_in[-1, :] * R[-1, :]
-    P[-1, :] = (V[-1, :] * V[-1, :]) / R[-1, :]
-
-    return [
-        {
-            "t": t,
-            "I_in": I_in[:, idx].copy(),
-            "V_vo2": V[:, idx].copy(),
-            "T": T[:, idx].copy(),
-            "T_hot": T[:, idx].copy(),
-            "T_sub": T[:, idx].copy(),
-            "g_eq": g_eq[:, idx].copy(),
-            "g_dyn": g_eq[:, idx].copy(),
-            "R": R[:, idx].copy(),
-            "P": P[:, idx].copy(),
-        }
-        for idx in range(n_currents)
-    ]
+    return _simulate_with_current_matrix(t, I_in, params)
 
 
 def _count_turns(signal: np.ndarray) -> int:

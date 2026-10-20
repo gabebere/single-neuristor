@@ -1,0 +1,109 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Coarse screening checkpoint",
+      "path": "screening_checkpoint.csv"
+    },
+    {
+      "label": "All grid points and screening flags",
+      "path": "grid.csv"
+    },
+    {
+      "label": "Two smaller timestep checks",
+      "path": "verification.csv"
+    },
+    {
+      "label": "Retained physically screened oscillators",
+      "path": "included.csv"
+    },
+    {
+      "label": "Exact sampled axes",
+      "media_type": "application/json",
+      "path": "axis_values.json"
+    },
+    {
+      "label": "Interactive 3D and six heatmaps",
+      "media_type": "text/html",
+      "path": "parameter_maps.html"
+    },
+    {
+      "label": "Six fixed-parameter heatmaps",
+      "media_type": "image/png",
+      "path": "heatmaps.png"
+    },
+    {
+      "label": "Screened map summary",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Method, assumptions and results",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    },
+    {
+      "label": "Source: current_drive_sim.py",
+      "path": "source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Source: model.py",
+      "path": "source/neuristor/model.py"
+    },
+    {
+      "label": "Source: extrema.py",
+      "path": "source/neuristor/extrema.py"
+    },
+    {
+      "label": "Source: physical_maps.py",
+      "path": "source/neuristor/physical_maps.py"
+    },
+    {
+      "label": "Source: workflows.py",
+      "path": "source/neuristor/workflows.py"
+    },
+    {
+      "label": "Source: map_workflows.py",
+      "path": "source/neuristor/map_workflows.py"
+    },
+    {
+      "label": "Resolved physical parameters in SI",
+      "media_type": "application/json",
+      "path": "physics_parameters.json"
+    }
+  ],
+  "command": "neuristor study run --config experiments/studies/sample_parameter_map.toml",
+  "created_at": "2026-10-07T08:39:08.724401+00:00",
+  "id": "20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de",
+  "kind": "analysis",
+  "model": "current",
+  "name": "Sample R(T) to screened map and embedded GIFs - screened grid",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "e2dd84e2ef811fbf29e26ac8e0416ee75bacc1e5",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "local",
+  "summary": {
+    "ambient_K": 298.0,
+    "coarse_eligible": 1,
+    "coarse_oscillators": 13,
+    "coarse_temperature_failures": 15,
+    "current_uA": 500.0,
+    "maximum_displayed_frequency_MHz": 23.215319473723035,
+    "maximum_displayed_temperature_K": 354.4288330078125,
+    "points": 27,
+    "retained_points": 1,
+    "verification_dt_ns": [
+      0.025,
+      0.0125
+    ]
+  },
+  "updated_at": "2026-10-07T08:39:20.313388+00:00"
+}

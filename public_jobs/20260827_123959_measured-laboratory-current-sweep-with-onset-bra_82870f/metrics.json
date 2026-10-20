@@ -1,0 +1,18 @@
+{
+  "current_max_uA": 943.291300117163,
+  "current_min_uA": 41.8558134916695,
+  "first_oscillating_drive_mV": 300.0,
+  "first_oscillating_peak_count": 8,
+  "first_oscillating_period_cv": 0.020257904182092133,
+  "first_oscillating_source_file": "300mv0_converted.csv",
+  "last_nonoscillating_drive_mV": 250.0,
+  "last_nonoscillating_peak_count": 1,
+  "last_nonoscillating_source_file": "250mv0_converted.csv",
+  "last_nonoscillating_voltage_vpp_mV": 14.14670000000001,
+  "oscillation_current_max_uA": 621.842683241655,
+  "oscillation_current_min_uA": 233.511368826578,
+  "oscillation_frequency_max_MHz": 62.5,
+  "oscillation_frequency_min_MHz": 41.666666666666664,
+  "samples": 22000,
+  "waveforms": 22
+}

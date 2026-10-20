@@ -1,0 +1,13 @@
+{
+  "hashes": {
+    "axis_values.json": "3239f52af5c06a5b478e9cf7df68d749d4ddb858db1f4580ecd55c3462e5f237",
+    "grid.csv": "b5ea951f490876fa3d547a64afc9c37ad491ba2c5a4719043a25dfb93d0d5ea3",
+    "physics_parameters.json": "80438c7c391dfc0e03d2e33ca35c210a947c7c9a1dd7897d74a517126560817b",
+    "verification.csv": "807a21792e860fdc6942a09c08a9622cc295fb81e45db62e8b49b4ccaae1058d"
+  },
+  "media_source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs_ec2d1e/stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3",
+  "numerical_source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs_ec2d1e/stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de",
+  "original_catalog_sha256": "1354e491672c54bfd70a32965e664e086135034067885e2a504b0ac28cf13859",
+  "resimulated": false,
+  "source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs_ec2d1e"
+}

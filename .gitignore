@@ -2,17 +2,41 @@
 README_FOR_CODEX.md
 IMPLEMENTATION_GUIDE.md
 jobs/
+/runs/*
+!/runs/README.md
 
 # Curated public jobs live in public_jobs/ and are intentionally
-# not ignored. Use the Streamlit export toggle when a run should be shareable.
+# not ignored. Use `neuristor runs publish RUN_ID` for reviewed local evidence;
+# committing/pushing to GitHub is a separate reviewed operation.
 
 # OS / Python build junk
 .DS_Store
 __pycache__/
+.pytest_cache/
+.ruff_cache/
 *.pyc
+*.egg-info/
+build/
+dist/
 
 # Local environments
 .venv/
+
+# Never upload reference paper/manuscript PDFs or local private material.
+# Existing tracked files must also be removed from the index (ignore is not enough).
+/private/
+/references/papers/*.pdf
+/references/reference_graphs.zip
+/docs/final_project/references/*.pdf
+
+# Complete 1,258-GIF package is a same-repository Release asset, not source Git.
+/public_jobs/20261007_074702_portable-screened-parameter-map-with-point-gifs_eaf6ab/
+
+# Rebuildable local inventories enumerate scratch/private-machine paths.
+/artifacts/index.html
+/artifacts/runs.csv
+/artifacts/files.csv
+/artifacts/source_inventory.csv
 
 # Generated analysis outputs
 outputs/

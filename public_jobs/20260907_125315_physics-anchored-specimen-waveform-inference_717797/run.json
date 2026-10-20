@@ -1,0 +1,126 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Original and fitted shared parameters",
+      "media_type": "text/csv",
+      "path": "parameter_comparison.csv"
+    },
+    {
+      "label": "Train, test, and full objective summary",
+      "media_type": "text/csv",
+      "path": "fit_summary.csv"
+    },
+    {
+      "label": "Per-trace fit evidence",
+      "media_type": "text/csv",
+      "path": "trace_metrics.csv"
+    },
+    {
+      "label": "Measured and globally fitted waveforms",
+      "media_type": "text/csv",
+      "path": "fitted_traces.csv"
+    },
+    {
+      "label": "Optimizer evaluation history",
+      "media_type": "text/csv",
+      "path": "optimization_history.csv"
+    },
+    {
+      "label": "Fine-step fit verification",
+      "media_type": "text/csv",
+      "path": "convergence.csv"
+    },
+    {
+      "label": "Optimization convergence",
+      "media_type": "image/png",
+      "path": "figures/optimization_history.png"
+    },
+    {
+      "label": "Measured and fitted operating features",
+      "media_type": "image/png",
+      "path": "figures/operating_summary.png"
+    },
+    {
+      "label": "Representative globally fitted traces",
+      "media_type": "image/png",
+      "path": "figures/representative_fits.png"
+    },
+    {
+      "label": "Global inference summary",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Scientific report",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor analyze fit-waveforms --config experiments/current/specimen_physics_anchored_inference.toml",
+  "created_at": "2026-09-07T12:53:15.865829+00:00",
+  "id": "20260907_125315_physics-anchored-specimen-waveform-inference_717797",
+  "kind": "analysis",
+  "model": "global-waveform-parameter-inference",
+  "name": "Physics-anchored specimen waveform inference",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "0f9e1620fc378f10e970a68eab1e37985e5f24e9",
+    "dirty": false
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "baseline_classification_matches": 11,
+    "baseline_objective_all": 1279.9543627983946,
+    "constrained_classification_matches": 11,
+    "constrained_evaluations": 132,
+    "constrained_objective_all": 1271.8431272977036,
+    "constrained_optimizer_messages": {
+      "global": "Maximum number of iterations has been exceeded.",
+      "local": "Maximum number of function evaluations has been exceeded."
+    },
+    "constrained_predicted_oscillating_traces": 0,
+    "final_dt_ns": 0.025,
+    "held_out_traces": 2,
+    "holdout_drives_mV": [
+      50.0,
+      1000.0
+    ],
+    "objective_weights": {
+      "amplitude": 1.0,
+      "classification": 2500.0,
+      "edge": 0.02,
+      "false_positive": 2500.0,
+      "frequency": 2.0,
+      "mean_voltage": 0.1,
+      "prior": 0.01,
+      "relative_amplitude": 10.0,
+      "spectrum": 0.1,
+      "sustain": 1.0,
+      "waveform": 0.1
+    },
+    "relaxed_classification_matches": 22,
+    "relaxed_evaluations": 452,
+    "relaxed_objective_all": 35.455342645051516,
+    "relaxed_optimizer_messages": {
+      "global": "Maximum number of iterations has been exceeded.",
+      "local": "Maximum number of function evaluations has been exceeded."
+    },
+    "relaxed_parameters_outside_physical_bounds": [
+      "C_pF",
+      "gamma"
+    ],
+    "relaxed_predicted_oscillating_traces": 11,
+    "resistance_source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/resistance_100425_chip1_gap3.json",
+    "search_dt_ns": 0.025,
+    "start_branch": "insulator",
+    "training_traces": 20
+  },
+  "updated_at": "2026-09-07T13:26:36.858499+00:00"
+}

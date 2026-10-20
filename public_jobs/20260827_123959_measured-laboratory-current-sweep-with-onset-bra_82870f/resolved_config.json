@@ -1,0 +1,21 @@
+{
+  "analysis_windows_ns": {
+    "baseline": [
+      -200.0,
+      -50.0
+    ],
+    "edge": [
+      0.0,
+      30.0
+    ],
+    "plateau": [
+      50.0,
+      250.0
+    ]
+  },
+  "data_directory": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/data/experimental/tia_current_sweep",
+  "kind": "analysis",
+  "model": "lab-current-waveforms",
+  "name": "Measured laboratory current sweep with onset bracket",
+  "schema_version": 1
+}

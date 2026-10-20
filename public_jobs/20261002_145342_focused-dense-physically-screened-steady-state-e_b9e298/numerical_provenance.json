@@ -1,0 +1,8 @@
+{
+  "hashes": {
+    "grid.csv": "fe3249fd470f98cac18563b5689b9428106ab37459ab7e4e118e83df362256b3",
+    "screening_checkpoint.csv": "b9e1bc1fb3b0d2fcaf957025b35c09de8811e14d8b1eef556b9fb09271253a44",
+    "verification.csv": "e12772e907672ef8017edd6f0e16554ce632d42849834b1486539bfc6f3f01e9"
+  },
+  "source_bundle": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/20261002_135747_focused-dense-physically-screened-steady-state-e_3009ce"
+}

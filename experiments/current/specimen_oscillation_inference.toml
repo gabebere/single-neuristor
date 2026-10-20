@@ -1,0 +1,170 @@
+schema_version = 1
+name = "Oscillation-priority global specimen parameter inference"
+kind = "simulation"
+model = "current"
+seed = 20260829
+
+[time]
+dt_ns = 0.05
+pre_us = 0.2
+duration_us = 0.5
+
+[input]
+amplitude_uA = 228.152299
+on_us = 0.0
+off_us = 0.3
+
+[initial]
+voltage_V = 0.0
+temperature_K = 314.4
+
+[electrical]
+C_pF = 0.39
+
+[thermal]
+C_th_pJ_per_K = 0.0478732360
+S_e_mW_per_K = 0.0036751265
+T0_K = 314.4
+
+[resistance]
+preset = "../../presets/resistance_100425_chip1_gap3.json"
+start_branch = "insulator"
+
+[analysis]
+start_us = 0.05
+stop_us = 0.25
+
+[inference]
+data_directory = "../../data/experimental/tia_current_sweep"
+holdout_drives_mV = [200.0, 400.0, 600.0, 800.0, 1000.0]
+search_dt_ns = 0.05
+final_dt_ns = 0.05
+
+# Oscillation window, persistence, and frequency dominate. Static waveform and
+# edge errors remain as tie-breakers once candidates reproduce the dynamics.
+[inference.weights]
+waveform = 0.02
+mean_voltage = 0.02
+amplitude = 0.01
+spectrum = 0.05
+frequency = 0.50
+classification = 250.0
+false_positive = 250.0
+sustain = 0.50
+edge = 0.01
+prior = 0.01
+
+[inference.optimizer]
+maxiter_constrained = 2
+maxiter_relaxed = 12
+popsize = 4
+local_max_evaluations = 100
+
+[[inference.constrained_parameters]]
+name = "C_pF"
+lower = 0.0
+upper = 0.39
+prior_center = 0.0
+prior_scale = 0.39
+
+[[inference.constrained_parameters]]
+name = "C_th_pJ_per_K"
+lower = 0.021918
+upper = 0.092624
+prior_center = 0.0478732360
+prior_scale = 0.01804
+
+[[inference.constrained_parameters]]
+name = "S_e_mW_per_K"
+lower = 0.003434
+upper = 0.004085
+prior_center = 0.0036751265
+prior_scale = 0.0001661
+
+[[inference.constrained_parameters]]
+name = "T0_K"
+lower = 314.25
+upper = 314.55
+prior_center = 314.4
+prior_scale = 0.07653
+
+[[inference.constrained_parameters]]
+name = "Tc_K"
+lower = 333.136889
+upper = 333.838313
+prior_center = 333.493566
+prior_scale = 0.17894
+
+[[inference.constrained_parameters]]
+name = "w_K"
+lower = 6.629055
+upper = 7.268148
+prior_center = 6.882303
+prior_scale = 0.16303
+
+[[inference.constrained_parameters]]
+name = "beta_per_K"
+lower = 0.280917
+upper = 0.320206
+prior_center = 0.299156
+prior_scale = 0.01002
+
+[[inference.constrained_parameters]]
+name = "gamma"
+lower = 0.2
+upper = 2.0
+prior_center = 0.956270
+prior_scale = 0.4
+
+# These broad bounds are diagnostic. Values outside the constrained intervals
+# are not interpreted as specimen measurements.
+[[inference.relaxed_parameters]]
+name = "C_pF"
+lower = 0.0
+upper = 30.0
+initial_value = 8.0
+
+[[inference.relaxed_parameters]]
+name = "C_th_pJ_per_K"
+lower = 0.005
+upper = 0.2
+initial_value = 0.020
+
+[[inference.relaxed_parameters]]
+name = "S_e_mW_per_K"
+lower = 0.0005
+upper = 0.02
+initial_value = 0.00234485695
+
+[[inference.relaxed_parameters]]
+name = "T0_K"
+lower = 310.0
+upper = 320.0
+initial_value = 312.997048762
+
+[[inference.relaxed_parameters]]
+name = "Tc_K"
+lower = 328.0
+upper = 342.0
+initial_value = 336.055647867
+
+[[inference.relaxed_parameters]]
+name = "w_K"
+lower = 1.0
+upper = 20.0
+initial_value = 8.074174546
+
+[[inference.relaxed_parameters]]
+name = "beta_per_K"
+lower = 0.05
+upper = 1.0
+initial_value = 0.251131171
+
+[[inference.relaxed_parameters]]
+name = "gamma"
+lower = 0.1
+upper = 3.0
+initial_value = 0.384625921
+
+[output]
+root = "runs"

@@ -1,307 +1,211 @@
-# Single VO₂ Neuristor Simulation
+# Single VO₂ Neuristor
 
-This repository contains simulation code for a single VO₂ neuristor, including:
-- A physics‑faithful simulator in `src/neuristor/model.py`
-- An ideal current-driven simulator in `src/neuristor/current_drive_sim.py`
-- A current-domain search backend in `src/neuristor/current_domain_search.py`
-- Analysis/plotting utilities in `src/neuristor/plots.py`
-- A manual CLI in `scripts/manual.py` (single runs, 1D sweeps, 2D frequency sweeps)
-- A Streamlit GUI in `app.py`
-- A specimen-fitting utility in `src/neuristor/resistance_custom_analysis.py`
+Fit a measured resistance loop, explore an ideal-current model, and share a
+clickable parameter map with synchronized current/voltage/R(T) animations.
 
-Created by Gabriel Berezovsky under the supervision of PhD candidate Amir Gildor in the Quantum Materials for Neuromorphic Computation Lab at the Technion.
+The project now has one end-to-end command for a new sample. Historical analyses
+remain available, but are not prerequisites for using the program.
 
-This project models the electrical and thermal dynamics of a VO₂ neuristor and reproduces spiking behavior.
+This is the definitive repository for the VO₂ project. New collaborators should
+read the [plain-language project guide](docs/PROJECT_GUIDE.md) and
+[short research handoff](docs/RESEARCH_HANDOFF.md); the complete dated record is
+preserved separately in [RESEARCH_HISTORY.md](docs/RESEARCH_HISTORY.md).
 
-## Repository layout
+**Sharing:** experimental numerical data and our generated results are approved
+for publication. Third-party paper/manuscript PDFs stay in local ignored
+`private/` storage, not Git or Releases. See [DATA_POLICY.md](docs/DATA_POLICY.md).
 
-These are the main files worth reading first:
+## Start here
 
-- `app.py`: Streamlit interface and job orchestration
-- `src/neuristor/model.py`: authoritative voltage-driven model and hysteresis implementation
-- `src/neuristor/current_drive_sim.py`: ideal current-source single-device simulator
-- `src/neuristor/current_domain_search.py`: parameter/domain search backend for current-driven runs
-- `src/neuristor/resistance_custom_analysis.py`: fit resistance/hysteresis parameters from measured `R(T)` data
-- `scripts/manual.py`: CLI entrypoint for voltage-driven runs and sweeps
-- `src/neuristor/plots.py`: post-processing and plotting helpers
-- `scripts/`: one-off analysis utilities for validation, figure generation, and current-drive studies
-- `presets/`: saved fitted/sample parameter sets
-- `data/experimental/`: measured data used for fitting
-- `docs/manuscript/`: manuscript source, compiled PDF, and manuscript figures
-- `docs/figures/current_drive/`: committed evidence figures, numerical grids, and figure-level reports
-- `Simulations_on_VO2/`: archived July 2026 presentation source, PDF, and media
-- `references/papers/`: paper PDFs used as modeling references
-- `references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/`: upstream reference code
-- `docs/HYSTERESIS_IMPLEMENTATION_AUDIT.md`: hysteresis implementation, branch conventions, provenance, and validation rules
-- `docs/ARCHIVE_INDEX.md`: current evidence, historical artifacts, and reproducibility map
-- `jobs/`: local-only Streamlit run history, ignored by Git
-- `public_jobs/`: curated Streamlit run history that can be committed and shared
+Open [START_HERE.html](START_HERE.html) for a browser-friendly project directory,
+or [START_HERE.md](START_HERE.md) for a plain-language guide.
 
-The root is intentionally minimal. `app.py` is the only top-level application entrypoint.
-Implementation code lives under `src/neuristor/`, and auxiliary command-line tools live under `scripts/`.
+1. [Run a new sample study](docs/SAMPLE_STUDY.md): inputs, units, bounds, outputs.
+2. [Selected results](results/index.html): labeled evidence, maps and large downloads.
+3. [Paper reproduction](paper/README.md): measured inputs → recipes → supporting outputs.
+4. [Research handoff](docs/RESEARCH_HANDOFF.md): what is supported and what remains unresolved.
+5. [Source guide](src/neuristor/README.md): folders, responsibilities, and compatibility imports.
 
-## Job History Storage
+**Scientific status:** the current solver and static R(T) fit are tested. A
+physically supported quantitative match to the laboratory TIA oscillations is
+still unresolved. A retained point in a parameter map is a conditional model
+result, not an experimentally validated sample calibration.
 
-Streamlit run history is split into two lanes:
+## Install
 
-- Local/private jobs are saved under `jobs/`; this folder is ignored and should be used for exploratory sweeps.
-- Public jobs are saved under `public_jobs/`; this folder is intentionally not ignored so selected runs can be reviewed through GitHub.
-
-Use the **Save in public history** toggle in the experiment forms only for runs that should be shared. The History tab can filter between both lanes.
-
-## Custom Resistance Calibration (Experimental Specimen)
-
-This repo includes a specimen-fitting utility for calibrating `YuanhangResistParams` from measured `R(T)` data:
+Python 3.10+:
 
 ```bash
-python scripts/fit_resistance.py \
-  --data data/experimental/100425_chip1_gap3.tsv \
-  --save-json presets/resistance_100425_chip1_gap3.json \
-  --save-plot outputs/resistance_fit_100425_chip1_gap3.png
-```
-
-The generated preset can be loaded in the Streamlit app via the sidebar button:
-- `Load specimen resistance preset`
-
-This button only updates resistance/hysteresis parameters (and initial branch), so it does not overwrite your circuit/time controls.
-
-For current-input runs, the app also provides a one-click combined preset in the **Current-Driven Sweep** section:
-- `Load professor preset`
-
-This applies paper current/thermal defaults plus the specimen RT-fitted resistance parameters together.
-
-Current-drive ODE assumption used in this repo: ideal current source at the VO2 node
-(`dV/dt = (I_in - V/R_vo2)/C`). External/source series resistance is not part of that reduced model.
-Set `C=0` to use the algebraic limit `V=I_in*R_vo2`; finite-C electrical and deterministic
-thermal substeps use stable frozen-coefficient exponential updates.
-
-For the Yuanhang-centered `C_th`-versus-`C` heatmaps and the image-based lab parameter
-estimates, see `docs/CURRENT_DRIVE_CALIBRATION.md` and run:
-
-```bash
-python scripts/sweep_current_capacitances.py
-python scripts/estimate_lab_current_parameters.py
-```
-
-The reviewed evidence package is committed under `docs/figures/current_drive/` so the
-plots render directly on GitHub. To rebuild that exact package from tracked model and
-lab-image inputs:
-
-```bash
-python scripts/sweep_current_capacitances.py \
-  --output-dir docs/figures/current_drive/capacitance_study
-python scripts/estimate_lab_current_parameters.py \
-  --output-dir docs/figures/current_drive/lab_estimates
-python scripts/generate_nonzero_valley_examples.py
-```
-
-The ignored `outputs/`, `output/`, and `tmp/` trees are scratch/render workspaces and
-are not the scientific archive. Curated Streamlit runs belong in `public_jobs/`.
-
-## Performance and fidelity
-
-- The executable hysteresis path is the upstream-faithful Yuanhang float32 implementation.
-- Torch evaluates the hysteresis transcendental functions; NumPy stores and integrates simulation state.
-- Deterministic Yuanhang current-source sweeps are vectorized across current amplitudes and are tested for exact equality with serial traces.
-- Optional stochastic current-source sweeps retain the serial path so seeded noise streams stay reproducible.
-- Dynamic-phase, double-thermal, multidomain, and alternate reversal current-source modes are not part of the active physical model.
-- Streamlit caches unchanged sample presets and completed job CSVs. Cache keys include file timestamps and sizes, so edited files invalidate automatically.
-
-## Installation and GUI (Streamlit)
-
-Below is a thorough, step-by-step guide for first-time users (PI/PhD/student).
-
-### 0) Prerequisites (one-time)
-
-You need:
-- Git (for cloning the repo)
-- Python 3.10+ (required because the code uses modern typing syntax)
-
-Check Python:
-```
-python --version
-```
-
-If Python is missing, install it from https://www.python.org/downloads/ or use Anaconda/Miniconda.
-
-Check Git:
-```
-git --version
-```
-
-### 1) Fork the repository (recommended)
-
-1) Open this repo in GitHub.
-2) Click **Fork** (top right) to create your own copy under your GitHub account.
-
-Why fork?
-- You can pull updates from the main repo but keep your own changes in your fork.
-
-### 2) Clone your fork to your computer
-
-Open a terminal and run:
-```
-git clone https://github.com/<your-username>/<your-fork>.git
-cd <your-fork>
-```
-
-If you do not need to modify the code, you can clone the main repo directly:
-```
-git clone https://github.com/gabebere/single-neuristor.git
-cd single-neuristor
-```
-
-### 3) Create and activate a virtual environment
-
-From the repo root:
-```
 python -m venv .venv
-```
-
-Activate it:
-```
-# macOS / Linux
 source .venv/bin/activate
-
-# Windows (PowerShell)
-.venv\Scripts\Activate.ps1
+python -m pip install -e .
 ```
 
-You should now see the environment name in your terminal prompt (e.g., `.venv`).
+On Windows, activate with `.venv\Scripts\Activate.ps1`.
 
-### 4) Install Python dependencies
+## One configuration, one study
 
-```
-pip install -r requirements.txt
-```
+Copy [the commented example recipe](experiments/studies/sample_parameter_map.toml).
+Edit the resistance-data path and column names/units, current, ambient temperature,
+initial conditions, parameter axes and time window. Do not edit solver code.
 
-If you use Anaconda:
-```
-conda create -n neuristor python=3.11
-conda activate neuristor
-pip install -r requirements.txt
+```bash
+neuristor study plan --config experiments/studies/sample_parameter_map.toml
+neuristor study run  --config experiments/studies/sample_parameter_map.toml
 ```
 
-### 5) Run the GUI (Streamlit)
+The example starts with 27 combinations. The plan checks acquisition order,
+units, frequency ceiling, grid size and timestep settings before doing any fit.
+For a different current, use an explicit override:
 
-From the repo root:
-```
-streamlit run app.py
-```
-
-Streamlit will print a URL (usually `http://localhost:8501`). Open it in your browser.
-
-### 6) (Optional) Update your local copy later
-
-If you forked and want the latest changes:
-```
-git pull origin main
+```bash
+neuristor study run --config experiments/studies/sample_parameter_map.toml \
+  --set input.amplitude_uA=600
 ```
 
-If you cloned the main repo directly:
-```
-git pull origin main
+The workflow:
+
+- Fits six major-loop resistance parameters to the supplied numerical R(T) curve.
+- Samples Cth, Se and C at the configured constant ideal current.
+- Screens settled voltage extrema, temperature, proximity response and frequency.
+- Rechecks survivors at two smaller timesteps.
+- Generates finer-step GIFs for every retained point, with explicit resolution warnings.
+- Embeds all GIFs and the fitted R(T) image into **one standalone HTML file**.
+
+Share `parameter_maps.html` alone. No ZIP, server or internet is needed. Large
+grids create large HTML files; check the size before emailing. The complete study
+folder separately preserves raw measurements, numerical checks and frozen source.
+See [the detailed output contract](docs/SAMPLE_STUDY.md#output-folder).
+
+Major-loop data do not identify gamma or the dynamic thermal/electrical constants.
+Those remain declared assumptions or search axes. The default 110 **MHz** cutoff
+is an operating screen, not a universal physical law. The default temperature
+screen uses the measured R(T) range, without extrapolation.
+
+## Explore oscillation boundaries
+
+```bash
+neuristor analyze boundary-maps --config experiments/current/adaptive_boundary_maps.toml
 ```
 
-### Troubleshooting
+This two-stage search expands a coarse log grid before refining the active domain
+and verifying both sides of transition brackets at two smaller timesteps. Slow
+transients extend their observation window; unresolved or excluded points remain
+visible. Search limits and temperature/frequency screens are never labeled as
+physical oscillation boundaries.
 
-- **`ModuleNotFoundError`**: dependencies aren’t installed. Re-run `pip install -r requirements.txt`.
-- **`streamlit` not found**: your environment isn’t active. Activate `.venv`, then retry.
-- **Port already in use**: run `streamlit run app.py --server.port 8502`.
-- **Click-to-run points not working**: ensure `streamlit-plotly-events` is installed (it is included in `requirements.txt`).
+The deterministic model has an open common-capacitance scale: multiplying C and
+Cth together preserves trajectory shape and changes its timescale. The search
+therefore explores C/Cth and Se, then reconstructs a three-parameter view with
+its open scale directions labeled. See [method and output guide](docs/BOUNDARY_SEARCH.md).
 
-## Manual CLI (`scripts/manual.py`)
+## Find and preserve evidence
 
-Run from the repo root:
-```
-python scripts/manual.py --help
-```
-
-### Commands
-
-1) Single run (one Vin or Vin list)
-```
-python scripts/manual.py single --vin 14.5
-python scripts/manual.py single --vin_list "10.5,12.5,14.5"
-```
-
-2) 1D sweep (coarse → fine) over any scalar parameter
-```
-python scripts/manual.py sweep1d --param Vin --start 0 --stop 20 --coarse-step 0.5 --fine-step 0.05
-python scripts/manual.py sweep1d --param C_par_pF --start 80 --stop 250 --coarse-step 20 --fine-step 5 --vin 14.5
+```bash
+neuristor runs index
+neuristor runs list
+neuristor runs show RUN_ID
+neuristor runs publish RUN_ID
+neuristor runs manage
 ```
 
-Outputs: Vmax, Pmax/Pmin, Tmax/Tmin, frequency, mean ISI vs the free variable.
+Open [artifacts/index.html](artifacts/index.html). Its CSV inventory also covers old
+loose figures, data, PDFs and presentations. The hub links canonical files instead
+of making duplicate archives. Rebuild it after new runs or publication.
 
-3) 2D sweep (frequency vs two parameters, 3D scatter + heatmap)
-```
-python scripts/manual.py sweep2d --param-x Vin --param-y C_par_pF --x-start 0 --x-stop 20 --x-step 0.5 --y-start 80 --y-stop 250 --y-step 10
+Files formerly delivered on Desktop are linked in the
+[consolidated Desktop guide](archive/desktop_consolidation_20261016/index.html).
+Their unique notes are preserved under `archive/`; existing data and GIF bundles
+stay in their canonical locations without another copy.
+
+Exploratory runs go to ignored `runs/`. Publishing copies a completed bundle to
+`public_jobs/`; it does **not** commit or push to GitHub. Old bundles are immutable.
+Generation status does not establish fit quality: always read the report.
+
+To remove unwanted local trials, run `neuristor runs manage` and open its printed
+local URL. **Delete…** asks for confirmation and moves the complete run into
+recoverable `runs/.trash/`; **Restore** brings it back without overwriting files.
+Published evidence, running jobs and recipe-referenced runs are protected. The
+exported file-based catalog remains read-only. Trash does not free disk space.
+Terminal equivalents: `neuristor runs delete RUN_ID`, `neuristor runs trash`, and
+`neuristor runs restore TRASH_ID`. [Management guide](docs/RUN_MANAGEMENT.md).
+
+## Other supported commands
+
+| Task | Command |
+|---|---|
+| Single current simulation | `neuristor simulate current --config FILE.toml` |
+| Original voltage circuit | `neuristor simulate voltage --config FILE.toml` |
+| Standalone R(T) fit | `neuristor fit resistance --data FILE.tsv --method major-loop` |
+| Laboratory replay | `neuristor analyze replay-lab --config FILE.toml` |
+| Existing screened-map workflow | `neuristor analyze physical-maps --config FILE.toml` |
+| Attach GIFs to an existing map | `neuristor analyze map-animations --config FILE.toml` |
+| Update historical map displays without resimulation | `neuristor analyze refresh-maps --all-existing` |
+| Frequency/amplitude fitting | `neuristor analyze fit-steady --config FILE.toml` |
+| Parameter sweep | `neuristor sweep run --config FILE.toml` |
+| Read-only archive dashboard | `neuristor dashboard` |
+
+Use `neuristor --help` and the relevant command's `--help`.
+[Map display guide](docs/MAP_DISPLAY.md): heatmap axes and color scales now stay
+fixed across slider positions. The artifact hub links historical maps to their
+updated viewers while preserving the original exports.
+[Full workflow reference](docs/WORKFLOW_REFERENCE.md) preserves the earlier detailed
+command guide and historical interpretations. [Archive chronology](docs/ARCHIVE_INDEX.md)
+and [research handoff](docs/RESEARCH_HANDOFF.md) take precedence over older fit claims.
+
+## Repository responsibilities
+
+| Folder/file | Responsibility |
+|---|---|
+| `src/neuristor/` | Authoritative physics plus separate analysis, fitting, plotting, orchestration and interface folders |
+| `experiments/` | Editable, versioned TOML recipes with explicit units |
+| `tests/` | Numerical fidelity, convergence, workflows and artifact tests |
+| `data/experimental/` | Canonical measured numerical inputs |
+| `presets/` | Archived resistance fits and parameter sets |
+| `runs/` | Ignored exploratory study/run bundles |
+| `public_jobs/` | Reviewed immutable bundles; Git-trackable, not necessarily pushed |
+| `artifacts/` | Lightweight navigation hub; no duplicate media/database |
+| `results/` | Selected-result front door and same-repository large-artifact downloads |
+| `private/` | Local third-party reference PDFs and unapproved material; never distributed |
+| `paper/` | Reproduction index linking claims to inputs, commands and outputs |
+| `archive/` | Guide to historical trials, superseded methods and legacy files |
+| `environments/` | Recorded reference environment and release reproducibility guidance |
+| `docs/` | Methods, handoff, manuscript and historical interpretations |
+| `output/`, `outputs/`, `Simulations_on_VO2/` | Preserved legacy document/output locations |
+| `legacy_scripts/` | Historical scripts, not the active API |
+| `references/` | Source papers and unmodified original implementation |
+
+The ideal current model is `C dV/dt = I − V/R(T)`. It uses the same hysteresis
+implementation as the Yuanhang voltage model. Its steady metallic voltage floor
+is approximately `I Rm`; capacitance changes the approach time, not that floor.
+No hidden series resistor changes an imposed ideal current. `C=0` is supported by
+the solver exactly; logarithmic three-axis maps currently require positive C.
+
+## Development and verification
+
+Read [AGENTS.md](AGENTS.md) before changing code. Unit conversion stays in the
+workflow layer; interfaces do not independently implement equations.
+
+```bash
+pytest -q
+neuristor validate
+# After staging the intended release changes:
+neuristor validate --publication
+# Before uploading a large result package:
+neuristor validate --distribution PATH_TO_PACKAGE
 ```
 
-If `x_stop` or `y_stop` is omitted, the code scans up to 100 coarse steps. If oscillations never terminate, it uses the full scanned range.
+Run the affected recipe as well. Physics changes additionally require two smaller
+timesteps and a convergence assertion. The new sample pipeline reuses the existing
+physics: it does not replace the resistance law or invent smooth R(T) paths.
 
-### Common options (all commands)
+The pre-refactor baseline is recoverable at the Git tag `v0.1.0-working-baseline`.
+See [CONTRIBUTING.md](CONTRIBUTING.md), [citation metadata](CITATION.cff), and
+[release checklist](docs/RELEASE_CHECKLIST.md). This local organization is not
+a GitHub push, DOI deposit, or completed quantitative experimental calibration.
+The [20 October consolidation record](docs/CONSOLIDATION_20261020.md) distinguishes
+the local backup, current-tree cleanup, and verified remote publication status.
+Original Zhang code:
+[references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0](references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/).
 
-- Time/analysis: `--t_end_us`, `--dt_ns`, `--t_start_us`, `--t_end_window_us`, `--threshold_A`
-- Lattice: `--nx`, `--ny`, `--dimension`
-- Hysteresis/Resistance (YuanhangResistParams):  
-  `--R0`, `--Ea_over_k`, `--Rm0`, `--Rm_factor`, `--w`, `--Tc_K`, `--beta`, `--gamma`,  
-  `--width_factor`, `--T_min_K`, `--T_max_K`, `--reversal_threshold_K`
-- Circuit/Thermal (YuanhangCircuitParams):  
-  `--R_series_kohm`, `--C_par_pF`, `--Cth_mW_ns_per_K`, `--Sth_mW_per_K`,  
-  `--couple_factor`, `--Cth_factor`, `--noise_strength`, `--T_base_K`
-- Preset: `--paper`
-
-Use `python scripts/manual.py <command> --help` to list all flags for that command.
-
-### Plotting and export flags
-
-- `--no-plots` (all commands) disables plot windows.
-- `single`: `--save-csv` and `--out-dir`
-- `sweep1d`: `--save-csv` and `--out-csv`
-- `sweep2d`: `--save-csv` and `--out-csv`
-
-### Example: fixed parameters + Vin sweep
-```
-python scripts/manual.py sweep1d \
-  --param Vin --start 10.5 --stop 15.0 --coarse-step 0.5 --fine-step 0.05 \
-  --R_series_kohm 12 --C_par_pF 145.34619293
-```
-
-## Quick start (`scripts/manual.py`)
-
-1) Single run + plots (default Vin=14.5 V):
-```
-python scripts/manual.py single
-```
-
-2) Single run + CSV export:
-```
-python scripts/manual.py single --vin 18.85 --C_par_pF 198 --save-csv --out-dir outputs
-```
-Outputs:
-- `outputs/sim_Vin_18p850.csv`
-
-3) 1D sweep + plots (Vin sweep):
-```
-python scripts/manual.py sweep1d --param Vin --start 10.5 --stop 15.0 --coarse-step 0.5 --fine-step 0.05
-```
-
-4) 1D sweep + CSV export:
-```
-python scripts/manual.py sweep1d --param C_par_pF --start 80 --stop 250 --coarse-step 20 --fine-step 5 --vin 14.5 --save-csv --out-csv sweep1d_results.csv
-```
-Outputs:
-- `sweep1d_results.csv`
-
-5) 2D frequency sweep + plots (3D + heatmap):
-```
-python scripts/manual.py sweep2d --param-x Vin --param-y C_par_pF --x-start 10.5 --x-stop 15.0 --x-step 0.5 --y-start 120 --y-stop 210 --y-step 10
-```
-
-6) 2D sweep + CSV export:
-```
-python scripts/manual.py sweep2d --param-x Vin --param-y C_par_pF --x-start 10.5 --x-stop 15.0 --x-step 0.5 --y-start 120 --y-stop 210 --y-step 10 --save-csv --out-csv sweep2d_frequency.csv
-```
-Outputs:
-- `sweep2d_frequency.csv`
+Gabriel Berezovsky · supervised by Amir Gildor and Prof. Yoav Kalcheim.

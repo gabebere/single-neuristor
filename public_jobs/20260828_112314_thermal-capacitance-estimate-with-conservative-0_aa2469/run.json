@@ -1,0 +1,79 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Thermal capacitance estimate",
+      "media_type": "text/csv",
+      "path": "thermal_capacitance_estimate.csv"
+    },
+    {
+      "label": "Per-trace thermal fits",
+      "media_type": "text/csv",
+      "path": "trace_fits.csv"
+    },
+    {
+      "label": "Reconstructed temperature trajectories",
+      "media_type": "text/csv",
+      "path": "thermal_trajectories.csv"
+    },
+    {
+      "label": "Thermal capacitance uncertainty propagation",
+      "media_type": "text/csv",
+      "path": "thermal_capacitance_bootstrap.csv"
+    },
+    {
+      "label": "Thermal capacitance evidence",
+      "media_type": "image/png",
+      "path": "figures/thermal_capacitance.png"
+    },
+    {
+      "label": "Thermal capacitance summary",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Scientific report",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor analyze thermal-capacitance --data data/experimental/tia_current_sweep --resistance-preset presets/resistance_100425_chip1_gap3.json --resistance-bootstrap public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv --conductance-mW-per-K 0.003675126546984294 --conductance-bootstrap public_jobs/20260817_153807_environmental-thermal-conductance-estimate_761640/conductance_bootstrap.csv --ambient-K 314.4 --electrical-capacitance-pF 0.39 --selected-drives-mV 100,150,200 --near-transition-check-mV 250 --fit-window-ns 15,35 --name 'Thermal capacitance estimate with conservative 0.39 pF electrical bound' --output-root runs",
+  "created_at": "2026-08-28T11:23:14.750783+00:00",
+  "id": "20260828_112314_thermal-capacitance-estimate-with-conservative-0_aa2469",
+  "kind": "analysis",
+  "model": "thermal-capacitance",
+  "name": "Thermal capacitance estimate with conservative 0.39 pF electrical bound",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "d488609318354583aabc734763a8d13544a78496",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "C_th_ci95_lower_pJ_per_K": 0.021917963122829596,
+    "C_th_ci95_upper_pJ_per_K": 0.09262350801174495,
+    "C_th_pJ_per_K": 0.04787323600217188,
+    "S_e_mW_per_K": 0.003675126546984294,
+    "ambient_temperature_K": 314.4,
+    "electrical_capacitance_pF": 0.39,
+    "fit_rmse_K": 1.1451681130739024,
+    "measured_oscillation_period_max_ns": 24.0,
+    "measured_oscillation_period_min_ns": 16.0,
+    "near_transition_check_C_th_pJ_per_K": 0.02285772175137289,
+    "near_transition_check_rmse_K": 2.379660732997135,
+    "near_transition_check_trace": "250mv0_converted.csv",
+    "selected_traces": "100mv0_converted.csv,150mv0_converted.csv,200mv0_converted.csv",
+    "tau_th_ci95_lower_ns": 5.86506841281473,
+    "tau_th_ci95_upper_ns": 25.17444266332735,
+    "tau_th_ns": 13.026282330728263,
+    "yuanhang_C_th_pJ_per_K": 49.62776831,
+    "yuanhang_to_specimen_C_th_ratio": 1036.6495448051292
+  },
+  "updated_at": "2026-08-28T11:23:21.948009+00:00"
+}

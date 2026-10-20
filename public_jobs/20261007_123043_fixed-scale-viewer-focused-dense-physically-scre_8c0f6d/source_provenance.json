@@ -1,0 +1,13 @@
+{
+  "hashes": {
+    "axis_values.json": "b76f5679939223696778b56747a6a0b4048c251eac00721918c44ee0090b344e",
+    "grid.csv": "fe3249fd470f98cac18563b5689b9428106ab37459ab7e4e118e83df362256b3",
+    "physics_parameters.json": "cf1d6ab41afac6aa18f473820fa49f982488c972a03a7e5b228883941db4aa1a",
+    "verification.csv": "e12772e907672ef8017edd6f0e16554ce632d42849834b1486539bfc6f3f01e9"
+  },
+  "media_source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20261002_145342_focused-dense-physically-screened-steady-state-e_b9e298",
+  "numerical_source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20261002_145342_focused-dense-physically-screened-steady-state-e_b9e298",
+  "original_catalog_sha256": null,
+  "resimulated": false,
+  "source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20261002_145342_focused-dense-physically-screened-steady-state-e_b9e298"
+}

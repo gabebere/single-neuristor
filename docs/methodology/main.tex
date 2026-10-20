@@ -1,0 +1,35 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage[european]{circuitikz}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,citecolor=blue!55!black,urlcolor=blue!55!black]{hyperref}
+
+\sisetup{detect-all}
+\newcommand{\VOtwo}{VO\textsubscript{2}}
+\newcommand{\dd}{\mathrm{d}}
+
+\title{Methodology: Electrothermal \VOtwo{} Neuristor Model}
+\author{Gabriel Berezovsky}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\input{sections/01_electrothermal_network}
+\input{sections/02_current_source}
+\input{sections/03_numerical_update}
+
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\end{document}

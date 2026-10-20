@@ -1,0 +1,42 @@
+{
+  "diagnostics": {
+    "Ea_eV": 0.2186187682228511,
+    "T_cooling_transition_K": 330.0524148947945,
+    "T_heating_transition_K": 336.93471786026697,
+    "bootstrap_block_size": 8,
+    "bootstrap_samples": 0,
+    "cooling_samples": 133,
+    "heating_samples": 131,
+    "maximum_multiplicative_error": 1.3359559570633552,
+    "typical_multiplicative_error": 1.087996767942852
+  },
+  "fit_method": "major-loop-log-least-squares",
+  "fit_metrics": {
+    "max_abs_log10_error": 0.12579214083440604,
+    "mean_log10_error": 2.7683647461960035e-11,
+    "r2_log10": 0.9987335155210357,
+    "rmse_log10": 0.03662760522735458,
+    "rmse_log10_cooling": 0.034962399278823435,
+    "rmse_log10_heating": 0.03824413155154408
+  },
+  "generated_at_utc": "2026-10-07T08:39:08+00:00",
+  "n_samples": 264,
+  "parameter_ci95": {},
+  "resist_params": {
+    "Ea_over_k": 2536.9654575957734,
+    "R0": 0.7989226754865765,
+    "Rm0": 18.215269915547005,
+    "Rm_factor": 1.0,
+    "T_max_K": 375.1625,
+    "T_min_K": 284.8545,
+    "Tc_K": 333.4935663775307,
+    "beta": 0.29915632462807557,
+    "gamma": 0.956269682,
+    "proximity_function": "yuanhang",
+    "reversal_threshold_K": 0.01,
+    "w": 6.882302965472509,
+    "width_factor": 1.0
+  },
+  "source_data": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs_ec2d1e/inputs/resistance_K_ohm.tsv",
+  "start_branch": "metal"
+}

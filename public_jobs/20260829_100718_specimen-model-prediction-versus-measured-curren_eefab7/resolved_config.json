@@ -1,0 +1,76 @@
+{
+  "analysis": {
+    "start_us": 0.05,
+    "stop_us": 0.25
+  },
+  "electrical": {
+    "C_pF": 0.39
+  },
+  "initial": {
+    "temperature_K": 314.4,
+    "voltage_V": 0.0
+  },
+  "input": {
+    "amplitude_uA": 228.152299,
+    "off_us": 0.3,
+    "on_us": 0.0
+  },
+  "kind": "simulation",
+  "lab_validation": {
+    "convergence_drives_mV": [
+      300.0,
+      500.0,
+      800.0
+    ],
+    "convergence_dt_ns": 0.025,
+    "data_directory": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/data/experimental/tia_current_sweep"
+  },
+  "model": "current",
+  "name": "Specimen model prediction versus measured current sweep",
+  "output": {
+    "root": "runs"
+  },
+  "resistance": {
+    "preset": "../../presets/resistance_100425_chip1_gap3.json",
+    "resolved_source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/presets/resistance_100425_chip1_gap3.json",
+    "start_branch": "insulator"
+  },
+  "schema_version": 1,
+  "seed": 0,
+  "sensitivity": {
+    "electrical_capacitances_pF": [
+      0.0,
+      0.1,
+      0.2,
+      0.39,
+      1.0,
+      2.0,
+      3.0,
+      5.0,
+      7.0,
+      10.0,
+      20.0,
+      50.0
+    ],
+    "post_duration_ns": 200.0,
+    "pre_duration_ns": 200.0,
+    "pulse_duration_ns": 300.0,
+    "thermal_capacitances_pJ_per_K": [
+      0.021918,
+      0.035,
+      0.047873236,
+      0.07,
+      0.092624
+    ]
+  },
+  "thermal": {
+    "C_th_pJ_per_K": 0.047873236,
+    "S_e_mW_per_K": 0.0036751265,
+    "T0_K": 314.4
+  },
+  "time": {
+    "dt_ns": 0.05,
+    "duration_us": 0.5,
+    "pre_us": 0.2
+  }
+}

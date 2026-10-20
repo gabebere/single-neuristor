@@ -1,0 +1,10 @@
+{
+  "cached_evaluations": 253,
+  "checks": "Matching SI parameters, current, numerical settings, solver bytes, evaluator/classifier AST",
+  "source_bundle": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/20261008_093626_adaptive-coarse-to-fine-oscillation-boundary-sea_4d15ed",
+  "table_sha256": {
+    "coarse_grid.csv": "e80e154f1c3318a374a1481998b802d589aa99803b10ed6edcfc2493111ef475",
+    "fine_grid.csv": "da6b62dd27b508cccff8d7f3942d03b77a94fc4e06612fa513fc5ec544e304c3",
+    "verification_checkpoint.csv": "13f0bbd21565839e41060178294818a2829978a98923dc1ac68ee93f5f48b0d3"
+  }
+}

@@ -1,10 +1,2 @@
-imageio
-matplotlib
-numpy
-pandas
-pillow
-plotly
-scipy
-streamlit
-streamlit-plotly-events
-torch
+# Compatibility entry point: dependency definitions live in pyproject.toml.
+-e .

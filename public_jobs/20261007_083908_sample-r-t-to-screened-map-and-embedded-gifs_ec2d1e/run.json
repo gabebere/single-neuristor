@@ -1,0 +1,517 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Input validation and workload bounds",
+      "media_type": "application/json",
+      "path": "plan.json"
+    },
+    {
+      "label": "Original measured R(T)",
+      "path": "inputs/resistance_original.tsv"
+    },
+    {
+      "label": "Measured R(T) in declared SI units",
+      "path": "inputs/resistance_K_ohm.tsv"
+    },
+    {
+      "label": "Input hashes and unit declarations",
+      "media_type": "application/json",
+      "path": "input_provenance.json"
+    },
+    {
+      "label": "Frozen source metrics.py",
+      "path": "source/neuristor/metrics.py"
+    },
+    {
+      "label": "Frozen source joint_inference.py",
+      "path": "source/neuristor/joint_inference.py"
+    },
+    {
+      "label": "Frozen source extrema.py",
+      "path": "source/neuristor/extrema.py"
+    },
+    {
+      "label": "Frozen source playground.py",
+      "path": "source/neuristor/playground.py"
+    },
+    {
+      "label": "Frozen source config.py",
+      "path": "source/neuristor/config.py"
+    },
+    {
+      "label": "Frozen source lab_estimates.py",
+      "path": "source/neuristor/lab_estimates.py"
+    },
+    {
+      "label": "Frozen source artifact_catalog.py",
+      "path": "source/neuristor/artifact_catalog.py"
+    },
+    {
+      "label": "Frozen source __init__.py",
+      "path": "source/neuristor/__init__.py"
+    },
+    {
+      "label": "Frozen source visualization.py",
+      "path": "source/neuristor/visualization.py"
+    },
+    {
+      "label": "Frozen source model.py",
+      "path": "source/neuristor/model.py"
+    },
+    {
+      "label": "Frozen source current_drive_sim.py",
+      "path": "source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Frozen source dashboard.py",
+      "path": "source/neuristor/dashboard.py"
+    },
+    {
+      "label": "Frozen source plots.py",
+      "path": "source/neuristor/plots.py"
+    },
+    {
+      "label": "Frozen source replay_plots.py",
+      "path": "source/neuristor/replay_plots.py"
+    },
+    {
+      "label": "Frozen source cli.py",
+      "path": "source/neuristor/cli.py"
+    },
+    {
+      "label": "Frozen source parameter_inference.py",
+      "path": "source/neuristor/parameter_inference.py"
+    },
+    {
+      "label": "Frozen source physical_maps.py",
+      "path": "source/neuristor/physical_maps.py"
+    },
+    {
+      "label": "Frozen source steady_inference.py",
+      "path": "source/neuristor/steady_inference.py"
+    },
+    {
+      "label": "Frozen source workflows.py",
+      "path": "source/neuristor/workflows.py"
+    },
+    {
+      "label": "Frozen source model_validation.py",
+      "path": "source/neuristor/model_validation.py"
+    },
+    {
+      "label": "Frozen source resistance_custom_analysis.py",
+      "path": "source/neuristor/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Frozen source map_animations.py",
+      "path": "source/neuristor/map_animations.py"
+    },
+    {
+      "label": "Frozen source sample_study.py",
+      "path": "source/neuristor/sample_study.py"
+    },
+    {
+      "label": "Frozen source oscillation_audit.py",
+      "path": "source/neuristor/oscillation_audit.py"
+    },
+    {
+      "label": "Frozen source runs.py",
+      "path": "source/neuristor/runs.py"
+    },
+    {
+      "label": "Frozen source sample_library.py",
+      "path": "source/neuristor/sample_library.py"
+    },
+    {
+      "label": "Frozen source map_workflows.py",
+      "path": "source/neuristor/map_workflows.py"
+    },
+    {
+      "label": "Frozen source current_domain_search.py",
+      "path": "source/neuristor/current_domain_search.py"
+    },
+    {
+      "label": "Frozen source lab_replay.py",
+      "path": "source/neuristor/lab_replay.py"
+    },
+    {
+      "label": "Frozen source experimental_waveforms.py",
+      "path": "source/neuristor/experimental_waveforms.py"
+    },
+    {
+      "label": "Frozen source validation.py",
+      "path": "source/neuristor/validation.py"
+    },
+    {
+      "label": "Static fit, map and animation results",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Immutable study stage locations",
+      "media_type": "application/json",
+      "path": "stages.json"
+    },
+    {
+      "label": "Standalone map with embedded GIFs",
+      "media_type": "text/html",
+      "path": "parameter_maps.html"
+    },
+    {
+      "label": "Static fit, map, animation and sharing results",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Study methodology, results and limitations",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    },
+    {
+      "label": "One study entry point",
+      "media_type": "text/html",
+      "path": "START_HERE.html"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - R(T) fit: metrics.json",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-r-t_170049/metrics.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - R(T) fit: report.md",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-r-t_170049/report.md"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - R(T) fit: parameter_summary.csv",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-r-t_170049/parameter_summary.csv"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - R(T) fit: measured.csv",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-r-t_170049/measured.csv"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - R(T) fit: resistance_preset.json",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-r-t_170049/resistance_preset.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - R(T) fit: run.json",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-r-t_170049/run.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - R(T) fit: resolved_config.json",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-r-t_170049/resolved_config.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - R(T) fit: resistance_fit.png",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-r-t_170049/figures/resistance_fit.png"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: metrics.json",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/metrics.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: heatmaps.png",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/heatmaps.png"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: physics_parameters.json",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/physics_parameters.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: report.md",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/report.md"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: included.csv",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/included.csv"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: grid.csv",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/grid.csv"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: parameter_maps.html",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/parameter_maps.html"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: screening_checkpoint.csv",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/screening_checkpoint.csv"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: verification.csv",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/verification.csv"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: axis_values.json",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/axis_values.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: run.json",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/run.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: resolved_config.json",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/resolved_config.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: extrema.py",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/source/neuristor/extrema.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: model.py",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/source/neuristor/model.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: current_drive_sim.py",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: physical_maps.py",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/source/neuristor/physical_maps.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: workflows.py",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/source/neuristor/workflows.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - screened grid: map_workflows.py",
+      "path": "stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-scr_be24de/source/neuristor/map_workflows.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: metrics.json",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/metrics.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: heatmaps.png",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/heatmaps.png"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: source_provenance.json",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source_provenance.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: physics_parameters.json",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/physics_parameters.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: report.md",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/report.md"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: animation_checks.csv",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/animation_checks.csv"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: major_branches.csv",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/major_branches.csv"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: grid.csv",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/grid.csv"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: parameter_maps.html",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/parameter_maps.html"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: verification.csv",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/verification.csv"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: axis_values.json",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/axis_values.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: run.json",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/run.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: status.json",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/status.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: gif_catalog.json",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/gif_catalog.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: resolved_config.json",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/resolved_config.json"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: point_00025.gif",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/GIFs/point_00025.gif"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: point_00025.png",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/figures/point_00025.png"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: metrics.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/metrics.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: joint_inference.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/joint_inference.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: extrema.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/extrema.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: playground.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/playground.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: config.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/config.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: lab_estimates.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/lab_estimates.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: artifact_catalog.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/artifact_catalog.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: __init__.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/__init__.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: visualization.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/visualization.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: model.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/model.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: current_drive_sim.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: dashboard.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/dashboard.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: plots.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/plots.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: replay_plots.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/replay_plots.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: cli.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/cli.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: parameter_inference.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/parameter_inference.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: physical_maps.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/physical_maps.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: steady_inference.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/steady_inference.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: workflows.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/workflows.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: model_validation.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/model_validation.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: resistance_custom_analysis.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: map_animations.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/map_animations.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: sample_study.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/sample_study.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: oscillation_audit.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/oscillation_audit.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: runs.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/runs.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: sample_library.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/sample_library.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: map_workflows.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/map_workflows.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: current_domain_search.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/current_domain_search.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: lab_replay.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/lab_replay.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: experimental_waveforms.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/experimental_waveforms.py"
+    },
+    {
+      "label": "Sample R(T) to screened map and embedded GIFs - point GIFs: validation.py",
+      "path": "stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/source/neuristor/validation.py"
+    }
+  ],
+  "command": "neuristor study run --config experiments/studies/sample_parameter_map.toml",
+  "created_at": "2026-10-07T08:39:08.092739+00:00",
+  "id": "20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs_ec2d1e",
+  "kind": "study",
+  "model": "current",
+  "name": "Sample R(T) to screened map and embedded GIFs",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "e2dd84e2ef811fbf29e26ac8e0416ee75bacc1e5",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "ambient_K": 298.0,
+    "coarse_eligible": 1,
+    "coarse_oscillators": 13,
+    "coarse_temperature_failures": 15,
+    "coverage_complete": true,
+    "current_uA": 500.0,
+    "dynamic_calibration_adopted": false,
+    "embedded_gifs": 1,
+    "gif_bytes": 498300,
+    "gifs": 1,
+    "html_bytes": 5782621,
+    "maximum_displayed_frequency_MHz": 23.215319473723035,
+    "maximum_displayed_temperature_K": 354.4288330078125,
+    "points": 27,
+    "replay_refinement_passes": 1,
+    "retained_points": 1,
+    "standalone": true,
+    "static_rmse_log10": 0.03662760522735458,
+    "verification_dt_ns": [
+      0.025,
+      0.0125
+    ],
+    "visually_resolved": 1
+  },
+  "updated_at": "2026-10-07T08:39:36.858260+00:00"
+}

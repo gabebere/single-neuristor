@@ -1,0 +1,93 @@
+{
+  "electrical": {
+    "C_pF": 16.4
+  },
+  "initial": {
+    "temperature_K": 298.0,
+    "voltage_V": 0.0
+  },
+  "input": {
+    "amplitude_uA": 500.0
+  },
+  "kind": "simulation",
+  "maps": {
+    "axes": {
+      "C_pF": {
+        "count": 15,
+        "extra_values": [
+          0.39,
+          1.0,
+          3.0,
+          7.0,
+          16.4,
+          30.0
+        ],
+        "high": 1000.0,
+        "low": 0.01
+      },
+      "C_th_pJ_per_K": {
+        "count": 15,
+        "extra_values": [
+          0.02,
+          0.035,
+          0.047873236,
+          0.072,
+          0.1,
+          0.2
+        ],
+        "high": 10.0,
+        "low": 0.0001
+      },
+      "S_e_mW_per_K": {
+        "count": 15,
+        "extra_values": [
+          0.0015,
+          0.00268,
+          0.0036751265,
+          0.0045,
+          0.006,
+          0.008
+        ],
+        "high": 1.0,
+        "low": 0.0001
+      }
+    },
+    "batch_size": 384,
+    "convergence_fraction": 0.05,
+    "fixed_values": {
+      "C_pF": 16.4,
+      "C_th_pJ_per_K": 0.047873236,
+      "S_e_mW_per_K": 0.0036751265
+    },
+    "max_points": 12000,
+    "maximum_frequency_MHz": 110.0,
+    "verification_dt_ns": [
+      0.025,
+      0.0125
+    ],
+    "window_ns": [
+      300.0,
+      600.0
+    ]
+  },
+  "model": "current",
+  "name": "Dense physically screened steady-state extrema parameter maps",
+  "output": {
+    "root": "runs"
+  },
+  "resistance": {
+    "preset": "../../presets/resistance_100425_chip1_gap3.json",
+    "start_branch": "insulator"
+  },
+  "schema_version": 1,
+  "seed": 20261002,
+  "thermal": {
+    "C_th_pJ_per_K": 0.047873236,
+    "S_e_mW_per_K": 0.0036751265,
+    "T0_K": 298.0
+  },
+  "time": {
+    "dt_ns": 0.05,
+    "duration_us": 0.6
+  }
+}

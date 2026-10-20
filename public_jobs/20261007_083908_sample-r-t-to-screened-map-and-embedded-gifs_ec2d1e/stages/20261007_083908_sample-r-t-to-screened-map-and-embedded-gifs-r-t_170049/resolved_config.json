@@ -1,0 +1,12 @@
+{
+  "bootstrap_samples": 0,
+  "data": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs_ec2d1e/inputs/resistance_K_ohm.tsv",
+  "kind": "fit",
+  "local_passes": 180,
+  "method": "major-loop",
+  "model": "resistance",
+  "name": "Sample R(T) to screened map and embedded GIFs - R(T) fit",
+  "random_iters": 12000,
+  "schema_version": 1,
+  "seed": 42
+}
