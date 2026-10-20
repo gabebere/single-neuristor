@@ -1,0 +1,8 @@
+{
+  "currents": 22,
+  "false_positives": 1,
+  "late_mean_RMSE_mV": 38.25784012571174,
+  "measured_oscillators": 11,
+  "outside_calibration": false,
+  "recovered_oscillators": 10
+}

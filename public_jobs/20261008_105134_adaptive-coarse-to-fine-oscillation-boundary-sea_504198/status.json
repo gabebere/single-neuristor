@@ -1,0 +1,293 @@
+{
+  "ambient_K": 298.0,
+  "budget_exhausted": false,
+  "classifications": {
+    "calibration_censored": 13,
+    "nonoscillatory": 100,
+    "numerical_unresolved": 6,
+    "oscillatory": 57,
+    "time_unresolved": 35
+  },
+  "coarse_faces": [
+    {
+      "axis": "C_over_Cth_pF_K_per_pJ",
+      "side": "low",
+      "status": "sampled_nonoscillatory",
+      "value": 3.0
+    },
+    {
+      "axis": "C_over_Cth_pF_K_per_pJ",
+      "side": "high",
+      "status": "censored_open",
+      "value": 300.0
+    },
+    {
+      "axis": "S_e_mW_per_K",
+      "side": "low",
+      "status": "censored_open",
+      "value": 0.0025
+    },
+    {
+      "axis": "S_e_mW_per_K",
+      "side": "high",
+      "status": "sampled_nonoscillatory",
+      "value": 0.017761987307814843
+    }
+  ],
+  "coarse_points": 42,
+  "common_capacitance_scale": "open_by_model_symmetry",
+  "complete_physical_boundary": false,
+  "current_uA": 500.0,
+  "fine_faces": [
+    {
+      "axis": "C_over_Cth_pF_K_per_pJ",
+      "side": "low",
+      "status": "unresolved_open",
+      "value": 5.334838230116768
+    },
+    {
+      "axis": "C_over_Cth_pF_K_per_pJ",
+      "side": "high",
+      "status": "censored_open",
+      "value": 94.86832980505137
+    },
+    {
+      "axis": "S_e_mW_per_K",
+      "side": "low",
+      "status": "unresolved_open",
+      "value": 0.0016890001935087934
+    },
+    {
+      "axis": "S_e_mW_per_K",
+      "side": "high",
+      "status": "sampled_nonoscillatory",
+      "value": 0.017761987307814843
+    }
+  ],
+  "fine_points": 211,
+  "fine_rounds": [
+    {
+      "faces": [
+        {
+          "axis": "C_over_Cth_pF_K_per_pJ",
+          "side": "low",
+          "status": "sampled_nonoscillatory",
+          "value": 9.486832980505136
+        },
+        {
+          "axis": "C_over_Cth_pF_K_per_pJ",
+          "side": "high",
+          "status": "censored_open",
+          "value": 94.86832980505137
+        },
+        {
+          "axis": "S_e_mW_per_K",
+          "side": "low",
+          "status": "oscillatory_open",
+          "value": 0.003700414022461426
+        },
+        {
+          "axis": "S_e_mW_per_K",
+          "side": "high",
+          "status": "sampled_nonoscillatory",
+          "value": 0.017761987307814843
+        }
+      ],
+      "iteration": 0,
+      "points": 100
+    },
+    {
+      "faces": [
+        {
+          "axis": "C_over_Cth_pF_K_per_pJ",
+          "side": "low",
+          "status": "sampled_nonoscillatory",
+          "value": 9.486832980505136
+        },
+        {
+          "axis": "C_over_Cth_pF_K_per_pJ",
+          "side": "high",
+          "status": "censored_open",
+          "value": 94.86832980505137
+        },
+        {
+          "axis": "S_e_mW_per_K",
+          "side": "low",
+          "status": "unresolved_open",
+          "value": 0.003041551422572626
+        },
+        {
+          "axis": "S_e_mW_per_K",
+          "side": "high",
+          "status": "sampled_nonoscillatory",
+          "value": 0.017761987307814843
+        }
+      ],
+      "iteration": 1,
+      "points": 110
+    },
+    {
+      "faces": [
+        {
+          "axis": "C_over_Cth_pF_K_per_pJ",
+          "side": "low",
+          "status": "unresolved_open",
+          "value": 9.486832980505136
+        },
+        {
+          "axis": "C_over_Cth_pF_K_per_pJ",
+          "side": "high",
+          "status": "censored_open",
+          "value": 94.86832980505137
+        },
+        {
+          "axis": "S_e_mW_per_K",
+          "side": "low",
+          "status": "unresolved_open",
+          "value": 0.0025
+        },
+        {
+          "axis": "S_e_mW_per_K",
+          "side": "high",
+          "status": "sampled_nonoscillatory",
+          "value": 0.017761987307814843
+        }
+      ],
+      "iteration": 2,
+      "points": 120
+    },
+    {
+      "faces": [
+        {
+          "axis": "C_over_Cth_pF_K_per_pJ",
+          "side": "low",
+          "status": "unresolved_open",
+          "value": 7.114121116984965
+        },
+        {
+          "axis": "C_over_Cth_pF_K_per_pJ",
+          "side": "high",
+          "status": "censored_open",
+          "value": 94.86832980505137
+        },
+        {
+          "axis": "S_e_mW_per_K",
+          "side": "low",
+          "status": "unresolved_open",
+          "value": 0.0020548723765168443
+        },
+        {
+          "axis": "S_e_mW_per_K",
+          "side": "high",
+          "status": "sampled_nonoscillatory",
+          "value": 0.017761987307814843
+        }
+      ],
+      "iteration": 3,
+      "points": 143
+    },
+    {
+      "faces": [
+        {
+          "axis": "C_over_Cth_pF_K_per_pJ",
+          "side": "low",
+          "status": "unresolved_open",
+          "value": 5.334838230116768
+        },
+        {
+          "axis": "C_over_Cth_pF_K_per_pJ",
+          "side": "high",
+          "status": "censored_open",
+          "value": 94.86832980505137
+        },
+        {
+          "axis": "S_e_mW_per_K",
+          "side": "low",
+          "status": "unresolved_open",
+          "value": 0.0016890001935087934
+        },
+        {
+          "axis": "S_e_mW_per_K",
+          "side": "high",
+          "status": "sampled_nonoscillatory",
+          "value": 0.017761987307814843
+        }
+      ],
+      "iteration": 4,
+      "points": 168
+    }
+  ],
+  "initial_temperature_K": 298.0,
+  "integration_attempts": 0,
+  "reference_C_th_pJ_per_K": 0.072,
+  "reused_evaluations": 253,
+  "rounds": [
+    {
+      "faces": [
+        {
+          "axis": "C_over_Cth_pF_K_per_pJ",
+          "side": "low",
+          "status": "sampled_nonoscillatory",
+          "value": 3.0
+        },
+        {
+          "axis": "C_over_Cth_pF_K_per_pJ",
+          "side": "high",
+          "status": "censored_open",
+          "value": 300.0
+        },
+        {
+          "axis": "S_e_mW_per_K",
+          "side": "low",
+          "status": "censored_open",
+          "value": 0.0025
+        },
+        {
+          "axis": "S_e_mW_per_K",
+          "side": "high",
+          "status": "oscillatory_open",
+          "value": 0.012
+        }
+      ],
+      "iteration": 0,
+      "points": 36
+    },
+    {
+      "faces": [
+        {
+          "axis": "C_over_Cth_pF_K_per_pJ",
+          "side": "low",
+          "status": "sampled_nonoscillatory",
+          "value": 3.0
+        },
+        {
+          "axis": "C_over_Cth_pF_K_per_pJ",
+          "side": "high",
+          "status": "censored_open",
+          "value": 300.0
+        },
+        {
+          "axis": "S_e_mW_per_K",
+          "side": "low",
+          "status": "censored_open",
+          "value": 0.0025
+        },
+        {
+          "axis": "S_e_mW_per_K",
+          "side": "high",
+          "status": "sampled_nonoscillatory",
+          "value": 0.017761987307814843
+        }
+      ],
+      "iteration": 1,
+      "points": 42
+    }
+  ],
+  "stage": "completed",
+  "temperature_domain_K": [
+    289.8545,
+    370.1625
+  ],
+  "tolerance_reached_brackets": 15,
+  "transition_brackets": 18
+}

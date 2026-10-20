@@ -1,0 +1,13 @@
+# No credentials, private PDFs, or duplicated media are stored in this index.
+schema_version = 1
+repository = "gabebere/single-neuristor"
+tag = "research-library-2026-10-20"
+status = "prepared; verify the actual GitHub release before claiming availability"
+
+[[asset]]
+name = "VO2_parameter_map_with_GIFs.zip"
+bytes = 589752448
+sha256 = "b60155142b66cae2467f7c8683f210229163e308c70efeb7d128d509f9050c73"
+scope = "Original corrected 1,258-GIF HTML viewer; conditional exploration, not experimental calibration"
+source = "public_jobs/20261007_074702_portable-screened-parameter-map-with-point-gifs_eaf6ab/VO2_parameter_map_with_GIFs.zip"
+url = "https://github.com/gabebere/single-neuristor/releases/download/research-library-2026-10-20/VO2_parameter_map_with_GIFs.zip"

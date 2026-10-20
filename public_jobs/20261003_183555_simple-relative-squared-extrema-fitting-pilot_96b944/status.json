@@ -1,0 +1,37 @@
+{
+  "state": "completed",
+  "updated_utc": "2026-10-03T18:39:44.040379+00:00",
+  "elapsed_s": 228.17314808299852,
+  "source_labels": [
+    300,
+    350,
+    400,
+    450,
+    500,
+    550,
+    600,
+    650,
+    700
+  ],
+  "window_ns": [
+    150.0,
+    250.0
+  ],
+  "unique_candidates": 85,
+  "search_elapsed_s": 181.54696558300202,
+  "stopped_by_user": false,
+  "verified_batches": 9,
+  "expected_verification_batches": 9,
+  "target_labels": [
+    300,
+    350,
+    400,
+    450,
+    500,
+    550,
+    600,
+    650,
+    700
+  ],
+  "verification_complete": true
+}

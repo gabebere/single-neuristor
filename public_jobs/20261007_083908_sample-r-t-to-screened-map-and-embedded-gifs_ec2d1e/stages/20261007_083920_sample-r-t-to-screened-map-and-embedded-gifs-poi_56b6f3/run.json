@@ -1,0 +1,227 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Media generation progress",
+      "path": "status.json"
+    },
+    {
+      "label": "Original map grid.csv",
+      "path": "grid.csv"
+    },
+    {
+      "label": "Original map verification.csv",
+      "path": "verification.csv"
+    },
+    {
+      "label": "Original map physics_parameters.json",
+      "path": "physics_parameters.json"
+    },
+    {
+      "label": "Original map axis_values.json",
+      "path": "axis_values.json"
+    },
+    {
+      "label": "Original numerical map provenance",
+      "media_type": "application/json",
+      "path": "source_provenance.json"
+    },
+    {
+      "label": "Frozen source metrics.py",
+      "path": "source/neuristor/metrics.py"
+    },
+    {
+      "label": "Frozen source joint_inference.py",
+      "path": "source/neuristor/joint_inference.py"
+    },
+    {
+      "label": "Frozen source extrema.py",
+      "path": "source/neuristor/extrema.py"
+    },
+    {
+      "label": "Frozen source playground.py",
+      "path": "source/neuristor/playground.py"
+    },
+    {
+      "label": "Frozen source config.py",
+      "path": "source/neuristor/config.py"
+    },
+    {
+      "label": "Frozen source lab_estimates.py",
+      "path": "source/neuristor/lab_estimates.py"
+    },
+    {
+      "label": "Frozen source artifact_catalog.py",
+      "path": "source/neuristor/artifact_catalog.py"
+    },
+    {
+      "label": "Frozen source __init__.py",
+      "path": "source/neuristor/__init__.py"
+    },
+    {
+      "label": "Frozen source visualization.py",
+      "path": "source/neuristor/visualization.py"
+    },
+    {
+      "label": "Frozen source model.py",
+      "path": "source/neuristor/model.py"
+    },
+    {
+      "label": "Frozen source current_drive_sim.py",
+      "path": "source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Frozen source dashboard.py",
+      "path": "source/neuristor/dashboard.py"
+    },
+    {
+      "label": "Frozen source plots.py",
+      "path": "source/neuristor/plots.py"
+    },
+    {
+      "label": "Frozen source replay_plots.py",
+      "path": "source/neuristor/replay_plots.py"
+    },
+    {
+      "label": "Frozen source cli.py",
+      "path": "source/neuristor/cli.py"
+    },
+    {
+      "label": "Frozen source parameter_inference.py",
+      "path": "source/neuristor/parameter_inference.py"
+    },
+    {
+      "label": "Frozen source physical_maps.py",
+      "path": "source/neuristor/physical_maps.py"
+    },
+    {
+      "label": "Frozen source steady_inference.py",
+      "path": "source/neuristor/steady_inference.py"
+    },
+    {
+      "label": "Frozen source workflows.py",
+      "path": "source/neuristor/workflows.py"
+    },
+    {
+      "label": "Frozen source model_validation.py",
+      "path": "source/neuristor/model_validation.py"
+    },
+    {
+      "label": "Frozen source resistance_custom_analysis.py",
+      "path": "source/neuristor/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Frozen source map_animations.py",
+      "path": "source/neuristor/map_animations.py"
+    },
+    {
+      "label": "Frozen source sample_study.py",
+      "path": "source/neuristor/sample_study.py"
+    },
+    {
+      "label": "Frozen source oscillation_audit.py",
+      "path": "source/neuristor/oscillation_audit.py"
+    },
+    {
+      "label": "Frozen source runs.py",
+      "path": "source/neuristor/runs.py"
+    },
+    {
+      "label": "Frozen source sample_library.py",
+      "path": "source/neuristor/sample_library.py"
+    },
+    {
+      "label": "Frozen source map_workflows.py",
+      "path": "source/neuristor/map_workflows.py"
+    },
+    {
+      "label": "Frozen source current_domain_search.py",
+      "path": "source/neuristor/current_domain_search.py"
+    },
+    {
+      "label": "Frozen source lab_replay.py",
+      "path": "source/neuristor/lab_replay.py"
+    },
+    {
+      "label": "Frozen source experimental_waveforms.py",
+      "path": "source/neuristor/experimental_waveforms.py"
+    },
+    {
+      "label": "Frozen source validation.py",
+      "path": "source/neuristor/validation.py"
+    },
+    {
+      "label": "Model heating/cooling guides",
+      "path": "major_branches.csv"
+    },
+    {
+      "label": "Refinement and resolution checks",
+      "path": "animation_checks.csv"
+    },
+    {
+      "label": "Stable point IDs and local media links",
+      "media_type": "application/json",
+      "path": "gif_catalog.json"
+    },
+    {
+      "label": "Media generation progress",
+      "media_type": "application/json",
+      "path": "status.json"
+    },
+    {
+      "label": "Cth=0.2 pJ/K \u00b7 Se=0.006 mW/K \u00b7 C=7 pF",
+      "path": "GIFs/point_00025.gif"
+    },
+    {
+      "label": "Cth=0.2 pJ/K \u00b7 Se=0.006 mW/K \u00b7 C=7 pF",
+      "path": "Figures/point_00025.png"
+    },
+    {
+      "label": "Right-click map and synchronized GIFs",
+      "path": "parameter_maps.html"
+    },
+    {
+      "label": "Six parameter heatmaps",
+      "path": "heatmaps.png"
+    },
+    {
+      "label": "Coverage, runtime and refinement checks",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Portable sharing and numerical methods",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor study run --config experiments/studies/sample_parameter_map.toml",
+  "created_at": "2026-10-07T08:39:20.316647+00:00",
+  "id": "20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3",
+  "kind": "analysis",
+  "model": "current",
+  "name": "Sample R(T) to screened map and embedded GIFs - point GIFs",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "e2dd84e2ef811fbf29e26ac8e0416ee75bacc1e5",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "local",
+  "summary": {
+    "coverage_complete": true,
+    "elapsed_s": 16.433856916002696,
+    "gifs": 1,
+    "projected_all_points_s": 16.433856916002696,
+    "refinement_passes": 1,
+    "resimulated": true,
+    "retained_points": 1,
+    "visually_resolved": 1
+  },
+  "updated_at": "2026-10-07T08:39:36.830826+00:00"
+}

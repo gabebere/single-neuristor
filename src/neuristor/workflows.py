@@ -314,6 +314,9 @@ def run_simulation(
         command=command,
     )
     try:
+        from .provenance import snapshot_package
+
+        bundle.write_json("source_hashes.json", snapshot_package(bundle), label="Frozen package SHA-256 hashes")
         result = evaluate_simulation(config)
         traces_path = bundle.add_artifact("traces.csv", label="Simulation traces", media_type="text/csv")
         result.frame.to_csv(traces_path, index=False)
@@ -321,6 +324,32 @@ def run_simulation(
         figure_path = bundle.add_artifact("figures/overview.png", label="Overview figure", media_type="image/png")
         if str(config["model"]) == "current":
             plot_current_run(result.frame, figure_path, title=str(config["name"]))
+            output_settings = _table(config, "output")
+            if bool(output_settings.get("scope_gif", False)):
+                from .lab_replay import major_branches
+                from .replay_plots import write_scope_gif
+
+                params, amplitude_uA, *_ = _current_params_from_config(config)
+                scope_frame = pd.DataFrame({
+                    "time_ns": result.frame.time_us * 1000.0,
+                    "current_step_uA": amplitude_uA,
+                    "input_current_uA": result.frame.current_uA,
+                    "simulated_voltage_mV": result.frame.voltage_V * 1000.0,
+                    "temperature_K": result.frame.temperature_K,
+                    "resistance_ohm": result.frame.resistance_ohm,
+                })
+                current_A = amplitude_uA * 1e-6
+                stem = f"current_{current_A:.9f}_A"
+                write_scope_gif(
+                    scope_frame,
+                    major_branches(params.resist_params),
+                    bundle.add_artifact(f"GIFs/{stem}.gif", label="Input, simulated voltage and R(T) animation"),
+                    frames=int(output_settings.get("scope_frames", 96)),
+                    stacked_amperes=True,
+                    snapshot_path=bundle.add_artifact(
+                        f"Figures/{stem}.png", label="Input, simulated voltage and R(T) figure"
+                    ),
+                )
         else:
             plot_voltage_run(result.frame, figure_path, title=str(config["name"]))
         bundle.write_text("report.md", _simulation_report(config, result), label="Scientific report")
@@ -492,6 +521,46 @@ def run_sweep(
     return bundle
 
 
+def run_map_animations(config, *, output_root=None, limit=None, reuse_media=None,
+                       command="neuristor analyze map-animations", package=True):
+    """Public entry point for offline maps with refined per-point animations."""
+    from .map_workflows import run_map_animations as run
+    return run(config, output_root=output_root, limit=limit, reuse_media=reuse_media,
+               command=command, package=package)
+
+
+def run_physical_parameter_maps(config, *, output_root=None,
+                                command="neuristor analyze physical-maps", reuse_numerics=None):
+    """Public entry point for screened and timestep-verified Cth/Se/C maps."""
+    from .map_workflows import run_physical_parameter_maps as run
+    return run(config, output_root=output_root, command=command, reuse_numerics=reuse_numerics)
+
+
+def run_boundary_maps(config, *, output_root=None, command="neuristor analyze boundary-maps", reuse_exploration=None):
+    """Public entry point for expanding coarse exploration and verified fine boundaries."""
+    from .orchestration.boundary_workflows import run_boundary_maps as run
+    return run(config, output_root=output_root, command=command, reuse_exploration=reuse_exploration)
+
+
+def run_sample_study(config, *, output_root=None, command="neuristor study run"):
+    """Fit a sample's major R(T) loop, then create a bounded map and GIF archive."""
+    from .sample_study import run_sample_study as run
+    return run(config, output_root=output_root, command=command)
+
+
+def refresh_parameter_maps(source=None, *, all_existing=False, output_root=None,
+                           embed_gifs=None, command="neuristor analyze refresh-maps"):
+    """Create new display-only bundles from preserved map/study evidence."""
+    from .orchestration.map_viewers import refresh_existing_maps, refresh_map_viewer
+    if all_existing:
+        if source is not None or embed_gifs is not None:
+            raise ValueError("Use --all-existing alone; individual exports accept --source/--embed-gifs")
+        return refresh_existing_maps(output_root=output_root, command=command)
+    if source is None:
+        raise ValueError("Supply --source or --all-existing")
+    return [refresh_map_viewer(source, output_root=output_root, embed_gifs=embed_gifs, command=command)]
+
+
 def run_resistance_fit(
     data_path: str | Path,
     *,
@@ -528,6 +597,11 @@ def run_resistance_fit(
         command=command,
     )
     try:
+        from .provenance import snapshot_package
+
+        bundle.write_json("source_hashes.json", snapshot_package(bundle), label="Frozen package SHA-256 hashes")
+        shutil.copy2(source, bundle.add_artifact(f"inputs/original{source.suffix}", label="Original measured resistance data"))
+        bundle.write_json("input_provenance.json", {"sha256": hashlib.sha256(source.read_bytes()).hexdigest()}, label="Measured input checksum")
         data = load_experimental_rt(source)
         requested_method = str(method).strip().lower()
         if requested_method not in {"auto", "major-loop", "stateful"}:
@@ -1699,7 +1773,7 @@ def _oscillation_audit_report(metrics: Mapping[str, Any]) -> str:
 
 
 def run_lab_replay(config, *, output_root=None, command="neuristor analyze replay-lab") -> RunBundle:
-    """Save an editable all-current comparison, HTML current slider and per-current GIFs."""
+    """Save an all-current comparison and mandatory synchronized three-panel GIFs."""
     from .lab_replay import replay_sweep
     from .replay_plots import comparison_figure, write_current_gif
     import zipfile
@@ -1732,31 +1806,40 @@ def run_lab_replay(config, *, output_root=None, command="neuristor analyze repla
         traces.to_csv(bundle.add_artifact("traces.csv", label="All-current measured voltage, simulation and resistance"), index=False)
         summary.to_csv(bundle.add_artifact("summary.csv", label="Per-current errors and persistence"), index=False)
         comparison_figure(traces, all_currents=True).write_html(bundle.add_artifact("comparison.html", label="Offline interactive current slider"), include_plotlyjs=True)
-        if settings.get("generate_gifs", True):
+        # Retain the original two-panel cursor animation only as an explicit
+        # legacy export. Every laboratory replay writes the synchronized
+        # current/voltage/R(T) animations below.
+        if settings.get("legacy_cursor_animations", False):
             for drive, frame in traces.groupby("source_mV"):
                 write_current_gif(frame, bundle.add_artifact(f"animations/{drive:g}mV.gif", label=f"{frame.current_step_uA.iloc[0]:.1f} µA animation"), frames=int(settings.get("gif_frames", 24)))
             with zipfile.ZipFile(bundle.add_artifact("animations.zip", label="All current GIFs"), "w", compression=zipfile.ZIP_DEFLATED) as archive:
                 for path in bundle.path("animations").glob("*.gif"):
                     archive.write(path, path.name)
-        if settings.get("scope_animations", False):
-            from .lab_replay import major_branches
-            from .replay_plots import write_scope_gif, scope_gallery
-            branches = major_branches(rp)
-            branches.to_csv(bundle.add_artifact("major_branches.csv", label="Heating and cooling major branches"), index=False)
-            gallery = []
-            for drive, frame in traces.groupby("source_mV"):
-                gif_name = f"scope/{drive:g}mV.gif"
-                png_name = f"scope/{drive:g}mV.png"
-                write_scope_gif(frame, branches,
-                    bundle.add_artifact(gif_name, label=f"{frame.current_step_uA.iloc[0]:.1f} µA synchronized scope"),
-                    frames=int(settings.get("scope_frames", 96)),
-                    snapshot_path=bundle.add_artifact(png_name, label="Full voltage, current and R(T) figure"))
-                gallery.append(dict(label=f"{frame.current_step_uA.iloc[0]:.1f} µA · source setting {drive:g} mV",
-                                    gif=gif_name, png=png_name))
-            bundle.write_text("scope_viewer.html", scope_gallery(gallery), label="Offline synchronized animation viewer", media_type="text/html")
-            with zipfile.ZipFile(bundle.add_artifact("scope_animations.zip", label="All synchronized GIFs and figures"), "w", compression=zipfile.ZIP_DEFLATED) as archive:
-                for path in bundle.path("scope").iterdir():
-                    archive.write(path, path.name)
+        from .lab_replay import major_branches
+        from .replay_plots import write_scope_gif, scope_gallery
+        branches = major_branches(rp)
+        branches.to_csv(bundle.add_artifact("major_branches.csv", label="Heating and cooling major branches"), index=False)
+        gallery = []
+        for drive, frame in traces.groupby("source_mV", sort=True):
+            current_A = float(frame.current_step_uA.iloc[0]) * 1e-6
+            stem = f"current_{current_A:.9f}_A"
+            gif_name = f"GIFs/{stem}.gif"
+            png_name = f"Figures/{stem}.png"
+            write_scope_gif(frame, branches,
+                bundle.add_artifact(gif_name, label=f"{current_A:.9f} A synchronized scope"),
+                frames=int(settings.get("scope_frames", 96)), stacked_amperes=True,
+                original_label_uA=float(drive),
+                snapshot_path=bundle.add_artifact(png_name, label="Full current, voltage and R(T) figure"))
+            gallery.append(dict(
+                label=f"{drive:g} µA · original numeric label; measured {current_A*1e6:.3f} µA",
+                gif=gif_name, png=png_name))
+        viewer = scope_gallery(gallery)
+        bundle.write_text("START_HERE.html", viewer, label="Three-panel GIF current selector", media_type="text/html")
+        # Backward-compatible viewer name for older documentation and links.
+        bundle.write_text("scope_viewer.html", viewer, label="Three-panel GIF current selector", media_type="text/html")
+        with zipfile.ZipFile(bundle.add_artifact("All_current_GIFs.zip", label="All three-panel current GIFs"), "w", compression=zipfile.ZIP_DEFLATED) as archive:
+            for path in bundle.path("GIFs").glob("*.gif"):
+                archive.write(path, path.name)
         # Export a standalone TOML with all resolved values, including units.
         def toml_lines(table, prefix=""):
             lines = [f"[{prefix}]"] if prefix else []
@@ -1780,7 +1863,9 @@ def run_lab_replay(config, *, output_root=None, command="neuristor analyze repla
             "One shared vector drives every measured current record, retaining its full prehistory. "
             "Both experimental channels have their pre-pulse median removed. Output voltage is compared as exported; "
             "its equivalence to device terminal voltage remains conditional. Resistance is simulated, not inferred V/I.\n\n"
-            "The HTML includes a current slider. Per-current GIFs animate a time cursor across the complete voltage and resistance traces. "
+            "The HTML includes a current slider. Every replay includes synchronized three-panel GIFs showing imposed current, "
+            "measured/simulated voltage and the evolving simulated R(T) path over the heating/cooling major branches. "
+            "START_HERE.html selects the current and All_current_GIFs.zip contains all animations. "
             "Editing parameters does not alter completed runs. This is a single-step exploratory replay, not a convergence certificate.\n\n"
             + "\n".join(f"- {k}: {v}" for k,v in metrics.items())
             + "\n\nReproduce with `neuristor analyze replay-lab --config PATH_TO_BUNDLE/recipe.toml`.", label="Manual replay report")
@@ -1832,13 +1917,12 @@ def run_joint_inference(config, *, output_root=None, command="neuristor analyze 
                               command=command)
     try:
         files = [rt_path, Path(config["_source"]), *seed_paths, *data_path.glob("*_converted.csv")]
-        files += list(Path(__file__).parent.glob("*.py"))
+        from .provenance import package_source_files, snapshot_package
+
+        files += package_source_files()
         bundle.write_json("source_hashes.json", {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in files}, label="Input and source hashes")
         # Preserve executable sources because the parent worktree may be dirty.
-        for path in Path(__file__).parent.glob("*.py"):
-            target = bundle.path(f"source/neuristor/{path.name}")
-            shutil.copy2(path, target)
-            bundle.register_file(f"source/neuristor/{path.name}", label=f"Source: {path.name}")
+        snapshot_package(bundle)
         fits, history, budget = fit_joint(dataset, rt, base, settings, seeds,
                     progress=lambda mode, count, best, unique: print(f"Joint {mode}: {count} objective calls, {unique} unique candidates; best={best:.4g}", flush=True))
         history.to_csv(bundle.add_artifact("optimization_history.csv", label="Every objective evaluation"), index=False)
@@ -2280,6 +2364,7 @@ def run_steady_search(config, *, output_root=None, command='neuristor analyze fi
 
     validate_config(config)
     settings=copy.deepcopy(config['steady'])
+    simple_loss = settings.get('loss_function') == 'relative_squared'
     if settings['search_seconds']<=0 or settings['total_seconds']<=settings['search_seconds']:
         raise ValueError('Total budget must exceed positive search budget')
     if settings['window_ns'][0]>=settings['window_ns'][1]:
@@ -2319,13 +2404,15 @@ def run_steady_search(config, *, output_root=None, command='neuristor analyze fi
         atomic(status_path,payload)
     try:
         files=[Path(config['_source']),rt_path,seed_path,bootstrap_path,*data.glob('*_converted.csv')]
-        files+=list(Path(__file__).parent.glob('*.py'))
+        from .provenance import package_source_files, snapshot_package
+
+        files += package_source_files()
         bundle.write_json('source_hashes.json',{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in files},label='Source and data hashes')
-        for p in Path(__file__).parent.glob('*.py'):
-            shutil.copy2(p,bundle.add_artifact(f'source/neuristor/{p.name}',label=f'Source: {p.name}'))
+        snapshot_package(bundle)
         measured=[]
         for i in dataset.train_indices:
-            f=settled_features(dataset.time_ns,dataset.voltage_mV[:,i],settings['window_ns'])
+            f=settled_features(dataset.time_ns,dataset.voltage_mV[:,i],settings['window_ns'],
+                method=settings.get('feature_method', 'spectral'))
             measured.append(dict(source_label_mV=float(dataset.nominal_drives_mV[i]),
                 measured_current_A=float(np.mean(dataset.current_uA[(dataset.time_ns>=50)&(dataset.time_ns<=250),i]))*1e-6,**f))
         pd.DataFrame(measured).to_csv(bundle.add_artifact('targets.csv',label='Target labels, actual currents and settled features'),index=False)
@@ -2341,8 +2428,14 @@ Sustained-cycle gate enabled: {settings.get('require_sustained', False)}. When e
 require at least three prominent peaks, peaks in both halves, retention 0.75–1.333,
 period CV <=0.2 and the frequency signal gate. Each failed trace adds 10000 loss;
 it cannot qualify as near-target. Best available does not imply sustained success.
-Frequency and robust/fundamental amplitudes receive relative-error losses, with a
-half-window envelope penalty for decay. Flat traces cannot evade frequency error.
+Feature method: {settings.get('feature_method', 'spectral')}.
+For extrema, frequency = 1000/median adjacent-maximum period (ns) and amplitude
+= median complete-cycle maximum-minus-minimum voltage (mV). Only these two
+features enter the dynamic loss, with a 10000 penalty for missing sustained
+cycles or frequencies above the configured operating ceiling. The legacy
+robust/fundamental table columns both mean extrema Vpp in this mode.
+For spectral mode, robust/fundamental amplitudes and half-window decay enter
+the historical objective. Flat traces cannot evade frequency error.
 Static log10 R(T) RMSE must remain <= {settings['maximum_static_rmse_log10']}.
 Require nonnegative proximity dTeff/dT at every integration sample, including
 prehistory and transients: {settings.get('require_monotone_proximity', False)}.
@@ -2381,12 +2474,16 @@ The deadline is checked between simulations, so one in-flight batch may overrun 
         if base.resist_params.proximity_function != 'yuanhang':
             candidates={f'{n}_under_{base.resist_params.proximity_function}':v for n,v in candidates.items()}
         bounds=np.asarray([settings['bounds'][n] for n in NAMES])
-        for record in sorted(result['restarts']+result['elites'],key=lambda r:r['score']):
+        records = result['restarts']+result['elites']
+        if simple_loss and result['best'] is None and result.get('diagnostic_best'):
+            records = [result['diagnostic_best']]
+        for record in sorted(records,key=lambda r:r['score']):
             if len(candidates)>=settings['verification_candidates']+2:break
             v=np.asarray(record['values'])
             if not record['simulated'] or record['outside_domain'] or not record.get('proximity_admissible', True):continue
             if any(np.linalg.norm(encode(v,bounds)-encode(x,bounds))<.01 for x in candidates.values()):continue
-            candidates[f"search_{len(candidates)-1}"]=v
+            label = 'diagnostic' if simple_loss and not record.get('oscillations_eligible', False) else 'search'
+            candidates[f"{label}_{len(candidates)-1}"]=v
         pd.DataFrame([dict(candidate=n,**dict(zip(NAMES,v)),C_th_pJ_per_K=v[1]*v[2],
             R0_ohm=v[8]*np.exp(-v[9]/315),static_rmse_log10=static_rmse(v,rt)) for n,v in candidates.items()]).to_csv(
                 bundle.add_artifact('parameters.csv',label='Candidates and fixed references'),index=False)
@@ -2441,6 +2538,11 @@ The deadline is checked between simulations, so one in-flight batch may overrun 
             verification_complete=len(rows)==len(candidates)*len(settings['verification_dt_ns'])*len(all_labels))
         bundle.write_json('metrics.json',metrics,label='Budget and verification completion')
         report=bundle.path('report.md').read_text().replace('(in progress)','(finished)')
+        if simple_loss:
+            report = report.replace('Each failed trace adds 10000 loss;', 'Failed traces are rejected separately;')
+            report = report.replace('features enter the dynamic loss, with a 10000 penalty for missing sustained\ncycles or frequencies above the configured operating ceiling.',
+                'features enter the dynamic loss: mean[(f_sim/f_exp-1)^2 + (Vpp_sim/Vpp_exp-1)^2].\nNo scaling, logarithm or amplitude offset is used. Static R(T) is a hard\nconstraint only. A finite optimizer rejection sentinel guides feasibility and\nis not the scientific loss. Missing frequencies have null errors, not 100% error.\nA diagnostic candidate is NOT an accepted fit.')
+            report += f"\n\nAccepted search candidate found: {result['best'] is not None}.\n"
         report+='\n\n## Completion\n'+json.dumps(metrics,indent=2)+'\n\nInspect summary.csv at the finest timestep before selecting a result. All target records were used in optimization; other currents are diagnostics, not blind validation.\n'
         bundle.write_text('report.md',report,label='Methods and completion report')
         status('completed',**metrics)

@@ -1,0 +1,20 @@
+{
+  "elapsed_s": 228.17314808299852,
+  "expected_verification_batches": 9,
+  "search_elapsed_s": 181.54696558300202,
+  "stopped_by_user": false,
+  "target_labels": [
+    300,
+    350,
+    400,
+    450,
+    500,
+    550,
+    600,
+    650,
+    700
+  ],
+  "unique_candidates": 85,
+  "verification_complete": true,
+  "verified_batches": 9
+}

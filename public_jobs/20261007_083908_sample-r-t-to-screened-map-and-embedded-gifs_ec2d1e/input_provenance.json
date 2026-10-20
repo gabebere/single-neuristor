@@ -1,0 +1,16 @@
+{
+  "declarations": {
+    "bootstrap_samples": 0,
+    "maximum_static_rmse_log10": 0.05,
+    "resistance_column": "Resistance",
+    "resistance_data": "../../data/experimental/100425_chip1_gap3.tsv",
+    "resistance_unit": "ohm",
+    "temperature_column": "Temperature",
+    "temperature_domain": "measured",
+    "temperature_unit": "K",
+    "time_column": "Time"
+  },
+  "normalized_sha256": "e9cf9889f3f146acd7ddf8d5fcb163477280293f90c60281a601386fd9b768ed",
+  "original_path": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/data/experimental/100425_chip1_gap3.tsv",
+  "original_sha256": "496a38ae8e3d78ccb828d73361d596d697a814a5e09699b75fbbe1d50cf314d9"
+}

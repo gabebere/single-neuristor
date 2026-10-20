@@ -5,7 +5,96 @@ presentation artifacts. That distinction matters because Git history preserves e
 experiments, while only the current solver and audit should be used for new numerical
 claims.
 
+## Desktop consolidation — 16 October 2026
+
+[Consolidated Desktop guide](../archive/desktop_consolidation_20261016/index.html)
+maps 19 historical run-folder references back to existing project reports/viewers.
+All 926 Desktop content files were checked by SHA-256 and full-byte comparison:
+914 were already in the repository; 12 unique notes/index/recipe files were
+preserved under `archive/desktop_consolidation_20261016/original_notes/`.
+Six existing symbolic links pointed into the project. The original Desktop
+archive was moved intact to recoverable macOS Trash, not permanently deleted.
+The filing inventory records per-file destinations and the recovery path.
+No scientific result, canonical data, completed public bundle, or code changed.
+Earlier references to Desktop below describe historical deliveries; use the
+consolidated guide now. Local filing does not constitute a GitHub backup.
+
 ## Active final-project manuscript
+
+- [Adaptive boundary exploration](BOUNDARY_SEARCH.md), 8 October 2026:
+  [reviewed coarse/fine and open-scale viewer](../public_jobs/20261008_105134_adaptive-coarse-to-fine-oscillation-boundary-sea_504198/parameter_maps.html).
+  42 coarse points and 211 fine/refinement points; 18 transition brackets, 15
+  narrowed to the requested width. The common C/Cth scale is analytically open.
+  No verified oscillator touches a searched outer face, but 35 time-unresolved,
+  six numerically unresolved and 13 calibration-censored points prevent a claim
+  of complete physical bounds. Both coarse and fine edges can expand. Solver
+  equations are unchanged. The bundle exactly reproduces its numerical parent
+  and retains the full original checks/source ancestry, with checked reuse.
+  This supersedes treating old fixed-box map extents as physical boundaries,
+  while preserving those historical bundles. No experimental fit is adopted.
+
+- [Fixed-scale parameter-map displays](MAP_DISPLAY.md): 13 preserved historical
+  maps/studies have new viewer revisions, discoverable through **Updated
+  fixed-scale viewer** links in the artifact hub. [Complete 1,258-GIF map with
+  fixed scales](../runs/20261007_123036_fixed-scale-viewer-portable-screened-parameter-m_4325d1/parameter_maps.html)
+  reuses the `eaf6ab` numerical data and GIFs without resimulation. This local
+  HTML depends on the original public GIF folder; it is not a standalone email
+  attachment. Old HTML/ZIPs are unchanged. A fresh [sample-study run](../runs/20261007_123034_sample-r-t-to-screened-map-and-embedded-gifs_9f299d/parameter_maps.html)
+  also uses stable scales and remains standalone. No scientific parameters changed.
+
+- [Organized library and paper evidence](STRUCTURE_MIGRATION_20261007.md):
+  purpose-specific source packages, compatibility imports, plain-language project
+  navigation, source inventory, and a five-item reproduction index. Physics and
+  completed bundles are unchanged. Local sample-study verification `896056`
+  exactly reproduces the previous `ec2d1e` numerical/media output; this is software
+  verification, not a new experimental calibration. No GitHub push or external
+  release occurred.
+
+- [Unified sample-study program](SAMPLE_STUDY.md): reusable declared-unit R(T)
+  fit → screened Cth/Se/C grid → refined point GIF workflow. [Standalone example](../public_jobs/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs_ec2d1e/parameter_maps.html)
+  embeds its fit image and all GIFs, without a ZIP. Same-sample static RMSE
+  0.0366276; 27 grid combinations, one retained oscillator near 23.2 MHz.
+  Default screening uses the **measured**, not padded, R(T) domain. Gamma and
+  dynamic constants are assumptions; this is a software demonstration, not a
+  new laboratory calibration. The [artifact hub](../artifacts/index.html) provides
+  categorized chronology, presentations and a full CSV file inventory, linking
+  existing evidence without deleting or duplicating historical media.
+
+- [7 October map-to-GIF extension](PARAMETER_MAP_GIFS_20261007.md): portable
+  right-click viewer, stable heatmap IDs, full-resolution R(T) samples with
+  timestep refinement and explicit unresolved gaps. Completed **three-point
+  benchmark only**: `20261007_061058_portable-screened-parameter-map-with-point-gifs-_f34881`.
+  Full 1,258-point generation `81ae34` completed, but its original viewer selection was faulty.
+  Corrected complete viewer `20261007_074702_portable-screened-parameter-map-with-point-gifs_eaf6ab`
+  reuses all 1,258 GIFs unchanged and supersedes the original HTML/ZIP. Ordinary
+  JSON point metadata and defensive event lookup correct the selection mapping.
+  The corrected bundle is copied to `public_jobs/` with all GIFs unchanged.
+
+- [3 October simple extrema loss](SIMPLE_EXTREMA_LOSS_20261003.md): equal-weight
+  squared relative frequency/Vpp objective, separate feasibility checks. Reviewed
+  `20261003_183555_simple-relative-squared-extrema-fitting-pilot_96b944` has 85
+  candidates and no acceptable all-target fit. Diagnostic GIFs use the finest
+  verification timestep, not a new fitted calibration. Original Desktop results
+  are preserved in `VO2 Research Archive` with a categorized index.
+  GIF replay: `20261003_183956_simple-loss-diagnostic-1-all-current-gif-replay-_4e79ac`
+  contains 22 synchronized three-panel GIFs and PNGs at 0.00625 ns. These are
+  explicitly diagnostic; no physically supported quantitative fit is claimed.
+
+- [2 October meeting implementation](MEETING_PARAMETER_MAPS_20261002.md):
+  extrema-only late-window voltage fitting and screened C/Cth/Se maps.
+  [Adjustable slice viewer](../public_jobs/20261002_152003_focused-dense-physically-screened-steady-state-e_c1772e/parameter_maps.html)
+  adds three independent sliders and visible-slice frequency/Vpp normalization,
+  with unchanged numerical CSVs. This is the corrected historical slice viewer;
+  the eaf6ab media viewer above is the latest complete historical GIF rendering.
+  It supersedes initial slider rendering `2bffd0` by correcting floating-point
+  indexing; all 69 slices preserve their exact eligible-point counts.
+  [Focused interactive 3D and six heatmaps](../public_jobs/20261002_145342_focused-dense-physically-screened-steady-state-e_b9e298/parameter_maps.html)
+  retain 1,258 of 12,167 simulated combinations after physical/numerical screens.
+  [Broad map report](../public_jobs/20261002_135437_dense-physically-screened-steady-state-extrema-p_9ac3ad/report.md)
+  preserves every original 15^3 coordinate plus added intermediate values.
+  Neither map is a specimen calibration; the 110 MHz threshold is an operating
+  filter. The [79-candidate extrema fitting pilot](../public_jobs/20261002_145243_meeting-extrema-only-physically-screened-fitting_32d91d/report.md)
+  found no acceptable laboratory match at three verification timesteps.
 
 - [Expanded search and interactive laboratory](EXPANDED_SEARCH_20260922.md):
   reviewed bundle `20260921_210646_expanded-persistence-aware-joint-inference_694804`,

@@ -42,6 +42,30 @@ def test_current_rt_animation_writes_multiframe_gif(tmp_path: Path) -> None:
         assert image.n_frames == 4
 
 
+def test_scope_animation_supports_simulated_voltage_without_measured_trace(tmp_path: Path) -> None:
+    from neuristor.lab_replay import major_branches
+    from neuristor.model import YuanhangResistParams
+    from neuristor.replay_plots import write_scope_gif
+
+    trace = _trace()
+    frame = pd.DataFrame({
+        "time_ns": trace.time_us * 75,
+        "current_step_uA": 500.0,
+        "input_current_uA": trace.current_uA,
+        "simulated_voltage_mV": trace.voltage_V * 1000,
+        "temperature_K": trace.temperature_K,
+        "resistance_ohm": trace.resistance_ohm,
+    })
+    path = write_scope_gif(
+        frame, major_branches(YuanhangResistParams()), tmp_path / "scope.gif",
+        frames=3, stacked_amperes=True,
+    )
+    assert path is None
+    with Image.open(tmp_path / "scope.gif") as image:
+        assert image.n_frames == 3
+        assert image.height > image.width
+
+
 def test_lab_detection_window_and_bracket_plots_write_png(tmp_path: Path) -> None:
     trace = pd.DataFrame(
         {

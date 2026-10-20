@@ -14,4 +14,9 @@
 - `yuanhang_original_implementation/`: preserved upstream implementation used for
   fidelity comparisons.
 
-These entries point to the repository's canonical reference copies.
+These PDF entries are optional **local-only** shortcuts. On 20 October 2026 the
+actual copies were moved into ignored `private/references/papers/`, and the PDF
+shortcuts removed from Git. Do not include them in public packages even when a
+paper has an open-access license. The upstream source shortcut remains public.
+See [the disclosure policy](../../DATA_POLICY.md) and the bibliographic links
+above. Historical descriptions of copy locations are provenance, not permission.

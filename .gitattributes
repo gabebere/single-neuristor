@@ -1,2 +1,8 @@
 # Preserve professor-supplied oscilloscope exports byte for byte, including CRLF.
 data/experimental/tia_current_sweep/*.csv binary
+# Frozen generated viewers contain bundled Plotly/vendor whitespace. Preserve
+# their exact bytes; review source changes independently of generated evidence.
+public_jobs/** linguist-generated=true
+public_jobs/**/*.html -whitespace
+# Original measurement copies retain CRLF and acquisition bytes in run bundles.
+public_jobs/**/inputs/*.tsv binary

@@ -252,6 +252,101 @@ class RunRegistry:
             raise KeyError(f"Unknown run: {run_id}")
         return matches[0]
 
+    def trash_reason(self, record: RunRecord) -> str | None:
+        """Explain why a bundle cannot be removed from the active local library.
+
+        Published evidence, legacy jobs and live/unknown-status runs are never
+        mutable through this operation. Resolve containment rather than trusting
+        the manifest's storage label or a symlink supplied as a run directory.
+        """
+        lane = self.project_root / "runs"
+        if record.storage != "local" or record.legacy:
+            return "Published evidence and legacy jobs are protected."
+        if lane.is_symlink() or record.root.is_symlink() or record.root.parent != lane:
+            return "Only direct, non-symlink folders inside runs/ can be trashed."
+        if record.root.resolve().parent != lane.resolve() or record.root.name != record.id:
+            return "Run identity or location does not match its manifest."
+        if record.status not in {"completed", "failed"}:
+            return "Running or unknown-status jobs are protected."
+        if any(record.id in path.read_text() for path in (self.project_root / "experiments").rglob("*.toml")):
+            return "An experiment recipe references this run; preserve it or update the recipe first."
+        for viewer in self.discover():
+            dependencies = viewer.manifest.get("summary", {}).get("media_dependencies", [])
+            if viewer.status == "completed" and str(record.root.resolve()) in dependencies:
+                return "A fixed-scale viewer links to this run's GIFs; remove that viewer first."
+        return None
+
+    def trash(self, run_id: str) -> dict[str, Any]:
+        """Atomically move one eligible local bundle into recoverable project trash.
+
+        The bundle's files and manifest are unchanged. A sidecar records the
+        original location; no permanent deletion or Git operation is performed.
+        Removing a parent study moves its child stages together.
+        """
+        record = self.get(run_id)
+        reason = self.trash_reason(record)
+        if reason:
+            raise ValueError(reason)
+        trash = self.project_root / "runs" / ".trash"
+        if trash.is_symlink():
+            raise ValueError("Trash must not be a symlink.")
+        trash.mkdir(exist_ok=True)
+        timestamp = datetime.now(timezone.utc)
+        trash_id = f"{timestamp:%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:12]}"
+        entry = trash / trash_id
+        entry.mkdir()
+        metadata = dict(trash_id=trash_id, run_id=record.id, name=record.name,
+                        original_path=f"runs/{record.id}", deleted_at=timestamp.isoformat())
+        sidecar = entry / "deletion.json"
+        try:
+            sidecar.write_text(json.dumps(metadata, indent=2) + "\n")
+            record.root.rename(entry / "bundle")
+        except BaseException:
+            # Cleanup only our empty staging entry; never recurse through data.
+            if not (entry / "bundle").exists():
+                sidecar.unlink(missing_ok=True)
+                entry.rmdir()
+            raise
+        return metadata
+
+    def trashed(self) -> list[dict[str, Any]]:
+        """List recoverable entries outside active discovery; never follow symlinks."""
+        trash = self.project_root / "runs" / ".trash"
+        if trash.is_symlink():
+            raise ValueError("Trash must not be a symlink.")
+        entries = []
+        for sidecar in sorted(trash.glob("*/deletion.json"), reverse=True):
+            if sidecar.parent.is_symlink() or sidecar.is_symlink() or not (sidecar.parent / "bundle").is_dir():
+                continue
+            metadata = json.loads(sidecar.read_text())
+            if metadata.get("trash_id") == sidecar.parent.name:
+                entries.append(metadata)
+        return entries
+
+    def restore(self, trash_id: str) -> dict[str, Any]:
+        """Restore a trashed bundle at its original path, refusing any overwrite."""
+        if not re.fullmatch(r"\d{8}_\d{6}_[a-f0-9]{12}", trash_id):
+            raise ValueError("Invalid trash ID.")
+        lane = self.project_root / "runs"
+        trash = lane / ".trash"
+        entry = trash / trash_id
+        source = entry / "bundle"
+        if any(path.is_symlink() for path in (lane, trash, entry, source, entry / "deletion.json")):
+            raise ValueError("Trash and bundle paths must not be symlinks.")
+        metadata = json.loads((entry / "deletion.json").read_text())
+        run_id = metadata["run_id"]
+        if not run_id or Path(run_id).name != run_id or run_id in {".", ".."}:
+            raise ValueError("Invalid original run ID.")
+        if metadata.get("original_path") != f"runs/{run_id}" or metadata.get("trash_id") != trash_id:
+            raise ValueError("Trash metadata does not match its original path.")
+        destination = lane / run_id
+        if destination.exists() or destination.is_symlink():
+            raise FileExistsError("A run already exists at the restore location; nothing was overwritten.")
+        source.rename(destination)
+        (entry / "deletion.json").unlink()
+        entry.rmdir()
+        return metadata
+
     def publish(self, run_id: str) -> RunRecord:
         record = self.get(run_id)
         if record.storage == "public":

@@ -9,6 +9,13 @@ question. Update it when a new result changes the handoff state.
 
 ## Source-of-truth hierarchy
 
+Implementation modules are grouped into `analysis/`, `fitting/`, `plotting/`,
+`orchestration/`, `interfaces/`, and `legacy/` under `src/neuristor/`. Old-name
+root modules are compatibility aliases, not alternate implementations. Edit the
+grouped implementation, not a bridge. The authoritative physics and public
+workflow paths below stay unchanged. Folder guides and `docs/CODEBASE_MAP.md`
+explain the routing; `START_HERE.html` is the non-coder navigation entry point.
+
 1. `src/neuristor/model.py` is authoritative for the Yuanhang voltage circuit and
    hysteresis implementation.
 2. `src/neuristor/current_drive_sim.py` is authoritative for the supported ideal
@@ -71,6 +78,15 @@ at least two smaller timesteps and add or update a convergence assertion. Do not
 weaken tolerances merely to make a changed trajectory pass.
 
 ## Repository hygiene
+
+- Follow `docs/DATA_POLICY.md`: experimental numerical data and our own results
+  are approved for publication; third-party paper/manuscript PDFs are not. Keep
+  local copies in ignored `private/`. Check staged files and release contents,
+  not only `.gitignore`; never upload reference PDFs or private symlinks.
+- Preserve existing public history unless a separate history-remediation plan is
+  explicitly authorized. Removing a file from the current tree is not a purge.
+- Keep `docs/RESEARCH_HANDOFF.md` concise. Put detailed dated research history in
+  `docs/RESEARCH_HISTORY.md`; distinguish planned experiments from completed work.
 
 - Keep the root small; implementation belongs in `src/neuristor/`.
 - Preserve unrelated user changes in a dirty worktree.

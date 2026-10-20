@@ -37,3 +37,13 @@ the copied manifest's storage label. It refuses to overwrite an existing public 
 
 Completed public bundles are immutable. Corrections are new runs with new IDs and a
 report explaining what changed.
+
+## Recoverable local deletion
+
+`neuristor runs manage` provides confirmed Delete/Restore controls for eligible
+local trials. `RunRegistry.trash` moves the intact folder to
+`runs/.trash/TRASH_ID/bundle`, with an administrative `deletion.json` beside it.
+This sidecar is not a new scientific run manifest or another metadata database.
+Active discovery and inventory exclude trashed data; restore refuses overwrites.
+Published, running, legacy, symlinked and recipe-referenced runs are protected.
+See [RUN_MANAGEMENT.md](RUN_MANAGEMENT.md); no permanent erase is implemented.

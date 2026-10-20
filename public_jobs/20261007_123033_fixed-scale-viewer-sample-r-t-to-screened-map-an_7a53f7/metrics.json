@@ -1,0 +1,13 @@
+{
+  "catalogued_gifs": 1,
+  "display_version": "fixed-heatmap-scales-v1",
+  "embedded_gifs": 1,
+  "gif_bytes": 498300,
+  "grid_points": 27,
+  "html_bytes": 5483440,
+  "media_dependencies": [],
+  "resimulated": false,
+  "retained_points": 1,
+  "source_run_id": "20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs_ec2d1e",
+  "standalone": true
+}

@@ -1,0 +1,68 @@
+schema_version = 1
+name = "Adaptive coarse-to-fine oscillation boundary search"
+kind = "simulation"
+model = "current"
+seed = 20261008
+[time]
+dt_ns = 0.05
+duration_us = 0.6
+[input]
+amplitude_uA = 500.0
+[initial]
+voltage_V = 0.0
+temperature_K = 298.0
+[electrical]
+C_pF = 3.0
+[thermal]
+C_th_pJ_per_K = 0.072
+S_e_mW_per_K = 0.006
+T0_K = 298.0
+[resistance]
+preset = "../../presets/resistance_100425_chip1_gap3.json"
+start_branch = "insulator"
+[resistance.parameters]
+# Stay inside the measured static R(T) interval, without the old 5 K padding.
+T_min_K = 289.8545
+T_max_K = 370.1625
+[boundary]
+# C and Cth share an exact deterministic time-scaling symmetry. Search their
+# ratio and Se first. Physical trajectories use this reference Cth.
+reference_C_th_pJ_per_K = 0.072
+coarse_count = 5
+fine_count = 9
+coarse_dt_ns = 0.05
+fine_dt_ns = 0.025
+verification_dt_ns = [0.0125, 0.00625]
+maximum_timestep_refinements = 2 # Retry disagreements only; compare last 3 steps.
+# Include a previously demonstrated oscillator so a sparse grid cannot overlook
+# its narrow domain just because no regular grid coordinate landed in the band.
+seed_points = [[41.66666666666667, 0.006]]
+initial_duration_ns = 300.0
+maximum_duration_ns = 1200.0
+convergence_fraction = 0.05
+equilibrium_relative_tolerance = 0.001
+equilibrium_voltage_span_mV = 0.5
+equilibrium_temperature_span_K = 0.02
+maximum_expansions = 4
+max_coarse_points = 225
+max_fine_points = 500
+batch_size = 96
+max_steps_per_simulation = 800000
+boundary_iterations = 4
+boundary_log10_tolerance = 0.025
+# These are display scales, NEVER inferred upper/lower capacitance bounds.
+display_C_th_pJ_per_K = [0.02, 0.047873236, 0.072, 0.2, 0.5, 1.0]
+# Separate operating selection: it does not hide oscillatory boundary points.
+maximum_frequency_MHz = 110.0
+[boundary.axes.C_over_Cth_pF_K_per_pJ]
+low = 3.0
+high = 300.0
+hard_low = 0.3
+hard_high = 3000.0
+[boundary.axes.S_e_mW_per_K]
+low = 0.0025
+high = 0.012
+hard_low = 0.0003
+hard_high = 0.03
+[output]
+root = "runs"

@@ -40,8 +40,9 @@ width_factor = 1.0
 
 [replay]
 data_directory = "../../data/experimental/tia_current_sweep"
-generate_gifs = true
-gif_frames = 24
+# Three-panel scope GIFs are mandatory for laboratory replays.
+scope_frames = 96
+legacy_cursor_animations = false
 
 [output]
 root = "runs"

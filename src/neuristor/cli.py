@@ -26,11 +26,16 @@ from .workflows import (
     run_joint_inference,
     run_lab_replay,
     run_steady_search,
+    run_physical_parameter_maps,
+    run_boundary_maps,
+    run_map_animations,
     export_saved_scope,
     run_resistance_fit,
     run_simulation,
     run_sweep,
     run_thermal_capacitance,
+    run_sample_study,
+    refresh_parameter_maps,
 )
 
 
@@ -45,11 +50,13 @@ sweep_app = typer.Typer(help="Run parameter sweeps from TOML recipes.")
 fit_app = typer.Typer(help="Fit measured specimen data.")
 analyze_app = typer.Typer(help="Analyze laboratory evidence.")
 runs_app = typer.Typer(help="Browse and publish the run archive.")
+study_app = typer.Typer(help="Fit a sample R(T) curve and build a complete screened map with GIFs.")
 app.add_typer(simulate_app, name="simulate")
 app.add_typer(sweep_app, name="sweep")
 app.add_typer(fit_app, name="fit")
 app.add_typer(analyze_app, name="analyze")
 app.add_typer(runs_app, name="runs")
+app.add_typer(study_app, name="study")
 
 
 def _command() -> str:
@@ -71,6 +78,40 @@ def _configured(path: Path, overrides: list[str], expected_model: str | None = N
 def _announce_bundle(path: Path) -> None:
     typer.echo(f"Completed: {path}")
     typer.echo(f"Manifest: {path / 'run.json'}")
+
+
+@study_app.command("plan")
+def study_plan(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False),
+    set_values: list[str] = typer.Option([], "--set", help="Override a dotted TOML path."),
+) -> None:
+    """Check units, input columns, bounds and workload without running a fit."""
+    from .sample_study import plan_sample_study
+
+    try:
+        plan = plan_sample_study(_configured(config, set_values, "current"))
+    except (ConfigError, ValueError, OSError, KeyError) as exc:
+        typer.echo(f"Study configuration error: {exc}", err=True)
+        raise typer.Exit(2) from exc
+    typer.echo(json.dumps(plan, indent=2))
+
+
+@study_app.command("run")
+def study_run(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False),
+    set_values: list[str] = typer.Option([], "--set", help="Override a dotted TOML path."),
+    output_root: Optional[Path] = typer.Option(None, "--output-root"),
+) -> None:
+    """Fit the sample loop, screen the grid and embed every GIF in one HTML."""
+    try:
+        bundle = run_sample_study(
+            _configured(config, set_values, "current"), output_root=output_root, command=_command()
+        )
+    except (ConfigError, ValueError, OSError, KeyError) as exc:
+        typer.echo(f"Study stopped: {exc}", err=True)
+        raise typer.Exit(2) from exc
+    _announce_bundle(bundle.root)
+    typer.echo(f"Share this standalone HTML: {bundle.root / 'parameter_maps.html'}")
 
 
 @simulate_app.command("current")
@@ -177,8 +218,9 @@ def analyze_hysteresis_reconstruction(
 ) -> None:
     """Reconstruct conditional R(T) trajectories from measured power without a global fit."""
 
-    bundle = run_hysteresis_reconstruction(_configured(config, set_values, "current"),
-                                           output_root=output_root, command=_command())
+    bundle = run_hysteresis_reconstruction(
+        _configured(config, set_values, "current"), output_root=output_root, command=_command()
+    )
     _announce_bundle(bundle.root)
 
 
@@ -188,14 +230,21 @@ def analyze_oscillation_audit(
     set_values: list[str] = typer.Option([], "--set", help="Override a dotted TOML path."),
     output_root: Optional[Path] = typer.Option(None, "--output-root", help="Override [output].root."),
     reuse_numerics: Optional[Path] = typer.Option(
-        None, "--reuse-numerics", exists=True, file_okay=False,
+        None,
+        "--reuse-numerics",
+        exists=True,
+        file_okay=False,
         help="Render a new bundle from a completed audit with the identical resolved recipe.",
     ),
 ) -> None:
     """Audit sustained cycles and map C versus thermal time at selected currents."""
 
-    bundle = run_oscillation_audit(_configured(config, set_values, "current"),
-                                   output_root=output_root, command=_command(), reuse_numerics=reuse_numerics)
+    bundle = run_oscillation_audit(
+        _configured(config, set_values, "current"),
+        output_root=output_root,
+        command=_command(),
+        reuse_numerics=reuse_numerics,
+    )
     _announce_bundle(bundle.root)
 
 
@@ -208,6 +257,77 @@ def analyze_replay_lab(
     """Compare one editable shared model with all measured currents and render GIFs."""
     bundle = run_lab_replay(_configured(config, set_values, "current"), output_root=output_root, command=_command())
     _announce_bundle(bundle.root)
+
+
+@analyze_app.command("boundary-maps")
+def analyze_boundary_maps(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False),
+    set_values: list[str] = typer.Option([], "--set"),
+    output_root: Optional[Path] = typer.Option(None, "--output-root"),
+    reuse_exploration: Optional[Path] = typer.Option(None, "--reuse-exploration", exists=True, file_okay=False),
+) -> None:
+    """Expand a coarse domain, then verify fine transition brackets and open limits."""
+    bundle = run_boundary_maps(_configured(config, set_values, "current"),
+                              output_root=output_root, command=_command(), reuse_exploration=reuse_exploration)
+    _announce_bundle(bundle.root)
+
+
+@analyze_app.command("physical-maps")
+def analyze_physical_maps(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False),
+    set_values: list[str] = typer.Option([], "--set"),
+    output_root: Optional[Path] = typer.Option(None, "--output-root"),
+    reuse_numerics: Optional[Path] = typer.Option(None, "--reuse-numerics", exists=True, file_okay=False),
+) -> None:
+    """Screen a dense C/Cth/Se domain and render 3D plus fixed-parameter heatmaps."""
+    bundle = run_physical_parameter_maps(
+        _configured(config, set_values, "current"),
+        output_root=output_root,
+        command=_command(),
+        reuse_numerics=reuse_numerics,
+    )
+    _announce_bundle(bundle.root)
+
+
+@analyze_app.command("map-animations")
+def analyze_map_animations(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False),
+    set_values: list[str] = typer.Option([], "--set"),
+    limit: Optional[int] = typer.Option(None, "--limit", min=1, help="Benchmark evenly spaced retained points only"),
+    output_root: Optional[Path] = typer.Option(None, "--output-root"),
+    reuse_media: Optional[Path] = typer.Option(
+        None,
+        "--reuse-media",
+        exists=True,
+        file_okay=False,
+        help="Rebuild the viewer using unchanged GIFs from a completed matching bundle",
+    ),
+) -> None:
+    """Attach synchronized point GIFs to a preserved map and package an offline ZIP."""
+    bundle = run_map_animations(
+        _configured(config, set_values, "current"),
+        output_root=output_root,
+        limit=limit,
+        reuse_media=reuse_media,
+        command=_command(),
+    )
+    _announce_bundle(bundle.root)
+
+
+@analyze_app.command("refresh-maps")
+def analyze_refresh_maps(
+    source: Optional[Path] = typer.Option(None, "--source", exists=True, file_okay=False),
+    all_existing: bool = typer.Option(False, "--all-existing", help="Revise all completed maps once, without resimulation."),
+    embed_gifs: Optional[bool] = typer.Option(None, "--embed-gifs/--link-gifs", help="Study defaults embed; dense maps link unchanged media."),
+    output_root: Optional[Path] = typer.Option(None, "--output-root"),
+) -> None:
+    """Rebuild historical map viewers with fixed heatmap axes and color scales."""
+    bundles = refresh_parameter_maps(source, all_existing=all_existing, output_root=output_root,
+                                     embed_gifs=embed_gifs, command=_command())
+    for bundle in bundles:
+        _announce_bundle(bundle.root)
+    if not bundles:
+        typer.echo("All completed maps already have current fixed-scale viewers.")
 
 
 @analyze_app.command("fit-steady")
@@ -229,7 +349,9 @@ def analyze_export_scope(
     original_labels_uA: bool = typer.Option(False, "--original-labels-uA"),
 ) -> None:
     """Export exact saved traces as stacked GIFs named by input current in amperes."""
-    bundle = export_saved_scope(source, output_root=output_root, frames=frames, original_labels_uA=original_labels_uA, command=_command())
+    bundle = export_saved_scope(
+        source, output_root=output_root, frames=frames, original_labels_uA=original_labels_uA, command=_command()
+    )
     _announce_bundle(bundle.root)
 
 
@@ -238,8 +360,19 @@ def playground(port: int = typer.Option(8502, "--port", min=1, max=65535)) -> No
     """Open the editable all-current Simulation Lab."""
     root = find_project_root()
     entry = Path(__file__).with_name("playground.py")
-    args = [sys.executable, "-m", "streamlit", "run", str(entry), "--server.port", str(port),
-            "--server.address", "127.0.0.1", "--browser.gatherUsageStats", "false"]
+    args = [
+        sys.executable,
+        "-m",
+        "streamlit",
+        "run",
+        str(entry),
+        "--server.port",
+        str(port),
+        "--server.address",
+        "127.0.0.1",
+        "--browser.gatherUsageStats",
+        "false",
+    ]
     raise typer.Exit(subprocess.run(args, cwd=root, check=False).returncode)
 
 
@@ -250,8 +383,9 @@ def analyze_fit_joint(
     output_root: Optional[Path] = typer.Option(None, "--output-root"),
 ) -> None:
     """Jointly fit measured static resistance and persistent waveform features."""
-    bundle = run_joint_inference(_configured(config, set_values, "current"),
-                                 output_root=output_root, command=_command())
+    bundle = run_joint_inference(
+        _configured(config, set_values, "current"), output_root=output_root, command=_command()
+    )
     _announce_bundle(bundle.root)
 
 
@@ -333,9 +467,7 @@ def analyze_thermal_capacitance(
         None, "--conductance-bootstrap", exists=True, dir_okay=False, readable=True
     ),
     ambient_K: float = typer.Option(314.4, "--ambient-K"),
-    electrical_capacitance_pF: float = typer.Option(
-        0.0, "--electrical-capacitance-pF", min=0.0
-    ),
+    electrical_capacitance_pF: float = typer.Option(0.0, "--electrical-capacitance-pF", min=0.0),
     selected_drives_mV: str = typer.Option("100,150,200", "--selected-drives-mV"),
     near_transition_check_mV: Optional[float] = typer.Option(250.0, "--near-transition-check-mV"),
     baseline_window_ns: str = typer.Option("-200,-50", "--baseline-window-ns"),
@@ -416,6 +548,16 @@ def runs_show(run_id: str = typer.Argument(..., help="Run identifier from `neuri
     typer.echo(json.dumps(payload, indent=2, sort_keys=True, default=str))
 
 
+@runs_app.command("index")
+def runs_index(
+    output_directory: Optional[Path] = typer.Option(None, "--output-directory"),
+) -> None:
+    """Refresh a lightweight HTML/CSV catalog; never copy or delete evidence."""
+    from .artifact_catalog import build_artifact_catalog
+
+    typer.echo(json.dumps(build_artifact_catalog(output_directory=output_directory), indent=2))
+
+
 @runs_app.command("publish")
 def runs_publish(run_id: str = typer.Argument(...)) -> None:
     """Copy one local bundle into the Git-trackable public archive."""
@@ -426,6 +568,62 @@ def runs_publish(run_id: str = typer.Argument(...)) -> None:
         typer.echo(str(exc), err=True)
         raise typer.Exit(2) from exc
     typer.echo(f"Published: {record.root}")
+
+
+@runs_app.command("manage")
+def runs_manage(port: int = typer.Option(0, "--port", min=0, max=65535)) -> None:
+    """Open the local artifact manager with recoverable Delete/Restore controls."""
+    from .interfaces.run_manager import create_manager
+
+    with create_manager(port=port) as server:
+        typer.echo(f"Run manager: http://127.0.0.1:{server.server_port}/artifacts/index.html")
+        typer.echo("Delete moves local runs to recoverable trash. Published/running runs are protected.")
+        typer.echo("Keep this terminal running; press Ctrl+C to stop.")
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            pass
+
+
+@runs_app.command("delete")
+def runs_delete(run_id: str = typer.Argument(...), yes: bool = typer.Option(False, "--yes")) -> None:
+    """Move a completed/failed local run to recoverable project trash."""
+    from .artifact_catalog import build_artifact_catalog
+
+    registry = RunRegistry()
+    try:
+        record = registry.get(run_id)
+        reason = registry.trash_reason(record)
+        if reason:
+            raise ValueError(reason)
+        if not yes:
+            typer.confirm(f"Move '{record.name}' ({record.root}) to recoverable trash?", abort=True)
+        result = registry.trash(run_id)
+    except (KeyError, ValueError, OSError) as exc:
+        typer.echo(f"Not deleted: {exc}", err=True)
+        raise typer.Exit(2) from exc
+    typer.echo(f"Moved to recoverable trash. Restore with: neuristor runs restore {result['trash_id']}")
+    build_artifact_catalog()
+
+
+@runs_app.command("restore")
+def runs_restore(trash_id: str = typer.Argument(...)) -> None:
+    """Restore a run from trash without overwriting any existing folder."""
+    from .artifact_catalog import build_artifact_catalog
+
+    try:
+        result = RunRegistry().restore(trash_id)
+    except (KeyError, ValueError, OSError) as exc:
+        typer.echo(f"Not restored: {exc}", err=True)
+        raise typer.Exit(2) from exc
+    typer.echo(f"Restored: {result['original_path']}")
+    build_artifact_catalog()
+
+
+@runs_app.command("trash")
+def runs_trash() -> None:
+    """List recoverable deleted runs and their restore IDs."""
+    typer.echo(json.dumps(RunRegistry().trashed(), indent=2))
 
 
 @runs_app.command("visualize")
@@ -471,11 +669,28 @@ def runs_visualize(
 
 
 @app.command("validate")
-def validate() -> None:
+def validate(
+    publication: bool = typer.Option(False, "--publication", help="Also check exact staged Git blobs for private PDFs and oversized files."),
+    distribution: Optional[Path] = typer.Option(None, "--distribution", exists=True, dir_okay=False, help="Inspect one proposed release file without uploading it."),
+) -> None:
     """Validate experiment recipes and current/historical run manifests."""
 
     report = validate_repository()
-    typer.echo(f"Checked {report.checked_configs} experiment configs and {report.checked_runs} archived runs.")
+    if publication or distribution is not None:
+        from .analysis.distribution import approved_pdf_hashes, validate_distribution_file, validate_publication_index
+
+        root = find_project_root()
+        try:
+            if publication:
+                report.errors.extend(validate_publication_index(root))
+            if distribution is not None:
+                report.errors.extend(validate_distribution_file(distribution, approved_pdf_hashes(root)))
+        except (OSError, ValueError, subprocess.CalledProcessError) as exc:
+            report.errors.append(f"Publication inspection failed: {exc}")
+    typer.echo(
+        f"Checked {report.checked_configs} experiment configs, {report.checked_runs} archived runs, "
+        f"and {report.checked_evidence} paper evidence entries."
+    )
     for warning in report.warnings:
         typer.echo(f"WARNING: {warning}")
     for error in report.errors:

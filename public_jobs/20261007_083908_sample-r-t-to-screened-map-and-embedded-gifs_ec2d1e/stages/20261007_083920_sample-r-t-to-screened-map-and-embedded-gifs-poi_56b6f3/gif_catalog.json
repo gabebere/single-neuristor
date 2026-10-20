@@ -1,0 +1,33 @@
+{
+  "25": {
+    "amplitude_change_fraction": 0.001505745143812377,
+    "caption": "Cth=0.2 pJ/K \u00b7 Se=0.006 mW/K \u00b7 C=7 pF",
+    "converged": true,
+    "cycle_count": 6,
+    "detail": "500 \u00b5A constant input; T0=298 K. No matching experimental trace. dt=0.00625 ns; playback 300\u2013429.04 ns. refinement checks pass. Minor loops are model trajectories; major branches are guides. No smoothing or interpolation.",
+    "dt_ns": 0.00625,
+    "eligible": true,
+    "extrema_vpp_mV": 701.2604819610715,
+    "frequency_MHz": 23.24905250331182,
+    "frequency_change_fraction": 0.0014509421226512043,
+    "frequency_valid": true,
+    "gif": "GIFs/point_00025.gif",
+    "maximum_dT_K": 0.05206298828125,
+    "maximum_dlogR": 0.02349731352502893,
+    "minimum_proximity_slope": 0.04373014799386432,
+    "peak_mV": 719.5384353399277,
+    "period_cv": 2.46257379099374e-07,
+    "png": "Figures/point_00025.png",
+    "point_index": 25,
+    "proximity_valid": true,
+    "refinement_level": 0,
+    "retention": 0.9999987489594251,
+    "status": "refinement checks pass",
+    "sustained": true,
+    "temperature_max_K": 353.9337463378906,
+    "temperature_min_K": 298.0,
+    "temperature_valid": true,
+    "trough_mV": 18.277798779308796,
+    "visually_resolved": true
+  }
+}

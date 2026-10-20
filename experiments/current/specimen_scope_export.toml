@@ -44,10 +44,8 @@ reversal_threshold_K = 0.01
 
 [replay]
 data_directory = "../../data/experimental/tia_current_sweep"
-generate_gifs = false
-scope_animations = true
 scope_frames = 96
-gif_frames = 24
+legacy_cursor_animations = false
 
 [output]
 root = "runs"

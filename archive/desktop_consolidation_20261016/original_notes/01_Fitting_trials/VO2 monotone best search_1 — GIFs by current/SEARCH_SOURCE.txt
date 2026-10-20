@@ -1,0 +1,4 @@
+Search source: /Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/20260922_210712_monotone-proximity-constrained-settled-oscillati_ffdabf
+Candidate: search_1
+Timestep: 0.00625 ns
+All 22 currents; optimized original labels 300–700 only.

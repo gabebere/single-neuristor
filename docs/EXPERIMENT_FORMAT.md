@@ -1,5 +1,11 @@
 # Experiment TOML format
 
+For the unified sample workflow, use the commented
+`experiments/studies/sample_parameter_map.toml` recipe and
+[sample-study specification](SAMPLE_STUDY.md). The core schema below is unchanged;
+`[study]`, `[maps]` and `[animations]` add explicit unit/input/workload settings.
+`neuristor study plan` validates those settings before any fit or simulation.
+
 The stable schema version is `1`. Simulation recipes require the following top-level
 fields:
 
@@ -53,6 +59,35 @@ of `YuanhangResistParams` exactly.
 | `thermal.C_th_factor` | dimensionless | Per-device thermal scaling |
 | `thermal.noise_K_per_ns` | K/ns | Legacy upstream noise convention |
 
+## Laboratory replay output
+
+A current-model recipe with a `[replay]` table compares the simulated device with
+every measured trace in `replay.data_directory`. Every `analyze replay-lab` run
+always writes:
+
+- `GIFs/`: one vertically stacked animation per current, with input current in A,
+  measured and simulated voltage, and the evolving simulated R(T) trajectory;
+- `Figures/`: the final frame of each animation as a PNG;
+- `START_HERE.html`: an offline current selector;
+- `All_current_GIFs.zip`: all animations; and
+- `major_branches.csv`: the heating and cooling R(T) guides used in the figures.
+
+`replay.scope_frames` controls visual playback sampling and defaults to 96. It does
+not change the integration timestep or numerical tables. The old two-panel cursor
+animations are produced only when `replay.legacy_cursor_animations = true`.
+Pure current-source recipes can request the same synchronized layout without a
+measured trace:
+
+```toml
+[output]
+scope_gif = true
+scope_frames = 96
+```
+
+This writes `GIFs/current_<amplitude_A>_A.gif` and a matching final-frame PNG in
+`Figures/`. The panels show imposed input current in A, simulated voltage, and the
+evolving simulated R(T) trajectory over the heating/cooling major branches.
+
 ## Sweeps
 
 A sweep points to a simulation recipe and declares one to three axes:
@@ -81,6 +116,31 @@ step = 5.0
 The Cartesian product is evaluated. One axis produces a line, two produce a heatmap,
 and three produce heatmaps faceted by the first axis. Larger studies can still be
 split into multiple recipes with explicit names.
+
+## Steady extrema fitting and screened parameter maps
+
+`neuristor analyze fit-steady` accepts `[steady] feature_method = "extrema"`.
+Only complete cycles in `steady.window_ns` enter the voltage objective. Median
+maximum-minus-minimum voltage defines Vpp; median maximum-to-maximum time defines
+frequency. Missing persistent cycles and frequencies exceeding
+`steady.maximum_frequency_MHz` receive a finite penalty. Static R(T) constraints
+remain separate. Historical recipes retain the spectral method by default.
+
+`neuristor analyze physical-maps` uses a current simulation recipe with `[maps]`.
+`window_ns`, `maximum_frequency_MHz`, two successively smaller
+`verification_dt_ns`, and `convergence_fraction` specify the screening protocol.
+Each `[maps.axes.NAME]` defines `low`, `high`, `count` for a logarithmic grid and
+optional `extra_values`, or an explicit `values` array. Names are `C_pF`,
+`C_th_pJ_per_K`, and `S_e_mW_per_K`; their units match simulation fields.
+`[maps.fixed_values]` selects one actual grid value per parameter for the 2D slices.
+These are the initial HTML slider positions and the static PNG slices. Each HTML
+slider can select all sampled values, updating both metrics and their per-slice
+colorbar ranges. The original metric units remain MHz/mV; values are not converted
+to dimensionless 0–1 scores. Empty slices have no displayed colorbar.
+Blank cells are omitted candidates, not invented interpolated values or zero
+frequency measurements. `--reuse-numerics DIRECTORY` writes a new rendering bundle
+only when physical parameters, input current, measurement settings and timesteps
+match the completed source bundle; original numerical CSV bytes are preserved.
 
 ## Path resolution and overrides
 

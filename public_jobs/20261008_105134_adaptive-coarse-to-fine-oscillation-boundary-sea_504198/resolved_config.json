@@ -1,0 +1,91 @@
+{
+  "boundary": {
+    "axes": {
+      "C_over_Cth_pF_K_per_pJ": {
+        "hard_high": 3000.0,
+        "hard_low": 0.3,
+        "high": 300.0,
+        "low": 3.0
+      },
+      "S_e_mW_per_K": {
+        "hard_high": 0.03,
+        "hard_low": 0.0003,
+        "high": 0.012,
+        "low": 0.0025
+      }
+    },
+    "batch_size": 96,
+    "boundary_iterations": 4,
+    "boundary_log10_tolerance": 0.025,
+    "coarse_count": 5,
+    "coarse_dt_ns": 0.05,
+    "convergence_fraction": 0.05,
+    "display_C_th_pJ_per_K": [
+      0.02,
+      0.047873236,
+      0.072,
+      0.2,
+      0.5,
+      1.0
+    ],
+    "equilibrium_relative_tolerance": 0.001,
+    "equilibrium_temperature_span_K": 0.02,
+    "equilibrium_voltage_span_mV": 0.5,
+    "fine_count": 9,
+    "fine_dt_ns": 0.025,
+    "initial_duration_ns": 300.0,
+    "max_coarse_points": 225,
+    "max_fine_points": 500,
+    "max_steps_per_simulation": 800000,
+    "maximum_duration_ns": 1200.0,
+    "maximum_expansions": 4,
+    "maximum_frequency_MHz": 110.0,
+    "maximum_timestep_refinements": 2,
+    "reference_C_th_pJ_per_K": 0.072,
+    "seed_points": [
+      [
+        41.66666666666667,
+        0.006
+      ]
+    ],
+    "verification_dt_ns": [
+      0.0125,
+      0.00625
+    ]
+  },
+  "electrical": {
+    "C_pF": 3.0
+  },
+  "initial": {
+    "temperature_K": 298.0,
+    "voltage_V": 0.0
+  },
+  "input": {
+    "amplitude_uA": 500.0
+  },
+  "kind": "simulation",
+  "model": "current",
+  "name": "Adaptive coarse-to-fine oscillation boundary search",
+  "output": {
+    "root": "runs"
+  },
+  "resistance": {
+    "parameters": {
+      "T_max_K": 370.1625,
+      "T_min_K": 289.8545
+    },
+    "preset": "../../presets/resistance_100425_chip1_gap3.json",
+    "start_branch": "insulator"
+  },
+  "schema_version": 1,
+  "seed": 20261008,
+  "thermal": {
+    "C_th_pJ_per_K": 0.072,
+    "S_e_mW_per_K": 0.006,
+    "T0_K": 298.0
+  },
+  "time": {
+    "dt_ns": 0.05,
+    "duration_us": 0.6
+  }
+}

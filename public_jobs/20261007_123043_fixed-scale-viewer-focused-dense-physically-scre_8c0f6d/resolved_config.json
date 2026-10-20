@@ -1,0 +1,89 @@
+{
+  "original_numerical_config": {
+    "electrical": {
+      "C_pF": 16.4
+    },
+    "initial": {
+      "temperature_K": 298.0,
+      "voltage_V": 0.0
+    },
+    "input": {
+      "amplitude_uA": 500.0
+    },
+    "kind": "simulation",
+    "maps": {
+      "axes": {
+        "C_pF": {
+          "count": 21,
+          "extra_values": [
+            0.39,
+            16.4
+          ],
+          "high": 20.0,
+          "low": 0.8
+        },
+        "C_th_pJ_per_K": {
+          "count": 21,
+          "extra_values": [
+            0.047873236,
+            0.072
+          ],
+          "high": 0.5,
+          "low": 0.02
+        },
+        "S_e_mW_per_K": {
+          "count": 21,
+          "extra_values": [
+            0.0036751265,
+            0.00268
+          ],
+          "high": 0.012,
+          "low": 0.0025
+        }
+      },
+      "batch_size": 384,
+      "convergence_fraction": 0.05,
+      "fixed_values": {
+        "C_pF": 16.4,
+        "C_th_pJ_per_K": 0.047873236,
+        "S_e_mW_per_K": 0.0036751265
+      },
+      "max_points": 15000,
+      "maximum_frequency_MHz": 110.0,
+      "verification_dt_ns": [
+        0.025,
+        0.0125
+      ],
+      "window_ns": [
+        300.0,
+        600.0
+      ]
+    },
+    "model": "current",
+    "name": "Focused dense physically screened steady-state extrema maps",
+    "output": {
+      "root": "runs"
+    },
+    "resistance": {
+      "preset": "../../presets/resistance_100425_chip1_gap3.json",
+      "start_branch": "insulator"
+    },
+    "schema_version": 1,
+    "seed": 20261002,
+    "thermal": {
+      "C_th_pJ_per_K": 0.047873236,
+      "S_e_mW_per_K": 0.0036751265,
+      "T0_K": 298.0
+    },
+    "time": {
+      "dt_ns": 0.05,
+      "duration_us": 0.6
+    }
+  },
+  "viewer_refresh": {
+    "display_version": "fixed-heatmap-scales-v1",
+    "embed_gifs": false,
+    "source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20261002_145342_focused-dense-physically-screened-steady-state-e_b9e298",
+    "source_run_id": "20261002_145342_focused-dense-physically-screened-steady-state-e_b9e298"
+  }
+}

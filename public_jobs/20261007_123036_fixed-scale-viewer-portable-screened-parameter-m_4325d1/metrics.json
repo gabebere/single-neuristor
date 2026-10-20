@@ -1,0 +1,13 @@
+{
+  "catalogued_gifs": 1258,
+  "display_version": "fixed-heatmap-scales-v1",
+  "embedded_gifs": 0,
+  "grid_points": 12167,
+  "media_dependencies": [
+    "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20261007_074702_portable-screened-parameter-map-with-point-gifs_eaf6ab"
+  ],
+  "resimulated": false,
+  "retained_points": 1258,
+  "source_run_id": "20261007_074702_portable-screened-parameter-map-with-point-gifs_eaf6ab",
+  "standalone": false
+}

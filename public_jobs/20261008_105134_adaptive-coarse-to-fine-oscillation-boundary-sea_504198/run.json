@@ -1,0 +1,1199 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Every integration and horizon check",
+      "path": "verification_checkpoint.csv"
+    },
+    {
+      "label": "Original reused evaluation evidence",
+      "path": "original_evaluations/coarse_grid.csv"
+    },
+    {
+      "label": "Original reused evaluation evidence",
+      "path": "original_evaluations/fine_grid.csv"
+    },
+    {
+      "label": "Original reused evaluation evidence",
+      "path": "original_evaluations/verification_checkpoint.csv"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_evaluations/fine_grid.csv"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_evaluations/coarse_grid.csv"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_evaluations/verification_checkpoint.csv"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/metrics.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/joint_inference.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/extrema.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/playground.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/config.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/lab_estimates.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/artifact_catalog.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/__init__.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/visualization.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/model.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/dashboard.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/plots.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/replay_plots.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/cli.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/parameter_inference.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/physical_maps.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/steady_inference.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/workflows.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/model_validation.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/map_animations.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/sample_study.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/provenance.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/oscillation_audit.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/runs.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/sample_library.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/map_workflows.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/current_domain_search.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/lab_replay.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/experimental_waveforms.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/validation.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/fitting/joint_inference.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/fitting/__init__.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/fitting/parameter_inference.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/fitting/steady_inference.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/fitting/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/fitting/current_domain_search.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/analysis/metrics.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/analysis/extrema.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/analysis/lab_estimates.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/analysis/__init__.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/analysis/physical_maps.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/analysis/model_validation.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/analysis/oscillation_audit.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/analysis/lab_replay.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/analysis/boundary_search.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/analysis/experimental_waveforms.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/legacy/__init__.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/legacy/plots.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/legacy/sample_library.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/plotting/boundary_maps.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/plotting/__init__.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/plotting/visualization.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/plotting/replay_plots.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/plotting/map_animations.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/orchestration/artifact_catalog.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/orchestration/__init__.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/orchestration/map_viewers.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/orchestration/boundary_workflows.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/orchestration/sample_study.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/orchestration/map_workflows.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/interfaces/playground.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/interfaces/__init__.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/interfaces/dashboard.py"
+    },
+    {
+      "label": "Earlier reused evidence",
+      "path": "reused_history/original_numerical_source/neuristor/interfaces/run_manager.py"
+    },
+    {
+      "label": "Parent reuse provenance",
+      "path": "reused_history/parent_provenance.json"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/metrics.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/joint_inference.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/extrema.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/playground.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/config.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/lab_estimates.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/artifact_catalog.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/__init__.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/visualization.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/model.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/dashboard.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/plots.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/replay_plots.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/cli.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/parameter_inference.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/physical_maps.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/steady_inference.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/workflows.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/model_validation.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/map_animations.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/sample_study.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/provenance.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/oscillation_audit.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/runs.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/sample_library.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/map_workflows.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/current_domain_search.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/lab_replay.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/experimental_waveforms.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/validation.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/fitting/joint_inference.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/fitting/__init__.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/fitting/parameter_inference.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/fitting/steady_inference.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/fitting/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/fitting/current_domain_search.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/analysis/metrics.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/analysis/extrema.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/analysis/lab_estimates.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/analysis/__init__.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/analysis/physical_maps.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/analysis/model_validation.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/analysis/oscillation_audit.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/analysis/lab_replay.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/analysis/boundary_search.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/analysis/experimental_waveforms.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/legacy/__init__.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/legacy/plots.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/legacy/sample_library.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/plotting/boundary_maps.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/plotting/__init__.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/plotting/visualization.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/plotting/replay_plots.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/plotting/map_animations.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/orchestration/artifact_catalog.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/orchestration/__init__.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/orchestration/map_viewers.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/orchestration/boundary_workflows.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/orchestration/sample_study.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/orchestration/map_workflows.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/interfaces/playground.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/interfaces/__init__.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/interfaces/dashboard.py"
+    },
+    {
+      "label": "Original evaluation source",
+      "path": "original_numerical_source/neuristor/interfaces/run_manager.py"
+    },
+    {
+      "label": "Checked reusable evaluations and original evidence",
+      "media_type": "application/json",
+      "path": "numerical_provenance.json"
+    },
+    {
+      "label": "Coarse/fine progress",
+      "media_type": "application/json",
+      "path": "status.json"
+    },
+    {
+      "label": "Expanded coarse exploration",
+      "path": "coarse_grid.csv"
+    },
+    {
+      "label": "All fine point classifications",
+      "path": "fine_grid.csv"
+    },
+    {
+      "label": "Verified transition brackets and unresolved refinements",
+      "path": "boundaries.csv"
+    },
+    {
+      "label": "Open common-scale predictions",
+      "path": "scaled_oscillators.csv"
+    },
+    {
+      "label": "Coverage, caps and verified classifications",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Fixed model parameters in SI",
+      "media_type": "application/json",
+      "path": "physics_parameters.json"
+    },
+    {
+      "label": "Offline coarse/fine and open-scale 3D viewer",
+      "path": "parameter_maps.html"
+    },
+    {
+      "label": "Classifications across both stages",
+      "path": "boundary_maps.png"
+    },
+    {
+      "label": "Method, scale identity, results and remaining open limits",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    },
+    {
+      "label": "Frozen source __init__.py",
+      "path": "source/neuristor/__init__.py"
+    },
+    {
+      "label": "Frozen source analysis/__init__.py",
+      "path": "source/neuristor/analysis/__init__.py"
+    },
+    {
+      "label": "Frozen source analysis/boundary_search.py",
+      "path": "source/neuristor/analysis/boundary_search.py"
+    },
+    {
+      "label": "Frozen source analysis/experimental_waveforms.py",
+      "path": "source/neuristor/analysis/experimental_waveforms.py"
+    },
+    {
+      "label": "Frozen source analysis/extrema.py",
+      "path": "source/neuristor/analysis/extrema.py"
+    },
+    {
+      "label": "Frozen source analysis/lab_estimates.py",
+      "path": "source/neuristor/analysis/lab_estimates.py"
+    },
+    {
+      "label": "Frozen source analysis/lab_replay.py",
+      "path": "source/neuristor/analysis/lab_replay.py"
+    },
+    {
+      "label": "Frozen source analysis/metrics.py",
+      "path": "source/neuristor/analysis/metrics.py"
+    },
+    {
+      "label": "Frozen source analysis/model_validation.py",
+      "path": "source/neuristor/analysis/model_validation.py"
+    },
+    {
+      "label": "Frozen source analysis/oscillation_audit.py",
+      "path": "source/neuristor/analysis/oscillation_audit.py"
+    },
+    {
+      "label": "Frozen source analysis/physical_maps.py",
+      "path": "source/neuristor/analysis/physical_maps.py"
+    },
+    {
+      "label": "Frozen source artifact_catalog.py",
+      "path": "source/neuristor/artifact_catalog.py"
+    },
+    {
+      "label": "Frozen source cli.py",
+      "path": "source/neuristor/cli.py"
+    },
+    {
+      "label": "Frozen source config.py",
+      "path": "source/neuristor/config.py"
+    },
+    {
+      "label": "Frozen source current_domain_search.py",
+      "path": "source/neuristor/current_domain_search.py"
+    },
+    {
+      "label": "Frozen source current_drive_sim.py",
+      "path": "source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Frozen source dashboard.py",
+      "path": "source/neuristor/dashboard.py"
+    },
+    {
+      "label": "Frozen source experimental_waveforms.py",
+      "path": "source/neuristor/experimental_waveforms.py"
+    },
+    {
+      "label": "Frozen source extrema.py",
+      "path": "source/neuristor/extrema.py"
+    },
+    {
+      "label": "Frozen source fitting/__init__.py",
+      "path": "source/neuristor/fitting/__init__.py"
+    },
+    {
+      "label": "Frozen source fitting/current_domain_search.py",
+      "path": "source/neuristor/fitting/current_domain_search.py"
+    },
+    {
+      "label": "Frozen source fitting/joint_inference.py",
+      "path": "source/neuristor/fitting/joint_inference.py"
+    },
+    {
+      "label": "Frozen source fitting/parameter_inference.py",
+      "path": "source/neuristor/fitting/parameter_inference.py"
+    },
+    {
+      "label": "Frozen source fitting/resistance_custom_analysis.py",
+      "path": "source/neuristor/fitting/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Frozen source fitting/steady_inference.py",
+      "path": "source/neuristor/fitting/steady_inference.py"
+    },
+    {
+      "label": "Frozen source interfaces/__init__.py",
+      "path": "source/neuristor/interfaces/__init__.py"
+    },
+    {
+      "label": "Frozen source interfaces/dashboard.py",
+      "path": "source/neuristor/interfaces/dashboard.py"
+    },
+    {
+      "label": "Frozen source interfaces/playground.py",
+      "path": "source/neuristor/interfaces/playground.py"
+    },
+    {
+      "label": "Frozen source interfaces/run_manager.py",
+      "path": "source/neuristor/interfaces/run_manager.py"
+    },
+    {
+      "label": "Frozen source joint_inference.py",
+      "path": "source/neuristor/joint_inference.py"
+    },
+    {
+      "label": "Frozen source lab_estimates.py",
+      "path": "source/neuristor/lab_estimates.py"
+    },
+    {
+      "label": "Frozen source lab_replay.py",
+      "path": "source/neuristor/lab_replay.py"
+    },
+    {
+      "label": "Frozen source legacy/__init__.py",
+      "path": "source/neuristor/legacy/__init__.py"
+    },
+    {
+      "label": "Frozen source legacy/plots.py",
+      "path": "source/neuristor/legacy/plots.py"
+    },
+    {
+      "label": "Frozen source legacy/sample_library.py",
+      "path": "source/neuristor/legacy/sample_library.py"
+    },
+    {
+      "label": "Frozen source map_animations.py",
+      "path": "source/neuristor/map_animations.py"
+    },
+    {
+      "label": "Frozen source map_workflows.py",
+      "path": "source/neuristor/map_workflows.py"
+    },
+    {
+      "label": "Frozen source metrics.py",
+      "path": "source/neuristor/metrics.py"
+    },
+    {
+      "label": "Frozen source model.py",
+      "path": "source/neuristor/model.py"
+    },
+    {
+      "label": "Frozen source model_validation.py",
+      "path": "source/neuristor/model_validation.py"
+    },
+    {
+      "label": "Frozen source orchestration/__init__.py",
+      "path": "source/neuristor/orchestration/__init__.py"
+    },
+    {
+      "label": "Frozen source orchestration/artifact_catalog.py",
+      "path": "source/neuristor/orchestration/artifact_catalog.py"
+    },
+    {
+      "label": "Frozen source orchestration/boundary_workflows.py",
+      "path": "source/neuristor/orchestration/boundary_workflows.py"
+    },
+    {
+      "label": "Frozen source orchestration/map_viewers.py",
+      "path": "source/neuristor/orchestration/map_viewers.py"
+    },
+    {
+      "label": "Frozen source orchestration/map_workflows.py",
+      "path": "source/neuristor/orchestration/map_workflows.py"
+    },
+    {
+      "label": "Frozen source orchestration/sample_study.py",
+      "path": "source/neuristor/orchestration/sample_study.py"
+    },
+    {
+      "label": "Frozen source oscillation_audit.py",
+      "path": "source/neuristor/oscillation_audit.py"
+    },
+    {
+      "label": "Frozen source parameter_inference.py",
+      "path": "source/neuristor/parameter_inference.py"
+    },
+    {
+      "label": "Frozen source physical_maps.py",
+      "path": "source/neuristor/physical_maps.py"
+    },
+    {
+      "label": "Frozen source playground.py",
+      "path": "source/neuristor/playground.py"
+    },
+    {
+      "label": "Frozen source plots.py",
+      "path": "source/neuristor/plots.py"
+    },
+    {
+      "label": "Frozen source plotting/__init__.py",
+      "path": "source/neuristor/plotting/__init__.py"
+    },
+    {
+      "label": "Frozen source plotting/boundary_maps.py",
+      "path": "source/neuristor/plotting/boundary_maps.py"
+    },
+    {
+      "label": "Frozen source plotting/map_animations.py",
+      "path": "source/neuristor/plotting/map_animations.py"
+    },
+    {
+      "label": "Frozen source plotting/replay_plots.py",
+      "path": "source/neuristor/plotting/replay_plots.py"
+    },
+    {
+      "label": "Frozen source plotting/visualization.py",
+      "path": "source/neuristor/plotting/visualization.py"
+    },
+    {
+      "label": "Frozen source provenance.py",
+      "path": "source/neuristor/provenance.py"
+    },
+    {
+      "label": "Frozen source replay_plots.py",
+      "path": "source/neuristor/replay_plots.py"
+    },
+    {
+      "label": "Frozen source resistance_custom_analysis.py",
+      "path": "source/neuristor/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Frozen source runs.py",
+      "path": "source/neuristor/runs.py"
+    },
+    {
+      "label": "Frozen source sample_library.py",
+      "path": "source/neuristor/sample_library.py"
+    },
+    {
+      "label": "Frozen source sample_study.py",
+      "path": "source/neuristor/sample_study.py"
+    },
+    {
+      "label": "Frozen source steady_inference.py",
+      "path": "source/neuristor/steady_inference.py"
+    },
+    {
+      "label": "Frozen source validation.py",
+      "path": "source/neuristor/validation.py"
+    },
+    {
+      "label": "Frozen source visualization.py",
+      "path": "source/neuristor/visualization.py"
+    },
+    {
+      "label": "Frozen source workflows.py",
+      "path": "source/neuristor/workflows.py"
+    },
+    {
+      "label": "Frozen numerical and rendering source",
+      "media_type": "application/json",
+      "path": "source_hashes.json"
+    },
+    {
+      "label": "Final coverage status",
+      "media_type": "application/json",
+      "path": "status.json"
+    }
+  ],
+  "command": "neuristor analyze boundary-maps --config experiments/current/adaptive_boundary_maps.toml --reuse-exploration runs/20261008_093626_adaptive-coarse-to-fine-oscillation-boundary-sea_4d15ed",
+  "created_at": "2026-10-08T10:51:34.395270+00:00",
+  "id": "20261008_105134_adaptive-coarse-to-fine-oscillation-boundary-sea_504198",
+  "kind": "analysis",
+  "model": "current",
+  "name": "Adaptive coarse-to-fine oscillation boundary search",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "e2dd84e2ef811fbf29e26ac8e0416ee75bacc1e5",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "ambient_K": 298.0,
+    "budget_exhausted": false,
+    "classifications": {
+      "calibration_censored": 13,
+      "nonoscillatory": 100,
+      "numerical_unresolved": 6,
+      "oscillatory": 57,
+      "time_unresolved": 35
+    },
+    "coarse_faces": [
+      {
+        "axis": "C_over_Cth_pF_K_per_pJ",
+        "side": "low",
+        "status": "sampled_nonoscillatory",
+        "value": 3.0
+      },
+      {
+        "axis": "C_over_Cth_pF_K_per_pJ",
+        "side": "high",
+        "status": "censored_open",
+        "value": 300.0
+      },
+      {
+        "axis": "S_e_mW_per_K",
+        "side": "low",
+        "status": "censored_open",
+        "value": 0.0025
+      },
+      {
+        "axis": "S_e_mW_per_K",
+        "side": "high",
+        "status": "sampled_nonoscillatory",
+        "value": 0.017761987307814843
+      }
+    ],
+    "coarse_points": 42,
+    "common_capacitance_scale": "open_by_model_symmetry",
+    "complete_physical_boundary": false,
+    "current_uA": 500.0,
+    "fine_faces": [
+      {
+        "axis": "C_over_Cth_pF_K_per_pJ",
+        "side": "low",
+        "status": "unresolved_open",
+        "value": 5.334838230116768
+      },
+      {
+        "axis": "C_over_Cth_pF_K_per_pJ",
+        "side": "high",
+        "status": "censored_open",
+        "value": 94.86832980505137
+      },
+      {
+        "axis": "S_e_mW_per_K",
+        "side": "low",
+        "status": "unresolved_open",
+        "value": 0.0016890001935087934
+      },
+      {
+        "axis": "S_e_mW_per_K",
+        "side": "high",
+        "status": "sampled_nonoscillatory",
+        "value": 0.017761987307814843
+      }
+    ],
+    "fine_points": 211,
+    "fine_rounds": [
+      {
+        "faces": [
+          {
+            "axis": "C_over_Cth_pF_K_per_pJ",
+            "side": "low",
+            "status": "sampled_nonoscillatory",
+            "value": 9.486832980505136
+          },
+          {
+            "axis": "C_over_Cth_pF_K_per_pJ",
+            "side": "high",
+            "status": "censored_open",
+            "value": 94.86832980505137
+          },
+          {
+            "axis": "S_e_mW_per_K",
+            "side": "low",
+            "status": "oscillatory_open",
+            "value": 0.003700414022461426
+          },
+          {
+            "axis": "S_e_mW_per_K",
+            "side": "high",
+            "status": "sampled_nonoscillatory",
+            "value": 0.017761987307814843
+          }
+        ],
+        "iteration": 0,
+        "points": 100
+      },
+      {
+        "faces": [
+          {
+            "axis": "C_over_Cth_pF_K_per_pJ",
+            "side": "low",
+            "status": "sampled_nonoscillatory",
+            "value": 9.486832980505136
+          },
+          {
+            "axis": "C_over_Cth_pF_K_per_pJ",
+            "side": "high",
+            "status": "censored_open",
+            "value": 94.86832980505137
+          },
+          {
+            "axis": "S_e_mW_per_K",
+            "side": "low",
+            "status": "unresolved_open",
+            "value": 0.003041551422572626
+          },
+          {
+            "axis": "S_e_mW_per_K",
+            "side": "high",
+            "status": "sampled_nonoscillatory",
+            "value": 0.017761987307814843
+          }
+        ],
+        "iteration": 1,
+        "points": 110
+      },
+      {
+        "faces": [
+          {
+            "axis": "C_over_Cth_pF_K_per_pJ",
+            "side": "low",
+            "status": "unresolved_open",
+            "value": 9.486832980505136
+          },
+          {
+            "axis": "C_over_Cth_pF_K_per_pJ",
+            "side": "high",
+            "status": "censored_open",
+            "value": 94.86832980505137
+          },
+          {
+            "axis": "S_e_mW_per_K",
+            "side": "low",
+            "status": "unresolved_open",
+            "value": 0.0025
+          },
+          {
+            "axis": "S_e_mW_per_K",
+            "side": "high",
+            "status": "sampled_nonoscillatory",
+            "value": 0.017761987307814843
+          }
+        ],
+        "iteration": 2,
+        "points": 120
+      },
+      {
+        "faces": [
+          {
+            "axis": "C_over_Cth_pF_K_per_pJ",
+            "side": "low",
+            "status": "unresolved_open",
+            "value": 7.114121116984965
+          },
+          {
+            "axis": "C_over_Cth_pF_K_per_pJ",
+            "side": "high",
+            "status": "censored_open",
+            "value": 94.86832980505137
+          },
+          {
+            "axis": "S_e_mW_per_K",
+            "side": "low",
+            "status": "unresolved_open",
+            "value": 0.0020548723765168443
+          },
+          {
+            "axis": "S_e_mW_per_K",
+            "side": "high",
+            "status": "sampled_nonoscillatory",
+            "value": 0.017761987307814843
+          }
+        ],
+        "iteration": 3,
+        "points": 143
+      },
+      {
+        "faces": [
+          {
+            "axis": "C_over_Cth_pF_K_per_pJ",
+            "side": "low",
+            "status": "unresolved_open",
+            "value": 5.334838230116768
+          },
+          {
+            "axis": "C_over_Cth_pF_K_per_pJ",
+            "side": "high",
+            "status": "censored_open",
+            "value": 94.86832980505137
+          },
+          {
+            "axis": "S_e_mW_per_K",
+            "side": "low",
+            "status": "unresolved_open",
+            "value": 0.0016890001935087934
+          },
+          {
+            "axis": "S_e_mW_per_K",
+            "side": "high",
+            "status": "sampled_nonoscillatory",
+            "value": 0.017761987307814843
+          }
+        ],
+        "iteration": 4,
+        "points": 168
+      }
+    ],
+    "initial_temperature_K": 298.0,
+    "integration_attempts": 0,
+    "reference_C_th_pJ_per_K": 0.072,
+    "reused_evaluations": 253,
+    "rounds": [
+      {
+        "faces": [
+          {
+            "axis": "C_over_Cth_pF_K_per_pJ",
+            "side": "low",
+            "status": "sampled_nonoscillatory",
+            "value": 3.0
+          },
+          {
+            "axis": "C_over_Cth_pF_K_per_pJ",
+            "side": "high",
+            "status": "censored_open",
+            "value": 300.0
+          },
+          {
+            "axis": "S_e_mW_per_K",
+            "side": "low",
+            "status": "censored_open",
+            "value": 0.0025
+          },
+          {
+            "axis": "S_e_mW_per_K",
+            "side": "high",
+            "status": "oscillatory_open",
+            "value": 0.012
+          }
+        ],
+        "iteration": 0,
+        "points": 36
+      },
+      {
+        "faces": [
+          {
+            "axis": "C_over_Cth_pF_K_per_pJ",
+            "side": "low",
+            "status": "sampled_nonoscillatory",
+            "value": 3.0
+          },
+          {
+            "axis": "C_over_Cth_pF_K_per_pJ",
+            "side": "high",
+            "status": "censored_open",
+            "value": 300.0
+          },
+          {
+            "axis": "S_e_mW_per_K",
+            "side": "low",
+            "status": "censored_open",
+            "value": 0.0025
+          },
+          {
+            "axis": "S_e_mW_per_K",
+            "side": "high",
+            "status": "sampled_nonoscillatory",
+            "value": 0.017761987307814843
+          }
+        ],
+        "iteration": 1,
+        "points": 42
+      }
+    ],
+    "temperature_domain_K": [
+      289.8545,
+      370.1625
+    ],
+    "tolerance_reached_brackets": 15,
+    "transition_brackets": 18
+  },
+  "updated_at": "2026-10-08T10:51:35.183834+00:00"
+}

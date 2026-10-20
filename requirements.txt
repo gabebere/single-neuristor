@@ -1,11 +1,2 @@
-imageio
-matplotlib
-numpy
-pandas
-pillow
-plotly
-scipy
-streamlit
-torch
-typer>=0.12
-tomli>=2; python_version < "3.11"
+# Compatibility entry point: dependency definitions live in pyproject.toml.
+-e .

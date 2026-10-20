@@ -1,0 +1,99 @@
+{
+  "animations": {
+    "batch_size": 32,
+    "dt_ns": 0.00625,
+    "frames": 32,
+    "maximum_refinements": 2,
+    "workers": 2
+  },
+  "electrical": {
+    "C_pF": 16.4
+  },
+  "initial": {
+    "temperature_K": 298.0,
+    "voltage_V": 0.0
+  },
+  "input": {
+    "amplitude_uA": 500.0
+  },
+  "kind": "simulation",
+  "maps": {
+    "axes": {
+      "C_pF": {
+        "values": [
+          0.39,
+          7.0,
+          16.4
+        ]
+      },
+      "C_th_pJ_per_K": {
+        "values": [
+          0.047873236,
+          0.072,
+          0.2
+        ]
+      },
+      "S_e_mW_per_K": {
+        "values": [
+          0.00268,
+          0.0036751265,
+          0.006
+        ]
+      }
+    },
+    "batch_size": 128,
+    "convergence_fraction": 0.05,
+    "fixed_values": {
+      "C_pF": 16.4,
+      "C_th_pJ_per_K": 0.047873236,
+      "S_e_mW_per_K": 0.0036751265
+    },
+    "max_points": 15000,
+    "maximum_frequency_MHz": 110.0,
+    "verification_dt_ns": [
+      0.025,
+      0.0125
+    ],
+    "window_ns": [
+      300.0,
+      600.0
+    ]
+  },
+  "model": "current",
+  "name": "Sample R(T) to screened map and embedded GIFs - screened grid",
+  "output": {
+    "root": "runs"
+  },
+  "resistance": {
+    "parameters": {
+      "T_max_K": 370.1625,
+      "T_min_K": 289.8545,
+      "gamma": 0.956269682,
+      "proximity_function": "yuanhang"
+    },
+    "preset": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs_ec2d1e/stages/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs-r-t_170049/resistance_preset.json",
+    "start_branch": "insulator"
+  },
+  "schema_version": 1,
+  "seed": 42,
+  "study": {
+    "bootstrap_samples": 0,
+    "maximum_static_rmse_log10": 0.05,
+    "resistance_column": "Resistance",
+    "resistance_data": "../../data/experimental/100425_chip1_gap3.tsv",
+    "resistance_unit": "ohm",
+    "temperature_column": "Temperature",
+    "temperature_domain": "measured",
+    "temperature_unit": "K",
+    "time_column": "Time"
+  },
+  "thermal": {
+    "C_th_pJ_per_K": 0.047873236,
+    "S_e_mW_per_K": 0.0036751265,
+    "T0_K": 298.0
+  },
+  "time": {
+    "dt_ns": 0.05,
+    "duration_us": 0.6
+  }
+}

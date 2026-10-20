@@ -29,7 +29,7 @@ def test_persistence_loss_rejects_flat_trace():
 def test_replay_cli_bundle_and_recipe(tmp_path):
     result = CliRunner().invoke(app, ['analyze', 'replay-lab', '--config',
         str(ROOT/'experiments/current/specimen_lab_replay.toml'),
-        '--set', 'time.dt_ns=0.5', '--set', 'replay.generate_gifs=false', '--output-root', str(tmp_path)])
+        '--set', 'time.dt_ns=0.5', '--set', 'replay.scope_frames=2', '--output-root', str(tmp_path)])
     assert result.exit_code == 0, result.output + repr(result.exception)
     run = next(tmp_path.glob('*/run.json')).parent
     assert json.loads((run/'metrics.json').read_text())['currents'] == 22
@@ -37,6 +37,10 @@ def test_replay_cli_bundle_and_recipe(tmp_path):
     assert cfg['time']['dt_ns'] == .5
     assert Path(cfg['replay']['data_directory']).is_absolute()
     assert (run/'comparison.html').is_file()
+    assert (run/'START_HERE.html').is_file()
+    assert (run/'All_current_GIFs.zip').is_file()
+    assert len(list((run/'GIFs').glob('*.gif'))) == 22
+    assert len(list((run/'Figures').glob('*.png'))) == 22
     import pandas as pd
     from neuristor.replay_plots import comparison_figure, write_current_gif
     from PIL import Image
@@ -47,6 +51,9 @@ def test_replay_cli_bundle_and_recipe(tmp_path):
     write_current_gif(frame, tmp_path/'sample.gif', frames=3)
     with Image.open(tmp_path/'sample.gif') as gif:
         assert gif.n_frames == 3
+    with Image.open(next((run/'GIFs').glob('*.gif'))) as gif:
+        assert gif.n_frames == 2
+        assert gif.height > gif.width
 
 
 def test_playground_loads_and_groups_parameters():

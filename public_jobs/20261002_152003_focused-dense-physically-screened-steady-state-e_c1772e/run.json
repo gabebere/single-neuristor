@@ -1,0 +1,110 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Coarse screening checkpoint",
+      "path": "screening_checkpoint.csv"
+    },
+    {
+      "label": "Reused numerical provenance and hashes",
+      "media_type": "application/json",
+      "path": "numerical_provenance.json"
+    },
+    {
+      "label": "All grid points and screening flags",
+      "path": "grid.csv"
+    },
+    {
+      "label": "Two smaller timestep checks",
+      "path": "verification.csv"
+    },
+    {
+      "label": "Retained physically screened oscillators",
+      "path": "included.csv"
+    },
+    {
+      "label": "Exact sampled axes",
+      "media_type": "application/json",
+      "path": "axis_values.json"
+    },
+    {
+      "label": "Interactive 3D and six heatmaps",
+      "media_type": "text/html",
+      "path": "parameter_maps.html"
+    },
+    {
+      "label": "Six fixed-parameter heatmaps",
+      "media_type": "image/png",
+      "path": "heatmaps.png"
+    },
+    {
+      "label": "Screened map summary",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Method, assumptions and results",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    },
+    {
+      "label": "Source: current_drive_sim.py",
+      "path": "source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Source: model.py",
+      "path": "source/neuristor/model.py"
+    },
+    {
+      "label": "Source: extrema.py",
+      "path": "source/neuristor/extrema.py"
+    },
+    {
+      "label": "Source: physical_maps.py",
+      "path": "source/neuristor/physical_maps.py"
+    },
+    {
+      "label": "Source: workflows.py",
+      "path": "source/neuristor/workflows.py"
+    },
+    {
+      "label": "Resolved physical parameters in SI",
+      "media_type": "application/json",
+      "path": "physics_parameters.json"
+    }
+  ],
+  "command": "neuristor analyze physical-maps --config experiments/current/physical_parameter_maps_focused.toml --reuse-numerics public_jobs/20261002_145342_focused-dense-physically-screened-steady-state-e_b9e298",
+  "created_at": "2026-10-02T15:20:03.141075+00:00",
+  "id": "20261002_152003_focused-dense-physically-screened-steady-state-e_c1772e",
+  "kind": "analysis",
+  "model": "current",
+  "name": "Focused dense physically screened steady-state extrema maps",
+  "provenance": {
+    "branch": "codex/unified-cli-dashboard-refactor",
+    "commit": "e2dd84e2ef811fbf29e26ac8e0416ee75bacc1e5",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "ambient_K": 298.0,
+    "coarse_eligible": 1289,
+    "coarse_oscillators": 5970,
+    "coarse_temperature_failures": 5117,
+    "current_uA": 500.0,
+    "maximum_displayed_frequency_MHz": 109.89003644482756,
+    "maximum_displayed_temperature_K": 372.1878967285156,
+    "points": 12167,
+    "retained_points": 1258,
+    "verification_dt_ns": [
+      0.025,
+      0.0125
+    ]
+  },
+  "updated_at": "2026-10-02T15:20:04.544398+00:00"
+}
