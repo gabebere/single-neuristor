@@ -13,6 +13,7 @@ assumptions, and non-obvious numerical choices.
 python -m pip install -e '.[dev]'
 pytest -q
 neuristor validate
+neuristor validate --publication  # after staging: inspect exact Git payload
 ```
 
 Run the affected recipe. Physics changes require two smaller timesteps and a
@@ -22,3 +23,8 @@ to explain a dirty worktree. Preserve failed runs and do not edit public bundles
 
 Update documentation when a command, output contract, or scientific conclusion
 changes. Do not infer experimental fit quality from a successful program exit.
+
+Follow [the disclosure policy](docs/DATA_POLICY.md): approved numerical data and
+our results may be public; third-party PDFs must not be included, even inside
+release packages. Inspect each asset with `neuristor validate --distribution FILE`.
+Update the authored-PDF hash allowlist only after reviewing the changed document.

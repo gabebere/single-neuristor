@@ -5,6 +5,23 @@ presentation artifacts. That distinction matters because Git history preserves e
 experiments, while only the current solver and audit should be used for new numerical
 claims.
 
+## Canonical GitHub library — 20 October 2026
+
+The definitive `single-neuristor` repository now has the consolidated code,
+approved numerical inputs, documentation and compact reviewed evidence on `main`
+through [PR #4](https://github.com/gabebere/single-neuristor/pull/4).
+[The dated Release](https://github.com/gabebere/single-neuristor/releases/tag/research-library-2026-10-20)
+holds the large GIF map and complementary source/numerical/PNG provenance.
+The [selected-results page](../results/index.html) labels controls, static fits,
+conditional exploration and rejected fitting trials separately.
+
+See [the full consolidation record](CONSOLIDATION_20261020.md): 174 local/fresh-
+checkout tests, successful independent Linux Python 3.10/3.13 checks, actual
+control/sample-study runs and complete map reconstruction. A full private local
+snapshot preserves ignored exploratory history too. Third-party PDFs are excluded
+from the current public tree; historical exposure is not a history purge.
+This is a reproducibility/software checkpoint, **not a new accepted calibration**.
+
 ## Desktop consolidation — 16 October 2026
 
 [Consolidated Desktop guide](../archive/desktop_consolidation_20261016/index.html)

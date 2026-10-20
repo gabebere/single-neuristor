@@ -2,7 +2,8 @@
 schema_version = 1
 repository = "gabebere/single-neuristor"
 tag = "research-library-2026-10-20"
-status = "prepared; verify the actual GitHub release before claiming availability"
+status = "published and asset digests verified on 2026-10-20"
+code_commit = "b46f76f93b700c1d9ff53dff82e12d009f0409ac"
 
 [[asset]]
 name = "VO2_parameter_map_with_GIFs.zip"

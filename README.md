@@ -201,8 +201,12 @@ physics: it does not replace the resistance law or invent smooth R(T) paths.
 
 The pre-refactor baseline is recoverable at the Git tag `v0.1.0-working-baseline`.
 See [CONTRIBUTING.md](CONTRIBUTING.md), [citation metadata](CITATION.cff), and
-[release checklist](docs/RELEASE_CHECKLIST.md). This local organization is not
-a GitHub push, DOI deposit, or completed quantitative experimental calibration.
+[release checklist](docs/RELEASE_CHECKLIST.md). The canonical software, approved
+inputs, documentation and compact reviewed evidence are on GitHub `main`;
+[large map assets](https://github.com/gabebere/single-neuristor/releases/tag/research-library-2026-10-20)
+are in the same repository's dated Release. Ignored exploratory history is
+preserved in the private full local recovery backup, not claimed as a complete
+public archive. This is not a DOI deposit or completed quantitative calibration.
 The [20 October consolidation record](docs/CONSOLIDATION_20261020.md) distinguishes
 the local backup, current-tree cleanup, and verified remote publication status.
 Original Zhang code:

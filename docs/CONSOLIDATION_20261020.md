@@ -100,3 +100,30 @@ unchanged. Both assets passed the disclosure inspection.
 At the starting checkpoint, `main` was `715032f` (10 August), and the research
 branch `e2dd84e` (23 September), with newer local work uncommitted. PR #3's old
 scientific description needs correction, not an unreviewed merge.
+
+## Final verified publication
+
+- [PR #4](https://github.com/gabebere/single-neuristor/pull/4) was squash-merged
+  into `main` as `b46f76f93b700c1d9ff53dff82e12d009f0409ac`. The current tree
+  is consolidated without importing additional superseded manuscript-bearing
+  commits into main. Research/baseline branches and tags remain; no history was
+  rewritten. PR #3 was closed with a scientific correction note.
+- **174 tests passed** locally and in a fresh checkout, with four existing local
+  `arctanh` warnings. Independent Linux Python 3.10/3.13 checks also passed:
+  [push](https://github.com/gabebere/single-neuristor/actions/runs/39416701994),
+  [PR](https://github.com/gabebere/single-neuristor/actions/runs/39416917512).
+  They include repository/publication validation and the real study planner.
+- The complete sample-study recipe was repeated after the packaging fix as
+  `6de837`: 264 R(T) rows, 27 grid points, one retained oscillator at
+  23.215319 MHz and one embedded GIF. No new calibration was adopted.
+- The [dated Release](https://github.com/gabebere/single-neuristor/releases/tag/research-library-2026-10-20)
+  is published, not a draft. Remote asset sizes/hashes match `results/releases.toml`.
+  Reconstructing the map from those bytes in the fresh checkout restored all
+  **2,561 declared artifacts** and passed validation. The old packaging mirror
+  is redundant and is not needed for restoration.
+- Public Git contains only four hash-approved authored report/presentation PDFs,
+  no reference PDFs or `private/` paths. Local Brown/Pollner/reference copies stay
+  private. Previously public historical copies have not been purged.
+- The canonical checkout is now on `main`. Follow-up documentation commits record
+  this checkpoint; the tagged code remains immutable. A complete dependency lock,
+  final scientific paper release and DOI deposit are separate future work.

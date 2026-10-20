@@ -91,6 +91,13 @@ The following meeting directions remain **planned, not completed**:
 The six frequency/amplitude slice maps and fixed-across-slider axes/color limits
 already exist; do not rebuild their physics to improve their appearance.
 
+For continuity only, the last chat floated working priors `Se = 2–10 µW/K`,
+`tau_th = 5–30 ns`, hence jointly `Cth = Se*tau_th` spanning `0.01–0.3 pJ/K`,
+and `C = 0–0.4 pF` under the conditional timing interpretation. These are
+**unadopted proposals to audit**, not measured intervals or verified values
+extracted from Brown/Pollner. A few-pF circuit diagnostic is a separate hypothesis.
+Do not silently turn these into independent fitted parameter bounds.
+
 ## Recommended next research step
 
 First confirm the Figure 6 schematic, probe nodes, current conversion, channel
@@ -114,3 +121,11 @@ new checkout does not erase that history. No force-push/history purge is authori
 Consult the [consolidation record](CONSOLIDATION_20261020.md) for backup,
 verification and actual GitHub status; do not infer remote backup from a local
 commit or catalog. This cleanup does not introduce a new physical calibration.
+
+The consolidation is merged through [PR #4](https://github.com/gabebere/single-neuristor/pull/4)
+into `main`, with reviewed code checkpoint `b46f76f`. Both large-map assets are
+[published](https://github.com/gabebere/single-neuristor/releases/tag/research-library-2026-10-20).
+Final checks: **174 tests** locally/fresh checkout, independent Linux Python
+3.10/3.13 checks, validation, real control/sample-study recipes and successful
+large-bundle reconstruction. These are software/reproducibility results, not a
+new experimental fit.
