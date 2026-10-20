@@ -10,7 +10,25 @@ from neuristor.visualization import (
     plot_lab_detection_window_trace,
     plot_lab_oscillation_bracket,
     plot_resistance_temperature_trajectory,
+    plot_oscillation_parameter_maps,
 )
+
+
+def test_audit_maps_do_not_mutate_shared_pandas_arrays(tmp_path: Path) -> None:
+    """Plot-only scaling works with pandas 3's read-only shared-array behavior."""
+    mapped = pd.DataFrame({
+        "gamma": [0.95, 0.95], "source_setting_mV": [300.0, 300.0],
+        "C_pF": [0.39, 1.0], "tau_th_ns": [13.0, 13.0],
+        "amplitude_ratio": [1.0, 2.0], "frequency_relative_error": [0.1, 0.2],
+        "frequency_comparable": [True, False], "retention_log_error": [0.2, 0.4],
+        "mean_error_mV": [1.0, 2.0], "sustained": [True, False],
+        "current_uA": [228.0, 228.0],
+    })
+    original = mapped.copy(deep=True)
+    with pd.option_context("mode.copy_on_write", True):
+        path = plot_oscillation_parameter_maps(mapped, pd.DataFrame(), {}, tmp_path / "audit.png")
+    assert path.is_file()
+    pd.testing.assert_frame_equal(mapped, original)
 
 
 def _trace() -> pd.DataFrame:

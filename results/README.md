@@ -36,6 +36,14 @@ viewer linked from this page's index. This restores the media dependency; it
 does not reconstruct all original numerical/source provenance. The complete
 local bundle and private full recovery snapshot preserve those separately.
 
+For the complete reviewed bundle, the same Release also supplies
+`VO2_parameter_map_provenance.tar.gz`: frozen source, resolved inputs, checks,
+original manifest and PNGs, without duplicating the GIFs. Save the original ZIP
+itself inside the canonical `public_jobs/...eaf6ab/` folder, extract its contents
+there, then extract the provenance tar into that same folder. This restores all
+declared artifacts; run `neuristor validate` afterward. No private paper PDF is
+included in either asset. The old intermediate packaging mirror is unnecessary.
+
 See [the concise handoff](../docs/RESEARCH_HANDOFF.md),
 [chronology](../docs/ARCHIVE_INDEX.md), [release metadata](releases.toml), and
 [data policy](../docs/DATA_POLICY.md).

@@ -19,7 +19,7 @@ The snapshot includes Git history and tracked, untracked and ignored research
 evidence. Rebuildable `.venv`, build/cache directories and bytecode were excluded.
 The Git daemon's live socket was not archived; it is not project data.
 macOS AppleDouble resource metadata in the tar is not an extra research file.
-All 18,349 original content files were checked against the snapshot by SHA-256:
+At the initial cleanup checkpoint, all 18,349 original content files were checked against the snapshot by SHA-256:
 none were missing, and only the 17 intentional documentation/CLI/catalog edits
 made by this cleanup differed. Canonical data, completed evidence and the two
 authoritative physics files matched exactly. New files are separately versioned.
@@ -67,6 +67,36 @@ versioned under `presets/search_seeds/` with its source ID/hash, and those recip
 refer to it. No seed values changed. Repository validation now also catches
 missing declared relative recipe inputs; a regression test covers this case.
 Fresh-checkout and remote verification are being repeated after this correction.
+
+The corrected source passed **170 tests in a fresh checkout**, repository/
+publication validation and the actual study-plan command. This reused the local
+interpreter dependencies; it was not a new machine/environment installation.
+Independent Linux CI then found a pandas 3 Copy-on-Write plotting issue. The
+display matrix now explicitly owns a writable copy; a regression test exercises
+read-only shared-array behavior without changing physics or numerical tables.
+See [pandas' explanation](https://pandas.pydata.org/docs/user_guide/copy_on_write.html#read-only-numpy-arrays).
+
+The publication audit also found 26 PNG index paths whose `figures/` spelling
+disagreed with the original manifests' `Figures/`. Only the Git packaging path
+spellings were corrected to the already-declared names. Original local evidence
+bytes and manifest contents were not edited. A new gate checks this independently
+of whether the local filesystem is case-sensitive. These compatibility fixes
+are verified separately below; the prior failed CI runs remain inspectable.
+
+One immutable parent/child pair originally recorded conflicting case spellings
+for the same PNG. Rather than rewriting either manifest or weakening numerical
+checks, runtime archive discovery now permits only an unambiguous case fallback;
+the publication gate records that exact historical exception. New bundles no
+longer precreate an empty lowercase media directory, preventing the macOS origin
+of this mismatch. Truly missing/ambiguous files still fail validation.
+
+The large-map download has two complementary assets: the easy-to-share HTML/GIF
+ZIP (589,752,448 bytes), and complete source/numerical/PNG provenance without GIF
+duplication (108,319,199 bytes). Their hashes and scopes are in
+`results/releases.toml`. All 1,263 ZIP members were checked against the complete
+original bundle and were identical. The provenance export only normalizes
+physical path case to the original declared spelling; original bundles remain
+unchanged. Both assets passed the disclosure inspection.
 At the starting checkpoint, `main` was `715032f` (10 August), and the research
 branch `e2dd84e` (23 September), with newer local work uncommitted. PR #3's old
 scientific description needs correction, not an unreviewed merge.

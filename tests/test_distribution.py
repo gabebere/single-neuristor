@@ -7,8 +7,9 @@ import subprocess
 import tarfile
 import zipfile
 
-from neuristor.analysis.distribution import validate_distribution_file, validate_publication_index
+from neuristor.analysis.distribution import manifest_case_errors, validate_distribution_file, validate_publication_index
 from neuristor.validation import validate_recipe_inputs
+from neuristor.runs import RunBundle, resolve_archive_case
 
 
 def test_unapproved_pdf_even_with_an_innocent_extension(tmp_path):
@@ -107,3 +108,25 @@ def test_recipe_validator_catches_unavailable_local_history(tmp_path):
     (tmp_path / "ignored-history").mkdir()
     (tmp_path / "ignored-history/parameters.csv").write_text("candidate\ncontrol\n")
     assert validate_recipe_inputs(config, recipe) == []
+
+
+def test_publication_catches_case_sensitive_bundle_paths():
+    manifest = {"artifacts": [{"path": "Figures/point.png"}]}
+    assert len(manifest_case_errors("public_jobs/id/run.json", manifest, {"public_jobs/id/figures/point.png"})) == 1
+    assert manifest_case_errors("public_jobs/id/run.json", manifest, {"public_jobs/id/Figures/point.png"}) == []
+
+
+def test_legacy_case_resolution_keeps_missing_files_missing(tmp_path):
+    (tmp_path / "Figures").mkdir()
+    actual = tmp_path / "Figures/point.png"
+    actual.write_bytes(b"a historical image")
+    assert resolve_archive_case(tmp_path / "figures/point.png").read_bytes() == actual.read_bytes()
+    assert not resolve_archive_case(tmp_path / "figures/genuinely_missing.png").exists()
+
+
+def test_new_bundle_uses_the_requested_media_directory_spelling(tmp_path):
+    bundle = RunBundle.create(name="Case portability", model="none", kind="analysis",
+                              config={}, output_root=tmp_path, command="test")
+    assert not (bundle.root / "figures").exists()
+    bundle.path("Figures/point.png").write_bytes(b"generated image")
+    assert "Figures" in {p.name for p in bundle.root.iterdir()}

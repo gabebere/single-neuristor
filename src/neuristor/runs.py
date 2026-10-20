@@ -24,6 +24,31 @@ from typing import Any, Iterable, Mapping
 RUN_SCHEMA_VERSION = 1
 
 
+def resolve_archive_case(path: Path) -> Path:
+    """Resolve an old archive's letter-case spelling only when unambiguous.
+
+    Some macOS-generated parent/child manifests disagree on Figures/figures.
+    Keep their bytes immutable. Linux can still find the unique declared file;
+    a genuinely missing or ambiguous path stays missing and fails validation.
+    New publication checks separately enforce correct staged path spellings.
+    """
+    if path.exists():
+        return path
+    ancestor = path
+    missing_parts = []
+    while not ancestor.exists() and ancestor != ancestor.parent:
+        missing_parts.append(ancestor.name)
+        ancestor = ancestor.parent
+    for part in reversed(missing_parts):
+        if not ancestor.is_dir():
+            return path
+        matches = [entry for entry in ancestor.iterdir() if entry.name.casefold() == part.casefold()]
+        if len(matches) != 1:
+            return path
+        ancestor = matches[0]
+    return ancestor if ancestor.is_file() else path
+
+
 def _json_safe(value: Any) -> Any:
     """Convert NumPy-like values and non-finite floats to strict JSON values."""
 
@@ -104,7 +129,10 @@ class RunBundle:
         timestamp = datetime.now(timezone.utc)
         run_id = f"{timestamp:%Y%m%d_%H%M%S}_{_slug(name)}_{uuid.uuid4().hex[:6]}"
         root = output / run_id
-        (root / "figures").mkdir(parents=True, exist_ok=False)
+        # Create media directories on demand via path(). Precreating lowercase
+        # figures/ makes a later Figures/ writer look correct on macOS while
+        # recording incompatible parent/child paths for Linux.
+        root.mkdir(parents=True, exist_ok=False)
         manifest: dict[str, Any] = {
             "schema_version": RUN_SCHEMA_VERSION,
             "id": run_id,
@@ -220,7 +248,7 @@ class RunRecord:
                         path = find_project_root(self.root) / path
                     else:
                         path = self.root / path
-                paths.append(path.resolve())
+                paths.append(resolve_archive_case(path.resolve()))
         return paths if declared else self.files()
 
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import json
 from pathlib import Path, PurePosixPath
 import subprocess
 import tarfile
@@ -134,6 +135,7 @@ def validate_publication_index(root: Path) -> list[str]:
         input="".join(f"{oid}\n" for _, oid, _, _ in entries), text=True, capture_output=True, check=True,
     ).stdout.splitlines()
     errors = []
+    tracked_paths = {entry[3] for entry in entries}
     for (mode, oid, stage, name), size_line in zip(entries, sizes):
         size = int(size_line.split()[1])
         if stage != "0" or mode == "160000":
@@ -152,4 +154,31 @@ def validate_publication_index(root: Path) -> list[str]:
         elif name.lower().endswith((".pdf", ".zip", ".tar", ".gz", ".tgz")):
             data = subprocess.run(["git", "cat-file", "blob", oid], cwd=root, check=True, capture_output=True).stdout
             errors.extend(_check_payload(name, io.BytesIO(data), allowed))
+        if name.startswith("public_jobs/") and name.endswith("/run.json") and mode == "100644":
+            data = subprocess.run(["git", "cat-file", "blob", oid], cwd=root, check=True, capture_output=True).stdout
+            errors.extend(manifest_case_errors(name, json.loads(data), tracked_paths))
+    return errors
+
+
+def manifest_case_errors(name: str, manifest: dict, tracked_paths: set[str]) -> list[str]:
+    """Catch macOS-only path spellings before a bundle is cloned on Linux.
+
+    Check only case mismatches, not release assets absent from source Git. The
+    ordinary repository validator separately enforces complete local bundles.
+    Original manifests and numerical bytes are never rewritten by this check.
+    """
+    folded = {path.casefold(): path for path in tracked_paths}
+    errors = []
+    # This frozen parent recorded the macOS directory spelling, while its child
+    # declared Figures/. Both refer to the same verified PNG. Do not rewrite an
+    # old manifest to fix packaging; RunRegistry resolves this unique legacy case.
+    legacy_parent = "public_jobs/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs_ec2d1e/run.json"
+    legacy_artifact = ("stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/"
+                       "figures/point_00025.png")
+    for artifact in manifest.get("artifacts", []):
+        target = str(PurePosixPath(name).parent / artifact["path"])
+        if target not in tracked_paths and target.casefold() in folded:
+            if name == legacy_parent and artifact["path"] == legacy_artifact:
+                continue
+            errors.append(f"{name}: artifact spelling {target} differs from staged {folded[target.casefold()]}")
     return errors

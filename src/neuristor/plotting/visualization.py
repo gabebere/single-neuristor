@@ -124,7 +124,9 @@ def plot_oscillation_parameter_maps(mapped, measured, choices, out_path) -> Path
             cs, taus = sorted(frame.C_pF.unique()), sorted(frame.tau_th_ns.unique())
             for col, (field, title, limit) in enumerate(specifications):
                 ax = axes[gi * len(drives) + di, col]
-                matrix = frame.pivot(index="tau_th_ns", columns="C_pF", values=field).loc[taus, cs].to_numpy(float)
+                # This display matrix is rescaled/masked below. Own its memory:
+                # pandas Copy-on-Write can expose a read-only shared NumPy view.
+                matrix = frame.pivot(index="tau_th_ns", columns="C_pF", values=field).loc[taus, cs].to_numpy(float, copy=True)
                 if field == "amplitude_ratio":
                     matrix = np.log2(np.maximum(matrix, 1e-6))
                 elif field == "frequency_relative_error":
