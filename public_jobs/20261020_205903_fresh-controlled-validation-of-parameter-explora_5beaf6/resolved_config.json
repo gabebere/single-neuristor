@@ -1,0 +1,109 @@
+{
+  "electrical": {
+    "C_pF": 3.0
+  },
+  "initial": {
+    "temperature_K": 298.0,
+    "voltage_V": 0.0
+  },
+  "input": {
+    "amplitude_uA": 500.0
+  },
+  "kind": "simulation",
+  "model": "current",
+  "name": "Fresh controlled validation of parameter exploration trends",
+  "output": {
+    "root": "runs"
+  },
+  "resistance": {
+    "parameters": {
+      "T_max_K": 370.1625,
+      "T_min_K": 289.8545
+    },
+    "preset": "../../presets/resistance_100425_chip1_gap3.json",
+    "start_branch": "insulator"
+  },
+  "schema_version": 1,
+  "seed": 20261020,
+  "thermal": {
+    "C_th_pJ_per_K": 0.072,
+    "S_e_mW_per_K": 0.006,
+    "T0_K": 298.0
+  },
+  "time": {
+    "dt_ns": 0.0125,
+    "duration_us": 1.2
+  },
+  "trend_validation": {
+    "anchors": [
+      {
+        "C_pF": 3.0,
+        "C_th_pJ_per_K": 0.072,
+        "S_e_mW_per_K": 0.006,
+        "name": "A"
+      },
+      {
+        "C_pF": 10.506111217615071,
+        "C_th_pJ_per_K": 0.22360679774997896,
+        "S_e_mW_per_K": 0.00810720092884221,
+        "name": "B"
+      },
+      {
+        "C_pF": 12.340677254400198,
+        "C_th_pJ_per_K": 0.16206565966927625,
+        "S_e_mW_per_K": 0.005924104205979401,
+        "name": "C"
+      }
+    ],
+    "batch_size": 12,
+    "convergence_fraction": 0.02,
+    "direction_threshold_fraction": 0.02,
+    "dt_ns": [
+      0.0125,
+      0.00625,
+      0.003125
+    ],
+    "equilibrium_relative_tolerance": 0.001,
+    "equilibrium_temperature_span_K": 0.02,
+    "equilibrium_voltage_span_mV": 0.5,
+    "gamma": 0.956269682,
+    "gamma_values": [
+      0.7,
+      0.85,
+      0.956269682
+    ],
+    "initial_duration_ns": 600.0,
+    "local_factors": [
+      0.75,
+      1.0,
+      1.25
+    ],
+    "max_batch_samples": 2500000,
+    "max_steps_per_simulation": 1600000,
+    "maximum_duration_ns": 1200.0,
+    "maximum_timestep_refinements": 1,
+    "path_samples": 2048,
+    "scale_factors": [
+      0.5,
+      1.0,
+      2.0
+    ],
+    "scenarios": [
+      {
+        "T0_K": 298.0,
+        "current_uA": 500.0,
+        "name": "original_map"
+      },
+      {
+        "T0_K": 298.0,
+        "current_uA": 350.0,
+        "name": "lower_current"
+      },
+      {
+        "T0_K": 314.4,
+        "current_uA": 500.0,
+        "name": "paper_ambient"
+      }
+    ]
+  }
+}

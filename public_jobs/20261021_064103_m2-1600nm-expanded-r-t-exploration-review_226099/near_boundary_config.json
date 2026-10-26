@@ -1,0 +1,116 @@
+{
+  "duration_ns": 150.0,
+  "dt_ns": [
+    0.00078125,
+    0.000390625
+  ],
+  "current_uA": 500.0,
+  "temperature_maximum_K": 370.1795,
+  "selection": "12 lowest-Tmax sustained entries in prior onset and expanded checkpoint",
+  "checkpoint_points": 896,
+  "points": [
+    {
+      "C_th_pJ_per_K": 1.5,
+      "S_e_mW_per_K": 0.13,
+      "C_pF": 0.5,
+      "temperature_max_K": 373.05908203125
+    },
+    {
+      "C_th_pJ_per_K": 1.2,
+      "S_e_mW_per_K": 0.13,
+      "C_pF": 0.4,
+      "temperature_max_K": 373.168212890625
+    },
+    {
+      "C_th_pJ_per_K": 1.8,
+      "S_e_mW_per_K": 0.13,
+      "C_pF": 0.6,
+      "temperature_max_K": 373.3523864746094
+    },
+    {
+      "C_th_pJ_per_K": 1.5,
+      "S_e_mW_per_K": 0.12,
+      "C_pF": 0.5,
+      "temperature_max_K": 373.88232421875
+    },
+    {
+      "C_th_pJ_per_K": 1.2,
+      "S_e_mW_per_K": 0.12,
+      "C_pF": 0.4,
+      "temperature_max_K": 373.9971618652344
+    },
+    {
+      "C_th_pJ_per_K": 1.8,
+      "S_e_mW_per_K": 0.12,
+      "C_pF": 0.6,
+      "temperature_max_K": 374.1897277832031
+    },
+    {
+      "C_th_pJ_per_K": 0.8,
+      "S_e_mW_per_K": 0.15,
+      "C_pF": 0.3,
+      "temperature_max_K": 374.3313598632813
+    },
+    {
+      "C_th_pJ_per_K": 1.8,
+      "S_e_mW_per_K": 0.11,
+      "C_pF": 0.6,
+      "temperature_max_K": 374.8495788574219
+    },
+    {
+      "C_th_pJ_per_K": 1.5,
+      "S_e_mW_per_K": 0.11,
+      "C_pF": 0.5,
+      "temperature_max_K": 375.01031494140625
+    },
+    {
+      "C_th_pJ_per_K": 1.2,
+      "S_e_mW_per_K": 0.11,
+      "C_pF": 0.4,
+      "temperature_max_K": 375.2513427734375
+    },
+    {
+      "C_th_pJ_per_K": 0.8,
+      "S_e_mW_per_K": 0.14,
+      "C_pF": 0.3,
+      "temperature_max_K": 375.7488098144531
+    },
+    {
+      "C_th_pJ_per_K": 1.5,
+      "S_e_mW_per_K": 0.15,
+      "C_pF": 0.6,
+      "temperature_max_K": 375.9715270996094
+    }
+  ],
+  "source_physics": {
+    "C_F": 5e-13,
+    "C_th_J_per_K": 1.5e-12,
+    "R_out_ohm": 0.0,
+    "S_e_W_per_K": 0.00013000000000000002,
+    "T0_K": 298.0,
+    "T_init_K": 298.0,
+    "V_init_V": 0.0,
+    "dt_s": 3.1250000000000005e-12,
+    "pulse_off_s": null,
+    "pulse_on_s": 0.0,
+    "resist_params": {
+      "Ea_over_k": 2624.3995676618906,
+      "R0": 9.414702082227157,
+      "Rm0": 193.54002428835278,
+      "Rm_factor": 1.0,
+      "T_max_K": 370.1795,
+      "T_min_K": 289.98,
+      "Tc_K": 337.138500341724,
+      "beta": 0.18293913065691358,
+      "gamma": 0.956269682,
+      "proximity_function": "yuanhang",
+      "reversal_threshold_K": 0.01,
+      "w": 22.815026326590285,
+      "width_factor": 1.0
+    },
+    "sigma_W_sqrt_s": 0.0,
+    "start_branch": "insulator",
+    "t_end_s": 6e-07,
+    "t_pre_s": 0.0
+  }
+}

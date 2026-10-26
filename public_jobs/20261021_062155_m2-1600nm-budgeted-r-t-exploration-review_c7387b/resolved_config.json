@@ -1,0 +1,12 @@
+{
+  "ambient_K": 298,
+  "current_uA": 500,
+  "diagnostic_only": true,
+  "parents": {
+    "Broad": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/20261021_061156_m2-1600nm-approximate-r-t-exploratory-3d-map-202_557171",
+    "Lower heating": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/20261021_061258_m2-1600nm-approximate-r-t-focused-3d-map-2026102_ca4707",
+    "Onset": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/20261021_061801_m2-1600nm-approximate-r-t-onset-check-20261021_198a07",
+    "Transition": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/20261021_061537_m2-1600nm-approximate-r-t-transition-3d-map-2026_a7691f"
+  },
+  "static_gate_exception": "0.05 to 0.10, exploratory only"
+}

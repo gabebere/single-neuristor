@@ -1,0 +1,15 @@
+{
+  "ambient_K": 298.0,
+  "coarse_eligible": 0,
+  "coarse_oscillators": 10,
+  "coarse_temperature_failures": 42,
+  "current_uA": 500.0,
+  "maximum_displayed_frequency_MHz": null,
+  "maximum_displayed_temperature_K": null,
+  "points": 216,
+  "retained_points": 0,
+  "verification_dt_ns": [
+    0.025,
+    0.0125
+  ]
+}

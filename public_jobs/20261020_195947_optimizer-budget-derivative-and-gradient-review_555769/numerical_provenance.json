@@ -1,0 +1,39 @@
+{
+  "audit": {
+    "hashes": {
+      "evaluations.jsonl": "0cc0f131be2d19b4cefede69c72591f189e05c91a8e6ecb30a6df2693bd3c319",
+      "gradient_summary.csv": "f7e0f58ddf1eaca1b94fa55b598b52e803eb8f07ef301e9403604cb4f8457859",
+      "metrics.json": "e7fd8a40f28ffcc2b472cb007de892fa4fd2ec99f84415e6e73661cd2ecc0437",
+      "parameters.csv": "f96a04dffb0daa3b999690c70b287750728ccebaa202750d1487088dcc25137c",
+      "profile_samples.csv": "89bfd68b51f99df28470c40a4e3d2d3672772ffd46468f1d5565d5adfb64272f",
+      "resolved_config.json": "df4fdf47c97e728e51cbc9e6ab63be10e3fbd77b07088096f055ec9a0fc4456a",
+      "run.json": "bf75406ad73be0a3c98be5f395eaa56c955c3b8c38b9437d4ce1d32b1ab87c11",
+      "verification.csv": "7e34babb39b56791e7a0469ee71c615276373c71d1a77a21f2e0b1e8f054c458"
+    },
+    "path": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20261020_185046_finite-difference-and-gradient-optimization-audi_21879a"
+  },
+  "frequency_amplitude": {
+    "hashes": {
+      "metrics.json": "8040ddeaaaf70b7d1bea6785516f70b6c246c8b36e3e8b9133d51902ddb74eb4",
+      "optimization_history.jsonl": "193e1604043b2f60177cbb533054e0137baa1d2734ed698407f2499277b3a282",
+      "parameters.csv": "4ffa283402f1d09986ab1556a130b2ad356df615949bcb864a2ca3f24f31d722",
+      "resolved_config.json": "853dd50ff1f33d1c3d6dee6bba18e5d5449f78ce1b34511123a3b82863dbc35e",
+      "run.json": "be5576de6ce66673c87c56090f6bce4efbe2e0acce2aaf30f316ef9ae9022be2",
+      "search_result.json": "6c0646fa0fcf527e2cd44848092982c7c1a7c6c5c9d67c9c96ff9f91c68f50e1",
+      "verification.csv": "d730e1b1c143a35bd62ad75313238cf05c26bc36331554375081a3d0ab3fb04f"
+    },
+    "path": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20261020_184721_expanded-optimizer-test-frequency-amplitude-spec_d5e6bb"
+  },
+  "frequency_only": {
+    "hashes": {
+      "metrics.json": "38e3bedbb6533b93c2548623c71f65cd45f75a2cdcfef88c45fa0cd36c8cc8ca",
+      "optimization_history.jsonl": "b6a09099aa8d75331f1b808d9dd50410fac4fbb89208efe661c3c007d1918e46",
+      "parameters.csv": "4ffa283402f1d09986ab1556a130b2ad356df615949bcb864a2ca3f24f31d722",
+      "resolved_config.json": "61087ce8636a805d46c390ab90f94df62fa7be47d45ce85714972d45304f4e21",
+      "run.json": "1f9cf9dd3277692e3961fec2b73aab714c348b5f3631e774494528aefa9dae49",
+      "search_result.json": "210dd5157b41cad352ce410eb06fad67c2a037c7f36e3cf2e27c290553deb8dc",
+      "verification.csv": "76579ddbc9b567b5946a8c3e81d68831fd3340fdf65289762d72ee5069dc0085"
+    },
+    "path": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20261020_184721_expanded-optimizer-test-frequency-only-specimen-_aae50f"
+  }
+}

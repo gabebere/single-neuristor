@@ -1,0 +1,18 @@
+{
+  "archived_high_cycle_vpp_mV": 352.97834457521617,
+  "archived_lag1": -0.9993909983746767,
+  "archived_lag2": 0.9992418040411731,
+  "archived_low_cycle_vpp_mV": 238.91585616212924,
+  "archived_primary_cycles": 8,
+  "bifurcation_established": false,
+  "calibration_adopted": false,
+  "constant_control_current_uA": 303.3911472089279,
+  "exact_archived_replay_max_difference_mV": 1.5234036254696548e-11,
+  "measured_alternation_flag": false,
+  "native_replay_integrations": 18,
+  "parent_bundle": "20260907_125315_physics-anchored-specimen-waveform-inference_717797",
+  "repository_tests_passed": 200,
+  "short_window_alternation_at_all_three_timesteps": true,
+  "source_label_mV": 400,
+  "stable_long_time_period_two_established": false
+}

@@ -1,0 +1,20 @@
+{
+  "dt_ns": [
+    0.025,
+    0.0125,
+    0.00625
+  ],
+  "elapsed_s": 1194.014824999962,
+  "gradient_trials": 4,
+  "normalized_coordinates": [
+    "C_pF",
+    "S_e_mW_per_K",
+    "tau_th_ns",
+    "gamma"
+  ],
+  "profile_points": 150,
+  "scientific_derivatives_defined": 0,
+  "stencils": 72,
+  "unique_evaluations": 230,
+  "verified_batches": 12
+}

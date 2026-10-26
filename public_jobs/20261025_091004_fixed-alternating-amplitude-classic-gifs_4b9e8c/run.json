@@ -1,0 +1,1151 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Frozen source __init__.py",
+      "path": "source/neuristor/__init__.py"
+    },
+    {
+      "label": "Frozen source analysis/__init__.py",
+      "path": "source/neuristor/analysis/__init__.py"
+    },
+    {
+      "label": "Frozen source analysis/boundary_search.py",
+      "path": "source/neuristor/analysis/boundary_search.py"
+    },
+    {
+      "label": "Frozen source analysis/distribution.py",
+      "path": "source/neuristor/analysis/distribution.py"
+    },
+    {
+      "label": "Frozen source analysis/experimental_waveforms.py",
+      "path": "source/neuristor/analysis/experimental_waveforms.py"
+    },
+    {
+      "label": "Frozen source analysis/extrema.py",
+      "path": "source/neuristor/analysis/extrema.py"
+    },
+    {
+      "label": "Frozen source analysis/frequency_sensitivity.py",
+      "path": "source/neuristor/analysis/frequency_sensitivity.py"
+    },
+    {
+      "label": "Frozen source analysis/lab_estimates.py",
+      "path": "source/neuristor/analysis/lab_estimates.py"
+    },
+    {
+      "label": "Frozen source analysis/lab_replay.py",
+      "path": "source/neuristor/analysis/lab_replay.py"
+    },
+    {
+      "label": "Frozen source analysis/loss_comparison.py",
+      "path": "source/neuristor/analysis/loss_comparison.py"
+    },
+    {
+      "label": "Frozen source analysis/metrics.py",
+      "path": "source/neuristor/analysis/metrics.py"
+    },
+    {
+      "label": "Frozen source analysis/model_validation.py",
+      "path": "source/neuristor/analysis/model_validation.py"
+    },
+    {
+      "label": "Frozen source analysis/optimizer_diagnostics.py",
+      "path": "source/neuristor/analysis/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Frozen source analysis/oscillation_audit.py",
+      "path": "source/neuristor/analysis/oscillation_audit.py"
+    },
+    {
+      "label": "Frozen source analysis/physical_maps.py",
+      "path": "source/neuristor/analysis/physical_maps.py"
+    },
+    {
+      "label": "Frozen source analysis/trend_validation.py",
+      "path": "source/neuristor/analysis/trend_validation.py"
+    },
+    {
+      "label": "Frozen source artifact_catalog.py",
+      "path": "source/neuristor/artifact_catalog.py"
+    },
+    {
+      "label": "Frozen source cli.py",
+      "path": "source/neuristor/cli.py"
+    },
+    {
+      "label": "Frozen source config.py",
+      "path": "source/neuristor/config.py"
+    },
+    {
+      "label": "Frozen source current_domain_search.py",
+      "path": "source/neuristor/current_domain_search.py"
+    },
+    {
+      "label": "Frozen source current_drive_sim.py",
+      "path": "source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Frozen source dashboard.py",
+      "path": "source/neuristor/dashboard.py"
+    },
+    {
+      "label": "Frozen source experimental_waveforms.py",
+      "path": "source/neuristor/experimental_waveforms.py"
+    },
+    {
+      "label": "Frozen source extrema.py",
+      "path": "source/neuristor/extrema.py"
+    },
+    {
+      "label": "Frozen source fitting/__init__.py",
+      "path": "source/neuristor/fitting/__init__.py"
+    },
+    {
+      "label": "Frozen source fitting/current_domain_search.py",
+      "path": "source/neuristor/fitting/current_domain_search.py"
+    },
+    {
+      "label": "Frozen source fitting/joint_inference.py",
+      "path": "source/neuristor/fitting/joint_inference.py"
+    },
+    {
+      "label": "Frozen source fitting/optimizer_audit.py",
+      "path": "source/neuristor/fitting/optimizer_audit.py"
+    },
+    {
+      "label": "Frozen source fitting/parameter_inference.py",
+      "path": "source/neuristor/fitting/parameter_inference.py"
+    },
+    {
+      "label": "Frozen source fitting/resistance_custom_analysis.py",
+      "path": "source/neuristor/fitting/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Frozen source fitting/steady_inference.py",
+      "path": "source/neuristor/fitting/steady_inference.py"
+    },
+    {
+      "label": "Frozen source interfaces/__init__.py",
+      "path": "source/neuristor/interfaces/__init__.py"
+    },
+    {
+      "label": "Frozen source interfaces/dashboard.py",
+      "path": "source/neuristor/interfaces/dashboard.py"
+    },
+    {
+      "label": "Frozen source interfaces/playground.py",
+      "path": "source/neuristor/interfaces/playground.py"
+    },
+    {
+      "label": "Frozen source interfaces/presentation_server.py",
+      "path": "source/neuristor/interfaces/presentation_server.py"
+    },
+    {
+      "label": "Frozen source interfaces/run_manager.py",
+      "path": "source/neuristor/interfaces/run_manager.py"
+    },
+    {
+      "label": "Frozen source joint_inference.py",
+      "path": "source/neuristor/joint_inference.py"
+    },
+    {
+      "label": "Frozen source lab_estimates.py",
+      "path": "source/neuristor/lab_estimates.py"
+    },
+    {
+      "label": "Frozen source lab_replay.py",
+      "path": "source/neuristor/lab_replay.py"
+    },
+    {
+      "label": "Frozen source legacy/__init__.py",
+      "path": "source/neuristor/legacy/__init__.py"
+    },
+    {
+      "label": "Frozen source legacy/plots.py",
+      "path": "source/neuristor/legacy/plots.py"
+    },
+    {
+      "label": "Frozen source legacy/sample_library.py",
+      "path": "source/neuristor/legacy/sample_library.py"
+    },
+    {
+      "label": "Frozen source map_animations.py",
+      "path": "source/neuristor/map_animations.py"
+    },
+    {
+      "label": "Frozen source map_workflows.py",
+      "path": "source/neuristor/map_workflows.py"
+    },
+    {
+      "label": "Frozen source metrics.py",
+      "path": "source/neuristor/metrics.py"
+    },
+    {
+      "label": "Frozen source model.py",
+      "path": "source/neuristor/model.py"
+    },
+    {
+      "label": "Frozen source model_validation.py",
+      "path": "source/neuristor/model_validation.py"
+    },
+    {
+      "label": "Frozen source orchestration/__init__.py",
+      "path": "source/neuristor/orchestration/__init__.py"
+    },
+    {
+      "label": "Frozen source orchestration/artifact_catalog.py",
+      "path": "source/neuristor/orchestration/artifact_catalog.py"
+    },
+    {
+      "label": "Frozen source orchestration/boundary_workflows.py",
+      "path": "source/neuristor/orchestration/boundary_workflows.py"
+    },
+    {
+      "label": "Frozen source orchestration/loss_comparison.py",
+      "path": "source/neuristor/orchestration/loss_comparison.py"
+    },
+    {
+      "label": "Frozen source orchestration/loss_scopes.py",
+      "path": "source/neuristor/orchestration/loss_scopes.py"
+    },
+    {
+      "label": "Frozen source orchestration/map_viewers.py",
+      "path": "source/neuristor/orchestration/map_viewers.py"
+    },
+    {
+      "label": "Frozen source orchestration/map_workflows.py",
+      "path": "source/neuristor/orchestration/map_workflows.py"
+    },
+    {
+      "label": "Frozen source orchestration/optimizer_audit.py",
+      "path": "source/neuristor/orchestration/optimizer_audit.py"
+    },
+    {
+      "label": "Frozen source orchestration/optimizer_review.py",
+      "path": "source/neuristor/orchestration/optimizer_review.py"
+    },
+    {
+      "label": "Frozen source orchestration/sample_study.py",
+      "path": "source/neuristor/orchestration/sample_study.py"
+    },
+    {
+      "label": "Frozen source orchestration/trend_validation.py",
+      "path": "source/neuristor/orchestration/trend_validation.py"
+    },
+    {
+      "label": "Frozen source oscillation_audit.py",
+      "path": "source/neuristor/oscillation_audit.py"
+    },
+    {
+      "label": "Frozen source parameter_inference.py",
+      "path": "source/neuristor/parameter_inference.py"
+    },
+    {
+      "label": "Frozen source physical_maps.py",
+      "path": "source/neuristor/physical_maps.py"
+    },
+    {
+      "label": "Frozen source playground.py",
+      "path": "source/neuristor/playground.py"
+    },
+    {
+      "label": "Frozen source plots.py",
+      "path": "source/neuristor/plots.py"
+    },
+    {
+      "label": "Frozen source plotting/__init__.py",
+      "path": "source/neuristor/plotting/__init__.py"
+    },
+    {
+      "label": "Frozen source plotting/boundary_maps.py",
+      "path": "source/neuristor/plotting/boundary_maps.py"
+    },
+    {
+      "label": "Frozen source plotting/frequency_sensitivity.py",
+      "path": "source/neuristor/plotting/frequency_sensitivity.py"
+    },
+    {
+      "label": "Frozen source plotting/loss_comparison.py",
+      "path": "source/neuristor/plotting/loss_comparison.py"
+    },
+    {
+      "label": "Frozen source plotting/map_animations.py",
+      "path": "source/neuristor/plotting/map_animations.py"
+    },
+    {
+      "label": "Frozen source plotting/optimizer_diagnostics.py",
+      "path": "source/neuristor/plotting/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Frozen source plotting/replay_plots.py",
+      "path": "source/neuristor/plotting/replay_plots.py"
+    },
+    {
+      "label": "Frozen source plotting/trend_validation.py",
+      "path": "source/neuristor/plotting/trend_validation.py"
+    },
+    {
+      "label": "Frozen source plotting/visualization.py",
+      "path": "source/neuristor/plotting/visualization.py"
+    },
+    {
+      "label": "Frozen source provenance.py",
+      "path": "source/neuristor/provenance.py"
+    },
+    {
+      "label": "Frozen source replay_plots.py",
+      "path": "source/neuristor/replay_plots.py"
+    },
+    {
+      "label": "Frozen source resistance_custom_analysis.py",
+      "path": "source/neuristor/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Frozen source runs.py",
+      "path": "source/neuristor/runs.py"
+    },
+    {
+      "label": "Frozen source sample_library.py",
+      "path": "source/neuristor/sample_library.py"
+    },
+    {
+      "label": "Frozen source sample_study.py",
+      "path": "source/neuristor/sample_study.py"
+    },
+    {
+      "label": "Frozen source steady_inference.py",
+      "path": "source/neuristor/steady_inference.py"
+    },
+    {
+      "label": "Frozen source validation.py",
+      "path": "source/neuristor/validation.py"
+    },
+    {
+      "label": "Frozen source visualization.py",
+      "path": "source/neuristor/visualization.py"
+    },
+    {
+      "label": "Frozen source workflows.py",
+      "path": "source/neuristor/workflows.py"
+    },
+    {
+      "label": "Frozen simulation/rendering source",
+      "media_type": "application/json",
+      "path": "source_hashes.json"
+    },
+    {
+      "label": "Exact preserved current-source physics",
+      "media_type": "application/json",
+      "path": "physics_parameters.json"
+    },
+    {
+      "label": "Frozen parameters/recipe or exact analysis source",
+      "path": "parameters.json"
+    },
+    {
+      "label": "Frozen parameters/recipe or exact analysis source",
+      "path": "recipe.toml"
+    },
+    {
+      "label": "Frozen parameters/recipe or exact analysis source",
+      "path": "analysis_source/build_media.py"
+    },
+    {
+      "label": "Frozen parameters/recipe or exact analysis source",
+      "path": "analysis_source/cycle_tools.py"
+    },
+    {
+      "label": "All 22 archived input/output records",
+      "path": "inputs/archived_relaxed_traces.csv"
+    },
+    {
+      "label": "Original historical parameter comparison",
+      "path": "parameter_comparison.csv"
+    },
+    {
+      "label": "Same fitted-law major-branch guides",
+      "path": "major_branches.csv"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00037.799_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0050.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00037.799_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00037.799_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00076.171_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0100.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00076.171_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00076.171_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00114.172_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0150.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00114.172_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00114.172_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00152.352_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0200.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00152.352_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00152.352_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00189.601_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0250.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00189.601_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00189.601_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00228.714_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0300.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00228.714_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00228.714_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00267.074_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0350.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00267.074_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00267.074_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00303.391_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0400.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00303.391_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00303.391_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00341.943_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0450.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00341.943_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00341.943_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00381.066_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0500.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00381.066_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00381.066_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00419.617_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0550.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00419.617_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00419.617_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00458.370_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0600.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00458.370_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00458.370_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00495.417_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0650.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00495.417_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00495.417_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00533.418_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0700.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00533.418_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00533.418_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00570.434_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0750.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00570.434_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00570.434_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00606.655_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0800.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00606.655_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00606.655_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00646.223_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0850.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00646.223_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00646.223_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00682.826_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0900.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00682.826_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00682.826_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00722.373_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_0950.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00722.373_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00722.373_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00759.219_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_1000.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00759.219_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00759.219_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00834.787_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_1100.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00834.787_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00834.787_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.025ns/current_00908.606_uA.npz"
+    },
+    {
+      "label": "Original sampled input current",
+      "path": "inputs/current_1200.csv"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.025ns/current_00908.606_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.025ns/current_00908.606_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00037.799_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00076.171_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00114.172_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00152.352_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00189.601_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00228.714_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00267.074_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00303.391_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00341.943_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00381.066_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00419.617_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00458.370_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00495.417_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00533.418_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00570.434_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00606.655_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00646.223_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00682.826_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00722.373_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00759.219_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00834.787_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.0125ns/current_00908.606_uA.npz"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00037.799_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00037.799_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00037.799_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00076.171_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00076.171_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00076.171_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00114.172_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00114.172_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00114.172_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00152.352_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00152.352_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00152.352_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00189.601_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00189.601_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00189.601_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00228.714_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00228.714_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00228.714_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00267.074_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00267.074_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00267.074_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00303.391_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00303.391_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00303.391_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00341.943_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00341.943_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00341.943_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00381.066_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00381.066_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00381.066_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00419.617_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00419.617_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00419.617_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00458.370_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00458.370_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00458.370_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00495.417_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00495.417_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00495.417_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00533.418_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00533.418_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00533.418_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00570.434_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00570.434_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00570.434_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00606.655_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00606.655_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00606.655_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00646.223_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00646.223_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00646.223_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00682.826_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00682.826_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00682.826_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00722.373_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00722.373_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00722.373_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00759.219_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00759.219_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00759.219_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00834.787_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00834.787_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00834.787_uA.png"
+    },
+    {
+      "label": "Complete native simulated I,V,T,R samples",
+      "path": "dt_0.00625ns/current_00908.606_uA.npz"
+    },
+    {
+      "label": "Current above voltage above R(T) scope GIF",
+      "path": "dt_0.00625ns/current_00908.606_uA.gif"
+    },
+    {
+      "label": "Last frame of the synchronized scope",
+      "path": "dt_0.00625ns/current_00908.606_uA.png"
+    },
+    {
+      "label": "All currents at three timesteps with time constants",
+      "path": "cycle_summary.csv"
+    },
+    {
+      "label": "Primary-cycle amplitudes without adjacent-peak averaging",
+      "path": "individual_cycles.csv"
+    },
+    {
+      "label": "Original-timestep equality and finer-step differences",
+      "path": "replay_checks.csv"
+    },
+    {
+      "label": "Alternating shallow/deep reset thermal and resistance states",
+      "path": "main_cycle_states.csv"
+    },
+    {
+      "label": "Current/timestep GIF catalog",
+      "media_type": "application/json",
+      "path": "animations.json"
+    },
+    {
+      "label": "Raw voltage and two native R(T) cycles for the slide",
+      "path": "figures/alternating_resets_for_slide.png"
+    },
+    {
+      "label": "GIF coverage, preserved-vector checks and time constants",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Numerical method, time scales and qualified mechanism",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    },
+    {
+      "label": "Classic 44-GIF current/timestep gallery",
+      "media_type": "text/html",
+      "path": "START_HERE.html"
+    }
+  ],
+  "command": "Fixed-vector media study: build_media.py",
+  "created_at": "2026-10-25T09:10:04.508714+00:00",
+  "id": "20261025_091004_fixed-alternating-amplitude-classic-gifs_4b9e8c",
+  "kind": "analysis",
+  "model": "current",
+  "name": "Fixed alternating amplitude classic GIFs",
+  "provenance": {
+    "branch": "main",
+    "commit": "12be9a9a729e03b164464fad0daab7c1b9d4f4c4",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "calibration_adopted": false,
+    "gifs": 44,
+    "integration_timesteps_ns": [
+      0.025,
+      0.0125,
+      0.00625
+    ],
+    "native_integrations": 66,
+    "original_replay_max_error_mV": 1.5234036254696548e-11,
+    "period_doubling_bifurcation_established": false,
+    "source_currents": 22,
+    "tau_e_main_max_ns": 11.984629409660224,
+    "tau_e_main_min_ns": 0.13336512717000126,
+    "tau_metal_ns": 0.12451037684774986,
+    "tau_th_ns": 11.908706376291702
+  },
+  "updated_at": "2026-10-25T09:11:30.715663+00:00"
+}

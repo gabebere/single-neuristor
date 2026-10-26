@@ -1,0 +1,10 @@
+{
+  "ambient_K": 298,
+  "current_uA": 500,
+  "diagnostic_only": true,
+  "parents": {
+    "Dense onset": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/20261021_063603_m2-1600nm-approximate-r-t-dense-onset-20261021_57e853",
+    "Expanded": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/20261021_063603_m2-1600nm-approximate-r-t-expanded-20261021_6d29bf"
+  },
+  "static_gate_exception": "0.05 to 0.10, exploratory only"
+}

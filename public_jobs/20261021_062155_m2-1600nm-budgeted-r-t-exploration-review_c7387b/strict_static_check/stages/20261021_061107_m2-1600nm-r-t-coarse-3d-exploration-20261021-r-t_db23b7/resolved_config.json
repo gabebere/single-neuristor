@@ -1,0 +1,12 @@
+{
+  "bootstrap_samples": 0,
+  "data": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/20261021_061107_m2-1600nm-r-t-coarse-3d-exploration-20261021_3ad05c/inputs/resistance_K_ohm.tsv",
+  "kind": "fit",
+  "local_passes": 180,
+  "method": "major-loop",
+  "model": "resistance",
+  "name": "M2 1600nm R-T coarse 3D exploration 20261021 - R(T) fit",
+  "random_iters": 12000,
+  "schema_version": 1,
+  "seed": 42
+}

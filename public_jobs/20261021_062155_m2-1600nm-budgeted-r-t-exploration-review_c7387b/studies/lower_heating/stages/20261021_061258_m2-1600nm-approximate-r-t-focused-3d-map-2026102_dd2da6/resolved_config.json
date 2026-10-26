@@ -1,0 +1,12 @@
+{
+  "bootstrap_samples": 0,
+  "data": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/20261021_061258_m2-1600nm-approximate-r-t-focused-3d-map-2026102_ca4707/inputs/resistance_K_ohm.tsv",
+  "kind": "fit",
+  "local_passes": 180,
+  "method": "major-loop",
+  "model": "resistance",
+  "name": "M2 1600nm approximate R-T focused 3D map 20261021 - R(T) fit",
+  "random_iters": 12000,
+  "schema_version": 1,
+  "seed": 42
+}

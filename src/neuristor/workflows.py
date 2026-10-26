@@ -542,6 +542,12 @@ def run_boundary_maps(config, *, output_root=None, command="neuristor analyze bo
     return run(config, output_root=output_root, command=command, reuse_exploration=reuse_exploration)
 
 
+def run_trend_validation(config, *, output_root=None, command="neuristor analyze validate-trends", reuse_integrations=None):
+    """Verify parameter tendencies using controlled fresh current simulations."""
+    from .orchestration.trend_validation import run_trend_validation as execute
+    return execute(config, output_root=output_root, command=command, reuse_integrations=reuse_integrations)
+
+
 def run_sample_study(config, *, output_root=None, command="neuristor study run"):
     """Fit a sample's major R(T) loop, then create a bounded map and GIF archive."""
     from .sample_study import run_sample_study as run
@@ -2358,7 +2364,7 @@ def run_steady_search(config, *, output_root=None, command='neuristor analyze fi
     """Run a self-contained time-budgeted search with live durable checkpoints."""
     from time import monotonic
     from datetime import datetime, timezone
-    from .steady_inference import search_settled, evaluate_settled, settled_features
+    from .steady_inference import search_settled, evaluate_settled, settled_features, measured_current_targets
     from .joint_inference import NAMES, natural_vector, static_rmse, encode
     import matplotlib.pyplot as plt
 
@@ -2376,7 +2382,12 @@ def run_steady_search(config, *, output_root=None, command='neuristor analyze fi
     data=resolve(settings['data_directory']);rt_path=resolve(settings['resistance_data'])
     raw,_=load_converted_sweep(data)
     all_labels=sorted(raw.nominal_drive_mV.unique())
-    target=settings['target_source_labels_mV']
+    if 'target_current_range_uA' in settings:
+        provisional=prepare_inference_dataset(raw,holdout_drives_mV=[all_labels[0]])
+        indices=measured_current_targets(provisional,settings['target_current_range_uA'])
+        target=provisional.nominal_drives_mV[indices].tolist()
+    else:
+        target=settings['target_source_labels_mV']
     if not set(target).issubset(all_labels):raise ValueError('Unknown target source labels')
     dataset=prepare_inference_dataset(raw,holdout_drives_mV=[x for x in all_labels if x not in target])
     rt=load_experimental_rt(rt_path)
@@ -2452,6 +2463,40 @@ Create an empty STOP file in this folder to end the search gracefully.
 Nominal total budget: {settings['total_seconds']/3600:.2f} hours including verification.
 The deadline is checked between simulations, so one in-flight batch may overrun it.
 ''',label='Methods and live-run guide')
+        if simple_loss:
+            bundle.write_text('report.md', f'''# Relative-error oscillation fitting (in progress)
+
+Targets are selected by measured baseline-corrected current, averaged over
+50–250 ns. Their physical magnitudes and archival record IDs are in targets.csv.
+Selection range (µA): {settings.get('target_current_range_uA', 'legacy record selection')}.
+The full measured current waveform and prehistory drive the original model.
+Features use complete voltage cycles in {settings['window_ns']} ns.
+Frequency is 1000/median cycle period (ns); amplitude is median cycle Vpp (mV).
+
+L = mean[wf*(f_sim/f_measured - 1)^2 + wA*(Vpp_sim/Vpp_measured - 1)^2].
+wf = {settings.get('frequency_weight', 1.0)}; wA = {settings.get('amplitude_weight', 1.0)}.
+Zero amplitude weight removes amplitude error from optimization, but amplitude
+and mean voltage are still reported. No phase or DC error enters either loss.
+
+Eligibility is checked separately: sustained complete cycles, frequency <=
+{settings.get('maximum_frequency_MHz')} MHz, the configured temperature domain,
+and sampled nonnegative proximity slope: {settings.get('require_monotone_proximity', False)}.
+The frequency ceiling and temperature bounds are operational screens.
+Rejected candidates receive a finite optimizer sentinel, not a scientific loss.
+Missing frequencies/errors remain null. A failed attempt is labeled diagnostic.
+An objective_loss is reported only for a candidate eligible on every target.
+
+All six static parameters are fixed during the first {settings['fixed_resistance_restarts']}
+restarts. Additional fixed coordinates: {settings.get('fixed_parameters', [])}.
+Cth is represented internally by tau_th = Cth/Se, not an extra physical parameter.
+Search bounds: {json.dumps(settings['bounds'])}.
+Maximum unique evaluations: {settings.get('maximum_evaluations', 'time limited')}.
+Two candidates from different losses must be cross-evaluated before attributing
+an improvement to the objective. No global optimum or physical calibration is implied.
+
+All 22 records are replayed at {settings['verification_dt_ns']} ns.
+Other currents are controls, not blind validation. Create STOP to stop gracefully.
+''', label='Objective, measured-current selection and verification protocol')
         status('searching',unique_candidates=0)
         bundle._save_manifest()
         last_print=[0.]
@@ -2507,7 +2552,10 @@ The deadline is checked between simulations, so one in-flight batch may overrun 
             df=pd.DataFrame(rows)
             pd.concat(traces).to_csv(bundle.add_artifact('verification_traces.csv',label='Measured and simulated verification traces'),index=False)
             for (name,dt),part in df[df.target].groupby(['candidate','dt_ns']):
+                eligible = bool(part.frequency_valid.all() and not part.outside_domain.any()
+                                and (part.proximity_admissible.all() if 'proximity_admissible' in part else True))
                 summary.append(dict(candidate=name,dt_ns=dt,target_records=len(part),mean_dynamic_loss=float(part.loss.mean()),
+                    eligible=eligible, objective_loss=float(part.loss.mean()) if eligible else None,
                     frequency_MAPE=float(part.frequency_relative_error.abs().mean()),
                     amplitude_MAPE=float(part.robust_amplitude_relative_error.abs().mean()),
                     periodic_amplitude_MAPE=float(part.periodic_amplitude_relative_error.abs().mean()),
@@ -2550,6 +2598,36 @@ The deadline is checked between simulations, so one in-flight batch may overrun 
     except Exception as exc:
         status('failed',error=str(exc));bundle.fail(exc);raise
     return bundle
+
+
+def run_steady_comparison(frequency_run, combined_run, *, output_root=None, command='neuristor analyze compare-steady'):
+    """Compare saved matched searches using actual measured-current magnitudes."""
+    from .orchestration.loss_comparison import compare_steady_runs
+    return compare_steady_runs(frequency_run, combined_run, output_root=output_root, command=command)
+
+
+def run_optimizer_audit(config, *, output_root=None, command='neuristor analyze audit-optimizer'):
+    """Audit loss derivatives, timestep effects and gradient-based refinement."""
+    from .orchestration.optimizer_audit import run_optimizer_audit as run_audit
+    validate_config(config)
+    base,*_=_current_params_from_config(config)
+    return run_audit(config,base,output_root=output_root,command=command)
+
+
+def run_optimizer_review(audit_run,frequency_run,combined_run,*,output_root=None,command='neuristor analyze review-optimizer'):
+    """Review saved frequency sensitivities and all three optimization approaches."""
+    from .orchestration.optimizer_review import review_optimizer_runs
+    return review_optimizer_runs(audit_run,frequency_run,combined_run,output_root=output_root,command=command)
+
+
+def run_loss_scopes(config, frequency_run, combined_run, *, output_root=None, frames=96,
+                    command='neuristor analyze loss-scopes'):
+    """Render all measured records for the two retained loss-function candidates."""
+    from .orchestration.loss_scopes import export_loss_scopes
+    validate_config(config)
+    base, *_ = _current_params_from_config(config)
+    return export_loss_scopes(config, base, frequency_run, combined_run,
+        output_root=output_root, frames=frames, command=command)
 
 
 def export_saved_scope(source, *, output_root=None, frames=96, original_labels_uA=False, command='neuristor analyze export-scope'):

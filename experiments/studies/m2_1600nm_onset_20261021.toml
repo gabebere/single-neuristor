@@ -1,0 +1,76 @@
+# Budgeted focused exploration, 21 October 2026: 5^3 = 125 points.
+# Broad pilot retained 0/216: sustained trajectories exceeded measured T range.
+# A 32x-finer pilot confirmed overshoot exclusions, not just coarse-step error.
+# Narrow around the stable-to-oscillatory transition; use 8x-finer base timestep.
+# All temperature and numerical screens remain active.
+# Same 500 uA / 298 K operating assumptions as the historical 3D map.
+# Axes are diagnostic search ranges, not measured sample bounds.
+# Static model mismatch: initial strict 0.05 gate failed (RMSE 0.08065).
+# Allow 0.10 ONLY for this labeled exploratory map; no calibration is adopted.
+# Numerical convergence, persistence and temperature screens remain unchanged.
+# Fewer GIF frames reduce rendering cost without changing integration steps.
+schema_version = 1
+name = "M2 1600nm approximate R-T onset check 20261021"
+kind = "simulation"
+model = "current"
+seed = 42
+
+[study]
+# Relative to THIS TOML file. CSV and TSV are supported.
+resistance_data = "../../data/experimental/m2_8.9_1stL_1600nm_A_RT.tsv"
+temperature_column = "Temperature"
+resistance_column = "Resistance"
+time_column = "Time"              # Use "" to preserve file acquisition order.
+temperature_unit = "K"            # K or C (Celsius)
+resistance_unit = "ohm"           # ohm or kohm
+bootstrap_samples = 0             # 0: fit only; e.g. 500: uncertainty resampling
+maximum_static_rmse_log10 = 0.10  # Exploratory exception: see static-fit caveat above.
+temperature_domain = "measured"  # No extrapolation. Optional: "fit-padded".
+
+[time]
+dt_ns = 0.003125
+duration_us = 0.6
+[input]
+amplitude_uA = 500.0              # Constant ideal current, NOT a source label.
+[initial]
+voltage_V = 0.0
+temperature_K = 298.0
+[electrical]
+C_pF = 0.5
+[thermal]
+C_th_pJ_per_K = 1.5
+S_e_mW_per_K = 0.13
+T0_K = 298.0
+[resistance]
+start_branch = "insulator"
+[resistance.parameters]
+gamma = 0.956269682               # Assumed; not identifiable from a major loop.
+proximity_function = "yuanhang"
+
+[maps]
+window_ns = [300.0, 600.0]         # Evaluate settled complete-cycle extrema only.
+maximum_frequency_MHz = 110.0     # Operational screen, NOT a universal VO2 limit.
+verification_dt_ns = [0.0015625, 0.00078125]
+convergence_fraction = 0.05
+batch_size = 128
+max_points = 15000
+[maps.fixed_values]
+C_th_pJ_per_K = 1.5
+S_e_mW_per_K = 0.13
+C_pF = 0.5
+# Coarse logarithmic search. Every displayed point must pass two finer steps.
+[maps.axes.C_th_pJ_per_K]
+values = [0.8, 1.0, 1.2, 1.5, 2.0]
+[maps.axes.S_e_mW_per_K]
+values = [0.12, 0.13, 0.14, 0.15, 0.16]
+[maps.axes.C_pF]
+values = [0.25, 0.3, 0.4, 0.5, 0.6]         # Logarithmic maps require C>0; solver supports 0.
+
+[animations]
+dt_ns = 0.000390625
+maximum_refinements = 1
+batch_size = 32
+workers = 4
+frames = 20                       # Playback only; not integration resolution.
+[output]
+root = "runs"

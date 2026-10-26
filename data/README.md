@@ -6,6 +6,9 @@ and record units and the source hash.
 
 - `experimental/100425_chip1_gap3.tsv`: measured resistance versus temperature,
   with acquisition order needed to distinguish heating and cooling.
+- `experimental/m2_8.9_1stL_1600nm_A_RT.tsv`: untouched user-supplied M2 1600 nm
+  resistance loop; 374 measurements in K and ohm with acquisition time in seconds.
+  [Exploration and provenance](../docs/M2_RT_EXPLORATION_20261021.md).
 - `experimental/tia_current_sweep/`: professor-provided current/voltage exports,
   original files, units/provenance notes, and SHA-256 checksums. Files marked
   `converted` were supplied for the paper's figure 7; other originals for figure 6.

@@ -1,0 +1,105 @@
+{
+  "animations": {
+    "batch_size": 32,
+    "dt_ns": 0.00625,
+    "frames": 20,
+    "maximum_refinements": 2,
+    "workers": 4
+  },
+  "electrical": {
+    "C_pF": 0.064
+  },
+  "initial": {
+    "temperature_K": 298.0,
+    "voltage_V": 0.0
+  },
+  "input": {
+    "amplitude_uA": 500.0
+  },
+  "kind": "simulation",
+  "maps": {
+    "axes": {
+      "C_pF": {
+        "values": [
+          0.001,
+          0.004,
+          0.016,
+          0.064,
+          0.256,
+          1.024
+        ]
+      },
+      "C_th_pJ_per_K": {
+        "values": [
+          0.1,
+          0.3,
+          1.0,
+          3.0,
+          10.0,
+          30.0
+        ]
+      },
+      "S_e_mW_per_K": {
+        "values": [
+          0.003,
+          0.01,
+          0.03,
+          0.1,
+          0.3,
+          1.0
+        ]
+      }
+    },
+    "batch_size": 128,
+    "convergence_fraction": 0.05,
+    "fixed_values": {
+      "C_pF": 0.064,
+      "C_th_pJ_per_K": 3.0,
+      "S_e_mW_per_K": 0.03
+    },
+    "max_points": 15000,
+    "maximum_frequency_MHz": 110.0,
+    "verification_dt_ns": [
+      0.025,
+      0.0125
+    ],
+    "window_ns": [
+      1000.0,
+      2000.0
+    ]
+  },
+  "model": "current",
+  "name": "M2 1600nm approximate R-T focused 3D map 20261021",
+  "output": {
+    "root": "runs"
+  },
+  "resistance": {
+    "parameters": {
+      "gamma": 0.956269682,
+      "proximity_function": "yuanhang"
+    },
+    "start_branch": "insulator"
+  },
+  "schema_version": 1,
+  "seed": 42,
+  "study": {
+    "bootstrap_samples": 0,
+    "maximum_static_rmse_log10": 0.1,
+    "resistance_column": "Resistance",
+    "resistance_data": "../../data/experimental/m2_8.9_1stL_1600nm_A_RT.tsv",
+    "resistance_unit": "ohm",
+    "temperature_column": "Temperature",
+    "temperature_domain": "measured",
+    "temperature_unit": "K",
+    "time_column": "Time"
+  },
+  "thermal": {
+    "C_th_pJ_per_K": 3.0,
+    "S_e_mW_per_K": 0.03,
+    "T0_K": 298.0
+  },
+  "time": {
+    "dt_ns": 0.05,
+    "duration_us": 2.0
+  }
+}

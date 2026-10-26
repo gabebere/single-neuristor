@@ -1,0 +1,61 @@
+# Expanded search requested with a 15-minute additional budget: 1331 grid points.
+# Reuse the exact prior approximate static fit (RMSE 0.08065; normal 0.05 gate failed).
+# Diagnostic only; no new calibration, changed current, gamma or temperature domain.
+# Full temperature, persistence, 110 MHz and 5% two-finer-step screens remain active.
+# Run physical-maps first; animations are a separate optional bounded stage.
+schema_version = 1
+name = "M2 1600nm approximate R-T dense onset 20261021"
+kind = "simulation"
+model = "current"
+seed = 42
+
+[time]
+dt_ns = 0.00625
+duration_us = 1.2
+[input]
+amplitude_uA = 500.0              # Constant ideal current, NOT a source label.
+[initial]
+voltage_V = 0.0
+temperature_K = 298.0
+[electrical]
+C_pF = 0.5
+[thermal]
+C_th_pJ_per_K = 1.5
+S_e_mW_per_K = 0.1
+T0_K = 298.0
+[resistance]
+preset = "../resistance_preset.json"
+start_branch = "insulator"
+[resistance.parameters]
+gamma = 0.956269682               # Assumed; not identifiable from a major loop.
+proximity_function = "yuanhang"
+T_min_K = 289.98
+T_max_K = 370.1795
+
+[maps]
+window_ns = [600, 1200]         # Evaluate settled complete-cycle extrema only.
+maximum_frequency_MHz = 110.0     # Operational screen, NOT a universal VO2 limit.
+verification_dt_ns = [0.003125, 0.0015625]
+convergence_fraction = 0.05
+batch_size = 128
+max_points = 15000
+[maps.fixed_values]
+C_th_pJ_per_K = 1.5
+S_e_mW_per_K = 0.1
+C_pF = 0.5
+# Coarse logarithmic search. Every displayed point must pass two finer steps.
+[maps.axes.C_th_pJ_per_K]
+values = [0.5, 0.65, 0.8, 1, 1.2, 1.5, 1.8, 2, 2.4, 3, 4]
+[maps.axes.S_e_mW_per_K]
+values = [0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.2, 0.22]
+[maps.axes.C_pF]
+values = [0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.8, 1, 1.2]         # Logarithmic maps require C>0; solver supports 0.
+
+[animations]
+dt_ns = 0.000390625
+maximum_refinements = 1
+batch_size = 32
+workers = 4
+frames = 20                       # Playback only; not integration resolution.
+[output]
+root = "runs"

@@ -26,10 +26,15 @@ from .workflows import (
     run_joint_inference,
     run_lab_replay,
     run_steady_search,
+    run_steady_comparison,
+    run_optimizer_audit,
+    run_optimizer_review,
     run_physical_parameter_maps,
     run_boundary_maps,
+    run_trend_validation,
     run_map_animations,
     export_saved_scope,
+    run_loss_scopes,
     run_resistance_fit,
     run_simulation,
     run_sweep,
@@ -272,6 +277,19 @@ def analyze_boundary_maps(
     _announce_bundle(bundle.root)
 
 
+@analyze_app.command("validate-trends")
+def analyze_validate_trends(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False),
+    set_values: list[str] = typer.Option([], "--set"),
+    output_root: Optional[Path] = typer.Option(None, "--output-root"),
+    reuse_integrations: Optional[Path] = typer.Option(None, "--reuse-integrations", exists=True, file_okay=False),
+) -> None:
+    """Test scaling and one-parameter tendencies with new converged integrations."""
+    bundle = run_trend_validation(_configured(config, set_values, "current"),
+                                  output_root=output_root, command=_command(),reuse_integrations=reuse_integrations)
+    _announce_bundle(bundle.root)
+
+
 @analyze_app.command("physical-maps")
 def analyze_physical_maps(
     config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False),
@@ -341,6 +359,65 @@ def analyze_fit_steady(
     _announce_bundle(bundle.root)
 
 
+@analyze_app.command("review-optimizer")
+def analyze_review_optimizer(
+    audit_run: Path = typer.Option(...,"--audit-run",exists=True,file_okay=False),
+    frequency_run: Path = typer.Option(...,"--frequency-run",exists=True,file_okay=False),
+    combined_run: Path = typer.Option(...,"--combined-run",exists=True,file_okay=False),
+    output_root: Optional[Path] = typer.Option(None,"--output-root"),
+) -> None:
+    """Review completed finite-difference, gradient and expanded-search experiments."""
+    bundle=run_optimizer_review(audit_run,frequency_run,combined_run,output_root=output_root,command=_command())
+    _announce_bundle(bundle.root)
+
+
+@analyze_app.command("audit-optimizer")
+def analyze_audit_optimizer(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False),
+    set_values: list[str] = typer.Option([], "--set"),
+    output_root: Optional[Path] = typer.Option(None, "--output-root"),
+) -> None:
+    """Probe finite differences and timestep stability, then test L-BFGS-B."""
+    bundle=run_optimizer_audit(_configured(config,set_values,"current"),output_root=output_root,command=_command())
+    _announce_bundle(bundle.root)
+
+
+@analyze_app.command("compare-steady")
+def analyze_compare_steady(
+    frequency_run: Path = typer.Option(..., "--frequency-run", exists=True, file_okay=False),
+    combined_run: Path = typer.Option(..., "--combined-run", exists=True, file_okay=False),
+    output_root: Optional[Path] = typer.Option(None, "--output-root"),
+) -> None:
+    """Compare saved frequency-only and frequency/amplitude fits without rerunning."""
+    bundle = run_steady_comparison(frequency_run, combined_run,
+                                  output_root=output_root, command=_command())
+    _announce_bundle(bundle.root)
+
+
+@app.command("present")
+def present_slides() -> None:
+    """Start all linked local viewers and open the presentation PDF."""
+    from .interfaces.presentation_server import present
+    pdf = present()
+    typer.echo(f'Opened {pdf}; all slide viewers are running on this computer.')
+
+
+@analyze_app.command("serve-presentation")
+def analyze_serve_presentation(background: bool = typer.Option(False, '--background')) -> None:
+    """Serve the presentation's HTML/GIF viewers on this Mac at port 8767."""
+    from .interfaces.presentation_server import create_presentation_server, ensure_running
+    if background:
+        ensure_running()
+        typer.echo('Presentation viewers ready at http://127.0.0.1:8767')
+        return
+    with create_presentation_server() as server:
+        typer.echo(f'Presentation viewers ready at http://127.0.0.1:{server.server_port}')
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            pass
+
+
 @analyze_app.command("export-scope")
 def analyze_export_scope(
     source: Path = typer.Option(..., "--source", exists=True, file_okay=False),
@@ -352,6 +429,20 @@ def analyze_export_scope(
     bundle = export_saved_scope(
         source, output_root=output_root, frames=frames, original_labels_uA=original_labels_uA, command=_command()
     )
+    _announce_bundle(bundle.root)
+
+
+@analyze_app.command("loss-scopes")
+def analyze_loss_scopes(
+    config: Path = typer.Option(..., '--config', exists=True, dir_okay=False),
+    frequency_run: Path = typer.Option(..., '--frequency-run', exists=True, file_okay=False),
+    combined_run: Path = typer.Option(..., '--combined-run', exists=True, file_okay=False),
+    frames: int = typer.Option(96, '--frames', min=2),
+    output_root: Optional[Path] = typer.Option(None, '--output-root'),
+) -> None:
+    """Render all inputs for both retained loss candidates with stacked I/V/R(T)."""
+    bundle = run_loss_scopes(load_toml(config), frequency_run, combined_run,
+        frames=frames, output_root=output_root, command=_command())
     _announce_bundle(bundle.root)
 
 

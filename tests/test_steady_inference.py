@@ -37,7 +37,8 @@ def test_settled_loss_penalizes_decay():
     assert not settled_loss(m,p,SETTINGS)['near_target']
 
 
-@pytest.mark.parametrize('recipe', ['specimen_steady_multistart.toml', 'specimen_steady_relative.toml'])
+@pytest.mark.parametrize('recipe', ['specimen_steady_multistart.toml', 'specimen_steady_relative.toml',
+    'specimen_frequency_only_20261020.toml', 'specimen_frequency_amplitude_20261020.toml'])
 def test_steady_cli_small_budget_checkpoint_and_verification(tmp_path, recipe):
     result=CliRunner().invoke(app,['analyze','fit-steady','--config',str(ROOT/'experiments/current'/recipe),
         '--set','steady.restarts=1','--set','steady.population=5','--set','steady.maximum_generations=0',
@@ -59,3 +60,21 @@ def test_steady_cli_small_budget_checkpoint_and_verification(tmp_path, recipe):
     assert (root/'optimization_history.jsonl').is_file()
     assert (root/'summary.csv').is_file()
     assert json.loads((root/'metrics.json').read_text())['verification_complete']
+    if '20261020' in recipe:
+        import pandas as pd
+        targets = pd.read_csv(root/'targets.csv')
+        assert len(targets) == 11
+        assert targets.measured_current_A.between(225e-6, 610e-6).all()
+        records = [json.loads(line) for line in (root/'optimization_history.jsonl').read_text().splitlines()]
+        assert all(record['values'][3] == 314.4 for record in records)
+        assert all(record['static_fixed'] for record in records)
+
+
+def test_measured_current_selection_ignores_filename_numbers():
+    from types import SimpleNamespace
+    from neuristor.fitting.steady_inference import measured_current_targets
+    data = SimpleNamespace(time_ns=np.array([0., 50., 150., 250.]),
+        current_uA=np.array([[0., 0., 0.], [40., 230., 610.],
+                             [40., 240., 620.], [40., 250., 630.]]),
+        nominal_drives_mV=np.array([999., 12., 3.]))
+    np.testing.assert_array_equal(measured_current_targets(data, [225., 610.]), [1])

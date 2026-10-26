@@ -1,0 +1,25 @@
+{
+  "calibration_adopted": false,
+  "constant_current_window_ns": [
+    1000,
+    2000
+  ],
+  "dt_ns": [
+    0.025,
+    0.0125,
+    0.00625
+  ],
+  "fit_mode": "relaxed",
+  "neighbor_source_labels_mV": [
+    350,
+    450
+  ],
+  "parent_bundle": "20260907_125315_physics-anchored-specimen-waveform-inference_717797",
+  "primary_source_label_mV": 400,
+  "prominence_fraction": 0.1,
+  "replay_window_ns": [
+    50,
+    280
+  ],
+  "smoothing_for_detection_ns": 0.5
+}

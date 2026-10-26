@@ -64,7 +64,8 @@ def write_current_gif(frame, path, *, frames=24):
 
 
 def write_scope_gif(frame, branches, path, *, frames=96, snapshot_path=None, stacked_amperes=False, original_label_uA=None,
-                    time_window_ns=(-30., 350.), trajectory_breaks=False, parameter_caption=None):
+                    time_window_ns=(-30., 350.), trajectory_breaks=False, parameter_caption=None,
+                    acquisition_frame=None):
     """Reveal synchronized V(t), imposed I(t), and simulated R(T) up to each time.
 
     Major branches are static guides. The colored trajectory and its endpoint
@@ -77,10 +78,14 @@ def write_scope_gif(frame, branches, path, *, frames=96, snapshot_path=None, sta
     if frames < 2:
         raise ValueError('Scope animation needs at least two frames')
     shown = frame[(frame.time_ns >= time_window_ns[0]) & (frame.time_ns <= time_window_ns[1])].reset_index(drop=True)
+    acquired = shown if acquisition_frame is None else acquisition_frame[
+        acquisition_frame.time_ns.between(*time_window_ns)].copy()
     if len(shown) < 2:
         raise ValueError('Scope window must contain at least two samples')
     if stacked_amperes:
         shown['input_current_A'] = shown.input_current_uA * 1e-6
+        acquired = acquired.copy()
+        acquired['input_current_A'] = acquired.input_current_uA * 1e-6
         current_column = 'input_current_A'
         fig = plt.figure(figsize=(8.5, 10), dpi=100, facecolor='white')
         grid = fig.add_gridspec(3, 1, left=.13, right=.97, bottom=.105, top=.90,
@@ -169,7 +174,11 @@ def write_scope_gif(frame, branches, path, *, frames=96, snapshot_path=None, sta
                 keep = rt_time <= time
                 line.set_data(rt_temp[keep], rt_resistance[keep])
             else:
-                line.set_data(part[x], part[y])
+                # Keep measured channels on their acquisition grid; the simulated
+                # trajectory can retain every native integration endpoint.
+                data = acquired[acquired.time_ns <= time] if y in (
+                    'measured_voltage_mV', current_column) else part
+                line.set_data(data[x], data[y])
         dot.set_data(part.temperature_K.iloc[-1:], part.resistance_ohm.iloc[-1:])
         for cursor in cursors:
             cursor.set_xdata([time, time])

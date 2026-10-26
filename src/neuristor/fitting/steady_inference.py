@@ -133,6 +133,47 @@ class StageExpired(Exception):
     """Internal graceful deadline/stop signal, checked before each evaluation."""
 
 
+def relative_candidate_score(rows, outside_domain=False):
+    """Return the unchanged finite search score and separate scientific loss.
+
+    Missing/invalid cycles are ranked by their count before the bounded partial
+    error tie-breaker. The sentinel is useful to an optimizer but is never a
+    derivative or value of the accepted all-target scientific objective.
+    """
+    invalid = sum(not row['frequency_valid'] for row in rows)
+    errors = [row['loss'] for row in rows if row['loss'] is not None]
+    dynamic = float(np.mean(errors)) if errors else None
+    score = (1e6 + 1000*invalid + min(dynamic or 0., 999.)) if invalid else dynamic
+    admissible = all(row.get('proximity_admissible', True) for row in rows)
+    if outside_domain:
+        score += 1e6
+    if not admissible:
+        score += 1e6
+    return dict(score=float(score), dynamic_loss=dynamic,
+                invalid_count=int(invalid), proximity_admissible=bool(admissible),
+                eligible=bool(not invalid and not outside_domain and admissible),
+                objective_loss=dynamic if not invalid and not outside_domain and admissible else None)
+
+
+def measured_current_targets(dataset, current_range_uA):
+    """Select records by baseline-corrected mean current over 50–250 ns.
+
+    Acquisition filenames remain provenance only; their nominal mV labels are
+    never interpreted as physical input-current magnitudes.
+    """
+    low, high = map(float, current_range_uA)
+    if not np.isfinite([low, high]).all() or low >= high:
+        raise ValueError('Measured-current limits must be finite and ordered')
+    window = (dataset.time_ns >= 50) & (dataset.time_ns <= 250)
+    if not window.any():
+        raise ValueError('Measured-current selection requires 50–250 ns samples')
+    currents = np.mean(dataset.current_uA[window], axis=0)
+    indices = np.flatnonzero((currents >= low) & (currents <= high))
+    if not 0 < len(indices) < len(currents):
+        raise ValueError('Select at least one target and retain at least one control')
+    return indices
+
+
 def search_settled(dataset, rt, base, settings, seed_vectors, bootstrap,
                    checkpoint, stop_requested=lambda: False):
     """Time-boxed DE/Powell restarts with feasible correlated static seeds.
@@ -150,6 +191,13 @@ def search_settled(dataset, rt, base, settings, seed_vectors, bootstrap,
         raise ValueError('Require population >=5 and at least one restart')
     frozen=natural_vector(base)
     static_indices=np.array([4,5,6,8,9,10])
+    fixed_names = settings.get('fixed_parameters', [])
+    if any(n not in NAMES for n in fixed_names):
+        raise ValueError('Unknown fixed search parameter')
+    always_fixed = {NAMES.index(n) for n in fixed_names}
+    evaluation_limit = int(settings.get('maximum_evaluations', 2**63-1))
+    if evaluation_limit < 1:
+        raise ValueError('maximum_evaluations must be positive')
     measured=[settled_features(dataset.time_ns,dataset.voltage_mV[:,i],settings['window_ns'],
         method=settings.get('feature_method', 'spectral')) for i in dataset.train_indices]
     start=monotonic(); cache={}; history_count=0; elites=[]; restart_results=[]
@@ -159,9 +207,12 @@ def search_settled(dataset, rt, base, settings, seed_vectors, bootstrap,
     diagnostic_best=None
     simple = settings.get('loss_function') == 'relative_squared'
     for restart in range(int(settings['restarts'])):
-        if monotonic()>=end or stop_requested(): break
+        if monotonic()>=end or stop_requested() or history_count >= evaluation_limit: break
         fixed=restart<int(settings['fixed_resistance_restarts'])
-        active=np.array([i for i in range(11) if not fixed or i not in static_indices])
+        active=np.array([i for i in range(11)
+                         if i not in always_fixed and (not fixed or i not in static_indices)])
+        if not len(active):
+            raise ValueError('At least one search parameter must remain free')
         rng=np.random.default_rng(int(settings['seed'])+restart*104729)
         stage_end=min(end,start+(restart+1)*settings['search_seconds']/settings['restarts'])
         de_end=monotonic()+.8*max(0,stage_end-monotonic())
@@ -173,7 +224,8 @@ def search_settled(dataset, rt, base, settings, seed_vectors, bootstrap,
         deadline=[de_end]
         def objective(short):
             nonlocal history_count,best,diagnostic_best
-            if monotonic()>=deadline[0] or stop_requested(): raise StageExpired()
+            if monotonic()>=deadline[0] or stop_requested() or history_count >= evaluation_limit:
+                raise StageExpired()
             u=expand(short); key=tuple(np.round(u,12))
             if key not in cache:
                 v=decode(u,bounds); re=static_rmse(v,rt)
@@ -189,16 +241,16 @@ def search_settled(dataset, rt, base, settings, seed_vectors, bootstrap,
                         if simple:
                             # Feasibility takes priority over accuracy. This finite
                             # solver sentinel is NOT part of the scientific loss.
-                            errors = [r['loss'] for r in rows if r['loss'] is not None]
-                            dynamic = float(np.mean(errors)) if errors else None
-                            score = (1e6 + 1000*invalid + min(dynamic or 0., 999.)) if invalid else dynamic
+                            scoring = relative_candidate_score(rows, outside)
+                            dynamic = scoring['dynamic_loss']
+                            score = scoring['score']
                         else:
                             score=float(np.mean([r['loss'] for r in rows]))+settings['static_weight']*(re/.05)**2
                         if not np.isfinite(score):
                             raise ValueError('Non-finite objective')
-                        if outside: score+=1e6
+                        if outside and not simple: score+=1e6
                         admissible=all(r.get('proximity_admissible', True) for r in rows)
-                        if not admissible: score+=1e6
+                        if not admissible and not simple: score+=1e6
                         record.update(simulated=True,outside_domain=outside,per_current=rows,
                                       proximity_admissible=admissible,
                                       oscillations_eligible=invalid == 0,
@@ -222,7 +274,8 @@ def search_settled(dataset, rt, base, settings, seed_vectors, bootstrap,
         population=[]
         # Include a small known seed set; the majority of the population remains
         # independent in dynamic coordinates, preserving basin diversity.
-        for v in seed_vectors[:3]:population.append(np.clip(encode(v,bounds)[active],0,1))
+        for v in seed_vectors[:int(settings.get('initial_seed_count', 3))]:
+            population.append(np.clip(encode(v,bounds)[active],0,1))
         if best is not None:population.append(np.clip(encode(best['values'],bounds)[active],0,1))
         draws=qmc.LatinHypercube(11,seed=int(settings['seed'])+restart).random(int(settings['population'])*30)
         for u in draws:

@@ -38,6 +38,20 @@ def test_simple_loss_perfect_match_and_frequency_ceiling():
     assert result['loss'] == 1 and not result['frequency_valid']
 
 
+def test_frequency_only_loss_ignores_amplitude_error_but_keeps_diagnostics():
+    measured = dict(frequency_MHz=50., extrema_vpp_mV=20.)
+    predicted = dict(frequency_MHz=55., extrema_vpp_mV=60., sustained=True)
+    frequency = extrema_loss(measured, predicted, dict(
+        loss_function='relative_squared', frequency_weight=1., amplitude_weight=0.))
+    combined = extrema_loss(measured, predicted, dict(loss_function='relative_squared'))
+    assert np.isclose(frequency['loss'], .01)
+    assert np.isclose(combined['loss'], 4.01)
+    assert frequency['robust_amplitude_relative_error'] == 2.
+    predicted['frequency_MHz'] = None
+    assert extrema_loss(measured, predicted, dict(
+        loss_function='relative_squared', amplitude_weight=0.))['loss'] is None
+
+
 def test_slice_normalization_uses_only_visible_screened_points():
     import itertools
     import pandas as pd

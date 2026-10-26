@@ -1,0 +1,59 @@
+{
+  "analysis": {
+    "start_us": 1.0,
+    "stop_us": 2.0
+  },
+  "animation_study": {
+    "cycle_window_ns": [
+      50.0,
+      280.0
+    ],
+    "frames": 64,
+    "render_steps_ns": [
+      0.025,
+      0.00625
+    ],
+    "source_bundle": "../../public_jobs/20260907_125315_physics-anchored-specimen-waveform-inference_717797",
+    "time_steps_ns": [
+      0.025,
+      0.0125,
+      0.00625
+    ],
+    "window_ns": [
+      -30.0,
+      280.0
+    ],
+    "workers": 4
+  },
+  "electrical": {
+    "C_pF": 6.835494476281914
+  },
+  "initial": {
+    "temperature_K": 314.363069805982,
+    "voltage_V": 0.0
+  },
+  "input": {
+    "amplitude_uA": 303.3911472089279
+  },
+  "kind": "simulation",
+  "model": "current",
+  "name": "Fixed historical alternating-amplitude GIF sweep 20261025",
+  "output": {
+    "root": "runs"
+  },
+  "resistance": {
+    "preset": "../../presets/alternating_amplitude_relaxed_20260907.json",
+    "start_branch": "insulator"
+  },
+  "schema_version": 1,
+  "seed": 20261025,
+  "thermal": {
+    "C_th_pJ_per_K": 0.044214193020215925,
+    "S_e_mW_per_K": 0.003712762043427252,
+    "T0_K": 314.363069805982
+  },
+  "time": {
+    "dt_ns": 0.00625,
+    "duration_us": 2.0
+  }
+}

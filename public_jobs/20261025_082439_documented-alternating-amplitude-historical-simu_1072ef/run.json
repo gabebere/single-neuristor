@@ -1,0 +1,926 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Frozen source __init__.py",
+      "path": "source/neuristor/__init__.py"
+    },
+    {
+      "label": "Frozen source analysis/__init__.py",
+      "path": "source/neuristor/analysis/__init__.py"
+    },
+    {
+      "label": "Frozen source analysis/boundary_search.py",
+      "path": "source/neuristor/analysis/boundary_search.py"
+    },
+    {
+      "label": "Frozen source analysis/distribution.py",
+      "path": "source/neuristor/analysis/distribution.py"
+    },
+    {
+      "label": "Frozen source analysis/experimental_waveforms.py",
+      "path": "source/neuristor/analysis/experimental_waveforms.py"
+    },
+    {
+      "label": "Frozen source analysis/extrema.py",
+      "path": "source/neuristor/analysis/extrema.py"
+    },
+    {
+      "label": "Frozen source analysis/frequency_sensitivity.py",
+      "path": "source/neuristor/analysis/frequency_sensitivity.py"
+    },
+    {
+      "label": "Frozen source analysis/lab_estimates.py",
+      "path": "source/neuristor/analysis/lab_estimates.py"
+    },
+    {
+      "label": "Frozen source analysis/lab_replay.py",
+      "path": "source/neuristor/analysis/lab_replay.py"
+    },
+    {
+      "label": "Frozen source analysis/loss_comparison.py",
+      "path": "source/neuristor/analysis/loss_comparison.py"
+    },
+    {
+      "label": "Frozen source analysis/metrics.py",
+      "path": "source/neuristor/analysis/metrics.py"
+    },
+    {
+      "label": "Frozen source analysis/model_validation.py",
+      "path": "source/neuristor/analysis/model_validation.py"
+    },
+    {
+      "label": "Frozen source analysis/optimizer_diagnostics.py",
+      "path": "source/neuristor/analysis/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Frozen source analysis/oscillation_audit.py",
+      "path": "source/neuristor/analysis/oscillation_audit.py"
+    },
+    {
+      "label": "Frozen source analysis/physical_maps.py",
+      "path": "source/neuristor/analysis/physical_maps.py"
+    },
+    {
+      "label": "Frozen source analysis/trend_validation.py",
+      "path": "source/neuristor/analysis/trend_validation.py"
+    },
+    {
+      "label": "Frozen source artifact_catalog.py",
+      "path": "source/neuristor/artifact_catalog.py"
+    },
+    {
+      "label": "Frozen source cli.py",
+      "path": "source/neuristor/cli.py"
+    },
+    {
+      "label": "Frozen source config.py",
+      "path": "source/neuristor/config.py"
+    },
+    {
+      "label": "Frozen source current_domain_search.py",
+      "path": "source/neuristor/current_domain_search.py"
+    },
+    {
+      "label": "Frozen source current_drive_sim.py",
+      "path": "source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Frozen source dashboard.py",
+      "path": "source/neuristor/dashboard.py"
+    },
+    {
+      "label": "Frozen source experimental_waveforms.py",
+      "path": "source/neuristor/experimental_waveforms.py"
+    },
+    {
+      "label": "Frozen source extrema.py",
+      "path": "source/neuristor/extrema.py"
+    },
+    {
+      "label": "Frozen source fitting/__init__.py",
+      "path": "source/neuristor/fitting/__init__.py"
+    },
+    {
+      "label": "Frozen source fitting/current_domain_search.py",
+      "path": "source/neuristor/fitting/current_domain_search.py"
+    },
+    {
+      "label": "Frozen source fitting/joint_inference.py",
+      "path": "source/neuristor/fitting/joint_inference.py"
+    },
+    {
+      "label": "Frozen source fitting/optimizer_audit.py",
+      "path": "source/neuristor/fitting/optimizer_audit.py"
+    },
+    {
+      "label": "Frozen source fitting/parameter_inference.py",
+      "path": "source/neuristor/fitting/parameter_inference.py"
+    },
+    {
+      "label": "Frozen source fitting/resistance_custom_analysis.py",
+      "path": "source/neuristor/fitting/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Frozen source fitting/steady_inference.py",
+      "path": "source/neuristor/fitting/steady_inference.py"
+    },
+    {
+      "label": "Frozen source interfaces/__init__.py",
+      "path": "source/neuristor/interfaces/__init__.py"
+    },
+    {
+      "label": "Frozen source interfaces/dashboard.py",
+      "path": "source/neuristor/interfaces/dashboard.py"
+    },
+    {
+      "label": "Frozen source interfaces/playground.py",
+      "path": "source/neuristor/interfaces/playground.py"
+    },
+    {
+      "label": "Frozen source interfaces/presentation_server.py",
+      "path": "source/neuristor/interfaces/presentation_server.py"
+    },
+    {
+      "label": "Frozen source interfaces/run_manager.py",
+      "path": "source/neuristor/interfaces/run_manager.py"
+    },
+    {
+      "label": "Frozen source joint_inference.py",
+      "path": "source/neuristor/joint_inference.py"
+    },
+    {
+      "label": "Frozen source lab_estimates.py",
+      "path": "source/neuristor/lab_estimates.py"
+    },
+    {
+      "label": "Frozen source lab_replay.py",
+      "path": "source/neuristor/lab_replay.py"
+    },
+    {
+      "label": "Frozen source legacy/__init__.py",
+      "path": "source/neuristor/legacy/__init__.py"
+    },
+    {
+      "label": "Frozen source legacy/plots.py",
+      "path": "source/neuristor/legacy/plots.py"
+    },
+    {
+      "label": "Frozen source legacy/sample_library.py",
+      "path": "source/neuristor/legacy/sample_library.py"
+    },
+    {
+      "label": "Frozen source map_animations.py",
+      "path": "source/neuristor/map_animations.py"
+    },
+    {
+      "label": "Frozen source map_workflows.py",
+      "path": "source/neuristor/map_workflows.py"
+    },
+    {
+      "label": "Frozen source metrics.py",
+      "path": "source/neuristor/metrics.py"
+    },
+    {
+      "label": "Frozen source model.py",
+      "path": "source/neuristor/model.py"
+    },
+    {
+      "label": "Frozen source model_validation.py",
+      "path": "source/neuristor/model_validation.py"
+    },
+    {
+      "label": "Frozen source orchestration/__init__.py",
+      "path": "source/neuristor/orchestration/__init__.py"
+    },
+    {
+      "label": "Frozen source orchestration/artifact_catalog.py",
+      "path": "source/neuristor/orchestration/artifact_catalog.py"
+    },
+    {
+      "label": "Frozen source orchestration/boundary_workflows.py",
+      "path": "source/neuristor/orchestration/boundary_workflows.py"
+    },
+    {
+      "label": "Frozen source orchestration/loss_comparison.py",
+      "path": "source/neuristor/orchestration/loss_comparison.py"
+    },
+    {
+      "label": "Frozen source orchestration/loss_scopes.py",
+      "path": "source/neuristor/orchestration/loss_scopes.py"
+    },
+    {
+      "label": "Frozen source orchestration/map_viewers.py",
+      "path": "source/neuristor/orchestration/map_viewers.py"
+    },
+    {
+      "label": "Frozen source orchestration/map_workflows.py",
+      "path": "source/neuristor/orchestration/map_workflows.py"
+    },
+    {
+      "label": "Frozen source orchestration/optimizer_audit.py",
+      "path": "source/neuristor/orchestration/optimizer_audit.py"
+    },
+    {
+      "label": "Frozen source orchestration/optimizer_review.py",
+      "path": "source/neuristor/orchestration/optimizer_review.py"
+    },
+    {
+      "label": "Frozen source orchestration/sample_study.py",
+      "path": "source/neuristor/orchestration/sample_study.py"
+    },
+    {
+      "label": "Frozen source orchestration/trend_validation.py",
+      "path": "source/neuristor/orchestration/trend_validation.py"
+    },
+    {
+      "label": "Frozen source oscillation_audit.py",
+      "path": "source/neuristor/oscillation_audit.py"
+    },
+    {
+      "label": "Frozen source parameter_inference.py",
+      "path": "source/neuristor/parameter_inference.py"
+    },
+    {
+      "label": "Frozen source physical_maps.py",
+      "path": "source/neuristor/physical_maps.py"
+    },
+    {
+      "label": "Frozen source playground.py",
+      "path": "source/neuristor/playground.py"
+    },
+    {
+      "label": "Frozen source plots.py",
+      "path": "source/neuristor/plots.py"
+    },
+    {
+      "label": "Frozen source plotting/__init__.py",
+      "path": "source/neuristor/plotting/__init__.py"
+    },
+    {
+      "label": "Frozen source plotting/boundary_maps.py",
+      "path": "source/neuristor/plotting/boundary_maps.py"
+    },
+    {
+      "label": "Frozen source plotting/frequency_sensitivity.py",
+      "path": "source/neuristor/plotting/frequency_sensitivity.py"
+    },
+    {
+      "label": "Frozen source plotting/loss_comparison.py",
+      "path": "source/neuristor/plotting/loss_comparison.py"
+    },
+    {
+      "label": "Frozen source plotting/map_animations.py",
+      "path": "source/neuristor/plotting/map_animations.py"
+    },
+    {
+      "label": "Frozen source plotting/optimizer_diagnostics.py",
+      "path": "source/neuristor/plotting/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Frozen source plotting/replay_plots.py",
+      "path": "source/neuristor/plotting/replay_plots.py"
+    },
+    {
+      "label": "Frozen source plotting/trend_validation.py",
+      "path": "source/neuristor/plotting/trend_validation.py"
+    },
+    {
+      "label": "Frozen source plotting/visualization.py",
+      "path": "source/neuristor/plotting/visualization.py"
+    },
+    {
+      "label": "Frozen source provenance.py",
+      "path": "source/neuristor/provenance.py"
+    },
+    {
+      "label": "Frozen source replay_plots.py",
+      "path": "source/neuristor/replay_plots.py"
+    },
+    {
+      "label": "Frozen source resistance_custom_analysis.py",
+      "path": "source/neuristor/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Frozen source runs.py",
+      "path": "source/neuristor/runs.py"
+    },
+    {
+      "label": "Frozen source sample_library.py",
+      "path": "source/neuristor/sample_library.py"
+    },
+    {
+      "label": "Frozen source sample_study.py",
+      "path": "source/neuristor/sample_study.py"
+    },
+    {
+      "label": "Frozen source steady_inference.py",
+      "path": "source/neuristor/steady_inference.py"
+    },
+    {
+      "label": "Frozen source validation.py",
+      "path": "source/neuristor/validation.py"
+    },
+    {
+      "label": "Frozen source visualization.py",
+      "path": "source/neuristor/visualization.py"
+    },
+    {
+      "label": "Frozen source workflows.py",
+      "path": "source/neuristor/workflows.py"
+    },
+    {
+      "label": "Frozen authoritative implementation",
+      "media_type": "application/json",
+      "path": "source_hashes.json"
+    },
+    {
+      "label": "Exact analysis/replay source",
+      "path": "analysis_source/document_finding.py"
+    },
+    {
+      "label": "Exact analysis/replay source",
+      "path": "analysis_source/scan_saved.py"
+    },
+    {
+      "label": "Exact analysis/replay source",
+      "path": "analysis_source/scan_csv.py"
+    },
+    {
+      "label": "Exact analysis/replay source",
+      "path": "analysis_source/replay_candidates.py"
+    },
+    {
+      "label": "Unchanged historical fit evidence",
+      "path": "historical_parameters/parameter_comparison.csv"
+    },
+    {
+      "label": "Unchanged historical fit evidence",
+      "path": "historical_parameters/resolved_config.json"
+    },
+    {
+      "label": "Unchanged historical fit evidence",
+      "path": "historical_parameters/metrics.json"
+    },
+    {
+      "label": "Unchanged historical fit evidence",
+      "path": "historical_parameters/run.json"
+    },
+    {
+      "label": "Unchanged historical fit evidence",
+      "path": "historical_parameters/convergence.csv"
+    },
+    {
+      "label": "Software/workflow check log",
+      "path": "checks/pytest.log"
+    },
+    {
+      "label": "Software/workflow check log",
+      "path": "checks/validate.log"
+    },
+    {
+      "label": "Software/workflow check log",
+      "path": "checks/reference_recipe.log"
+    },
+    {
+      "label": "Original experimental numerical trace",
+      "path": "inputs/350mv0_converted.csv"
+    },
+    {
+      "label": "Original experimental numerical trace",
+      "path": "inputs/400mv0_converted.csv"
+    },
+    {
+      "label": "Original experimental numerical trace",
+      "path": "inputs/450mv0_converted.csv"
+    },
+    {
+      "label": "Exact archived rows for three source labels",
+      "path": "archived_selected_traces.csv"
+    },
+    {
+      "label": "Original numerical input hashes",
+      "media_type": "application/json",
+      "path": "input_provenance.json"
+    },
+    {
+      "label": "Existing CLI workflow replay: metrics.json",
+      "path": "constant_current_recipe_run/metrics.json"
+    },
+    {
+      "label": "Existing CLI workflow replay: report.md",
+      "path": "constant_current_recipe_run/report.md"
+    },
+    {
+      "label": "Existing CLI workflow replay: source_hashes.json",
+      "path": "constant_current_recipe_run/source_hashes.json"
+    },
+    {
+      "label": "Existing CLI workflow replay: traces.csv",
+      "path": "constant_current_recipe_run/traces.csv"
+    },
+    {
+      "label": "Existing CLI workflow replay: run.json",
+      "path": "constant_current_recipe_run/run.json"
+    },
+    {
+      "label": "Existing CLI workflow replay: resolved_config.json",
+      "path": "constant_current_recipe_run/resolved_config.json"
+    },
+    {
+      "label": "Existing CLI workflow replay: overview.png",
+      "path": "constant_current_recipe_run/figures/overview.png"
+    },
+    {
+      "label": "Existing CLI workflow replay: metrics.py",
+      "path": "constant_current_recipe_run/source/neuristor/metrics.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: joint_inference.py",
+      "path": "constant_current_recipe_run/source/neuristor/joint_inference.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: extrema.py",
+      "path": "constant_current_recipe_run/source/neuristor/extrema.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: playground.py",
+      "path": "constant_current_recipe_run/source/neuristor/playground.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: config.py",
+      "path": "constant_current_recipe_run/source/neuristor/config.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: lab_estimates.py",
+      "path": "constant_current_recipe_run/source/neuristor/lab_estimates.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: artifact_catalog.py",
+      "path": "constant_current_recipe_run/source/neuristor/artifact_catalog.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: __init__.py",
+      "path": "constant_current_recipe_run/source/neuristor/__init__.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: visualization.py",
+      "path": "constant_current_recipe_run/source/neuristor/visualization.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: model.py",
+      "path": "constant_current_recipe_run/source/neuristor/model.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: current_drive_sim.py",
+      "path": "constant_current_recipe_run/source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: dashboard.py",
+      "path": "constant_current_recipe_run/source/neuristor/dashboard.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: plots.py",
+      "path": "constant_current_recipe_run/source/neuristor/plots.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: replay_plots.py",
+      "path": "constant_current_recipe_run/source/neuristor/replay_plots.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: cli.py",
+      "path": "constant_current_recipe_run/source/neuristor/cli.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: parameter_inference.py",
+      "path": "constant_current_recipe_run/source/neuristor/parameter_inference.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: physical_maps.py",
+      "path": "constant_current_recipe_run/source/neuristor/physical_maps.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: steady_inference.py",
+      "path": "constant_current_recipe_run/source/neuristor/steady_inference.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: workflows.py",
+      "path": "constant_current_recipe_run/source/neuristor/workflows.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: model_validation.py",
+      "path": "constant_current_recipe_run/source/neuristor/model_validation.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: resistance_custom_analysis.py",
+      "path": "constant_current_recipe_run/source/neuristor/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: map_animations.py",
+      "path": "constant_current_recipe_run/source/neuristor/map_animations.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: sample_study.py",
+      "path": "constant_current_recipe_run/source/neuristor/sample_study.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: provenance.py",
+      "path": "constant_current_recipe_run/source/neuristor/provenance.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: oscillation_audit.py",
+      "path": "constant_current_recipe_run/source/neuristor/oscillation_audit.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: runs.py",
+      "path": "constant_current_recipe_run/source/neuristor/runs.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: sample_library.py",
+      "path": "constant_current_recipe_run/source/neuristor/sample_library.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: map_workflows.py",
+      "path": "constant_current_recipe_run/source/neuristor/map_workflows.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: current_domain_search.py",
+      "path": "constant_current_recipe_run/source/neuristor/current_domain_search.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: lab_replay.py",
+      "path": "constant_current_recipe_run/source/neuristor/lab_replay.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: experimental_waveforms.py",
+      "path": "constant_current_recipe_run/source/neuristor/experimental_waveforms.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: validation.py",
+      "path": "constant_current_recipe_run/source/neuristor/validation.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: joint_inference.py",
+      "path": "constant_current_recipe_run/source/neuristor/fitting/joint_inference.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: __init__.py",
+      "path": "constant_current_recipe_run/source/neuristor/fitting/__init__.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: parameter_inference.py",
+      "path": "constant_current_recipe_run/source/neuristor/fitting/parameter_inference.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: steady_inference.py",
+      "path": "constant_current_recipe_run/source/neuristor/fitting/steady_inference.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: resistance_custom_analysis.py",
+      "path": "constant_current_recipe_run/source/neuristor/fitting/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: current_domain_search.py",
+      "path": "constant_current_recipe_run/source/neuristor/fitting/current_domain_search.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: optimizer_audit.py",
+      "path": "constant_current_recipe_run/source/neuristor/fitting/optimizer_audit.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: metrics.py",
+      "path": "constant_current_recipe_run/source/neuristor/analysis/metrics.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: extrema.py",
+      "path": "constant_current_recipe_run/source/neuristor/analysis/extrema.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: lab_estimates.py",
+      "path": "constant_current_recipe_run/source/neuristor/analysis/lab_estimates.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: __init__.py",
+      "path": "constant_current_recipe_run/source/neuristor/analysis/__init__.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: loss_comparison.py",
+      "path": "constant_current_recipe_run/source/neuristor/analysis/loss_comparison.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: distribution.py",
+      "path": "constant_current_recipe_run/source/neuristor/analysis/distribution.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: physical_maps.py",
+      "path": "constant_current_recipe_run/source/neuristor/analysis/physical_maps.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: optimizer_diagnostics.py",
+      "path": "constant_current_recipe_run/source/neuristor/analysis/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: model_validation.py",
+      "path": "constant_current_recipe_run/source/neuristor/analysis/model_validation.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: oscillation_audit.py",
+      "path": "constant_current_recipe_run/source/neuristor/analysis/oscillation_audit.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: frequency_sensitivity.py",
+      "path": "constant_current_recipe_run/source/neuristor/analysis/frequency_sensitivity.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: trend_validation.py",
+      "path": "constant_current_recipe_run/source/neuristor/analysis/trend_validation.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: lab_replay.py",
+      "path": "constant_current_recipe_run/source/neuristor/analysis/lab_replay.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: boundary_search.py",
+      "path": "constant_current_recipe_run/source/neuristor/analysis/boundary_search.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: experimental_waveforms.py",
+      "path": "constant_current_recipe_run/source/neuristor/analysis/experimental_waveforms.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: __init__.py",
+      "path": "constant_current_recipe_run/source/neuristor/legacy/__init__.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: plots.py",
+      "path": "constant_current_recipe_run/source/neuristor/legacy/plots.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: sample_library.py",
+      "path": "constant_current_recipe_run/source/neuristor/legacy/sample_library.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: boundary_maps.py",
+      "path": "constant_current_recipe_run/source/neuristor/plotting/boundary_maps.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: __init__.py",
+      "path": "constant_current_recipe_run/source/neuristor/plotting/__init__.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: loss_comparison.py",
+      "path": "constant_current_recipe_run/source/neuristor/plotting/loss_comparison.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: visualization.py",
+      "path": "constant_current_recipe_run/source/neuristor/plotting/visualization.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: replay_plots.py",
+      "path": "constant_current_recipe_run/source/neuristor/plotting/replay_plots.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: optimizer_diagnostics.py",
+      "path": "constant_current_recipe_run/source/neuristor/plotting/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: map_animations.py",
+      "path": "constant_current_recipe_run/source/neuristor/plotting/map_animations.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: frequency_sensitivity.py",
+      "path": "constant_current_recipe_run/source/neuristor/plotting/frequency_sensitivity.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: trend_validation.py",
+      "path": "constant_current_recipe_run/source/neuristor/plotting/trend_validation.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: optimizer_review.py",
+      "path": "constant_current_recipe_run/source/neuristor/orchestration/optimizer_review.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: artifact_catalog.py",
+      "path": "constant_current_recipe_run/source/neuristor/orchestration/artifact_catalog.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: __init__.py",
+      "path": "constant_current_recipe_run/source/neuristor/orchestration/__init__.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: loss_comparison.py",
+      "path": "constant_current_recipe_run/source/neuristor/orchestration/loss_comparison.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: map_viewers.py",
+      "path": "constant_current_recipe_run/source/neuristor/orchestration/map_viewers.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: boundary_workflows.py",
+      "path": "constant_current_recipe_run/source/neuristor/orchestration/boundary_workflows.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: loss_scopes.py",
+      "path": "constant_current_recipe_run/source/neuristor/orchestration/loss_scopes.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: sample_study.py",
+      "path": "constant_current_recipe_run/source/neuristor/orchestration/sample_study.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: map_workflows.py",
+      "path": "constant_current_recipe_run/source/neuristor/orchestration/map_workflows.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: trend_validation.py",
+      "path": "constant_current_recipe_run/source/neuristor/orchestration/trend_validation.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: optimizer_audit.py",
+      "path": "constant_current_recipe_run/source/neuristor/orchestration/optimizer_audit.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: presentation_server.py",
+      "path": "constant_current_recipe_run/source/neuristor/interfaces/presentation_server.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: playground.py",
+      "path": "constant_current_recipe_run/source/neuristor/interfaces/playground.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: __init__.py",
+      "path": "constant_current_recipe_run/source/neuristor/interfaces/__init__.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: dashboard.py",
+      "path": "constant_current_recipe_run/source/neuristor/interfaces/dashboard.py"
+    },
+    {
+      "label": "Existing CLI workflow replay: run_manager.py",
+      "path": "constant_current_recipe_run/source/neuristor/interfaces/run_manager.py"
+    },
+    {
+      "label": "Exact fixed-parameter constant-current control",
+      "media_type": "application/json",
+      "path": "physics_parameters.json"
+    },
+    {
+      "label": "Original static R-T preset",
+      "path": "inputs/resistance_preset.json"
+    },
+    {
+      "label": "Portable constant-current recipe",
+      "media_type": "text/plain",
+      "path": "reference_recipe.toml"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_measured_current_350_0.025.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_measured_current_350_0.0125.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_measured_current_350_0.00625.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_constant_current_350_0.025.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_constant_current_350_0.0125.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_constant_current_350_0.00625.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_measured_current_400_0.025.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_measured_current_400_0.0125.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_measured_current_400_0.00625.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_constant_current_400_0.025.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_constant_current_400_0.0125.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_constant_current_400_0.00625.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_measured_current_450_0.025.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_measured_current_450_0.0125.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_measured_current_450_0.00625.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_constant_current_450_0.025.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_constant_current_450_0.0125.npz"
+    },
+    {
+      "label": "Full native replay samples",
+      "path": "replays/waveform_constant_current_450_0.00625.npz"
+    },
+    {
+      "label": "Per-case cycle/amplitude and correlation summaries",
+      "path": "cycle_summary.csv"
+    },
+    {
+      "label": "Individual raw peak/trough amplitudes",
+      "path": "individual_cycles.csv"
+    },
+    {
+      "label": "Primary-peak threshold and smoothing sensitivity",
+      "path": "peak_detection_sensitivity.csv"
+    },
+    {
+      "label": "Synthetic checks distinguish alternation, drift and uniform pulses",
+      "media_type": "application/json",
+      "path": "analysis_self_checks.json"
+    },
+    {
+      "label": "Documented archived waveform and amplitude sequence",
+      "path": "figures/archived_alternating_amplitudes.png"
+    },
+    {
+      "label": "Numerical limitation in the long constant-current control",
+      "path": "figures/timestep_and_horizon_check.png"
+    },
+    {
+      "label": "Evidence and limits of the recovered phenomenon",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Finding, parameters, evidence and numerical limitations",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    },
+    {
+      "label": "Standalone illustrated finding and interactive replays",
+      "media_type": "text/html",
+      "path": "index.html"
+    }
+  ],
+  "command": "Saved-data documentation: document_finding.py",
+  "created_at": "2026-10-25T08:24:39.250939+00:00",
+  "id": "20261025_082439_documented-alternating-amplitude-historical-simu_1072ef",
+  "kind": "analysis",
+  "model": "current",
+  "name": "Documented alternating-amplitude historical simulation",
+  "provenance": {
+    "branch": "main",
+    "commit": "12be9a9a729e03b164464fad0daab7c1b9d4f4c4",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "archived_high_cycle_vpp_mV": 352.97834457521617,
+    "archived_lag1": -0.9993909983746767,
+    "archived_lag2": 0.9992418040411731,
+    "archived_low_cycle_vpp_mV": 238.91585616212924,
+    "archived_primary_cycles": 8,
+    "bifurcation_established": false,
+    "calibration_adopted": false,
+    "constant_control_current_uA": 303.3911472089279,
+    "exact_archived_replay_max_difference_mV": 1.5234036254696548e-11,
+    "measured_alternation_flag": false,
+    "native_replay_integrations": 18,
+    "parent_bundle": "20260907_125315_physics-anchored-specimen-waveform-inference_717797",
+    "repository_tests_passed": 200,
+    "short_window_alternation_at_all_three_timesteps": true,
+    "source_label_mV": 400,
+    "stable_long_time_period_two_established": false
+  },
+  "updated_at": "2026-10-25T08:24:40.915113+00:00"
+}

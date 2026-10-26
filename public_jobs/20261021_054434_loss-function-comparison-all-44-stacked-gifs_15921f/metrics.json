@@ -1,0 +1,9 @@
+{
+  "frames": 96,
+  "gif_count": 44,
+  "max_saved_voltage_error_mV": 5.684341886080802e-14,
+  "records_per_objective": {
+    "frequency_amplitude": 22,
+    "frequency_only": 22
+  }
+}

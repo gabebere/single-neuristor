@@ -1,0 +1,13 @@
+{
+  "defined_disagreement_over_half": 205,
+  "dt_ns": [
+    0.00625,
+    0.0125,
+    0.025
+  ],
+  "eligible_finest_candidates": 0,
+  "frequency_stencil_plateaus": 327,
+  "frequency_stencils": 792,
+  "frequency_stencils_defined": 644,
+  "method_candidates": 6
+}

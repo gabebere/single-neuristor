@@ -1,0 +1,17 @@
+{
+  "calibration_adopted": false,
+  "gifs": 44,
+  "integration_timesteps_ns": [
+    0.025,
+    0.0125,
+    0.00625
+  ],
+  "native_integrations": 66,
+  "original_replay_max_error_mV": 1.5234036254696548e-11,
+  "period_doubling_bifurcation_established": false,
+  "source_currents": 22,
+  "tau_e_main_max_ns": 11.984629409660224,
+  "tau_e_main_min_ns": 0.13336512717000126,
+  "tau_metal_ns": 0.12451037684774986,
+  "tau_th_ns": 11.908706376291702
+}

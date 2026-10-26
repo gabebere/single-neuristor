@@ -1,0 +1,26 @@
+{
+  "frequency_amplitude": {
+    "candidate": "diagnostic_1",
+    "hashes": {
+      "parameters.csv": "96d8c768cda0b80d34575219fe9fbb7c1bf19abdb390ba717b93b7805a225dcd",
+      "resolved_config.json": "85de7e53ec166db43fe08bfb5e542da13d3d445239f5f7decadd4c4e03276cb8",
+      "run.json": "54e612186f04eb6e8b6bbc9908af3e6159d072711c7126d221e27b2289239efb",
+      "search_result.json": "43d64fc98c72d84743886033a3245d81c0a810684472c37244d5ca7f7bb3f995",
+      "verification.csv": "726e4b0d4a6d0d4fc481516b5af5e39bdc98ad7b8e7c4a51cc677acf22b8013a",
+      "verification_traces.csv": "f8c7551d0a9c6664f5f2c71a15e840c7e245e2ecd710f785aa9a3d127a9cf5dc"
+    },
+    "source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20261020_165107_controlled-frequency-amplitude-specimen-fit_5ad999"
+  },
+  "frequency_only": {
+    "candidate": "diagnostic_1",
+    "hashes": {
+      "parameters.csv": "6e7b31e6b4a4138675a7e901263a10b93ee8249f4e24326f2114ed9062f95197",
+      "resolved_config.json": "05fdb58384f933bcd89a0b039ac40b0c8b966d3bcd4414a70c4e211784c9cdc7",
+      "run.json": "7302b8ce1e212aedefdf79723a4945b5d4874cfba21891343404e1852a20448e",
+      "search_result.json": "b98129cff2f65733adefa581491b0f99cd76d2aa0692f872b51dd1e71bc346e7",
+      "verification.csv": "76579ddbc9b567b5946a8c3e81d68831fd3340fdf65289762d72ee5069dc0085",
+      "verification_traces.csv": "7fdef7edde3a3e786ead042c59909f658b5117d902395c38359c012ecd733783"
+    },
+    "source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20261020_155947_controlled-frequency-only-specimen-fit_543408"
+  }
+}

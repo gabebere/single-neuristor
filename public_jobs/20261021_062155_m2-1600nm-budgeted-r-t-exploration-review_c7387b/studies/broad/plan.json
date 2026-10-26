@@ -1,0 +1,21 @@
+{
+  "bootstrap_samples": 0,
+  "current_uA": 500.0,
+  "finest_possible_gif_dt_ns": 0.0015625,
+  "gif_integration_steps_upper_bound": 145152000,
+  "grid_points": 216,
+  "input_rows": 374,
+  "interpretation": "Conditional constant-current exploration, not a fitted laboratory circuit",
+  "map_dt_ns": [
+    0.05,
+    0.025,
+    0.0125
+  ],
+  "map_integration_steps_upper_bound": 18144000,
+  "maximum_frequency_MHz": 110.0,
+  "measured_temperature_range_K": [
+    289.98,
+    370.1795
+  ],
+  "resistance_data": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/data/experimental/m2_8.9_1stL_1600nm_A_RT.tsv"
+}

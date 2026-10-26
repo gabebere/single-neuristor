@@ -1,0 +1,310 @@
+[
+  {
+    "current_uA": 37.79944238139679,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00037.799_uA.gif",
+    "png": "dt_0.025ns/current_00037.799_uA.png",
+    "source_label_mV": 50
+  },
+  {
+    "current_uA": 76.17083384633712,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00076.171_uA.gif",
+    "png": "dt_0.025ns/current_00076.171_uA.png",
+    "source_label_mV": 100
+  },
+  {
+    "current_uA": 114.17150902555797,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00114.172_uA.gif",
+    "png": "dt_0.025ns/current_00114.172_uA.png",
+    "source_label_mV": 150
+  },
+  {
+    "current_uA": 152.35217904164247,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00152.352_uA.gif",
+    "png": "dt_0.025ns/current_00152.352_uA.png",
+    "source_label_mV": 200
+  },
+  {
+    "current_uA": 189.60094286792295,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00189.601_uA.gif",
+    "png": "dt_0.025ns/current_00189.601_uA.png",
+    "source_label_mV": 250
+  },
+  {
+    "current_uA": 228.7136509323431,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00228.714_uA.gif",
+    "png": "dt_0.025ns/current_00228.714_uA.png",
+    "source_label_mV": 300
+  },
+  {
+    "current_uA": 267.07439601247086,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00267.074_uA.gif",
+    "png": "dt_0.025ns/current_00267.074_uA.png",
+    "source_label_mV": 350
+  },
+  {
+    "current_uA": 303.3911472089279,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00303.391_uA.gif",
+    "png": "dt_0.025ns/current_00303.391_uA.png",
+    "source_label_mV": 400
+  },
+  {
+    "current_uA": 341.9425303334189,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00341.943_uA.gif",
+    "png": "dt_0.025ns/current_00341.943_uA.png",
+    "source_label_mV": 450
+  },
+  {
+    "current_uA": 381.06588239966646,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00381.066_uA.gif",
+    "png": "dt_0.025ns/current_00381.066_uA.png",
+    "source_label_mV": 500
+  },
+  {
+    "current_uA": 419.6173163611812,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00419.617_uA.gif",
+    "png": "dt_0.025ns/current_00419.617_uA.png",
+    "source_label_mV": 550
+  },
+  {
+    "current_uA": 458.3699322834958,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00458.370_uA.gif",
+    "png": "dt_0.025ns/current_00458.370_uA.png",
+    "source_label_mV": 600
+  },
+  {
+    "current_uA": 495.4173600492479,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00495.417_uA.gif",
+    "png": "dt_0.025ns/current_00495.417_uA.png",
+    "source_label_mV": 650
+  },
+  {
+    "current_uA": 533.4180352284689,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00533.418_uA.gif",
+    "png": "dt_0.025ns/current_00533.418_uA.png",
+    "source_label_mV": 700
+  },
+  {
+    "current_uA": 570.4337430744487,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00570.434_uA.gif",
+    "png": "dt_0.025ns/current_00570.434_uA.png",
+    "source_label_mV": 750
+  },
+  {
+    "current_uA": 606.6551780288738,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00606.655_uA.gif",
+    "png": "dt_0.025ns/current_00606.655_uA.png",
+    "source_label_mV": 800
+  },
+  {
+    "current_uA": 646.2233016263873,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00646.223_uA.gif",
+    "png": "dt_0.025ns/current_00646.223_uA.png",
+    "source_label_mV": 850
+  },
+  {
+    "current_uA": 682.8259268820619,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00682.826_uA.gif",
+    "png": "dt_0.025ns/current_00682.826_uA.png",
+    "source_label_mV": 900
+  },
+  {
+    "current_uA": 722.372921341621,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00722.373_uA.gif",
+    "png": "dt_0.025ns/current_00722.373_uA.png",
+    "source_label_mV": 950
+  },
+  {
+    "current_uA": 759.2191989197131,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00759.219_uA.gif",
+    "png": "dt_0.025ns/current_00759.219_uA.png",
+    "source_label_mV": 1000
+  },
+  {
+    "current_uA": 834.7865599618726,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00834.787_uA.gif",
+    "png": "dt_0.025ns/current_00834.787_uA.png",
+    "source_label_mV": 1100
+  },
+  {
+    "current_uA": 908.6058899457872,
+    "dt_ns": 0.025,
+    "gif": "dt_0.025ns/current_00908.606_uA.gif",
+    "png": "dt_0.025ns/current_00908.606_uA.png",
+    "source_label_mV": 1200
+  },
+  {
+    "current_uA": 37.79944238139679,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00037.799_uA.gif",
+    "png": "dt_0.00625ns/current_00037.799_uA.png",
+    "source_label_mV": 50
+  },
+  {
+    "current_uA": 76.17083384633712,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00076.171_uA.gif",
+    "png": "dt_0.00625ns/current_00076.171_uA.png",
+    "source_label_mV": 100
+  },
+  {
+    "current_uA": 114.17150902555797,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00114.172_uA.gif",
+    "png": "dt_0.00625ns/current_00114.172_uA.png",
+    "source_label_mV": 150
+  },
+  {
+    "current_uA": 152.35217904164247,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00152.352_uA.gif",
+    "png": "dt_0.00625ns/current_00152.352_uA.png",
+    "source_label_mV": 200
+  },
+  {
+    "current_uA": 189.60094286792295,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00189.601_uA.gif",
+    "png": "dt_0.00625ns/current_00189.601_uA.png",
+    "source_label_mV": 250
+  },
+  {
+    "current_uA": 228.7136509323431,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00228.714_uA.gif",
+    "png": "dt_0.00625ns/current_00228.714_uA.png",
+    "source_label_mV": 300
+  },
+  {
+    "current_uA": 267.07439601247086,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00267.074_uA.gif",
+    "png": "dt_0.00625ns/current_00267.074_uA.png",
+    "source_label_mV": 350
+  },
+  {
+    "current_uA": 303.3911472089279,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00303.391_uA.gif",
+    "png": "dt_0.00625ns/current_00303.391_uA.png",
+    "source_label_mV": 400
+  },
+  {
+    "current_uA": 341.9425303334189,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00341.943_uA.gif",
+    "png": "dt_0.00625ns/current_00341.943_uA.png",
+    "source_label_mV": 450
+  },
+  {
+    "current_uA": 381.06588239966646,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00381.066_uA.gif",
+    "png": "dt_0.00625ns/current_00381.066_uA.png",
+    "source_label_mV": 500
+  },
+  {
+    "current_uA": 419.6173163611812,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00419.617_uA.gif",
+    "png": "dt_0.00625ns/current_00419.617_uA.png",
+    "source_label_mV": 550
+  },
+  {
+    "current_uA": 458.3699322834958,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00458.370_uA.gif",
+    "png": "dt_0.00625ns/current_00458.370_uA.png",
+    "source_label_mV": 600
+  },
+  {
+    "current_uA": 495.4173600492479,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00495.417_uA.gif",
+    "png": "dt_0.00625ns/current_00495.417_uA.png",
+    "source_label_mV": 650
+  },
+  {
+    "current_uA": 533.4180352284689,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00533.418_uA.gif",
+    "png": "dt_0.00625ns/current_00533.418_uA.png",
+    "source_label_mV": 700
+  },
+  {
+    "current_uA": 570.4337430744487,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00570.434_uA.gif",
+    "png": "dt_0.00625ns/current_00570.434_uA.png",
+    "source_label_mV": 750
+  },
+  {
+    "current_uA": 606.6551780288738,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00606.655_uA.gif",
+    "png": "dt_0.00625ns/current_00606.655_uA.png",
+    "source_label_mV": 800
+  },
+  {
+    "current_uA": 646.2233016263873,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00646.223_uA.gif",
+    "png": "dt_0.00625ns/current_00646.223_uA.png",
+    "source_label_mV": 850
+  },
+  {
+    "current_uA": 682.8259268820619,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00682.826_uA.gif",
+    "png": "dt_0.00625ns/current_00682.826_uA.png",
+    "source_label_mV": 900
+  },
+  {
+    "current_uA": 722.372921341621,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00722.373_uA.gif",
+    "png": "dt_0.00625ns/current_00722.373_uA.png",
+    "source_label_mV": 950
+  },
+  {
+    "current_uA": 759.2191989197131,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00759.219_uA.gif",
+    "png": "dt_0.00625ns/current_00759.219_uA.png",
+    "source_label_mV": 1000
+  },
+  {
+    "current_uA": 834.7865599618726,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00834.787_uA.gif",
+    "png": "dt_0.00625ns/current_00834.787_uA.png",
+    "source_label_mV": 1100
+  },
+  {
+    "current_uA": 908.6058899457872,
+    "dt_ns": 0.00625,
+    "gif": "dt_0.00625ns/current_00908.606_uA.gif",
+    "png": "dt_0.00625ns/current_00908.606_uA.png",
+    "source_label_mV": 1200
+  }
+]

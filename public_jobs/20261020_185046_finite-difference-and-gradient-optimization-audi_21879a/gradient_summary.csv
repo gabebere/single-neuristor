@@ -1,0 +1,5 @@
+step,dt_ns,objective_requests,scientific_requests,infeasible_requests,starting_score,best_score,eligible,invalid_count,scientific_start_defined,optimizer_success,termination,center_name,start_kind
+0.005,0.025,25,0,25,1001000.0206803462,1001000.0205003023,False,1,False,False,ABNORMAL: ,frequency_only,infeasible_parent_center
+0.02,0.025,25,0,25,1001000.0206803462,1001000.0206803462,False,1,False,False,ABNORMAL: ,frequency_only,infeasible_parent_center
+0.005,0.025,25,0,25,1002258.0153214826,1002258.0153214826,False,2,False,False,ABNORMAL: ,frequency_amplitude,infeasible_parent_center
+0.02,0.025,25,0,25,1002258.0153214826,1001386.3507024414,False,1,False,False,ABNORMAL: ,frequency_amplitude,infeasible_parent_center

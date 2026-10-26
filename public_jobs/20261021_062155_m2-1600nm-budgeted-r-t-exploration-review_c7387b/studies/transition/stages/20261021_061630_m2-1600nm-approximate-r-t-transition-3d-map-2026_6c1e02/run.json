@@ -1,0 +1,424 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Media generation progress",
+      "path": "status.json"
+    },
+    {
+      "label": "Original map grid.csv",
+      "path": "grid.csv"
+    },
+    {
+      "label": "Original map verification.csv",
+      "path": "verification.csv"
+    },
+    {
+      "label": "Original map physics_parameters.json",
+      "path": "physics_parameters.json"
+    },
+    {
+      "label": "Original map axis_values.json",
+      "path": "axis_values.json"
+    },
+    {
+      "label": "Original numerical map provenance",
+      "media_type": "application/json",
+      "path": "source_provenance.json"
+    },
+    {
+      "label": "Frozen source __init__.py",
+      "path": "source/neuristor/__init__.py"
+    },
+    {
+      "label": "Frozen source analysis/__init__.py",
+      "path": "source/neuristor/analysis/__init__.py"
+    },
+    {
+      "label": "Frozen source analysis/boundary_search.py",
+      "path": "source/neuristor/analysis/boundary_search.py"
+    },
+    {
+      "label": "Frozen source analysis/distribution.py",
+      "path": "source/neuristor/analysis/distribution.py"
+    },
+    {
+      "label": "Frozen source analysis/experimental_waveforms.py",
+      "path": "source/neuristor/analysis/experimental_waveforms.py"
+    },
+    {
+      "label": "Frozen source analysis/extrema.py",
+      "path": "source/neuristor/analysis/extrema.py"
+    },
+    {
+      "label": "Frozen source analysis/frequency_sensitivity.py",
+      "path": "source/neuristor/analysis/frequency_sensitivity.py"
+    },
+    {
+      "label": "Frozen source analysis/lab_estimates.py",
+      "path": "source/neuristor/analysis/lab_estimates.py"
+    },
+    {
+      "label": "Frozen source analysis/lab_replay.py",
+      "path": "source/neuristor/analysis/lab_replay.py"
+    },
+    {
+      "label": "Frozen source analysis/loss_comparison.py",
+      "path": "source/neuristor/analysis/loss_comparison.py"
+    },
+    {
+      "label": "Frozen source analysis/metrics.py",
+      "path": "source/neuristor/analysis/metrics.py"
+    },
+    {
+      "label": "Frozen source analysis/model_validation.py",
+      "path": "source/neuristor/analysis/model_validation.py"
+    },
+    {
+      "label": "Frozen source analysis/optimizer_diagnostics.py",
+      "path": "source/neuristor/analysis/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Frozen source analysis/oscillation_audit.py",
+      "path": "source/neuristor/analysis/oscillation_audit.py"
+    },
+    {
+      "label": "Frozen source analysis/physical_maps.py",
+      "path": "source/neuristor/analysis/physical_maps.py"
+    },
+    {
+      "label": "Frozen source analysis/trend_validation.py",
+      "path": "source/neuristor/analysis/trend_validation.py"
+    },
+    {
+      "label": "Frozen source artifact_catalog.py",
+      "path": "source/neuristor/artifact_catalog.py"
+    },
+    {
+      "label": "Frozen source cli.py",
+      "path": "source/neuristor/cli.py"
+    },
+    {
+      "label": "Frozen source config.py",
+      "path": "source/neuristor/config.py"
+    },
+    {
+      "label": "Frozen source current_domain_search.py",
+      "path": "source/neuristor/current_domain_search.py"
+    },
+    {
+      "label": "Frozen source current_drive_sim.py",
+      "path": "source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Frozen source dashboard.py",
+      "path": "source/neuristor/dashboard.py"
+    },
+    {
+      "label": "Frozen source experimental_waveforms.py",
+      "path": "source/neuristor/experimental_waveforms.py"
+    },
+    {
+      "label": "Frozen source extrema.py",
+      "path": "source/neuristor/extrema.py"
+    },
+    {
+      "label": "Frozen source fitting/__init__.py",
+      "path": "source/neuristor/fitting/__init__.py"
+    },
+    {
+      "label": "Frozen source fitting/current_domain_search.py",
+      "path": "source/neuristor/fitting/current_domain_search.py"
+    },
+    {
+      "label": "Frozen source fitting/joint_inference.py",
+      "path": "source/neuristor/fitting/joint_inference.py"
+    },
+    {
+      "label": "Frozen source fitting/optimizer_audit.py",
+      "path": "source/neuristor/fitting/optimizer_audit.py"
+    },
+    {
+      "label": "Frozen source fitting/parameter_inference.py",
+      "path": "source/neuristor/fitting/parameter_inference.py"
+    },
+    {
+      "label": "Frozen source fitting/resistance_custom_analysis.py",
+      "path": "source/neuristor/fitting/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Frozen source fitting/steady_inference.py",
+      "path": "source/neuristor/fitting/steady_inference.py"
+    },
+    {
+      "label": "Frozen source interfaces/__init__.py",
+      "path": "source/neuristor/interfaces/__init__.py"
+    },
+    {
+      "label": "Frozen source interfaces/dashboard.py",
+      "path": "source/neuristor/interfaces/dashboard.py"
+    },
+    {
+      "label": "Frozen source interfaces/playground.py",
+      "path": "source/neuristor/interfaces/playground.py"
+    },
+    {
+      "label": "Frozen source interfaces/run_manager.py",
+      "path": "source/neuristor/interfaces/run_manager.py"
+    },
+    {
+      "label": "Frozen source joint_inference.py",
+      "path": "source/neuristor/joint_inference.py"
+    },
+    {
+      "label": "Frozen source lab_estimates.py",
+      "path": "source/neuristor/lab_estimates.py"
+    },
+    {
+      "label": "Frozen source lab_replay.py",
+      "path": "source/neuristor/lab_replay.py"
+    },
+    {
+      "label": "Frozen source legacy/__init__.py",
+      "path": "source/neuristor/legacy/__init__.py"
+    },
+    {
+      "label": "Frozen source legacy/plots.py",
+      "path": "source/neuristor/legacy/plots.py"
+    },
+    {
+      "label": "Frozen source legacy/sample_library.py",
+      "path": "source/neuristor/legacy/sample_library.py"
+    },
+    {
+      "label": "Frozen source map_animations.py",
+      "path": "source/neuristor/map_animations.py"
+    },
+    {
+      "label": "Frozen source map_workflows.py",
+      "path": "source/neuristor/map_workflows.py"
+    },
+    {
+      "label": "Frozen source metrics.py",
+      "path": "source/neuristor/metrics.py"
+    },
+    {
+      "label": "Frozen source model.py",
+      "path": "source/neuristor/model.py"
+    },
+    {
+      "label": "Frozen source model_validation.py",
+      "path": "source/neuristor/model_validation.py"
+    },
+    {
+      "label": "Frozen source orchestration/__init__.py",
+      "path": "source/neuristor/orchestration/__init__.py"
+    },
+    {
+      "label": "Frozen source orchestration/artifact_catalog.py",
+      "path": "source/neuristor/orchestration/artifact_catalog.py"
+    },
+    {
+      "label": "Frozen source orchestration/boundary_workflows.py",
+      "path": "source/neuristor/orchestration/boundary_workflows.py"
+    },
+    {
+      "label": "Frozen source orchestration/loss_comparison.py",
+      "path": "source/neuristor/orchestration/loss_comparison.py"
+    },
+    {
+      "label": "Frozen source orchestration/loss_scopes.py",
+      "path": "source/neuristor/orchestration/loss_scopes.py"
+    },
+    {
+      "label": "Frozen source orchestration/map_viewers.py",
+      "path": "source/neuristor/orchestration/map_viewers.py"
+    },
+    {
+      "label": "Frozen source orchestration/map_workflows.py",
+      "path": "source/neuristor/orchestration/map_workflows.py"
+    },
+    {
+      "label": "Frozen source orchestration/optimizer_audit.py",
+      "path": "source/neuristor/orchestration/optimizer_audit.py"
+    },
+    {
+      "label": "Frozen source orchestration/optimizer_review.py",
+      "path": "source/neuristor/orchestration/optimizer_review.py"
+    },
+    {
+      "label": "Frozen source orchestration/sample_study.py",
+      "path": "source/neuristor/orchestration/sample_study.py"
+    },
+    {
+      "label": "Frozen source orchestration/trend_validation.py",
+      "path": "source/neuristor/orchestration/trend_validation.py"
+    },
+    {
+      "label": "Frozen source oscillation_audit.py",
+      "path": "source/neuristor/oscillation_audit.py"
+    },
+    {
+      "label": "Frozen source parameter_inference.py",
+      "path": "source/neuristor/parameter_inference.py"
+    },
+    {
+      "label": "Frozen source physical_maps.py",
+      "path": "source/neuristor/physical_maps.py"
+    },
+    {
+      "label": "Frozen source playground.py",
+      "path": "source/neuristor/playground.py"
+    },
+    {
+      "label": "Frozen source plots.py",
+      "path": "source/neuristor/plots.py"
+    },
+    {
+      "label": "Frozen source plotting/__init__.py",
+      "path": "source/neuristor/plotting/__init__.py"
+    },
+    {
+      "label": "Frozen source plotting/boundary_maps.py",
+      "path": "source/neuristor/plotting/boundary_maps.py"
+    },
+    {
+      "label": "Frozen source plotting/frequency_sensitivity.py",
+      "path": "source/neuristor/plotting/frequency_sensitivity.py"
+    },
+    {
+      "label": "Frozen source plotting/loss_comparison.py",
+      "path": "source/neuristor/plotting/loss_comparison.py"
+    },
+    {
+      "label": "Frozen source plotting/map_animations.py",
+      "path": "source/neuristor/plotting/map_animations.py"
+    },
+    {
+      "label": "Frozen source plotting/optimizer_diagnostics.py",
+      "path": "source/neuristor/plotting/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Frozen source plotting/replay_plots.py",
+      "path": "source/neuristor/plotting/replay_plots.py"
+    },
+    {
+      "label": "Frozen source plotting/trend_validation.py",
+      "path": "source/neuristor/plotting/trend_validation.py"
+    },
+    {
+      "label": "Frozen source plotting/visualization.py",
+      "path": "source/neuristor/plotting/visualization.py"
+    },
+    {
+      "label": "Frozen source provenance.py",
+      "path": "source/neuristor/provenance.py"
+    },
+    {
+      "label": "Frozen source replay_plots.py",
+      "path": "source/neuristor/replay_plots.py"
+    },
+    {
+      "label": "Frozen source resistance_custom_analysis.py",
+      "path": "source/neuristor/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Frozen source runs.py",
+      "path": "source/neuristor/runs.py"
+    },
+    {
+      "label": "Frozen source sample_library.py",
+      "path": "source/neuristor/sample_library.py"
+    },
+    {
+      "label": "Frozen source sample_study.py",
+      "path": "source/neuristor/sample_study.py"
+    },
+    {
+      "label": "Frozen source steady_inference.py",
+      "path": "source/neuristor/steady_inference.py"
+    },
+    {
+      "label": "Frozen source validation.py",
+      "path": "source/neuristor/validation.py"
+    },
+    {
+      "label": "Frozen source visualization.py",
+      "path": "source/neuristor/visualization.py"
+    },
+    {
+      "label": "Frozen source workflows.py",
+      "path": "source/neuristor/workflows.py"
+    },
+    {
+      "label": "Frozen package SHA-256 hashes",
+      "media_type": "application/json",
+      "path": "source_hashes.json"
+    },
+    {
+      "label": "Model heating/cooling guides",
+      "path": "major_branches.csv"
+    },
+    {
+      "label": "Refinement and resolution checks",
+      "path": "animation_checks.csv"
+    },
+    {
+      "label": "Stable point IDs and local media links",
+      "media_type": "application/json",
+      "path": "gif_catalog.json"
+    },
+    {
+      "label": "Media generation progress",
+      "media_type": "application/json",
+      "path": "status.json"
+    },
+    {
+      "label": "Right-click map and synchronized GIFs",
+      "path": "parameter_maps.html"
+    },
+    {
+      "label": "Six parameter heatmaps",
+      "path": "heatmaps.png"
+    },
+    {
+      "label": "Coverage, runtime and refinement checks",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Portable sharing and numerical methods",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "neuristor study run --config experiments/studies/m2_1600nm_transition_20261021.toml",
+  "created_at": "2026-10-21T06:16:30.486835+00:00",
+  "id": "20261021_061630_m2-1600nm-approximate-r-t-transition-3d-map-2026_6c1e02",
+  "kind": "analysis",
+  "model": "current",
+  "name": "M2 1600nm approximate R-T transition 3D map 20261021 - point GIFs",
+  "provenance": {
+    "branch": "main",
+    "commit": "12be9a9a729e03b164464fad0daab7c1b9d4f4c4",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "local",
+  "summary": {
+    "coverage_complete": true,
+    "elapsed_s": 0.9387500419998105,
+    "gifs": 0,
+    "projected_all_points_s": 0.0,
+    "refinement_passes": 0,
+    "resimulated": true,
+    "retained_points": 0,
+    "visually_resolved": 0
+  },
+  "updated_at": "2026-10-21T06:16:31.580783+00:00"
+}

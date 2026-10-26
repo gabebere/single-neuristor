@@ -1,0 +1,13 @@
+anchor,protocol,scale,reference_case,scaled_case,both_verified_oscillatory,reference_classification,scaled_classification,reference_final_dt_ns,scaled_final_dt_ns,frequency_scaling_error,amplitude_scaling_error,within_tolerance
+A,fixed_dt,0.5,case_031,case_030,True,oscillatory,oscillatory,0.003125,0.003125,-0.0034433853359280286,0.008608212522584147,True
+A,fixed_dt,2.0,case_031,case_032,True,oscillatory,oscillatory,0.003125,0.003125,0.001730631514733627,0.008273825047353967,True
+A,scaled_dt,0.5,case_034,case_033,True,oscillatory,oscillatory,0.003125,0.0015625,0.0,0.008037323808642194,True
+A,scaled_dt,2.0,case_034,case_035,True,oscillatory,oscillatory,0.003125,0.00625,0.0,0.008706042498603406,True
+B,fixed_dt,0.5,case_067,case_066,True,oscillatory,oscillatory,0.003125,0.003125,-0.0012085078955849093,5.741483652044188e-05,True
+B,fixed_dt,2.0,case_067,case_068,True,oscillatory,oscillatory,0.003125,0.003125,0.0006310490824106285,-3.708405261282355e-05,True
+B,scaled_dt,0.5,case_070,case_069,True,oscillatory,oscillatory,0.003125,0.0015625,0.0,-9.66302449167955e-08,True
+B,scaled_dt,2.0,case_070,case_071,True,oscillatory,oscillatory,0.003125,0.00625,0.0,5.490354837434097e-10,True
+C,fixed_dt,0.5,case_103,case_102,True,oscillatory,oscillatory,0.0015625,0.0015625,-0.0008626842026838721,4.027802886330534e-05,True
+C,fixed_dt,2.0,case_103,case_104,True,oscillatory,oscillatory,0.0015625,0.003125,2.354862005082836e-05,0.0,True
+C,scaled_dt,0.5,case_106,case_105,True,oscillatory,oscillatory,0.003125,0.0015625,0.0,0.0,True
+C,scaled_dt,2.0,case_106,case_107,True,oscillatory,oscillatory,0.003125,0.00625,0.0,0.0,True

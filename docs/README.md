@@ -9,6 +9,7 @@
 | This consolidation, backup and remote status | [CONSOLIDATION_20261020.md](CONSOLIDATION_20261020.md) |
 | New-sample inputs and outputs | [SAMPLE_STUDY.md](SAMPLE_STUDY.md) |
 | Comparable slider heatmaps and historical viewer updates | [MAP_DISPLAY.md](MAP_DISPLAY.md) |
+| Recovered alternating-amplitude oscillations and numerical limits | [ALTERNATING_AMPLITUDES_20261025.md](ALTERNATING_AMPLITUDES_20261025.md) |
 | Model methodology source | [methodology/README.md](methodology/README.md) and `methodology/main.tex` |
 | Working project report and supplement | [final_project/README.md](final_project/README.md) |
 | Fitting-trial presentation | [final_project/presentation/README.md](final_project/presentation/README.md) |

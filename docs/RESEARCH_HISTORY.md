@@ -4,6 +4,31 @@ This is the preserved detailed research log, not the current task list. Start wi
 [the concise handoff](RESEARCH_HANDOFF.md). Dated statements below describe their
 own checkpoints; later entries and the current handoff supersede older claims.
 
+## All-input loss animations (21 October 2026)
+
+[44 stacked GIFs and method](LOSS_ANIMATIONS_20261021.md) cover all 22 inputs for
+each retained objective. The fixed saved vectors are replayed at 0.00625 ns to
+recover native R/T histories; complete saved voltage records must agree within
+0.000001 mV before rendering. Both measured channels keep their acquisition grid.
+No new optimization or calibration is performed. Later optimizer runs are excluded
+at Gabriel's request. Parent bundles stay immutable. Bundle: `15921f`.
+
+## Controlled frequency/amplitude comparison (20 October 2026)
+
+[Method, results and three examples per objective](LOSS_COMPARISON_20261020.md).
+The six fitted static values and T0 are fixed; only gamma, Se, C and Cth vary.
+Matched starts, seed, bounds and evaluation cap; 250 unique candidates each.
+Both scientific objectives and all 22 inputs are checked at three timesteps.
+Frequency-only: 10/11 passing targets and 1965.7% Vpp MAPE at 0.00625 ns.
+Combined: 8/11 and 903.0%, with classification changing under refinement.
+Neither is a converged all-current fit; full-replay temperature checks also fail.
+Measured current magnitudes replace filename labels on all presentation plots.
+Reviewed parents: `543408` and `5ad999`; comparison `26574a`. Earlier comparison
+`2feaaa` is retained but superseded for display (missing-cycle Vpp now uses gaps).
+The presentation now explains the loss-function progression and shows three
+current-ranked examples per fresh search. No new physical calibration is adopted.
+180 tests pass; recipes and saved-sample comparison command complete.
+
 ## Project files consolidated from Desktop (16 October 2026)
 
 Use [the consolidated Desktop guide](../archive/desktop_consolidation_20261016/index.html)
@@ -1035,3 +1060,134 @@ be selected by lexicographic run date alone; use the status interpretation above
 > the circuit boundary with a known resistor and simultaneous device-terminal
 > measurement before adding parameters or another broad fit. Preserve raw data
 > and completed bundles; keep thermal intervals conditional on channel meaning.
+
+## 20 October 2026 — optimizer sensitivity follow-up
+
+Completed three-timestep coordinate perturbations, two larger derivative-free
+searches (765 unique candidates each, four starts), and four short L-BFGS-B
+trials. No eligible all-target fit was found. Both expanded searches retain the
+old frequency-only diagnostic; combined selection reflects failed-target priority,
+not a smaller complete scientific loss. The finite-score gradient trials reached
+the four-step line-search limit. Their best sampled points modestly improve some
+frequency comparisons, with worse amplitude error and remaining timestep changes.
+Of 792 individual-frequency stencils, 644 were defined and 327 flat; none of the
+72 full-loss stencils was defined at the original centers. Discrete extraction
+and missing oscillations limit derivative interpretation.
+
+Detailed methods, tables, commands and immutable bundle IDs:
+[OPTIMIZER_AUDIT_20261020](OPTIMIZER_AUDIT_20261020.md). Software checks: 186 tests
+passed, validation passed, exact numerical recipes and saved-data review completed.
+No physical equation or feature-extraction algorithm changed; no specimen
+calibration was adopted.
+
+## 20 October 2026 — return to full-map interpretation
+
+Gabriel requested removal of the three optimizer follow-up slides. The prior
+19-slide presentation is restored; optimizer evidence remains immutable. The
+full 12,167-point/1,258-GIF exploration was analyzed from saved finer replays,
+without new physics or integration. Controlled neighbor comparisons distinguish
+C and Cth amplitude tendencies, while a 16-point constant-ratio ray supports
+inverse frequency scaling with nearly unchanged Vpp. Conditions remain
+500 µA, 298 K, fixed gamma=0.956269682. No calibration is adopted.
+[Methods, figures, evidence and limitations](PARAMETER_EXPLORATION_TRENDS_20261020.md).
+
+## 20–21 October 2026 — fresh controlled parameter-trend verification
+
+Completed 610 distinct integrations over 75 physical settings (108 logical
+comparison cases with repeated centers): 466 in initial pass `5beaf6`, then
+144 new integrations in checked-cache, longer-window follow-up `3599fb`.
+The original ideal-current physics, major-loop fit and float32 hysteresis remain
+unchanged. Three decreasing steps, optional extra halving, successive late-window
+and observation-horizon checks use the declared 2% feature rule. Temperatures
+must remain in the measured R(T) interval; no frequency ceiling removes cycles.
+
+All 12 final common-scale pairs pass. Co-scaled timestep gives identical sampled
+V/T/R histories; fixed-dt final frequency errors are <=0.3443%, while extracted
+Vpp changes are <=0.8706% across protocols because the measurement operator has
+a fixed physical-time width. An independent crossing estimator agrees with
+peak frequency within 0.0034%. Full pointwise fixed-dt waveform convergence is
+not established; unaligned path differences remain appreciable.
+
+At 500 µA/298 K, frequency decreases in all five usable adjacent comparisons
+for each of C, Cth and Se. C amplitude increases and Cth amplitude decreases are
+resolved in only two pairs each; three more changes per capacitance are too
+small to resolve. Se raises amplitude in all five usable pairs. Reducing Se at
+anchor A by 25% ends verified oscillation. Two anchor-C perturbations are
+calibration-censored. Gamma=0.70–0.95627 changes features modestly at the three
+fixed anchors. Lower-current and warmer-ambient sweeps supply no usable
+adjacent pair, so these directions are not generalized to those conditions.
+
+Longer windows resolve the old cycle-count limitation for slow centers; a coarse
+half-scale overshoot disappears under refinement. Neither limitation proves a
+physical boundary. Verified examples extend beyond old 20 pF/110 MHz display
+limits. No new specimen calibration or experimental fit is adopted. The
+19-slide presentation is unchanged.
+
+[Detailed methods/results](FRESH_PARAMETER_TRENDS_20261020.md). Reviewed immutable
+bundles: `20261020_205903_fresh-controlled-validation-of-parameter-explora_5beaf6`
+and `20261020_220155_extended-horizon-validation-of-parameter-explora_3599fb`.
+Full suite: 192 passed; exact recipes and published-parent reuse check completed.
+
+## 21 October 2026 — budgeted new-sample M2 exploration
+
+The supplied `m2_8.9_1stL_1600nm_A_RT` numerical file was preserved byte-for-byte
+under `data/experimental/` with an explicit `.tsv` extension. The existing
+end-to-end study workflow was reused at 500 µA, 298 K and inherited assumed
+gamma. Static log10 RMSE 0.08065244 failed the normal 0.05 gate; that stopped
+run remains preserved. Four recipes explicitly allow a 0.10 static error for
+diagnostic use while leaving temperature, persistence and timestep criteria intact.
+They cover 216+216+216+125 grid entries; none is retained. A separate 36-point
+pilot at 0.0015625 ns also found no eligible oscillator. Every sustained grid
+detection exceeded the measured temperature interval, so this result is not a
+new calibration or a proof of absent physical oscillations. The locally archived
+review `20261021_062155_m2-1600nm-budgeted-r-t-exploration-review_c7387b` preserves
+all studies and provides explicit exclusion-aware frequency/amplitude maps.
+See [full result and reproducibility notes](M2_RT_EXPLORATION_20261021.md).
+
+## 21 October 2026 — additional M2 search expansion
+
+With another 15-minute budget, the existing physical-maps command reused the
+same approximate static preset for an 8³ wider grid and an 11³ onset grid.
+These add 1,843 sampled entries (2,616 cumulative, including overlaps); 35 and
+373 sustained detections, respectively, all exceed the measured temperature
+domain. No point is retained, and no static/dynamic calibration is adopted.
+A separate 150 ns startup check of 12 nearby sustained settings at 0.00078125
+and 0.000390625 ns confirms early temperature exclusion in all 24 integrations
+(minimum observed maximum 372.67096 K). It does not establish full-grid or
+steady-state convergence. The new immutable local archive is
+`20261021_064103_m2-1600nm-expanded-r-t-exploration-review_226099`.
+196 tests and repository validation passed. [Expanded maps and recipes](M2_RT_EXPLORATION_20261021.md).
+
+## 25 October 2026 — recovery of different-amplitude cycles in one run
+
+A read-only saved-trace search recovered a clear alternating-amplitude example
+in the 7 September relaxed waveform fit, source label 400 mV. Eight primary
+cycles in 50–280 ns alternate near 238.92/352.98 mV Vpp, with lag-1/lag-2
+amplitude correlations −0.99939/+0.99924. Neighboring labels show related
+behavior. This is in the simulated, not measured, voltage column. The native
+0.025 ns replay matches saved voltages within 1.53e-11 mV; 0.0125 and 0.00625 ns
+retain the short-window pattern. A 303.391147 µA constant-current control
+extended to 2 µs is regularly alternating at the two coarser steps but irregular
+at 0.00625 ns. No stable period-two attractor, bifurcation or experimental
+period doubling is established. No physical law, tolerance or calibration changed.
+Evidence `20261025_082439_documented-alternating-amplitude-historical-simu_1072ef`
+preserves 18 replays, individual-cycle measurements, detection sensitivity,
+source/parameter provenance and the exact CLI control. 200 tests and validation
+pass. [Documented finding and figures](ALTERNATING_AMPLITUDES_20261025.md).
+
+## 25 October 2026 — frozen parameters, classic GIFs and final slide
+
+The recovered vector is preserved in
+`presets/alternating_amplitude_relaxed_20260907.json`. New immutable evidence
+`20261025_091004_fixed-alternating-amplitude-classic-gifs_4b9e8c` contains
+44 classic stacked GIFs for all 22 measured inputs at 0.025 and 0.00625 ns.
+66 native integrations cover three timesteps without refitting; original-step
+voltages agree with the archived fit within 1.53e-11 mV. Input current appears
+above simulated voltage and native R(T), without a measured-voltage overlay.
+The new final slide (22) gives tau_th=Cth/Se=11.9087 ns and the central
+tau_e=CR range 0.1334–11.9846 ns, with a 0.1245 ns metallic limit. Native
+cycles show shallow heating near 338 K and deep heating near 348 K, motivating
+a qualified electrothermal/hysteresis-memory explanation. The longer-run
+timestep limitation remains explicit. All original 21 slide texts are preserved.
+The loopback gallery button, 44 GIF frame counts and paths, exact recipe and
+compiled final slide are checked. 201 tests and repository validation pass.

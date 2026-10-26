@@ -1,0 +1,69 @@
+% Loss-function narrative; equations follow the active analysis/fitting modules.
+\begin{frame}{From Model Parameters to Frequency and Amplitude}
+\small
+\[
+\theta=(\gamma,S_e,C,C_{th}),\qquad
+V_i^{\mathrm{sim}}(t;\theta)=\mathcal S[I_i^{\mathrm{meas}}(t);\theta].
+\]
+\(\mathcal S\) solves the electrical, thermal, and hysteresis equations.
+The six R(T) parameters and \(T_0\) remain fixed; \(i\) labels an input-current record.
+\begin{block}{Measure complete voltage cycles in the 150--250 ns window}
+\[
+f_i(\theta)=\frac{1000}{\operatorname{median}_k P_{ik}\;[\mathrm{ns}]}\;\mathrm{MHz},
+\qquad A_i(\theta)=\operatorname{median}_k H_{ik},
+\]
+\[
+H_{ik}=\frac{V_{ik}^{\mathrm{peak}}+V_{i,k+1}^{\mathrm{peak}}}{2}
+-V_{ik}^{\mathrm{trough}}.
+\]
+\end{block}
+\footnotesize
+\textbf{Vpp means peak-to-peak voltage amplitude}: the full height from a trough to a peak, not half that height.
+For each complete cycle \(k\), \(P_{ik}\) is the time between consecutive peaks;
+\(H_{ik}\) uses their average height above the intervening trough.
+\par\vspace{0.14cm}
+Apply the same measurements to the experimental voltage to obtain
+\(f_i^{\mathrm{meas}}\) and \(A_i^{\mathrm{meas}}\). Compare them with the simulation to calculate the loss.
+\slidesource{Same acquisition-grid peak detection for measured and simulated traces. Missing complete cycles leave frequency undefined.}
+\end{frame}
+
+\begin{frame}{Loss Functions: Frequency Only and Frequency + Amplitude}
+\footnotesize
+\setlength{\abovedisplayskip}{4pt}
+\setlength{\belowdisplayskip}{4pt}
+For each of the 11 selected oscillatory records, define the relative errors:
+\[
+e_{f,i}(\theta)=\frac{f_i(\theta)-f_i^{\mathrm{meas}}}{f_i^{\mathrm{meas}}},
+\qquad
+e_{A,i}(\theta)=\frac{A_i(\theta)-A_i^{\mathrm{meas}}}{A_i^{\mathrm{meas}}}.
+\]
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.48\textwidth}
+\begin{block}{Fit 1: frequency only}
+\[
+L_f(\theta)=\frac1{11}\sum_{i=1}^{11}e_{f,i}(\theta)^2.
+\]
+\footnotesize Minimize the average squared relative frequency error. Check amplitude and mean voltage afterward.
+\end{block}
+\end{column}
+\begin{column}{.48\textwidth}
+\begin{block}{Fit 2: frequency and amplitude}
+\[
+L_{f,A}(\theta)=L_f(\theta)+\frac1{11}\sum_{i=1}^{11}e_{A,i}(\theta)^2.
+\]
+\footnotesize Add the average squared relative Vpp error. Equal percentage errors have equal weight.
+\end{block}
+\end{column}
+\end{columns}
+\footnotesize
+\par\vspace{0.08cm}
+A 10\% error contributes \(0.10^2=0.01\); an exact match contributes zero.
+The optimizer changes \(\theta\), reruns the simulator and seeks a smaller loss using one parameter set for all 11 records.
+\par\vspace{0.12cm}
+Same fixed parameters, bounds, starts and budget. Fit 11 inputs (228--606 \(\mu\)A);
+replay all 22 at three timesteps.
+\par\vspace{0.08cm}
+Separate checks: complete sustained cycles, \(f\leq110\) MHz, temperature range and proximity response.
+\slidesource{Paired frequency-only and frequency-plus-amplitude recipes, 20 October 2026. Search bounds are choices, not measured intervals.}
+\note{Both searches completed 250 unique candidates under a 256-evaluation cap, followed by all-input replay at 0.025, 0.0125 and 0.00625 ns. Frequency-only still requires detectable complete cycles. Full scientific loss is accepted only if all target checks pass; the finite rejection score used to direct unsuccessful searches is not an accepted objective value. Se ranges 0.3--30 microW/K, C 0.05--80 pF, Cth/Se 0.5--150 ns and gamma 0.6--0.98. The thermal-time coordinate does not introduce a fifth independent parameter. A bounded search returns a candidate, not a proven global minimum.}
+\end{frame}

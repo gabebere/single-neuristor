@@ -1,0 +1,78 @@
+% Generated from the reviewed comparison bundle; see the accompanying README.
+\newcommand{\losscomparisonroot}{../public_jobs/20261020_170231_controlled-frequency-and-amplitude-loss-comparis_26574a}
+\begin{frame}{New Results: Frequency and Amplitude Across the Inputs}
+\centering
+\includegraphics[height=0.43\textheight]{\losscomparisonroot/figures/features_vs_measured_current.png}
+\par\footnotesize
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Search} & \textbf{Passing targets} & \textbf{Frequency error} & \textbf{Vpp error}\\
+\midrule
+Frequency only & 10/11 & 14.5\% (10/11) & 1965.7\% \\
+Frequency + amplitude & 8/11 & 18.2\% (9/11) & 903.0\% \\
+\bottomrule
+\end{tabular}
+\par\vspace{0.12cm}\scriptsize Errors are mean absolute percentage errors. Frequency uses only records with a defined frequency (count shown); Vpp uses all 11 targets.
+\par\footnotesize Neither is an all-target fit; the combined candidate drops from 9 to 8 passing targets at the finest step.
+\par\vspace{0.08cm}\localhtmlbutton{loss-gifs}{Open all 44 GIFs: measured current, voltage comparison and R(T)}
+\slidesource{New runs: 543408 and 5ad999. Finest replay: 0.00625 ns. Missing frequencies are gaps, not zero-frequency predictions.}
+\end{frame}
+
+\begin{frame}{Parameter Values Selected by Each Search}
+\centering
+\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Parameter} & \textbf{Frequency only} & \textbf{Frequency + amplitude}\\
+\midrule
+\(\gamma\) & 0.7075 & 0.6308 \\
+\(S_e\) (\(\mu\)W/K) & 5.794 & 4.096 \\
+\(C\) (pF) & 5.361 & 6.254 \\
+\(C_{th}\) (pJ/K) & 0.02800 & 0.03007 \\
+\bottomrule
+\end{tabular}
+\par\vspace{0.18cm}\footnotesize The six R(T) values and \(T_0=314.4\) K were fixed. These are search candidates, not established specimen values.
+\slidesource{Shared seed, starting points and evaluation cap; 250 and 250 unique evaluations. Comparison bundle 26574a.}
+\end{frame}
+
+\begin{frame}{Frequency only: Three Representative Measured Inputs}
+\centering
+\includegraphics[height=0.43\textheight]{\losscomparisonroot/figures/frequency_only_representatives.png}
+\par\footnotesize
+\renewcommand{\arraystretch}{1.12}
+\setlength{\tabcolsep}{8pt}
+\begin{tabular}{@{}rrrrrl@{}}
+\toprule
+\textbf{Input (\(\mu\)A)} & \multicolumn{2}{c}{\textbf{Frequency (MHz)}} & \multicolumn{2}{c}{\textbf{Vpp (mV)}} & \textbf{Cycle/frequency check}\\
+ & Measured & Simulated & Measured & Simulated & \\
+\midrule
+228.3 & 41.7 & -- & 92.4 & -- & Fail \\
+418.9 & 54.1 & 55.6 & 34.8 & 507.8 & Pass \\
+606.3 & 62.5 & 76.9 & 9.6 & 485.1 & Pass \\
+\bottomrule
+\end{tabular}
+\par\vspace{0.1cm}\scriptsize Examples selected by current rank. Shading: 150--250 ns loss window. No phase alignment. A dash means no detected complete-cycle measurement.
+\slidesource{Measured current: 50--250 ns mean after baseline subtraction. Finest replay: 0.00625 ns.}
+\end{frame}
+
+\begin{frame}{Frequency + amplitude: Three Representative Measured Inputs}
+\centering
+\includegraphics[height=0.43\textheight]{\losscomparisonroot/figures/frequency_amplitude_representatives.png}
+\par\footnotesize
+\renewcommand{\arraystretch}{1.12}
+\setlength{\tabcolsep}{8pt}
+\begin{tabular}{@{}rrrrrl@{}}
+\toprule
+\textbf{Input (\(\mu\)A)} & \multicolumn{2}{c}{\textbf{Frequency (MHz)}} & \multicolumn{2}{c}{\textbf{Vpp (mV)}} & \textbf{Cycle/frequency check}\\
+ & Measured & Simulated & Measured & Simulated & \\
+\midrule
+228.3 & 41.7 & -- & 92.4 & -- & Fail \\
+418.9 & 54.1 & 55.6 & 34.8 & 410.0 & Pass \\
+606.3 & 62.5 & -- & 9.6 & -- & Fail \\
+\bottomrule
+\end{tabular}
+\par\vspace{0.1cm}\scriptsize Examples selected by current rank. Shading: 150--250 ns loss window. No phase alignment. A dash means no detected complete-cycle measurement.
+\slidesource{Measured current: 50--250 ns mean after baseline subtraction. Finest replay: 0.00625 ns.}
+\end{frame}

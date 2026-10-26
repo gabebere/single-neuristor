@@ -1,0 +1,25 @@
+{
+  "ambient_K": 298.0,
+  "coarse_eligible": 0,
+  "coarse_oscillators": 54,
+  "coarse_temperature_failures": 184,
+  "coverage_complete": true,
+  "current_uA": 500.0,
+  "dynamic_calibration_adopted": false,
+  "embedded_gifs": 0,
+  "gif_bytes": 0,
+  "gifs": 0,
+  "html_bytes": 5193295,
+  "maximum_displayed_frequency_MHz": null,
+  "maximum_displayed_temperature_K": null,
+  "points": 216,
+  "replay_refinement_passes": 0,
+  "retained_points": 0,
+  "standalone": true,
+  "static_rmse_log10": 0.0806524437586543,
+  "verification_dt_ns": [
+    0.025,
+    0.0125
+  ],
+  "visually_resolved": 0
+}

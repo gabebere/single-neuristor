@@ -1,0 +1,13 @@
+axis,metric,threshold,pairs,decreasing,within_threshold,increasing,median_change_percent
+C_pF,frequency,0.01,965,964,1,0,-8.936805181649977
+C_pF,frequency,0.05,965,873,92,0,-8.936805181649977
+C_pF,amplitude,0.01,965,0,423,542,1.370987493643816
+C_pF,amplitude,0.05,965,0,766,199,1.370987493643816
+C_th_pJ_per_K,frequency,0.01,947,884,63,0,-5.825661232189638
+C_th_pJ_per_K,frequency,0.05,947,708,239,0,-5.825661232189638
+C_th_pJ_per_K,amplitude,0.01,947,495,452,0,-1.1383828238659466
+C_th_pJ_per_K,amplitude,0.05,947,193,754,0,-1.1383828238659466
+S_e_mW_per_K,frequency,0.01,1113,1031,75,7,-2.0031218266938877
+S_e_mW_per_K,frequency,0.05,1113,31,1082,0,-2.0031218266938877
+S_e_mW_per_K,amplitude,0.01,1113,28,11,1074,3.1281298709080696
+S_e_mW_per_K,amplitude,0.05,1113,0,810,303,3.1281298709080696

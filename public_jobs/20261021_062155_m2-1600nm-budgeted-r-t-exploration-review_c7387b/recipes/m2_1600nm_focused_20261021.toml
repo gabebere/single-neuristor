@@ -1,0 +1,74 @@
+# Budgeted focused exploration, 21 October 2026: 6^3 = 216 points.
+# Broad pilot retained 0/216: sustained trajectories exceeded measured T range.
+# Test smaller C / larger Cth and extend duration; retain all temperature screens.
+# Same 500 uA / 298 K operating assumptions as the historical 3D map.
+# Axes are diagnostic search ranges, not measured sample bounds.
+# Static model mismatch: initial strict 0.05 gate failed (RMSE 0.08065).
+# Allow 0.10 ONLY for this labeled exploratory map; no calibration is adopted.
+# Numerical convergence, persistence and temperature screens remain unchanged.
+# Fewer GIF frames reduce rendering cost without changing integration steps.
+schema_version = 1
+name = "M2 1600nm approximate R-T focused 3D map 20261021"
+kind = "simulation"
+model = "current"
+seed = 42
+
+[study]
+# Relative to THIS TOML file. CSV and TSV are supported.
+resistance_data = "../studies/broad/inputs/resistance_original.tsv"
+temperature_column = "Temperature"
+resistance_column = "Resistance"
+time_column = "Time"              # Use "" to preserve file acquisition order.
+temperature_unit = "K"            # K or C (Celsius)
+resistance_unit = "ohm"           # ohm or kohm
+bootstrap_samples = 0             # 0: fit only; e.g. 500: uncertainty resampling
+maximum_static_rmse_log10 = 0.10  # Exploratory exception: see static-fit caveat above.
+temperature_domain = "measured"  # No extrapolation. Optional: "fit-padded".
+
+[time]
+dt_ns = 0.05
+duration_us = 2.0
+[input]
+amplitude_uA = 500.0              # Constant ideal current, NOT a source label.
+[initial]
+voltage_V = 0.0
+temperature_K = 298.0
+[electrical]
+C_pF = 0.064
+[thermal]
+C_th_pJ_per_K = 3.0
+S_e_mW_per_K = 0.03
+T0_K = 298.0
+[resistance]
+start_branch = "insulator"
+[resistance.parameters]
+gamma = 0.956269682               # Assumed; not identifiable from a major loop.
+proximity_function = "yuanhang"
+
+[maps]
+window_ns = [1000.0, 2000.0]         # Evaluate settled complete-cycle extrema only.
+maximum_frequency_MHz = 110.0     # Operational screen, NOT a universal VO2 limit.
+verification_dt_ns = [0.025, 0.0125]
+convergence_fraction = 0.05
+batch_size = 128
+max_points = 15000
+[maps.fixed_values]
+C_th_pJ_per_K = 3.0
+S_e_mW_per_K = 0.03
+C_pF = 0.064
+# Coarse logarithmic search. Every displayed point must pass two finer steps.
+[maps.axes.C_th_pJ_per_K]
+values = [0.1, 0.3, 1.0, 3.0, 10.0, 30.0]
+[maps.axes.S_e_mW_per_K]
+values = [0.003, 0.01, 0.03, 0.1, 0.3, 1.0]
+[maps.axes.C_pF]
+values = [0.001, 0.004, 0.016, 0.064, 0.256, 1.024]         # Logarithmic maps require C>0; solver supports 0.
+
+[animations]
+dt_ns = 0.00625
+maximum_refinements = 2
+batch_size = 32
+workers = 4
+frames = 20                       # Playback only; not integration resolution.
+[output]
+root = "runs"

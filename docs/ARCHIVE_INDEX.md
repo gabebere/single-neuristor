@@ -5,6 +5,105 @@ presentation artifacts. That distinction matters because Git history preserves e
 experiments, while only the current solver and audit should be used for new numerical
 claims.
 
+## Recovered alternating-amplitude simulation — 25 October 2026
+
+- `20261025_091004_fixed-alternating-amplitude-classic-gifs_4b9e8c`:
+  freezes the exact diagnostic vector and adds 44 classic stacked GIFs for all
+  22 measured inputs at two timesteps, with 66 native integrations at three
+  timesteps. Derived tau_th=11.9087 ns; central tau_e spans 0.1334–11.9846 ns.
+  Slide 22 explains the qualified electrothermal-memory hypothesis and links
+  to the GIF gallery. No refit, physical solver change or calibration adoption.
+- `20261025_082439_documented-alternating-amplitude-historical-simu_1072ef`:
+  recovered source-label 400 mV in the 7 September relaxed fit: eight archived
+  primary cycles alternate near 239/353 mV Vpp. Exact replay and two finer
+  timesteps retain the short measured-input pattern. A longer constant-current
+  control becomes irregular at the finest step, so stable period doubling and
+  experimental agreement are not established. Includes 18 native replays,
+  individual-cycle and threshold-sensitivity tables, figures and a reusable
+  control recipe. [Finding and limitations](ALTERNATING_AMPLITUDES_20261025.md).
+
+## M2 1600 nm exploratory R–T maps — 21 October 2026
+
+- `20261021_064103_m2-1600nm-expanded-r-t-exploration-review_226099`:
+  adds 512 wide-range and 1,331 dense-onset grid entries with the unchanged
+  approximate static fit and operating assumptions. No new retained oscillator;
+  all 24 finer startup checks of 12 nearby settings exceed the measured range.
+  Cumulative grid entries: 2,616, including overlaps. [Larger maps and limits](M2_RT_EXPLORATION_20261021.md).
+- `20261021_062155_m2-1600nm-budgeted-r-t-exploration-review_c7387b`:
+  new 374-row R–T loop; four coarse grids (773 entries) and a 36-point finer
+  pilot. Static fit fails the usual 0.05 gate (RMSE 0.08065); labeled diagnostics
+  explicitly permit 0.10. No oscillator survives the measured temperature-domain
+  screen. The interactive companion shows excluded f/Vpp results without treating
+  them as accepted predictions. No solver changes or calibration adoption.
+  [Results, recipes and limits](M2_RT_EXPLORATION_20261021.md).
+
+## All-input loss animations — 21 October 2026
+
+- `20261021_054434_loss-function-comparison-all-44-stacked-gifs_15921f`:
+  22 GIFs for frequency-only and 22 for frequency plus amplitude, with measured
+  input current, measured/simulated output, and native simulated R(T) history.
+  Fixed-parameter replays are checked against the saved finest-step voltages;
+  no optimization or calibration changes. [Viewer and method](LOSS_ANIMATIONS_20261021.md).
+
+## Fresh parameter-trend checks — 20–21 October 2026
+
+- `20261020_205903_fresh-controlled-validation-of-parameter-explora_5beaf6`:
+  initial 466 fresh integrations. Short late windows leave slower centers
+  inconclusive; retained as the original verification pass, not a final boundary.
+- `20261020_220155_extended-horizon-validation-of-parameter-explora_3599fb`:
+  checked reuse of those 466 plus 144 new integrations. Final scale tests pass
+  12/12; 15 usable original-condition parameter pairs support falling frequency,
+  with qualified amplitude effects. Independent crossing frequency, gamma
+  tests, operating-condition exclusions and all source/provenance are saved.
+  75 distinct physical settings, no adopted calibration or experimental fit.
+  [Results and limitations](FRESH_PARAMETER_TRENDS_20261020.md).
+
+## Full-map tendencies — 20 October 2026
+
+- `20261020_202706_saved-full-parameter-exploration-trends_cf3c76`:
+  saved-data review of the complete GIF map, adjacent controlled comparisons,
+  representative GIFs and a 16-point common-capacitance scaling check. No new
+  integration, changed membership, or specimen calibration. Conditions fixed
+  at 500 µA, 298 K and inherited gamma. See
+  [interpretation](PARAMETER_EXPLORATION_TRENDS_20261020.md).
+
+## Optimizer follow-up — 20 October 2026
+
+- `20261020_185046_finite-difference-and-gradient-optimization-audi_21879a`:
+  150 coordinate profiles, three solver timesteps, four limited L-BFGS-B trials,
+  and all-current verification. No defined full-loss derivative at the parent
+  candidates; gradient trials operate on the finite rejection score.
+- `20261020_184721_expanded-optimizer-test-frequency-only-specimen-_aae50f`:
+  four-start frequency-only search, 765 unique candidates, unchanged prior best
+  in-domain diagnostic and no eligible all-target fit.
+
+- `20261020_184721_expanded-optimizer-test-frequency-amplitude-spec_d5e6bb`:
+  matched four-start combined search; 765 candidates, no eligible all-target fit.
+  Its selected diagnostic is the old frequency-only vector because failure count
+  takes priority over residual amplitude error.
+- `20261020_195947_optimizer-budget-derivative-and-gradient-review_555769`:
+  common six-candidate finest-step comparison, per-input frequency derivatives,
+  direct profiles and complete saved-data provenance.
+
+See [methods and interpretation](OPTIMIZER_AUDIT_20261020.md).
+
+## Controlled frequency/amplitude fitting — 20 October 2026
+
+[Methods, measured-current examples and limits](LOSS_COMPARISON_20261020.md).
+Two bounded searches with fixed R(T)/T0 and four unknowns, 250 evaluations each:
+
+- [Frequency-only search](../public_jobs/20261020_155947_controlled-frequency-only-specimen-fit_543408/report.md).
+- [Frequency and amplitude search](../public_jobs/20261020_165107_controlled-frequency-amplitude-specimen-fit_5ad999/report.md).
+- [Reviewed comparison and figures](../public_jobs/20261020_170231_controlled-frequency-and-amplitude-loss-comparis_26574a/report.md).
+
+These are unsuccessful diagnostic attempts, not accepted calibrations. Passing
+target cycle/frequency counts at the finest step: 10/11 and 8/11; amplitudes remain
+far too large. Combined classification changes with timestep, and full-replay
+control temperatures exceed the configured resistance domain. Current-ranked
+examples use measured ~228, 419 and 606 µA. The earlier comparison `2feaaa` remains
+immutable but is superseded for display by `26574a`; numerical parents are identical.
+Local publication does not imply a GitHub push.
+
 ## Canonical GitHub library — 20 October 2026
 
 The definitive `single-neuristor` repository now has the consolidated code,

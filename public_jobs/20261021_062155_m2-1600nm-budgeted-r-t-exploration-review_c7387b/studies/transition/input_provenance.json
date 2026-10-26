@@ -1,0 +1,16 @@
+{
+  "declarations": {
+    "bootstrap_samples": 0,
+    "maximum_static_rmse_log10": 0.1,
+    "resistance_column": "Resistance",
+    "resistance_data": "../../data/experimental/m2_8.9_1stL_1600nm_A_RT.tsv",
+    "resistance_unit": "ohm",
+    "temperature_column": "Temperature",
+    "temperature_domain": "measured",
+    "temperature_unit": "K",
+    "time_column": "Time"
+  },
+  "normalized_sha256": "7061d1f8e7fa651d3130569a39b63d5e7fa13019e829617e8101892c1391e7b8",
+  "original_path": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/data/experimental/m2_8.9_1stL_1600nm_A_RT.tsv",
+  "original_sha256": "fdda8d2293404566fb16154223da131b1a44f15975469f1cdfd8622948112e03"
+}

@@ -141,7 +141,11 @@ Terminal equivalents: `neuristor runs delete RUN_ID`, `neuristor runs trash`, an
 | Existing screened-map workflow | `neuristor analyze physical-maps --config FILE.toml` |
 | Attach GIFs to an existing map | `neuristor analyze map-animations --config FILE.toml` |
 | Update historical map displays without resimulation | `neuristor analyze refresh-maps --all-existing` |
+| Controlled parameter-trend checks | `neuristor analyze validate-trends --config FILE.toml` |
 | Frequency/amplitude fitting | `neuristor analyze fit-steady --config FILE.toml` |
+| All-input loss-comparison GIFs | `neuristor analyze loss-scopes --config FILE.toml --frequency-run RUN --combined-run RUN` |
+| Start the presentation's local HTML viewers | `neuristor analyze serve-presentation --background` |
+| Open slides and start all linked viewers | `neuristor present` |
 | Parameter sweep | `neuristor sweep run --config FILE.toml` |
 | Read-only archive dashboard | `neuristor dashboard` |
 

@@ -7,6 +7,9 @@ They do not invent experimental data from screenshots.
 |---|---|
 | `experimental_waveforms.py` | Read measured current/voltage exports and retain acquisition labels. |
 | `extrema.py` | Extract complete steady-state cycles, frequency, and peak-to-peak voltage. |
+| `loss_comparison.py` | Cross-evaluate verified frequency/amplitude fits, preserving missing frequencies and timestep changes. |
+| `frequency_sensitivity.py` | Measure per-input frequency slopes even when another input invalidates the full loss. |
+| `optimizer_diagnostics.py` | Compare finite-difference slopes across step sizes and timesteps, retaining undefined scientific derivatives. |
 | `metrics.py` | Basic single-run summaries; not a replacement for the extrema objective. |
 | `lab_estimates.py` | Conditional thermal conductance and timing-based capacitance estimates. |
 | `model_validation.py` | Compare frozen model predictions with measurements. |
@@ -19,3 +22,5 @@ They do not invent experimental data from screenshots.
 Acquisition labels in mV are not measured currents. Frequency is reported in MHz
 at map boundaries. Screening and timestep agreement are not proof of a correct
 sample calibration. [Scientific handoff](../../../docs/RESEARCH_HANDOFF.md).
+
+`trend_validation.py` runs controlled new tests of common-capacitance scaling, observation-horizon/timestep agreement and one-coordinate directions. It preserves every censored or unresolved endpoint.

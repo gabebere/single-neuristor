@@ -1,6 +1,6 @@
 # Research handoff
 
-Last reviewed: **20 October 2026**. Read this, the root README, and AGENTS.md before
+Last reviewed: **25 October 2026**. Read this, the root README, and AGENTS.md before
 continuing. The [detailed research history](RESEARCH_HISTORY.md) preserves previous
 results, commands, parameter tables, and caveats without making them a new task list.
 
@@ -66,27 +66,96 @@ No new calibration was adopted during repository consolidation.
 
 ## Latest fitting method versus requested next work
 
-The implemented simple trial uses settled complete-cycle voltage extrema and
-mean squared relative **frequency and Vpp** errors with equal weights, not
-point-by-point phase matching. See [the exact objective and results](SIMPLE_EXTREMA_LOSS_20261003.md).
-It found no eligible all-target fit. Do not call it a resistance-extrema fit.
+An archived alternating-amplitude example was recovered in the 7 September
+relaxed simulation at source label 400 mV (~303 µA): primary-cycle Vpp alternates
+near 239/353 mV. The short measured-input window survives two finer timesteps;
+a 2 µs constant-current control becomes irregular at the finest step. This is
+a documented numerical phenomenon, not an established stable period-two state,
+bifurcation or measured device result. No calibration is adopted. See
+[waveform, exact settings and limits](ALTERNATING_AMPLITUDES_20261025.md).
+The vector is frozen under `presets/alternating_amplitude_relaxed_20260907.json`.
+44 classic GIFs now replay all 22 measured inputs at two displayed timesteps.
+Slide 22 gives tau_th=11.91 ns and central tau_e=0.13–12 ns, with the proposed
+electrothermal/hysteresis-memory explanation explicitly qualified.
 
-The following meeting directions remain **planned, not completed**:
+A separate new-sample M2 1600 nm exploration is complete: the 374-row static
+loop fits with log10 RMSE 0.08065, failing the usual 0.05 gate. Four labeled
+diagnostic grids (773 entries, explicit 0.10 static exception) and a 36-point
+finer pilot retain no oscillators inside the measured 289.98–370.1795 K domain
+at 500 µA and 298 K. Computed excluded f/Vpp maps are available for inspection;
+they are not accepted predictions or proof of no oscillatory domain. No physics
+or calibration was changed. See [M2 study and limitations](M2_RT_EXPLORATION_20261021.md).
+The requested expansion adds 1,843 wider/denser grid entries (2,616 cumulative,
+including overlaps), still with no retained oscillator. All 24 finer startup
+checks of 12 nearby settings exceed the measured domain; this is not a finely
+verified physical boundary or an exhaustive absence result.
 
-1. Try frequency-only optimization first, retaining amplitude and extrema as
-   out-of-objective validation. Specify windows, missing-cycle handling, stable
-   controls, and timestep checks before running it.
+The completed 20 October comparison fixes the six R(T) parameters and T0 and
+varies only gamma, Se, C and Cth. It compares squared relative frequency error
+against frequency plus Vpp error, using actual measured inputs (~228–606 µA).
+Both searches completed 250 unique evaluations and three-timestep all-current
+replay. At 0.00625 ns, frequency-only passes target cycle/frequency checks on
+10/11 records, combined on 8/11; Vpp MAPE remains ~1966% and ~903%, respectively.
+The combined count changes with timestep, and both full replays leave the
+configured resistance temperature domain on controls. Neither is a converged
+quantitative fit or adopted calibration. See [methods/results and bundles](LOSS_COMPARISON_20261020.md).
+The [44 all-input animations](LOSS_ANIMATIONS_20261021.md) show measured current,
+measured/simulated output and native simulated R(T) for these two retained vectors.
+They reproduce the saved finest-step voltages; no optimization was repeated.
+
+A follow-up checked local finite differences at three timesteps, expanded both
+searches to four starts, and tried short L-BFGS-B refinements. Full-loss
+finite differences were undefined at the original candidates because some
+frequencies were missing; individual frequency profiles often showed plateaus.
+Gradient trials used the finite rejection score and reached their short
+line-search limit. Their sampled improvements are not converged gradient fits.
+Both larger searches completed 765 candidates and retained the previous
+frequency-only diagnostic. Combined selection follows failed-target priority,
+even though amplitude error increases. No eligible complete fit was found.
+See [optimizer methods and results](OPTIMIZER_AUDIT_20261020.md).
+
+The earlier equal-weight extrema trial is preserved in
+[SIMPLE_EXTREMA_LOSS_20261003](SIMPLE_EXTREMA_LOSS_20261003.md). It also found no
+eligible all-target fit. Neither trial is a resistance-extrema fit.
+
+Meeting direction 1 (frequency-only versus frequency-and-amplitude fitting) is
+completed as a bounded diagnostic. Direction 3 (a coupled gamma sweep) is now
+also completed at three prespecified vectors over gamma=0.70–0.95627; the effect
+on f/Vpp is modest there, without identifying a specimen gamma. See the
+[fresh controlled trend checks](FRESH_PARAMETER_TRENDS_20261020.md).
+The following directions remain **planned, not completed**:
+
 2. Compare apparent resistance maxima/minima only after documenting the current
    split/channel assumptions. `V/I` is not automatically the device resistance
    when capacitive current or readout transfer is significant.
-3. Hold one genuinely oscillating parameter vector fixed and vary gamma in the
-   freely evolving coupled model. Existing gamma GIFs prescribe temperature;
-   they do not measure gamma's effect on oscillator frequency.
 4. Finish a source-backed Brown/Pollner comparison, keeping device geometry,
    circuit capacitance, thermal time and effective-volume assumptions distinct.
    Preliminary ranges discussed in chat are not adopted sample bounds.
 5. Assemble one concise supervisor-facing PDF after the scientific scope is
    agreed. No new consolidated meeting PDF has been completed.
+
+The full historical 1,258-GIF map was reviewed using saved finer replays:
+[controlled tendencies and scaling evidence](PARAMETER_EXPLORATION_TRENDS_20261020.md).
+Both capacitances slow oscillations, but their amplitude tendencies differ.
+Sixteen saved points illustrate the common-capacitance inverse-frequency scale
+law. This map fixes gamma and 298 K; it is not a fit to the 314.4 K measured
+sweep. The presentation now has 21 slides, retaining only the frequency-only and
+frequency-plus-amplitude loss explanations and results. Older loss formulations
+and the optimizer follow-up remain archived rather than shown. A final slide
+introduces the existing three-parameter heatmap/GIF explorer with its fixed
+conditions stated; no new map simulation or fit was performed.
+
+Fresh 20–21 October simulations verify the common-capacitance scale relation
+on 12/12 final comparisons across three anchors, using timestep and horizon
+checks plus an independent frequency measurement. In the original 500 µA,
+298 K map region, all 15 usable C/Cth/Se comparisons lower frequency when the
+parameter increases. Capacitance-induced amplitude changes are often small;
+Se-induced increases are clearer. The same trends are not established at
+350 µA or 314.4 K because too few adjacent endpoints are verified oscillators.
+610 distinct integrations cover 75 physical settings; no calibration is adopted.
+Short-window and coarse-overshoot exclusions must not be called physical
+boundaries. Full pointwise waveform convergence at fixed dt is not established.
+See [methods, results and exceptions](FRESH_PARAMETER_TRENDS_20261020.md).
 
 The six frequency/amplitude slice maps and fixed-across-slider axes/color limits
 already exist; do not rebuild their physics to improve their appearance.
@@ -102,8 +171,10 @@ Do not silently turn these into independent fitted parameter bounds.
 
 First confirm the Figure 6 schematic, probe nodes, current conversion, channel
 delay, and a known-resistor control with Amir/Yoav. Until available, work on one
-bounded, interpretable diagnostic at a time. A controlled coupled gamma sweep is
-more informative than another unconstrained many-parameter search.
+bounded, interpretable diagnostic at a time. The bounded coupled gamma and
+parameter-trend checks are now complete. Match the operating conditions,
+acquisition/feature extraction and circuit boundary
+before interpreting another parameter search as a specimen fit.
 
 An improvement must persist across low/mid/high-current records, retain stable
 controls, and survive timestep refinement. Report frequency, amplitude, mean and

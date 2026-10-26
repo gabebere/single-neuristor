@@ -1,0 +1,60 @@
+{
+  "ambient_K": 298,
+  "current_uA": 500,
+  "dynamic_calibration_adopted": false,
+  "exploratory_static_gate": 0.1,
+  "fine_pilot_points": 36,
+  "grid_entries": 773,
+  "input_sha256": "fdda8d2293404566fb16154223da131b1a44f15975469f1cdfd8622948112e03",
+  "measured_temperature_range_K": [
+    289.98,
+    370.1795
+  ],
+  "repository_validation": "passed",
+  "retained": 0,
+  "static_default_gate_passed": false,
+  "static_rmse_log10": 0.0806524437586543,
+  "studies": [
+    {
+      "dt_ns": 0.05,
+      "duration_us": 0.6,
+      "points": 216,
+      "retained": 0,
+      "study": "Broad",
+      "sustained": 54,
+      "sustained_temperature_excluded": 54,
+      "temperature_valid": 32
+    },
+    {
+      "dt_ns": 0.05,
+      "duration_us": 2.0,
+      "points": 216,
+      "retained": 0,
+      "study": "Lower heating",
+      "sustained": 10,
+      "sustained_temperature_excluded": 10,
+      "temperature_valid": 174
+    },
+    {
+      "dt_ns": 0.00625,
+      "duration_us": 1.2,
+      "points": 216,
+      "retained": 0,
+      "study": "Transition",
+      "sustained": 68,
+      "sustained_temperature_excluded": 68,
+      "temperature_valid": 108
+    },
+    {
+      "dt_ns": 0.003125,
+      "duration_us": 0.6,
+      "points": 125,
+      "retained": 0,
+      "study": "Onset",
+      "sustained": 50,
+      "sustained_temperature_excluded": 50,
+      "temperature_valid": 60
+    }
+  ],
+  "tests_passed": 194
+}

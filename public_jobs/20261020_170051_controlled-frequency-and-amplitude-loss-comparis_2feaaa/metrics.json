@@ -1,0 +1,13 @@
+{
+  "control_count": 11,
+  "parent_runs": {
+    "frequency_amplitude": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20261020_165107_controlled-frequency-amplitude-specimen-fit_5ad999",
+    "frequency_only": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/public_jobs/20261020_155947_controlled-frequency-only-specimen-fit_543408"
+  },
+  "representative_current_uA": [
+    228.28194801749999,
+    418.8568677552,
+    606.2799905984
+  ],
+  "target_count": 11
+}

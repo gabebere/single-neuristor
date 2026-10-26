@@ -1,0 +1,10 @@
+{
+  "common_scale_amplitude_span_fraction": 0.007419035615312734,
+  "common_scale_max_frequency_discrepancy_fraction": 0.001973466444115113,
+  "common_scale_points": 16,
+  "finer_replays_retained": 1256,
+  "grid_points": 12167,
+  "original_retained": 1258,
+  "resimulated": false,
+  "visually_resolved": 1174
+}

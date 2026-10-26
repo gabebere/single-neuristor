@@ -1,0 +1,10 @@
+{
+  "source_bundle": "public_jobs/20261020_220155_extended-horizon-validation-of-parameter-explora_3599fb",
+  "protocol": "scaled_dt",
+  "normalization": "each point divided by its own reference case",
+  "hashes": {
+    "verified_scaling.csv": "a02213b7c074eb249a969ec7ea1751ad0fa6b6c18971396329e05c555305a900",
+    "case_summary.csv": "6a253559522c1d68b70bdd64e62ccbc26a7f1ce04ab9770d148bd3ac2809e76d"
+  },
+  "new_simulation": false
+}

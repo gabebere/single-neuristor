@@ -1,0 +1,73 @@
+schema_version = 1
+name = "Fresh controlled validation of parameter exploration trends"
+kind = "simulation"
+model = "current"
+seed = 20261020
+[time]
+dt_ns = 0.0125
+duration_us = 1.2
+[input]
+amplitude_uA = 500.0
+[initial]
+voltage_V = 0.0
+temperature_K = 298.0
+[electrical]
+C_pF = 3.0
+[thermal]
+C_th_pJ_per_K = 0.072
+S_e_mW_per_K = 0.006
+T0_K = 298.0
+[resistance]
+preset = "../../presets/resistance_100425_chip1_gap3.json"
+start_branch = "insulator"
+[resistance.parameters]
+T_min_K = 289.8545
+T_max_K = 370.1625
+[trend_validation]
+# Plan fixed before fresh runs. Diagnostic choices, not fitted specimen values.
+gamma = 0.956269682
+gamma_values = [0.70, 0.85, 0.956269682]
+local_factors = [0.75, 1.0, 1.25]
+scale_factors = [0.5, 1.0, 2.0]
+dt_ns = [0.0125, 0.00625, 0.003125]
+maximum_timestep_refinements = 1
+initial_duration_ns = 600.0
+maximum_duration_ns = 1200.0
+convergence_fraction = 0.02
+direction_threshold_fraction = 0.02
+equilibrium_relative_tolerance = 0.001
+equilibrium_voltage_span_mV = 0.5
+equilibrium_temperature_span_K = 0.02
+batch_size = 12
+max_batch_samples = 2500000
+max_steps_per_simulation = 1600000
+path_samples = 2048
+[[trend_validation.anchors]]
+name = "A"
+C_pF = 3.0
+C_th_pJ_per_K = 0.072
+S_e_mW_per_K = 0.006
+[[trend_validation.anchors]]
+name = "B"
+C_pF = 10.506111217615071
+C_th_pJ_per_K = 0.22360679774997896
+S_e_mW_per_K = 0.00810720092884221
+[[trend_validation.anchors]]
+name = "C"
+C_pF = 12.340677254400198
+C_th_pJ_per_K = 0.16206565966927625
+S_e_mW_per_K = 0.005924104205979401
+[[trend_validation.scenarios]]
+name = "original_map"
+current_uA = 500.0
+T0_K = 298.0
+[[trend_validation.scenarios]]
+name = "lower_current"
+current_uA = 350.0
+T0_K = 298.0
+[[trend_validation.scenarios]]
+name = "paper_ambient"
+current_uA = 500.0
+T0_K = 314.4
+[output]
+root = "runs"

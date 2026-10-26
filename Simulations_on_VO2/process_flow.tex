@@ -1,0 +1,42 @@
+\begin{frame}{From Measured Data to Specimen Parameters}
+\centering
+\begin{tikzpicture}[
+    x=1cm,y=1cm,
+    process/.style={draw=structure.fg,rounded corners=2pt,fill=structure.fg!7,
+        text width=3.30cm,minimum height=.72cm,align=center,
+        font=\fontsize{7.2}{8.5}\selectfont,inner sep=4pt},
+    input/.style={process,fill=softgray},
+    arrow/.style={-{Stealth[length=2mm]},thick,draw=structure.fg},
+    decision/.style={diamond,aspect=2.5,draw=structure.fg,fill=structure.fg!7,
+        text width=1.65cm,align=center,font=\fontsize{7.2}{8.5}\selectfont,inner sep=1pt},
+    label/.style={font=\tiny,fill=white,inner sep=2pt}
+]
+\node[input] (rtdata) at (-4.65,0) {\textbf{R(T) file}\\Temperature and resistance};
+\node[input] (current) at (0,0) {\textbf{Measured input current}\\\(I^{\mathrm{meas}}(t)\)};
+\node[input] (voltage) at (4.65,0) {\textbf{Measured output voltage}\\\(V^{\mathrm{meas}}(t)\)};
+
+\node[process] (fit) at (-4.65,-1.15) {\textbf{Fit R(T) by least squares}\\Minimize RMSE in \(\log_{10}R\)};
+\node[process] (hysteresis) at (-4.65,-2.40) {\textbf{Specimen \(R(T,H)\)}\\Fitted static parameters\\Specify \(\gamma\) separately};
+\node[process] (simulate) at (0,-2.40) {\textbf{Simulate the response}\\Electrothermal equations\\Trial \(C_{th},\ C,\ S_e\)};
+\node[process] (loss) at (4.65,-2.40) {\textbf{Compare with the experiment}\\Loss: frequency only, or\\frequency + Vpp};
+
+\node[decision] (check) at (4.65,-3.85) {Match and\\checks pass?};
+\node[process] (update) at (0,-3.85) {\textbf{Update parameters}\\Choose new \(C_{th},\ C,\ S_e\)};
+\node[process,fill=tracegreen!12,draw=tracegreen!65!black] (result) at (0,-5.05) {\textbf{Candidate \(C_{th},\ C,\ S_e\)}\\Validate across measured inputs};
+
+\draw[arrow] (rtdata) -- (fit);
+\draw[arrow] (fit) -- (hysteresis);
+\draw[arrow] (hysteresis) -- (simulate);
+\draw[arrow] (current) -- (simulate);
+\draw[arrow] (voltage) -- (loss);
+\draw[arrow] (simulate) -- node[label,above] {\(V^{\mathrm{sim}}(t)\)} (loss);
+\draw[arrow] (loss) -- (check);
+\draw[arrow] (check) -- node[label,above] {No: try again} (update);
+\draw[arrow] (update) -- (simulate);
+\draw[arrow] (check.south) |- node[label,pos=.23,right] {Yes} (result.east);
+\end{tikzpicture}
+\par\vspace{0.10cm}\raggedright\scriptsize
+\textbf{*} We also explored the domain of \(C_{th}, C, S_e\) to visualize their effects on frequency and amplitude.
+\par\vspace{0.04cm}\tiny\color{gray}
+The fitted dynamic values remain candidates until validated. The static R(T) fit alone does not determine \(\gamma\); earlier fitting trials also varied it.
+\end{frame}

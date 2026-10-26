@@ -1,0 +1,13 @@
+{
+  "checks": "SI physics, solver bytes, classifier/sampling AST and numerical protocol",
+  "hashes": {
+    "integrations.csv": "0584c7032523fd5361db0489d2a7ebaa0cef40a05af42e8165e11ae707520a69",
+    "physics_parameters.json": "69c89a839f42ae1e5d5349036ade017f7382a885556a457dc73ad6e83a2277e5",
+    "planned_cases.csv": "e9ca848d78036b5e8ea3d1fceaf098d27f7c8dc3353b0a19b2cdfd334d88b1f8",
+    "resolved_config.json": "3544c6015c05c4402dc53a548d6d49ff1db132862884c7737c851382b8ee253a",
+    "run.json": "4d494d2d49e27b6bea60f41dd79fcd216c6d4ca0e43f60ef761f7cee1bd7b8b0",
+    "scaling_paths.csv": "a4cc92e98add23b26bc2f68260e87bd1cce8e3f9e119111cabea963b02ea6a06"
+  },
+  "reused_integrations": 466,
+  "source": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/20261020_205903_fresh-controlled-validation-of-parameter-explora_5beaf6"
+}

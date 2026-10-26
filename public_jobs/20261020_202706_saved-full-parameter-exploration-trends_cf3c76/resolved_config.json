@@ -1,0 +1,10 @@
+{
+  "comparison": "adjacent original grid positions, two other coordinates fixed",
+  "relative_change_thresholds": [
+    0.01,
+    0.05
+  ],
+  "resimulated": false,
+  "source": "public_jobs/20261007_074702_portable-screened-parameter-map-with-point-gifs_eaf6ab",
+  "viewer": "public_jobs/20261007_123036_fixed-scale-viewer-portable-screened-parameter-m_4325d1"
+}

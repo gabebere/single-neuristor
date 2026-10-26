@@ -1,0 +1,23 @@
+{
+  "phase": "completed",
+  "evaluations": 230,
+  "center": "frequency_amplitude",
+  "elapsed_s": 1194.0155037919758,
+  "unique_evaluations": 230,
+  "profile_points": 150,
+  "stencils": 72,
+  "scientific_derivatives_defined": 0,
+  "gradient_trials": 4,
+  "verified_batches": 12,
+  "normalized_coordinates": [
+    "C_pF",
+    "S_e_mW_per_K",
+    "tau_th_ns",
+    "gamma"
+  ],
+  "dt_ns": [
+    0.025,
+    0.0125,
+    0.00625
+  ]
+}

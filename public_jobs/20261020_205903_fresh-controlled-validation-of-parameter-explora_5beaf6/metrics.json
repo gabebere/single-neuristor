@@ -1,0 +1,16 @@
+{
+  "classifications": {
+    "calibration_censored": 2,
+    "nonoscillatory": 11,
+    "oscillatory": 21,
+    "time_unresolved": 74
+  },
+  "elapsed_s": 1752.4215148750227,
+  "local_pairs": 60,
+  "logical_cases": 108,
+  "resimulated": true,
+  "scaling_comparisons": 72,
+  "unique_integrations": 466,
+  "usable_local_pairs": 7,
+  "verified_oscillatory": 21
+}

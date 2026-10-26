@@ -1,0 +1,14 @@
+parameter,estimate,ci95_lower,ci95_upper,status
+R0,9.414702082227157,,,fitted
+Ea_over_k,2624.3995676618906,,,fitted
+Rm0,193.54002428835278,,,fitted
+Rm_factor,1.0,,,fixed or conventional
+w,22.815026326590285,,,fitted
+Tc_K,337.138500341724,,,fitted
+beta,0.18293913065691358,,,fitted
+gamma,0.956269682,,,fixed or conventional
+width_factor,1.0,,,fixed or conventional
+T_min_K,284.98,,,fixed or conventional
+T_max_K,375.1795,,,fixed or conventional
+reversal_threshold_K,0.01,,,fixed or conventional
+proximity_function,yuanhang,,,fixed or conventional

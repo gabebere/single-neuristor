@@ -1,0 +1,121 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Exact saved-data analysis and figure authoring",
+      "path": "analysis.py"
+    },
+    {
+      "label": "Immutable input grid.csv",
+      "path": "inputs/grid.csv"
+    },
+    {
+      "label": "Immutable input verification.csv",
+      "path": "inputs/verification.csv"
+    },
+    {
+      "label": "Immutable input animation_checks.csv",
+      "path": "inputs/animation_checks.csv"
+    },
+    {
+      "label": "Immutable input physics_parameters.json",
+      "path": "inputs/physics_parameters.json"
+    },
+    {
+      "label": "Immutable input axis_values.json",
+      "path": "inputs/axis_values.json"
+    },
+    {
+      "label": "Saved input provenance",
+      "media_type": "application/json",
+      "path": "source_provenance.json"
+    },
+    {
+      "label": "Every valid adjacent one-coordinate comparison",
+      "path": "matched_neighbors.csv"
+    },
+    {
+      "label": "Descriptive direction counts at 1% and 5%",
+      "path": "neighbor_summary.csv"
+    },
+    {
+      "label": "Coverage-selected low middle high examples",
+      "path": "representatives.csv"
+    },
+    {
+      "label": "Controlled parameter slices from finer GIF replays",
+      "path": "figures/controlled_trends.png"
+    },
+    {
+      "label": "Saved independent integrations along a common-capacitance ray",
+      "path": "common_scale.csv"
+    },
+    {
+      "label": "Frequency scales while amplitude stays approximately fixed",
+      "path": "figures/common_scale.png"
+    },
+    {
+      "label": "C example 9397 gif",
+      "path": "examples/point_09397.gif"
+    },
+    {
+      "label": "C example 9397 png",
+      "path": "examples/point_09397.png"
+    },
+    {
+      "label": "C example 9401 gif",
+      "path": "examples/point_09401.gif"
+    },
+    {
+      "label": "C example 9401 png",
+      "path": "examples/point_09401.png"
+    },
+    {
+      "label": "C example 9405 gif",
+      "path": "examples/point_09405.gif"
+    },
+    {
+      "label": "C example 9405 png",
+      "path": "examples/point_09405.png"
+    },
+    {
+      "label": "Saved-data scope and scaling checks",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Interpretation and limitations of the parameter trends",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    }
+  ],
+  "command": "python outputs/map_trends/review_saved_map.py",
+  "created_at": "2026-10-20T20:27:06.132876+00:00",
+  "id": "20261020_202706_saved-full-parameter-exploration-trends_cf3c76",
+  "kind": "analysis",
+  "model": "current",
+  "name": "Saved full parameter exploration trends",
+  "provenance": {
+    "branch": "main",
+    "commit": "12be9a9a729e03b164464fad0daab7c1b9d4f4c4",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "common_scale_amplitude_span_fraction": 0.007419035615312734,
+    "common_scale_max_frequency_discrepancy_fraction": 0.001973466444115113,
+    "common_scale_points": 16,
+    "finer_replays_retained": 1256,
+    "grid_points": 12167,
+    "original_retained": 1258,
+    "resimulated": false,
+    "visually_resolved": 1174
+  },
+  "updated_at": "2026-10-20T20:27:08.921519+00:00"
+}

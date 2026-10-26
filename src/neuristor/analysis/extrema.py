@@ -9,8 +9,9 @@ def voltage_extrema(time_ns, voltage_mV, window_ns=(150.0, 250.0), *, prominence
     """Measure complete peak-to-trough cycles inside an explicitly selected window.
 
     Amplitude is median peak-to-peak voltage (not half amplitude). Frequency is
-    1000 divided by the median adjacent-maximum period in ns. A short 0.5 ns
-    smoothing window locates extrema only; reported voltages use original data.
+    1000 divided by the median adjacent-maximum period in ns. Smoothing targets
+    0.5 ns but uses at least five samples (five samples for a 1 ns record grid).
+    It locates extrema only; reported voltages use original data.
     Complete cycles exclude partial cycles at window edges. Persistence requires
     cycles in both halves, stable amplitudes, and regular periods. A late window
     by itself does not establish that an arbitrarily slow transient has settled.
@@ -93,12 +94,18 @@ def extrema_loss(measured, predicted, settings):
 
 
 def relative_squared_extrema_loss(measured, predicted, settings):
-    """Equal relative frequency/Vpp errors, with eligibility reported separately.
+    """Weighted squared relative frequency/Vpp errors; eligibility is separate.
 
     An absent frequency has no meaningful relative error: its diagnostic error
     is null and its loss is null. Search orchestration handles rejection; neither
     an epsilon, a logarithm, nor an arbitrary penalty enters this scientific loss.
+    Unit weights preserve the historical equal-weight loss. Zero amplitude weight
+    optimizes frequency alone while retaining amplitude error in the diagnostics.
     """
+    fw = float(settings.get('frequency_weight', 1.0))
+    aw = float(settings.get('amplitude_weight', 1.0))
+    if not np.isfinite([fw, aw]).all() or fw < 0 or aw < 0 or fw + aw <= 0:
+        raise ValueError('Relative loss weights must be finite, nonnegative and not both zero')
     fm, am = measured['frequency_MHz'], measured['extrema_vpp_mV']
     if fm is None or fm <= 0 or am <= 0:
         raise ValueError('Targets require positive frequency and amplitude')
@@ -107,7 +114,7 @@ def relative_squared_extrema_loss(measured, predicted, settings):
     aerr = float(ap / am - 1)
     valid = bool(predicted['sustained'] and ferr is not None and ap > 0
                  and fp <= settings.get('maximum_frequency_MHz', float('inf')))
-    return dict(loss=float(ferr**2 + aerr**2) if ferr is not None else None,
+    return dict(loss=float(fw*ferr**2 + aw*aerr**2) if ferr is not None else None,
         sustained=bool(predicted['sustained']), frequency_valid=valid,
         frequency_relative_error=ferr, robust_amplitude_relative_error=aerr,
         periodic_amplitude_relative_error=aerr,

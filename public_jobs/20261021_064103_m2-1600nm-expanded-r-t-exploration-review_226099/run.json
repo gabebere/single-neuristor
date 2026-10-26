@@ -1,0 +1,903 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Exact saved-evidence assembly source",
+      "path": "build_review.py"
+    },
+    {
+      "label": "Prior study static fit and metrics",
+      "path": "prior_resistance_fit.png"
+    },
+    {
+      "label": "Prior study static fit and metrics",
+      "path": "prior_metrics.json"
+    },
+    {
+      "label": "Unchanged inherited approximate static fit",
+      "path": "resistance_preset.json"
+    },
+    {
+      "label": "Unmodified measured R-T loop",
+      "path": "inputs/resistance_original.tsv"
+    },
+    {
+      "label": "Expanded: axis_values.json",
+      "path": "studies/expanded/axis_values.json"
+    },
+    {
+      "label": "Expanded: grid.csv",
+      "path": "studies/expanded/grid.csv"
+    },
+    {
+      "label": "Expanded: heatmaps.png",
+      "path": "studies/expanded/heatmaps.png"
+    },
+    {
+      "label": "Expanded: included.csv",
+      "path": "studies/expanded/included.csv"
+    },
+    {
+      "label": "Expanded: metrics.json",
+      "path": "studies/expanded/metrics.json"
+    },
+    {
+      "label": "Expanded: parameter_maps.html",
+      "path": "studies/expanded/parameter_maps.html"
+    },
+    {
+      "label": "Expanded: physics_parameters.json",
+      "path": "studies/expanded/physics_parameters.json"
+    },
+    {
+      "label": "Expanded: report.md",
+      "path": "studies/expanded/report.md"
+    },
+    {
+      "label": "Expanded: resolved_config.json",
+      "path": "studies/expanded/resolved_config.json"
+    },
+    {
+      "label": "Expanded: run.json",
+      "path": "studies/expanded/run.json"
+    },
+    {
+      "label": "Expanded: screening_checkpoint.csv",
+      "path": "studies/expanded/screening_checkpoint.csv"
+    },
+    {
+      "label": "Expanded: __init__.py",
+      "path": "studies/expanded/source/neuristor/__init__.py"
+    },
+    {
+      "label": "Expanded: __init__.py",
+      "path": "studies/expanded/source/neuristor/analysis/__init__.py"
+    },
+    {
+      "label": "Expanded: boundary_search.py",
+      "path": "studies/expanded/source/neuristor/analysis/boundary_search.py"
+    },
+    {
+      "label": "Expanded: distribution.py",
+      "path": "studies/expanded/source/neuristor/analysis/distribution.py"
+    },
+    {
+      "label": "Expanded: experimental_waveforms.py",
+      "path": "studies/expanded/source/neuristor/analysis/experimental_waveforms.py"
+    },
+    {
+      "label": "Expanded: extrema.py",
+      "path": "studies/expanded/source/neuristor/analysis/extrema.py"
+    },
+    {
+      "label": "Expanded: frequency_sensitivity.py",
+      "path": "studies/expanded/source/neuristor/analysis/frequency_sensitivity.py"
+    },
+    {
+      "label": "Expanded: lab_estimates.py",
+      "path": "studies/expanded/source/neuristor/analysis/lab_estimates.py"
+    },
+    {
+      "label": "Expanded: lab_replay.py",
+      "path": "studies/expanded/source/neuristor/analysis/lab_replay.py"
+    },
+    {
+      "label": "Expanded: loss_comparison.py",
+      "path": "studies/expanded/source/neuristor/analysis/loss_comparison.py"
+    },
+    {
+      "label": "Expanded: metrics.py",
+      "path": "studies/expanded/source/neuristor/analysis/metrics.py"
+    },
+    {
+      "label": "Expanded: model_validation.py",
+      "path": "studies/expanded/source/neuristor/analysis/model_validation.py"
+    },
+    {
+      "label": "Expanded: optimizer_diagnostics.py",
+      "path": "studies/expanded/source/neuristor/analysis/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Expanded: oscillation_audit.py",
+      "path": "studies/expanded/source/neuristor/analysis/oscillation_audit.py"
+    },
+    {
+      "label": "Expanded: physical_maps.py",
+      "path": "studies/expanded/source/neuristor/analysis/physical_maps.py"
+    },
+    {
+      "label": "Expanded: trend_validation.py",
+      "path": "studies/expanded/source/neuristor/analysis/trend_validation.py"
+    },
+    {
+      "label": "Expanded: artifact_catalog.py",
+      "path": "studies/expanded/source/neuristor/artifact_catalog.py"
+    },
+    {
+      "label": "Expanded: cli.py",
+      "path": "studies/expanded/source/neuristor/cli.py"
+    },
+    {
+      "label": "Expanded: config.py",
+      "path": "studies/expanded/source/neuristor/config.py"
+    },
+    {
+      "label": "Expanded: current_domain_search.py",
+      "path": "studies/expanded/source/neuristor/current_domain_search.py"
+    },
+    {
+      "label": "Expanded: current_drive_sim.py",
+      "path": "studies/expanded/source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Expanded: dashboard.py",
+      "path": "studies/expanded/source/neuristor/dashboard.py"
+    },
+    {
+      "label": "Expanded: experimental_waveforms.py",
+      "path": "studies/expanded/source/neuristor/experimental_waveforms.py"
+    },
+    {
+      "label": "Expanded: extrema.py",
+      "path": "studies/expanded/source/neuristor/extrema.py"
+    },
+    {
+      "label": "Expanded: __init__.py",
+      "path": "studies/expanded/source/neuristor/fitting/__init__.py"
+    },
+    {
+      "label": "Expanded: current_domain_search.py",
+      "path": "studies/expanded/source/neuristor/fitting/current_domain_search.py"
+    },
+    {
+      "label": "Expanded: joint_inference.py",
+      "path": "studies/expanded/source/neuristor/fitting/joint_inference.py"
+    },
+    {
+      "label": "Expanded: optimizer_audit.py",
+      "path": "studies/expanded/source/neuristor/fitting/optimizer_audit.py"
+    },
+    {
+      "label": "Expanded: parameter_inference.py",
+      "path": "studies/expanded/source/neuristor/fitting/parameter_inference.py"
+    },
+    {
+      "label": "Expanded: resistance_custom_analysis.py",
+      "path": "studies/expanded/source/neuristor/fitting/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Expanded: steady_inference.py",
+      "path": "studies/expanded/source/neuristor/fitting/steady_inference.py"
+    },
+    {
+      "label": "Expanded: __init__.py",
+      "path": "studies/expanded/source/neuristor/interfaces/__init__.py"
+    },
+    {
+      "label": "Expanded: dashboard.py",
+      "path": "studies/expanded/source/neuristor/interfaces/dashboard.py"
+    },
+    {
+      "label": "Expanded: playground.py",
+      "path": "studies/expanded/source/neuristor/interfaces/playground.py"
+    },
+    {
+      "label": "Expanded: presentation_server.py",
+      "path": "studies/expanded/source/neuristor/interfaces/presentation_server.py"
+    },
+    {
+      "label": "Expanded: run_manager.py",
+      "path": "studies/expanded/source/neuristor/interfaces/run_manager.py"
+    },
+    {
+      "label": "Expanded: joint_inference.py",
+      "path": "studies/expanded/source/neuristor/joint_inference.py"
+    },
+    {
+      "label": "Expanded: lab_estimates.py",
+      "path": "studies/expanded/source/neuristor/lab_estimates.py"
+    },
+    {
+      "label": "Expanded: lab_replay.py",
+      "path": "studies/expanded/source/neuristor/lab_replay.py"
+    },
+    {
+      "label": "Expanded: __init__.py",
+      "path": "studies/expanded/source/neuristor/legacy/__init__.py"
+    },
+    {
+      "label": "Expanded: plots.py",
+      "path": "studies/expanded/source/neuristor/legacy/plots.py"
+    },
+    {
+      "label": "Expanded: sample_library.py",
+      "path": "studies/expanded/source/neuristor/legacy/sample_library.py"
+    },
+    {
+      "label": "Expanded: map_animations.py",
+      "path": "studies/expanded/source/neuristor/map_animations.py"
+    },
+    {
+      "label": "Expanded: map_workflows.py",
+      "path": "studies/expanded/source/neuristor/map_workflows.py"
+    },
+    {
+      "label": "Expanded: metrics.py",
+      "path": "studies/expanded/source/neuristor/metrics.py"
+    },
+    {
+      "label": "Expanded: model.py",
+      "path": "studies/expanded/source/neuristor/model.py"
+    },
+    {
+      "label": "Expanded: model_validation.py",
+      "path": "studies/expanded/source/neuristor/model_validation.py"
+    },
+    {
+      "label": "Expanded: __init__.py",
+      "path": "studies/expanded/source/neuristor/orchestration/__init__.py"
+    },
+    {
+      "label": "Expanded: artifact_catalog.py",
+      "path": "studies/expanded/source/neuristor/orchestration/artifact_catalog.py"
+    },
+    {
+      "label": "Expanded: boundary_workflows.py",
+      "path": "studies/expanded/source/neuristor/orchestration/boundary_workflows.py"
+    },
+    {
+      "label": "Expanded: loss_comparison.py",
+      "path": "studies/expanded/source/neuristor/orchestration/loss_comparison.py"
+    },
+    {
+      "label": "Expanded: loss_scopes.py",
+      "path": "studies/expanded/source/neuristor/orchestration/loss_scopes.py"
+    },
+    {
+      "label": "Expanded: map_viewers.py",
+      "path": "studies/expanded/source/neuristor/orchestration/map_viewers.py"
+    },
+    {
+      "label": "Expanded: map_workflows.py",
+      "path": "studies/expanded/source/neuristor/orchestration/map_workflows.py"
+    },
+    {
+      "label": "Expanded: optimizer_audit.py",
+      "path": "studies/expanded/source/neuristor/orchestration/optimizer_audit.py"
+    },
+    {
+      "label": "Expanded: optimizer_review.py",
+      "path": "studies/expanded/source/neuristor/orchestration/optimizer_review.py"
+    },
+    {
+      "label": "Expanded: sample_study.py",
+      "path": "studies/expanded/source/neuristor/orchestration/sample_study.py"
+    },
+    {
+      "label": "Expanded: trend_validation.py",
+      "path": "studies/expanded/source/neuristor/orchestration/trend_validation.py"
+    },
+    {
+      "label": "Expanded: oscillation_audit.py",
+      "path": "studies/expanded/source/neuristor/oscillation_audit.py"
+    },
+    {
+      "label": "Expanded: parameter_inference.py",
+      "path": "studies/expanded/source/neuristor/parameter_inference.py"
+    },
+    {
+      "label": "Expanded: physical_maps.py",
+      "path": "studies/expanded/source/neuristor/physical_maps.py"
+    },
+    {
+      "label": "Expanded: playground.py",
+      "path": "studies/expanded/source/neuristor/playground.py"
+    },
+    {
+      "label": "Expanded: plots.py",
+      "path": "studies/expanded/source/neuristor/plots.py"
+    },
+    {
+      "label": "Expanded: __init__.py",
+      "path": "studies/expanded/source/neuristor/plotting/__init__.py"
+    },
+    {
+      "label": "Expanded: boundary_maps.py",
+      "path": "studies/expanded/source/neuristor/plotting/boundary_maps.py"
+    },
+    {
+      "label": "Expanded: frequency_sensitivity.py",
+      "path": "studies/expanded/source/neuristor/plotting/frequency_sensitivity.py"
+    },
+    {
+      "label": "Expanded: loss_comparison.py",
+      "path": "studies/expanded/source/neuristor/plotting/loss_comparison.py"
+    },
+    {
+      "label": "Expanded: map_animations.py",
+      "path": "studies/expanded/source/neuristor/plotting/map_animations.py"
+    },
+    {
+      "label": "Expanded: optimizer_diagnostics.py",
+      "path": "studies/expanded/source/neuristor/plotting/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Expanded: replay_plots.py",
+      "path": "studies/expanded/source/neuristor/plotting/replay_plots.py"
+    },
+    {
+      "label": "Expanded: trend_validation.py",
+      "path": "studies/expanded/source/neuristor/plotting/trend_validation.py"
+    },
+    {
+      "label": "Expanded: visualization.py",
+      "path": "studies/expanded/source/neuristor/plotting/visualization.py"
+    },
+    {
+      "label": "Expanded: provenance.py",
+      "path": "studies/expanded/source/neuristor/provenance.py"
+    },
+    {
+      "label": "Expanded: replay_plots.py",
+      "path": "studies/expanded/source/neuristor/replay_plots.py"
+    },
+    {
+      "label": "Expanded: resistance_custom_analysis.py",
+      "path": "studies/expanded/source/neuristor/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Expanded: runs.py",
+      "path": "studies/expanded/source/neuristor/runs.py"
+    },
+    {
+      "label": "Expanded: sample_library.py",
+      "path": "studies/expanded/source/neuristor/sample_library.py"
+    },
+    {
+      "label": "Expanded: sample_study.py",
+      "path": "studies/expanded/source/neuristor/sample_study.py"
+    },
+    {
+      "label": "Expanded: steady_inference.py",
+      "path": "studies/expanded/source/neuristor/steady_inference.py"
+    },
+    {
+      "label": "Expanded: validation.py",
+      "path": "studies/expanded/source/neuristor/validation.py"
+    },
+    {
+      "label": "Expanded: visualization.py",
+      "path": "studies/expanded/source/neuristor/visualization.py"
+    },
+    {
+      "label": "Expanded: workflows.py",
+      "path": "studies/expanded/source/neuristor/workflows.py"
+    },
+    {
+      "label": "Expanded: source_hashes.json",
+      "path": "studies/expanded/source_hashes.json"
+    },
+    {
+      "label": "Expanded: verification.csv",
+      "path": "studies/expanded/verification.csv"
+    },
+    {
+      "label": "Dense onset: axis_values.json",
+      "path": "studies/dense_onset/axis_values.json"
+    },
+    {
+      "label": "Dense onset: grid.csv",
+      "path": "studies/dense_onset/grid.csv"
+    },
+    {
+      "label": "Dense onset: heatmaps.png",
+      "path": "studies/dense_onset/heatmaps.png"
+    },
+    {
+      "label": "Dense onset: included.csv",
+      "path": "studies/dense_onset/included.csv"
+    },
+    {
+      "label": "Dense onset: metrics.json",
+      "path": "studies/dense_onset/metrics.json"
+    },
+    {
+      "label": "Dense onset: parameter_maps.html",
+      "path": "studies/dense_onset/parameter_maps.html"
+    },
+    {
+      "label": "Dense onset: physics_parameters.json",
+      "path": "studies/dense_onset/physics_parameters.json"
+    },
+    {
+      "label": "Dense onset: report.md",
+      "path": "studies/dense_onset/report.md"
+    },
+    {
+      "label": "Dense onset: resolved_config.json",
+      "path": "studies/dense_onset/resolved_config.json"
+    },
+    {
+      "label": "Dense onset: run.json",
+      "path": "studies/dense_onset/run.json"
+    },
+    {
+      "label": "Dense onset: screening_checkpoint.csv",
+      "path": "studies/dense_onset/screening_checkpoint.csv"
+    },
+    {
+      "label": "Dense onset: __init__.py",
+      "path": "studies/dense_onset/source/neuristor/__init__.py"
+    },
+    {
+      "label": "Dense onset: __init__.py",
+      "path": "studies/dense_onset/source/neuristor/analysis/__init__.py"
+    },
+    {
+      "label": "Dense onset: boundary_search.py",
+      "path": "studies/dense_onset/source/neuristor/analysis/boundary_search.py"
+    },
+    {
+      "label": "Dense onset: distribution.py",
+      "path": "studies/dense_onset/source/neuristor/analysis/distribution.py"
+    },
+    {
+      "label": "Dense onset: experimental_waveforms.py",
+      "path": "studies/dense_onset/source/neuristor/analysis/experimental_waveforms.py"
+    },
+    {
+      "label": "Dense onset: extrema.py",
+      "path": "studies/dense_onset/source/neuristor/analysis/extrema.py"
+    },
+    {
+      "label": "Dense onset: frequency_sensitivity.py",
+      "path": "studies/dense_onset/source/neuristor/analysis/frequency_sensitivity.py"
+    },
+    {
+      "label": "Dense onset: lab_estimates.py",
+      "path": "studies/dense_onset/source/neuristor/analysis/lab_estimates.py"
+    },
+    {
+      "label": "Dense onset: lab_replay.py",
+      "path": "studies/dense_onset/source/neuristor/analysis/lab_replay.py"
+    },
+    {
+      "label": "Dense onset: loss_comparison.py",
+      "path": "studies/dense_onset/source/neuristor/analysis/loss_comparison.py"
+    },
+    {
+      "label": "Dense onset: metrics.py",
+      "path": "studies/dense_onset/source/neuristor/analysis/metrics.py"
+    },
+    {
+      "label": "Dense onset: model_validation.py",
+      "path": "studies/dense_onset/source/neuristor/analysis/model_validation.py"
+    },
+    {
+      "label": "Dense onset: optimizer_diagnostics.py",
+      "path": "studies/dense_onset/source/neuristor/analysis/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Dense onset: oscillation_audit.py",
+      "path": "studies/dense_onset/source/neuristor/analysis/oscillation_audit.py"
+    },
+    {
+      "label": "Dense onset: physical_maps.py",
+      "path": "studies/dense_onset/source/neuristor/analysis/physical_maps.py"
+    },
+    {
+      "label": "Dense onset: trend_validation.py",
+      "path": "studies/dense_onset/source/neuristor/analysis/trend_validation.py"
+    },
+    {
+      "label": "Dense onset: artifact_catalog.py",
+      "path": "studies/dense_onset/source/neuristor/artifact_catalog.py"
+    },
+    {
+      "label": "Dense onset: cli.py",
+      "path": "studies/dense_onset/source/neuristor/cli.py"
+    },
+    {
+      "label": "Dense onset: config.py",
+      "path": "studies/dense_onset/source/neuristor/config.py"
+    },
+    {
+      "label": "Dense onset: current_domain_search.py",
+      "path": "studies/dense_onset/source/neuristor/current_domain_search.py"
+    },
+    {
+      "label": "Dense onset: current_drive_sim.py",
+      "path": "studies/dense_onset/source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Dense onset: dashboard.py",
+      "path": "studies/dense_onset/source/neuristor/dashboard.py"
+    },
+    {
+      "label": "Dense onset: experimental_waveforms.py",
+      "path": "studies/dense_onset/source/neuristor/experimental_waveforms.py"
+    },
+    {
+      "label": "Dense onset: extrema.py",
+      "path": "studies/dense_onset/source/neuristor/extrema.py"
+    },
+    {
+      "label": "Dense onset: __init__.py",
+      "path": "studies/dense_onset/source/neuristor/fitting/__init__.py"
+    },
+    {
+      "label": "Dense onset: current_domain_search.py",
+      "path": "studies/dense_onset/source/neuristor/fitting/current_domain_search.py"
+    },
+    {
+      "label": "Dense onset: joint_inference.py",
+      "path": "studies/dense_onset/source/neuristor/fitting/joint_inference.py"
+    },
+    {
+      "label": "Dense onset: optimizer_audit.py",
+      "path": "studies/dense_onset/source/neuristor/fitting/optimizer_audit.py"
+    },
+    {
+      "label": "Dense onset: parameter_inference.py",
+      "path": "studies/dense_onset/source/neuristor/fitting/parameter_inference.py"
+    },
+    {
+      "label": "Dense onset: resistance_custom_analysis.py",
+      "path": "studies/dense_onset/source/neuristor/fitting/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Dense onset: steady_inference.py",
+      "path": "studies/dense_onset/source/neuristor/fitting/steady_inference.py"
+    },
+    {
+      "label": "Dense onset: __init__.py",
+      "path": "studies/dense_onset/source/neuristor/interfaces/__init__.py"
+    },
+    {
+      "label": "Dense onset: dashboard.py",
+      "path": "studies/dense_onset/source/neuristor/interfaces/dashboard.py"
+    },
+    {
+      "label": "Dense onset: playground.py",
+      "path": "studies/dense_onset/source/neuristor/interfaces/playground.py"
+    },
+    {
+      "label": "Dense onset: presentation_server.py",
+      "path": "studies/dense_onset/source/neuristor/interfaces/presentation_server.py"
+    },
+    {
+      "label": "Dense onset: run_manager.py",
+      "path": "studies/dense_onset/source/neuristor/interfaces/run_manager.py"
+    },
+    {
+      "label": "Dense onset: joint_inference.py",
+      "path": "studies/dense_onset/source/neuristor/joint_inference.py"
+    },
+    {
+      "label": "Dense onset: lab_estimates.py",
+      "path": "studies/dense_onset/source/neuristor/lab_estimates.py"
+    },
+    {
+      "label": "Dense onset: lab_replay.py",
+      "path": "studies/dense_onset/source/neuristor/lab_replay.py"
+    },
+    {
+      "label": "Dense onset: __init__.py",
+      "path": "studies/dense_onset/source/neuristor/legacy/__init__.py"
+    },
+    {
+      "label": "Dense onset: plots.py",
+      "path": "studies/dense_onset/source/neuristor/legacy/plots.py"
+    },
+    {
+      "label": "Dense onset: sample_library.py",
+      "path": "studies/dense_onset/source/neuristor/legacy/sample_library.py"
+    },
+    {
+      "label": "Dense onset: map_animations.py",
+      "path": "studies/dense_onset/source/neuristor/map_animations.py"
+    },
+    {
+      "label": "Dense onset: map_workflows.py",
+      "path": "studies/dense_onset/source/neuristor/map_workflows.py"
+    },
+    {
+      "label": "Dense onset: metrics.py",
+      "path": "studies/dense_onset/source/neuristor/metrics.py"
+    },
+    {
+      "label": "Dense onset: model.py",
+      "path": "studies/dense_onset/source/neuristor/model.py"
+    },
+    {
+      "label": "Dense onset: model_validation.py",
+      "path": "studies/dense_onset/source/neuristor/model_validation.py"
+    },
+    {
+      "label": "Dense onset: __init__.py",
+      "path": "studies/dense_onset/source/neuristor/orchestration/__init__.py"
+    },
+    {
+      "label": "Dense onset: artifact_catalog.py",
+      "path": "studies/dense_onset/source/neuristor/orchestration/artifact_catalog.py"
+    },
+    {
+      "label": "Dense onset: boundary_workflows.py",
+      "path": "studies/dense_onset/source/neuristor/orchestration/boundary_workflows.py"
+    },
+    {
+      "label": "Dense onset: loss_comparison.py",
+      "path": "studies/dense_onset/source/neuristor/orchestration/loss_comparison.py"
+    },
+    {
+      "label": "Dense onset: loss_scopes.py",
+      "path": "studies/dense_onset/source/neuristor/orchestration/loss_scopes.py"
+    },
+    {
+      "label": "Dense onset: map_viewers.py",
+      "path": "studies/dense_onset/source/neuristor/orchestration/map_viewers.py"
+    },
+    {
+      "label": "Dense onset: map_workflows.py",
+      "path": "studies/dense_onset/source/neuristor/orchestration/map_workflows.py"
+    },
+    {
+      "label": "Dense onset: optimizer_audit.py",
+      "path": "studies/dense_onset/source/neuristor/orchestration/optimizer_audit.py"
+    },
+    {
+      "label": "Dense onset: optimizer_review.py",
+      "path": "studies/dense_onset/source/neuristor/orchestration/optimizer_review.py"
+    },
+    {
+      "label": "Dense onset: sample_study.py",
+      "path": "studies/dense_onset/source/neuristor/orchestration/sample_study.py"
+    },
+    {
+      "label": "Dense onset: trend_validation.py",
+      "path": "studies/dense_onset/source/neuristor/orchestration/trend_validation.py"
+    },
+    {
+      "label": "Dense onset: oscillation_audit.py",
+      "path": "studies/dense_onset/source/neuristor/oscillation_audit.py"
+    },
+    {
+      "label": "Dense onset: parameter_inference.py",
+      "path": "studies/dense_onset/source/neuristor/parameter_inference.py"
+    },
+    {
+      "label": "Dense onset: physical_maps.py",
+      "path": "studies/dense_onset/source/neuristor/physical_maps.py"
+    },
+    {
+      "label": "Dense onset: playground.py",
+      "path": "studies/dense_onset/source/neuristor/playground.py"
+    },
+    {
+      "label": "Dense onset: plots.py",
+      "path": "studies/dense_onset/source/neuristor/plots.py"
+    },
+    {
+      "label": "Dense onset: __init__.py",
+      "path": "studies/dense_onset/source/neuristor/plotting/__init__.py"
+    },
+    {
+      "label": "Dense onset: boundary_maps.py",
+      "path": "studies/dense_onset/source/neuristor/plotting/boundary_maps.py"
+    },
+    {
+      "label": "Dense onset: frequency_sensitivity.py",
+      "path": "studies/dense_onset/source/neuristor/plotting/frequency_sensitivity.py"
+    },
+    {
+      "label": "Dense onset: loss_comparison.py",
+      "path": "studies/dense_onset/source/neuristor/plotting/loss_comparison.py"
+    },
+    {
+      "label": "Dense onset: map_animations.py",
+      "path": "studies/dense_onset/source/neuristor/plotting/map_animations.py"
+    },
+    {
+      "label": "Dense onset: optimizer_diagnostics.py",
+      "path": "studies/dense_onset/source/neuristor/plotting/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Dense onset: replay_plots.py",
+      "path": "studies/dense_onset/source/neuristor/plotting/replay_plots.py"
+    },
+    {
+      "label": "Dense onset: trend_validation.py",
+      "path": "studies/dense_onset/source/neuristor/plotting/trend_validation.py"
+    },
+    {
+      "label": "Dense onset: visualization.py",
+      "path": "studies/dense_onset/source/neuristor/plotting/visualization.py"
+    },
+    {
+      "label": "Dense onset: provenance.py",
+      "path": "studies/dense_onset/source/neuristor/provenance.py"
+    },
+    {
+      "label": "Dense onset: replay_plots.py",
+      "path": "studies/dense_onset/source/neuristor/replay_plots.py"
+    },
+    {
+      "label": "Dense onset: resistance_custom_analysis.py",
+      "path": "studies/dense_onset/source/neuristor/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Dense onset: runs.py",
+      "path": "studies/dense_onset/source/neuristor/runs.py"
+    },
+    {
+      "label": "Dense onset: sample_library.py",
+      "path": "studies/dense_onset/source/neuristor/sample_library.py"
+    },
+    {
+      "label": "Dense onset: sample_study.py",
+      "path": "studies/dense_onset/source/neuristor/sample_study.py"
+    },
+    {
+      "label": "Dense onset: steady_inference.py",
+      "path": "studies/dense_onset/source/neuristor/steady_inference.py"
+    },
+    {
+      "label": "Dense onset: validation.py",
+      "path": "studies/dense_onset/source/neuristor/validation.py"
+    },
+    {
+      "label": "Dense onset: visualization.py",
+      "path": "studies/dense_onset/source/neuristor/visualization.py"
+    },
+    {
+      "label": "Dense onset: workflows.py",
+      "path": "studies/dense_onset/source/neuristor/workflows.py"
+    },
+    {
+      "label": "Dense onset: source_hashes.json",
+      "path": "studies/dense_onset/source_hashes.json"
+    },
+    {
+      "label": "Dense onset: verification.csv",
+      "path": "studies/dense_onset/verification.csv"
+    },
+    {
+      "label": "All grid entries with original screen flags",
+      "path": "all_grid_entries.csv"
+    },
+    {
+      "label": "Portable expanded-search recipe",
+      "media_type": "text/plain",
+      "path": "recipes/m2_1600nm_dense_onset_20261021.toml"
+    },
+    {
+      "label": "Portable expanded-search recipe",
+      "media_type": "text/plain",
+      "path": "recipes/m2_1600nm_expanded_20261021.toml"
+    },
+    {
+      "label": "Independent finer-step temperature exclusion check",
+      "path": "near_boundary_checks.csv"
+    },
+    {
+      "label": "Independent finer-step temperature exclusion check",
+      "path": "near_boundary_config.json"
+    },
+    {
+      "label": "Independent finer-step temperature exclusion check",
+      "path": "check_near_boundary.py"
+    },
+    {
+      "label": "Software verification log",
+      "path": "checks/m2_1600nm_expansion_pytest_20261021.log"
+    },
+    {
+      "label": "Software verification log",
+      "path": "checks/m2_1600nm_expansion_validate_20261021.log"
+    },
+    {
+      "label": "Reviewed experiment counts and limitations",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Standalone diagnostic 3D and six slice maps",
+      "media_type": "text/html",
+      "path": "parameter_maps.html"
+    },
+    {
+      "label": "Experiment method, results and limitations",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    },
+    {
+      "label": "Static diagnostic 3D overview",
+      "path": "diagnostic_3d.png"
+    }
+  ],
+  "command": "Saved-evidence assembly: build_review.py",
+  "created_at": "2026-10-21T06:41:03.804420+00:00",
+  "id": "20261021_064103_m2-1600nm-expanded-r-t-exploration-review_226099",
+  "kind": "analysis",
+  "model": "current",
+  "name": "M2 1600nm expanded R-T exploration review",
+  "provenance": {
+    "branch": "main",
+    "commit": "12be9a9a729e03b164464fad0daab7c1b9d4f4c4",
+    "dirty": true
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "ambient_K": 298,
+    "cumulative_grid_entries": 2616,
+    "current_uA": 500,
+    "dynamic_calibration_adopted": false,
+    "exploratory_static_gate": 0.1,
+    "grid_entries": 1843,
+    "input_sha256": "fdda8d2293404566fb16154223da131b1a44f15975469f1cdfd8622948112e03",
+    "measured_temperature_range_K": [
+      289.98,
+      370.1795
+    ],
+    "previous_fine_pilot_points": 36,
+    "prior_grid_entries": 773,
+    "repository_validation": "passed",
+    "retained": 0,
+    "smallest_fine_startup_maximum_K": 372.67095947265625,
+    "startup_check_exclusions": 24,
+    "startup_check_integrations": 24,
+    "startup_check_settings": 12,
+    "static_default_gate_passed": false,
+    "static_rmse_log10": 0.0806524437586543,
+    "studies": [
+      {
+        "dt_ns": 0.0125,
+        "duration_us": 2.4,
+        "points": 512,
+        "retained": 0,
+        "study": "Expanded",
+        "sustained": 35,
+        "sustained_temperature_excluded": 35,
+        "temperature_valid": 337
+      },
+      {
+        "dt_ns": 0.00625,
+        "duration_us": 1.2,
+        "points": 1331,
+        "retained": 0,
+        "study": "Dense onset",
+        "sustained": 373,
+        "sustained_temperature_excluded": 373,
+        "temperature_valid": 894
+      }
+    ],
+    "tests_passed": 196
+  },
+  "updated_at": "2026-10-21T06:41:04.527636+00:00"
+}

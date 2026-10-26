@@ -4,6 +4,7 @@
 |---|---|
 | `resistance_custom_analysis.py` | Fit static major-loop resistance data; retain historical stateful fitting. |
 | `steady_inference.py` | Fit settled features with recipe-selected extrema/loss definitions and physical gates. |
+| `optimizer_audit.py` | Cache coordinate perturbations and test bounded L-BFGS-B on the same finite optimizer score. |
 | `joint_inference.py` | Earlier joint static/dynamic searches with recorded parameter constraints. |
 | `parameter_inference.py` | Earlier waveform-level fitting and inverse/reconstruction calculations. |
 | `current_domain_search.py` | Historical domain exploration; not the new sample-study path. |

@@ -1,0 +1,46 @@
+{
+  "ambient_K": 298,
+  "cumulative_grid_entries": 2616,
+  "current_uA": 500,
+  "dynamic_calibration_adopted": false,
+  "exploratory_static_gate": 0.1,
+  "grid_entries": 1843,
+  "input_sha256": "fdda8d2293404566fb16154223da131b1a44f15975469f1cdfd8622948112e03",
+  "measured_temperature_range_K": [
+    289.98,
+    370.1795
+  ],
+  "previous_fine_pilot_points": 36,
+  "prior_grid_entries": 773,
+  "repository_validation": "passed",
+  "retained": 0,
+  "smallest_fine_startup_maximum_K": 372.67095947265625,
+  "startup_check_exclusions": 24,
+  "startup_check_integrations": 24,
+  "startup_check_settings": 12,
+  "static_default_gate_passed": false,
+  "static_rmse_log10": 0.0806524437586543,
+  "studies": [
+    {
+      "dt_ns": 0.0125,
+      "duration_us": 2.4,
+      "points": 512,
+      "retained": 0,
+      "study": "Expanded",
+      "sustained": 35,
+      "sustained_temperature_excluded": 35,
+      "temperature_valid": 337
+    },
+    {
+      "dt_ns": 0.00625,
+      "duration_us": 1.2,
+      "points": 1331,
+      "retained": 0,
+      "study": "Dense onset",
+      "sustained": 373,
+      "sustained_temperature_excluded": 373,
+      "temperature_valid": 894
+    }
+  ],
+  "tests_passed": 196
+}
