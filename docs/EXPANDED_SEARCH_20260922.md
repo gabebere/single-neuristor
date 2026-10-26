@@ -49,24 +49,18 @@ snapshot. The recipe is `experiments/current/specimen_joint_expanded.toml`.
 Raw scores should not be compared to the previous loss: the bundle re-evaluates
 historical candidates with the new loss for a fair comparison.
 
-## Interactive controls
+## Replay and reproduction
 
-Run `neuristor playground` and open http://127.0.0.1:8502.
-Load an original or joint-fit vector, edit resistance and circuit/thermal
-parameters separately, then press **Run all measured currents**. T0 is editable;
-initial temperature follows it unless the checkbox is cleared. Capacitance zero
-uses the exact algebraic ideal-current limit. The measured input histories are
-fixed experimental inputs; the current slider selects a record rather than
-changing its input amplitude.
+The Streamlit controls described in the original September workflow were retired
+on 26 October 2026. Edit the resistance, electrical, thermal and initial values
+in `experiments/current/specimen_lab_replay.toml`, or pass explicit `--set`
+overrides to the CLI. The measured input histories remain fixed experimental
+inputs; the exported HTML current slider selects a saved record.
 
-The voltage overlay and simulated R(t) share time. The bottom slider changes
-current without resimulation. Optional per-current GIFs animate a time cursor
-over both complete curves. Each run saves all traces, per-current metrics,
-standalone HTML with a current slider, GIFs and a ZIP, plus an explicit TOML recipe.
-Each new Run creates a separate bundle; editing controls does not change displayed
-saved results until Run is pressed. The simulation uses measured prehistory and
-baseline-corrected channels. Simulated R(t) is not an experimental V/I estimate.
-Manual runs are exploratory; repeat promising values at smaller timesteps.
+Each replay writes a new bundle with traces, metrics, standalone HTML, GIFs and
+a reproducible recipe. Simulated R(t) is not an experimental V/I estimate.
+Repeat promising values at smaller timesteps. Browse completed runs with
+`neuristor runs manage`.
 
 CLI reproduction:
 

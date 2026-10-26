@@ -446,27 +446,6 @@ def analyze_loss_scopes(
     _announce_bundle(bundle.root)
 
 
-@app.command("playground")
-def playground(port: int = typer.Option(8502, "--port", min=1, max=65535)) -> None:
-    """Open the editable all-current Simulation Lab."""
-    root = find_project_root()
-    entry = Path(__file__).parent / "interfaces/playground.py"
-    args = [
-        sys.executable,
-        "-m",
-        "streamlit",
-        "run",
-        str(entry),
-        "--server.port",
-        str(port),
-        "--server.address",
-        "127.0.0.1",
-        "--browser.gatherUsageStats",
-        "false",
-    ]
-    raise typer.Exit(subprocess.run(args, cwd=root, check=False).returncode)
-
-
 @analyze_app.command("fit-joint")
 def analyze_fit_joint(
     config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False),
@@ -789,17 +768,6 @@ def validate(
     if not report.ok:
         raise typer.Exit(1)
     typer.echo("Validation passed.")
-
-
-@app.command("dashboard")
-def dashboard(
-    port: int = typer.Option(8501, "--port", min=1, max=65_535),
-) -> None:
-    """Open the read-only Streamlit archive and comparison dashboard."""
-
-    root = find_project_root()
-    command = [sys.executable, "-m", "streamlit", "run", str(root / "app.py"), "--server.port", str(port)]
-    raise typer.Exit(subprocess.run(command, cwd=root, check=False).returncode)
 
 
 def main() -> None:

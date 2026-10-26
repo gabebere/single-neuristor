@@ -30,7 +30,7 @@ Non-finite values are serialized as JSON `null`, not nonstandard `NaN` tokens.
 
 - `runs/local/`: local, ignored, exploratory.
 - `runs/published/`: tracked, reviewed evidence.
-- `runs/legacy/`: ignored historical Streamlit jobs.
+- `runs/legacy/`: ignored historical jobs.
 
 `neuristor runs publish RUN_ID` copies a local bundle to the public lane and changes
 the copied manifest's storage label. It refuses to overwrite an existing public ID.

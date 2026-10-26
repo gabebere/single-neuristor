@@ -1,4 +1,4 @@
-"""High-level experiment workflows shared by the CLI and archive dashboard.
+"""High-level experiment workflows used by the command-line interface.
 
 The numerical modules remain the source of truth for the physics.  This module
 only translates documented user units, invokes those solvers, and writes a

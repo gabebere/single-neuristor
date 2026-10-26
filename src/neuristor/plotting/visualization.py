@@ -1,4 +1,4 @@
-"""Small, consistent plotting surface for run bundles and the dashboard."""
+"""Small, consistent plotting surface for run bundles and exported viewers."""
 
 from __future__ import annotations
 

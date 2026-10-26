@@ -222,7 +222,8 @@ consolidated guide now. Local filing does not constitute a GitHub backup.
   399 search simulations and seven vectors verified at three steps. Stronger-static
   fit recovers 7/11 with 44.6 mV mean error; relaxed fit 6/11 with 39.8 mV.
   Amplitude mismatch and timestep-sensitive classification remain. No calibration.
-  Editable replay is available through `neuristor playground`.
+  The historical Streamlit replay was retired on 26 October; edit the replay
+  recipe and use `neuristor analyze replay-lab --config FILE.toml`.
 
 
 - [Budgeted joint inference](JOINT_INFERENCE_20260921.md) and

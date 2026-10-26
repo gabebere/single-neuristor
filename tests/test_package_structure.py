@@ -22,11 +22,7 @@ def test_owned_modules_import_from_the_canonical_source_tree():
         if relative.name == "__init__":
             continue
         module = importlib.import_module("neuristor." + ".".join(relative.parts))
-        # The retained dashboard entrypoint delegates to its actual interface.
-        if relative.as_posix() == "dashboard":
-            assert module is importlib.import_module("neuristor.interfaces.dashboard")
-        else:
-            assert Path(module.__file__).resolve() == source.resolve()
+        assert Path(module.__file__).resolve() == source.resolve()
 
 
 def test_snapshot_has_complete_nested_sources_and_valid_hashes(tmp_path):
@@ -43,8 +39,23 @@ def test_snapshot_has_complete_nested_sources_and_valid_hashes(tmp_path):
     # -I removes the editable checkout/PYTHONPATH. The only project source on
     # this child interpreter's path is the newly frozen recursive package.
     result = subprocess.run(
-        [sys.executable, "-I", "-c", f"import sys; sys.path.insert(0, {str(bundle.root / 'source')!r}); "
-         "import neuristor.cli; import neuristor.analysis.extrema as a; import neuristor.analysis.extrema as b; assert a is b"],
+        [sys.executable, "-I", "-c", f"""import sys, importlib, importlib.abc, pkgutil
+sys.path.insert(0, {str(bundle.root / 'source')!r})
+class WithoutStreamlit(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == 'streamlit' or fullname.startswith('streamlit.'):
+            raise ModuleNotFoundError('Streamlit is not installed', name=fullname)
+sys.meta_path.insert(0, WithoutStreamlit())
+import neuristor
+for module in pkgutil.walk_packages(neuristor.__path__, 'neuristor.'):
+    importlib.import_module(module.name)
+from neuristor.cli import app
+from typer.testing import CliRunner
+result = CliRunner().invoke(app, ['--help'])
+assert result.exit_code == 0, result.output
+assert 'dashboard' not in result.output and 'playground' not in result.output
+assert not any(name == 'streamlit' or name.startswith('streamlit.') for name in sys.modules)
+"""],
         cwd=tmp_path, capture_output=True, text=True, timeout=60,
     )
     assert result.returncode == 0, result.stderr

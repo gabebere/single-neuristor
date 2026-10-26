@@ -1,4 +1,4 @@
-"""Shared numerical summaries used by CLI workflows and the dashboard."""
+"""Shared numerical summaries used by experiment workflows."""
 
 from __future__ import annotations
 

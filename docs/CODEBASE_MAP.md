@@ -20,8 +20,8 @@ experiments/studies/*.toml
   → orchestration/artifact_catalog.py: searchable links to the evidence
 ```
 
-CLI/Streamlit → workflows/orchestration → analysis/fitting/plotting → physics.
-Physics never imports an interface. No CLI, dashboard or HTML viewer implements
+CLI/local viewers → workflows/orchestration → analysis/fitting/plotting → physics.
+Physics never imports an interface. No CLI or HTML viewer implements
 an independent scientific model. Units are explicit in recipes and converted at
 workflow boundaries; physics uses SI unless the dataclass field says otherwise.
 
@@ -59,7 +59,7 @@ Import measurements, extract cycle features, estimate conditional parameters, an
 | [lab_estimates.py](../src/neuristor/analysis/lab_estimates.py) | Estimate environmental thermal conductance from numerical TIA waveforms. |
 | [lab_replay.py](../src/neuristor/analysis/lab_replay.py) | All-current manual comparisons using measured input histories and shared physics. |
 | [loss_comparison.py](../src/neuristor/analysis/loss_comparison.py) | Common feature summaries for completed, matched steady-search experiments. |
-| [metrics.py](../src/neuristor/analysis/metrics.py) | Shared numerical summaries used by CLI workflows and the dashboard. |
+| [metrics.py](../src/neuristor/analysis/metrics.py) | Shared numerical summaries used by experiment workflows. |
 | [model_validation.py](../src/neuristor/analysis/model_validation.py) | Blind validation of the specimen current-drive model against lab waveforms. |
 | [optimizer_diagnostics.py](../src/neuristor/analysis/optimizer_diagnostics.py) | Finite-difference evidence for a sampled, potentially discontinuous loss. |
 | [oscillation_audit.py](../src/neuristor/analysis/oscillation_audit.py) | Window-by-window waveform evidence and controlled parameter maps. |
@@ -108,16 +108,16 @@ Render saved or simulated numerical trajectories. Playback speed is separate fro
 | [optimizer_diagnostics.py](../src/neuristor/plotting/optimizer_diagnostics.py) | Plots of saved parameter perturbations with raw scientific eligibility visible. |
 | [replay_plots.py](../src/neuristor/plotting/replay_plots.py) | Voltage/resistance comparison graphics and lightweight per-current animations. |
 | [trend_validation.py](../src/neuristor/plotting/trend_validation.py) | Display controlled simulations without filling unresolved parameter points. |
-| [visualization.py](../src/neuristor/plotting/visualization.py) | Small, consistent plotting surface for run bundles and the dashboard. |
+| [visualization.py](../src/neuristor/plotting/visualization.py) | Small, consistent plotting surface for run bundles and exported viewers. |
 
 ## User interfaces
 
-Terminal-adjacent viewers and Streamlit controls delegate calculations to workflows. The run manager enforces lifecycle rules through RunRegistry; the portable presentation server uses only the standard library.
+The local HTTP interfaces serve existing reports, figures and interactive HTML.
+The run manager enforces lifecycle rules through RunRegistry; the portable
+presentation server uses only the standard library.
 
 | Module | Purpose |
 |---|---|
-| [dashboard.py](../src/neuristor/interfaces/dashboard.py) | Archive-first Streamlit dashboard for completed scientific run bundles. |
-| [playground.py](../src/neuristor/interfaces/playground.py) | Editable Streamlit laboratory replay; physics and saved runs live in workflows. |
 | [presentation_server.py](../src/neuristor/interfaces/presentation_server.py) | Read-only loopback delivery for the presentation's local HTML viewers. |
 | [run_manager.py](../src/neuristor/interfaces/run_manager.py) | Loopback-only artifact library with explicit, recoverable run deletion. |
 
@@ -135,8 +135,8 @@ The corresponding regression test still reproduces all six measured sample fits.
 
 Active code imports the grouped modules directly, for example
 `neuristor.analysis.extrema` and `neuristor.plotting.map_animations`.
-The root `dashboard.py` remains the documented dashboard entrypoint. Public
-physics, workflow and CLI paths are unchanged. Frozen sources in result bundles
+Streamlit applications and their launch commands have been retired. Public
+physics and workflow paths and scientific CLI commands remain available. Frozen sources in result bundles
 retain their own original modules and are never refactored in place.
 
 ## Extend and verify

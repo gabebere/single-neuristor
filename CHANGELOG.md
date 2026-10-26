@@ -7,8 +7,11 @@
   and unused slide assets; keep recovery points in Git history.
 - Replace 22 old-name Python import wrappers with canonical grouped imports.
   Python callers should use e.g. `neuristor.analysis.extrema` and
-  `neuristor.plotting.map_animations`. CLI commands, `neuristor.workflows`,
-  authoritative physics paths and the dashboard entrypoint remain available.
+  `neuristor.plotting.map_animations`. Scientific CLI commands,
+  `neuristor.workflows` and authoritative physics paths remain available.
+- Remove the Streamlit dashboard and playground, their launch commands and
+  package dependency. Browse results with `neuristor runs manage`; replay
+  measurements with `neuristor analyze replay-lab --config FILE.toml`.
 - Retain saved-fit numerical replay and its regression checks while removing
   the unused sample-management interface code. Preserve measurements, parameters
   and completed result bundles.

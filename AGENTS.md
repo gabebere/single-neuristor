@@ -23,12 +23,12 @@ single collaborator entry point. Repository locations are defined in
    current-source extension.
 3. `src/neuristor/workflows.py` translates documented units and writes artifacts. It
    must call the physics modules rather than duplicate their equations.
-4. `src/neuristor/cli.py` and `src/neuristor/dashboard.py` are presentation layers.
+4. `src/neuristor/cli.py` and `src/neuristor/interfaces/` are presentation layers.
    They must not contain independent scientific logic.
 5. `experiments/*.toml` are the versioned user-facing inputs.
 
 Dependencies should point downward through that list, never from physics into CLI or
-Streamlit code.
+viewer code.
 
 ## Non-negotiable physical invariants
 

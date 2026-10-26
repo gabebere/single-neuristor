@@ -210,3 +210,7 @@ Unused archives, import wrappers and older document assemblies were pruned on
 26 October. Scientific records, measured data, supported commands and completed
 bundles are preserved. Use [the recovery map](REPOSITORY_LAYOUT.md) for retired
 files; the latest organization checkpoints remain local until explicitly pushed.
+
+Streamlit interfaces were retired on 26 October; simulation and replay use the
+existing CLI and TOML recipes. The local run manager, exported HTML and
+presentation viewers remain available. Scientific conclusions are unchanged.

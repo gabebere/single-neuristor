@@ -4,8 +4,10 @@ Install from `pyproject.toml`; it is the authoritative dependency declaration.
 For development use `python -m pip install -e '.[dev]'`.
 
 `reference_environment.json` records the interpreter/platform and directly used
-package versions on the local machine during this reorganization. It is an
-environment **record**, not a portable, dependency-complete lockfile. Do not treat
+package versions on the local machine during this reorganization. It is a
+historical environment **record**, not a portable, dependency-complete lockfile.
+It includes Streamlit, which was subsequently removed from the maintained
+package; installing the current project does not require it. Do not treat
 versions from one macOS/Python environment as a validated Linux installation.
 
 The GitHub workflow installs in a fresh hosted environment and runs tests,

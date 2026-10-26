@@ -3,7 +3,7 @@
 Every new command writes the same small contract.  ``run.json`` is the index;
 all paths inside it are relative to the run directory, making bundles portable
 across machines and GitHub clones.  The registry also understands historical
-``runs/published/*/job.json`` records so the new dashboard does not discard years
+``runs/published/*/job.json`` records so the run library preserves years
 of provenance.
 """
 
@@ -218,7 +218,7 @@ class RunBundle:
 
 @dataclass(frozen=True)
 class RunRecord:
-    """Read-only normalized view of a new run or historical Streamlit job."""
+    """Read-only normalized view of a new run or historical job."""
 
     id: str
     name: str

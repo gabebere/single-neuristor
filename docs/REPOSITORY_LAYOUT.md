@@ -17,9 +17,10 @@ The [root README](../README.md) is the collaborator entry point.
 `private/` is local and ignored. Third-party PDFs are never redistributed.
 
 All active imports use their canonical implementation group, such as
-`neuristor.analysis.extrema`. The old import wrappers have been removed;
-`neuristor.dashboard` remains the documented dashboard entrypoint. Physics,
-public workflow and CLI entrypoints retain their established paths.
+`neuristor.analysis.extrema`. The old import wrappers have been removed.
+Physics, public workflow and scientific CLI entrypoints retain their established
+paths. The Streamlit dashboard/playground and their launch commands are retired;
+use `neuristor runs manage` for browsing and TOML recipes for simulation/replay.
 
 ## What was removed on 26 October 2026
 
@@ -29,6 +30,8 @@ public workflow and CLI entrypoints retain their established paths.
   Its numerical fit replay survives in `fitting/saved_fit_replay.py` because a
   scientific regression test still verifies the six recorded measured fits.
 - Twenty-two old-name import wrappers, with all active callers updated.
+- The Streamlit dashboard/playground, root app launcher, final dashboard wrapper,
+  UI-only tests, launch commands and direct package dependency.
 - Old report/supplement assemblies, unused backup slides and images, and guides
   superseded by the README, codebase map and current CLI.
 
@@ -44,6 +47,7 @@ retained because GitHub does not back it up.
 | `12be9a9a729e03b164464fad0daab7c1b9d4f4c4` | Original scripts, upstream source and historical report assemblies before the folder reorganization | Verified on GitHub `main` on 26 October |
 | `b2ee2ff` | Full versioned state before reorganizing folders | Local commit |
 | `080ce19` / `cleanup-before-pruning-20261026` | Exact versioned state immediately before removing unused files | Local commit and annotated tag |
+| `d5df40b` | Exact versioned state before removing Streamlit | Local commit |
 | `v0.1.0-working-baseline` | Pre-refactor implementation | Tag verified on GitHub |
 
 [Browse the verified GitHub snapshot](https://github.com/gabebere/single-neuristor/tree/12be9a9a729e03b164464fad0daab7c1b9d4f4c4).
@@ -73,7 +77,7 @@ it is a navigation alias, not another collection of results.
 
 ## Cleanup verification
 
-The full suite passes (184 tests). Removed alias-only tests were replaced by a
+The pre-Streamlit-removal suite passed 184 tests. Removed alias-only tests were replaced by a
 canonical-package import check; numerical fidelity and convergence checks remain.
 Repository validation checks all 47 recipes and five reproduction records.
 
@@ -91,5 +95,13 @@ wrappers cannot survive accidentally in a cached package.
 Temporary verification bundles and build workspaces created by this chat were
 removed after checking their outputs. The original 162 distinct research records
 remain discoverable; unique local trials, failed runs and reviewed evidence
-were not pruned. The maintained source package shrank from 83 to 58 Python
-modules, with a single authoritative implementation path for each capability.
+were not pruned. Pruning reduced the maintained package from 83 to 58 Python modules; removing
+Streamlit reduces it further to 55. Scientific calculations have one authoritative
+implementation path. Frozen historical run sources retain their original contents.
+
+Streamlit removal verification: all 183 remaining tests pass, including isolated
+imports of every package module with Streamlit blocked. The clean wheel contains
+neither the removed interfaces nor a Streamlit dependency; sample planning works
+from that wheel. Validation still finds all 47 recipes, 162 research records and
+five reproduction entries. Physics, measured data and published bundles remain
+unchanged. The removed UI test was specific to the retired application.

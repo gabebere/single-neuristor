@@ -405,8 +405,9 @@ static constraint and 6/11 with relaxed static weight at the finest step.
 Late-mean voltage RMSE improves to 44.6/39.8 mV, but oscillating-record amplitude
 errors remain large (127.9/130.6 mV); the prior anchored vector still recovers 9/11.
 One stronger-static classification changes on final timestep refinement. No new
-calibration is adopted. Use `neuristor playground` for editable all-current V(t)/R(t)
-comparisons, bottom current slider, per-current GIFs and reproducible saved recipes.
+calibration is adopted. At this checkpoint, `neuristor playground` provided
+all-current V(t)/R(t) comparisons and per-current GIFs. That Streamlit interface
+was retired on 26 October; use `neuristor analyze replay-lab --config experiments/current/specimen_lab_replay.toml` for reproducible replay.
 
 The same stronger-static parameter vector also has a synchronized scope export
 (recipe `experiments/current/specimen_scope_export.toml`) at 0.00625 ns: progressively

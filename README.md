@@ -139,7 +139,7 @@ purpose-specific source groups; the authoritative physics remains in `model.py` 
 | Parameter-trend checks | `neuristor analyze validate-trends --config FILE.toml` |
 | Frequency/amplitude fitting | `neuristor analyze fit-steady --config FILE.toml` |
 | Parameter sweep | `neuristor sweep run --config FILE.toml` |
-| Archive dashboard | `neuristor dashboard` |
+| Local run library | `neuristor runs manage` |
 
 Use `neuristor --help` and each command's `--help`.
 [Boundary search](docs/BOUNDARY_SEARCH.md) · [Map displays](docs/MAP_DISPLAY.md).

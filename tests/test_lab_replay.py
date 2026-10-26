@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 
 import numpy as np
-from streamlit.testing.v1 import AppTest
 from typer.testing import CliRunner
 
 from neuristor.cli import app
@@ -54,21 +53,6 @@ def test_replay_cli_bundle_and_recipe(tmp_path):
     with Image.open(next((run/'GIFs').glob('*.gif'))) as gif:
         assert gif.n_frames == 2
         assert gif.height > gif.width
-
-
-def test_playground_loads_and_groups_parameters():
-    ui = AppTest.from_file(str(ROOT/'src/neuristor/interfaces/playground.py')).run(timeout=20)
-    assert not ui.exception
-    assert any(n.label.startswith('Ambient temperature') for n in ui.number_input)
-    assert any(b.label == 'Run all measured currents' for b in ui.button)
-
-    fitted = next(o for o in ui.sidebar.selectbox[0].options if "static_preserving" in o)
-    ui.sidebar.selectbox[0].select(fitted).run()
-    ui.sidebar.button[0].click().run()
-    assert not ui.exception
-    capacitance = next(n.value for n in ui.number_input if n.label.startswith('Capacitance'))
-    assert capacitance == ui.session_state.lab_config['electrical']['C_pF']
-    assert capacitance != .39
 
 
 def test_major_branches_and_progressive_scope(tmp_path):
