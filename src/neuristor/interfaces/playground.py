@@ -26,7 +26,7 @@ def main() -> None:
     def presets():
         """Find saved joint candidates without executing a simulation."""
         options = {"Original specimen parameters": None}
-        for table in sorted((ROOT / "public_jobs").glob("*/parameters.csv"), reverse=True):
+        for table in sorted((ROOT / "runs/published").glob("*/parameters.csv"), reverse=True):
             frame = pd.read_csv(table)
             if set(NAMES).issubset(frame.columns) and "candidate" in frame:
                 for _, row in frame.iterrows():
@@ -57,7 +57,7 @@ def main() -> None:
                 if key.startswith("param:"):
                     st.session_state[key] = float(deep_get(config, key.removeprefix("param:")))
             st.rerun()
-        saved = sorted((ROOT / "runs").glob("*/comparison.html"), reverse=True)
+        saved = sorted((ROOT / "runs/local").glob("*/comparison.html"), reverse=True)
         if saved:
             previous = st.selectbox("Saved comparison", saved, format_func=lambda p: p.parent.name)
             if st.button("Open saved results"):
@@ -119,7 +119,7 @@ def main() -> None:
         st.session_state.lab_config = config
         try:
             with st.spinner("Simulating all current histories and saving comparisons…"):
-                bundle = run_lab_replay(config, output_root=ROOT / "runs")
+                bundle = run_lab_replay(config, output_root=ROOT / "runs/local")
             st.session_state.lab_result = str(bundle.root)
         except Exception as exc:
             st.error(str(exc))

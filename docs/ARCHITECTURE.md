@@ -64,14 +64,14 @@ See [the management guide](RUN_MANAGEMENT.md).
 Implementation modules are grouped under `analysis/`, `fitting/`, `plotting/`,
 `orchestration/`, `interfaces/`, and `legacy/`. The authoritative physics and public
 workflow paths stay unchanged. Old-name modules alias their grouped module object;
-there is no second implementation. See [the source guide](../src/neuristor/README.md).
+there is no second implementation. See [the source guide](CODEBASE_MAP.md).
 Run source snapshots now recurse through the complete package. Reused numerical
 evidence retains its original source separately from the current viewer's source.
 
 The dashboard registry normalizes two on-disk formats:
 
-- new `run.json` bundles under `runs/` and `public_jobs/`;
-- historical `job.json` directories under `jobs/` and `public_jobs/`.
+- new `run.json` bundles under `runs/local/` and `runs/published/`;
+- historical `job.json` directories under `runs/legacy/` and `runs/published/`.
 
 This lets the UI improve without rewriting historical evidence. The old simulation
 UI and one-off scripts remain recoverable at `v0.1.0-working-baseline`.

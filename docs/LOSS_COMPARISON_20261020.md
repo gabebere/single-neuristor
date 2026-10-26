@@ -121,9 +121,9 @@ All 22 inputs under each retained candidate are available as
 [44 stacked current/voltage/R(T) GIFs](LOSS_ANIMATIONS_20261021.md), with native
 R/T histories and saved-voltage fidelity checks. No optimization was repeated.
 
-- Frequency-only: `public_jobs/20261020_155947_controlled-frequency-only-specimen-fit_543408`.
-- Combined: `public_jobs/20261020_165107_controlled-frequency-amplitude-specimen-fit_5ad999`.
-- Comparison: `public_jobs/20261020_170231_controlled-frequency-and-amplitude-loss-comparis_26574a`.
+- Frequency-only: `runs/published/20261020_155947_controlled-frequency-only-specimen-fit_543408`.
+- Combined: `runs/published/20261020_165107_controlled-frequency-amplitude-specimen-fit_5ad999`.
+- Comparison: `runs/published/20261020_170231_controlled-frequency-and-amplitude-loss-comparis_26574a`.
 
 The earlier comparison `2feaaa` is superseded for display only: the new version
 shows missing complete-cycle Vpp as gaps rather than connecting its zero sentinel.

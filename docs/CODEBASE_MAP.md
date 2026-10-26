@@ -1,101 +1,155 @@
 # Codebase map
 
-Start with the sample-study recipe, not historical scripts. The stable Python
-entry points remain in `neuristor.workflows`; the terminal interface is `neuristor`.
-Focused study/map orchestration is isolated without changing scientific equations.
+The [root README](../README.md) is the collaborator guide. This page consolidates
+all former source-folder READMEs into one implementation reference.
+[Repository layout and former paths](REPOSITORY_LAYOUT.md).
 
-## Active path
+## Read the active workflow first
 
 ```text
-experiments/studies/*.toml → config.py + cli.py → workflows.run_sample_study
-    → orchestration/sample_study.py: declared-unit input, stage coordination, sharing
-    → workflows.run_resistance_fit → fitting/resistance_custom_analysis.py
-    → orchestration/map_workflows.py: screening → verification → point GIFs
-        → analysis/physical_maps.py + analysis/extrema.py: coordinates, eligibility, cycle features
-        → current_drive_sim.py → model.py: authoritative physics/hysteresis
-        → plotting/map_animations.py + plotting/replay_plots.py: real trajectories and GIFs
-    → runs.py: one parent bundle with immutable child stages
-    → orchestration/artifact_catalog.py: links to canonical evidence, not another database
+experiments/studies/*.toml
+  → cli.py + config.py
+  → workflows.run_sample_study
+  → orchestration/sample_study.py
+      → fitting/resistance_custom_analysis.py: measured major-loop fit
+      → orchestration/map_workflows.py: grid → screening → smaller-step checks
+          → analysis/physical_maps.py + analysis/extrema.py
+          → current_drive_sim.py → model.py
+          → plotting/map_animations.py + plotting/replay_plots.py
+  → runs.py: parent bundle and child stages
+  → orchestration/artifact_catalog.py: searchable links to the evidence
 ```
 
-No independent model is implemented in the CLI, HTML or dashboard. Historical
-spectral/peak-count detectors are not interchangeable with current extrema
-analysis; each research recipe declares its method.
+CLI/Streamlit → workflows/orchestration → analysis/fitting/plotting → physics.
+Physics never imports an interface. No CLI, dashboard or HTML viewer implements
+an independent scientific model. Units are explicit in recipes and converted at
+workflow boundaries; physics uses SI unless the dataclass field says otherwise.
 
-## Physics and numerical truth
-
-| Module | Responsibility |
-|---|---|
-| `model.py` | Original voltage-circuit model, parameter dataclasses and shared float32-faithful hysteresis memory. |
-| `current_drive_sim.py` | Ideal-current extension, exact C=0 limit, serial/vectorized integration. Every new map/replay uses it. |
-
-These modules know nothing about CLI/Streamlit or study-folder paths. Never
-change physical state to improve a plot or weaken a convergence test.
-
-## Numerical analysis and inference
+## Stable core and shared infrastructure
 
 | Module | Responsibility |
 |---|---|
-| `fitting/resistance_custom_analysis.py` | Major-loop and historical stateful R(T) fitting, uncertainty resampling and diagnostics. |
-| `analysis/experimental_waveforms.py` | Numerical TIA waveform import; nominal drive labels remain distinct from measured current. |
-| `analysis/extrema.py` | Settled complete-cycle maxima/minima, frequency, Vpp and persistence. |
-| `analysis/physical_maps.py` | Exact Cth/Se/C sampling, physical screening, two-step verification, slider slices and rendering. |
-| `analysis/metrics.py` | Shared single-run summaries; basic historical detector is not the current extrema-fit objective. |
-| `analysis/lab_estimates.py` | Conditional conductance/electrical and thermal timing estimates from lab records. |
-| `analysis/model_validation.py` | Frozen specimen comparison and capacitance sensitivity against measured waveforms. |
-| `fitting/parameter_inference.py` | Earlier shared-waveform inference and inverse/reconstruction helpers; historical objectives preserved. |
-| `fitting/joint_inference.py` | Budgeted joint static-resistance/dynamic-feature fits with recorded constraints. |
-| `fitting/steady_inference.py` | Late-window searches, configured feature/loss definitions and physical eligibility gates. |
-| `analysis/oscillation_audit.py` | Windowed persistence and controlled diagnostics; distinguishes transient peaks from sustained cycles. |
-| `analysis/lab_replay.py` | Measured-current forward replay and major-branch guides with one shared parameter vector. |
-| `fitting/current_domain_search.py` | Earlier exploratory domain search, not part of the new sample pipeline. |
-| `legacy/sample_library.py` | Compatibility for older saved samples and historical fit-display detector; not another time-domain solver. |
+| [model.py](../src/neuristor/model.py) | Authoritative voltage circuit, parameter dataclasses and shared float32-faithful hysteresis memory. |
+| [current_drive_sim.py](../src/neuristor/current_drive_sim.py) | Authoritative ideal-current model, exact C=0 limit and scalar/vectorized integrators. |
+| [workflows.py](../src/neuristor/workflows.py) | Stable public workflow API: translates units, coordinates calculations and writes RunBundles. |
+| [config.py](../src/neuristor/config.py) | Recipe loading, validation, source-relative paths and dotted overrides. |
+| [runs.py](../src/neuristor/runs.py) | Manifests, discovery, publication and protected recoverable trash/restore. |
+| [layout.py](../src/neuristor/layout.py) | Canonical storage lanes and read-only resolution of former recorded paths. |
+| [provenance.py](../src/neuristor/provenance.py) | Recursive source snapshots and hashes, including grouped implementations. |
+| [validation.py](../src/neuristor/validation.py) | Recipe, manifest, artifact and reproduction-index checks. |
+| [cli.py](../src/neuristor/cli.py) | Terminal parsing and messages; delegates scientific work. |
 
-Historical paths remain when needed to explain archived results. New work should
-reuse the smallest relevant analysis function rather than add another script.
+The current-source equation is `C dV/dt = I − V/R(T,H)`; `C=0` gives `V=IR(T,H)`.
+A series resistor does not change an ideal imposed current. Capacitance changes
+the approach time, not the steady metallic floor near `I Rm`. Preserve hysteresis
+fidelity and convergence assertions. Passing numerical checks does not establish
+the unresolved quantitative TIA fit.
 
-## Orchestration, artifacts and interfaces
+## Numerical analysis
 
-| Module | Responsibility |
+Import measurements, extract cycle features, estimate conditional parameters, and screen or audit simulations. Historical detectors are distinct from the current settled-extrema analysis; use the method declared by the recipe.
+
+| Module | Purpose |
 |---|---|
-| `config.py` | TOML loading/core checks, relative-path origin and typo-safe dotted overrides. |
-| `workflows.py` | Stable public API, unit translation, simulation/fitting/replay/audit orchestration; delegates map/study stages. |
-| `orchestration/sample_study.py` | Strict CSV/TSV unit normalization, major-loop/workload checks, fit → grid → GIF coordination, standalone HTML. |
-| `orchestration/map_workflows.py` | Screened grid/media bundles, checkpoints, reuse provenance and historical packaging compatibility. |
-| `runs.py` | Relative-path manifests, status/provenance, current/legacy discovery and non-destructive publication. |
-| `orchestration/artifact_catalog.py` | HTML chronology and CSV inventory; never duplicates, deletes or scientifically endorses evidence. |
-| `validation.py` | Recipe/manifest/artifact checks for `neuristor validate`. |
-| `cli.py` | Command parsing and output/error messages; no independent scientific equations. |
-| `interfaces/dashboard.py` | Read-only archive browsing/comparison. |
-| `interfaces/playground.py` | Editable lab-replay UI; simulations remain in workflows/physics. |
-| `interfaces/run_manager.py` | Loopback artifact library, authenticated Delete/Restore requests; lifecycle protections stay in runs.py. |
-| `__init__.py` | Package metadata and compatibility exports. |
+| [boundary_search.py](../src/neuristor/analysis/boundary_search.py) | Adaptive exploration of the deterministic ideal-current oscillatory domain. |
+| [distribution.py](../src/neuristor/analysis/distribution.py) | Structural publication checks; never upload files or infer legal permission. |
+| [experimental_waveforms.py](../src/neuristor/analysis/experimental_waveforms.py) | Load and summarize the professor-supplied TIA current-sweep waveforms. |
+| [extrema.py](../src/neuristor/analysis/extrema.py) | Phase-independent oscillation measurements from settled voltage extrema. |
+| [frequency_sensitivity.py](../src/neuristor/analysis/frequency_sensitivity.py) | Per-input frequency derivatives from saved parameter perturbation experiments. |
+| [lab_estimates.py](../src/neuristor/analysis/lab_estimates.py) | Estimate environmental thermal conductance from numerical TIA waveforms. |
+| [lab_replay.py](../src/neuristor/analysis/lab_replay.py) | All-current manual comparisons using measured input histories and shared physics. |
+| [loss_comparison.py](../src/neuristor/analysis/loss_comparison.py) | Common feature summaries for completed, matched steady-search experiments. |
+| [metrics.py](../src/neuristor/analysis/metrics.py) | Shared numerical summaries used by CLI workflows and the dashboard. |
+| [model_validation.py](../src/neuristor/analysis/model_validation.py) | Blind validation of the specimen current-drive model against lab waveforms. |
+| [optimizer_diagnostics.py](../src/neuristor/analysis/optimizer_diagnostics.py) | Finite-difference evidence for a sampled, potentially discontinuous loss. |
+| [oscillation_audit.py](../src/neuristor/analysis/oscillation_audit.py) | Window-by-window waveform evidence and controlled parameter maps. |
+| [physical_maps.py](../src/neuristor/analysis/physical_maps.py) | Screened Cth/C/Se maps measured with steady-state voltage extrema. |
+| [trend_validation.py](../src/neuristor/analysis/trend_validation.py) | New controlled tests of capacitance scaling and conditional parameter trends. |
 
-## Plotting and media
+## Fitting and parameter search
 
-| Module | Responsibility |
+Fit static resistance or search dynamic parameters using the recorded objective. Static major-loop data do not identify gamma or dynamic constants. Historical fitting methods remain available to explain archived runs.
+
+| Module | Purpose |
 |---|---|
-| `plotting/visualization.py` | Simulation, fit, lab-estimate, inference and diagnostic graphics. |
-| `plotting/replay_plots.py` | Lab overlays and synchronized current/voltage/R(T) GIF writer; playback separate from integration. |
-| `plotting/map_animations.py` | Point refinement, resolution checks, explicit curve breaks, point controls and embedding original GIF bytes. |
-| `legacy/plots.py` | Historical voltage-sweep graphics; retained for compatibility, unused by the new pipeline. |
+| [current_domain_search.py](../src/neuristor/fitting/current_domain_search.py) | Methodical oscillation-domain search for the ideal current-driven VO2 model. |
+| [joint_inference.py](../src/neuristor/fitting/joint_inference.py) | Budgeted joint static/dynamic inference using the authoritative simulator. |
+| [optimizer_audit.py](../src/neuristor/fitting/optimizer_audit.py) | Cached normalized-coordinate evaluations and bounded gradient score trials. |
+| [parameter_inference.py](../src/neuristor/fitting/parameter_inference.py) | Global inverse fitting of the current-drive model to measured waveforms. |
+| [resistance_custom_analysis.py](../src/neuristor/fitting/resistance_custom_analysis.py) | Fit specimen-specific VO2 resistance/hysteresis parameters from experimental R(T) data. |
+| [steady_inference.py](../src/neuristor/fitting/steady_inference.py) | Phase-independent late-window inference with bounded independent restarts. |
 
-Pre-refactor scripts stay in `legacy_scripts/`. Papers and upstream source stay
-in `references/`. Old document outputs keep their original locations and appear
-in the `artifacts/` catalog. The former long README is preserved in
-`docs/WORKFLOW_REFERENCE.md`; current handoff conclusions take precedence.
+## Workflow coordination
 
-## Safe extension checklist
+Combine existing numerical functions into reproducible studies and evidence bundles. These modules own stages, reuse checks, display-only revisions and catalog generation, not independent circuit equations.
 
-1. Put scientific calculations in pure physics/analysis functions.
-2. Expose orchestration through workflows; focused modules must reuse unit
-   translation and equations, not fork them.
-3. Use a versioned TOML and existing CLI instead of a one-off script.
-4. Write a standard RunBundle with numerical evidence and a readable report.
-5. Test the lowest relevant layer, one command/bundle case and the exact recipe.
-6. Physics changes need two smaller timesteps without weaker tolerances.
-7. Publish new reviewed evidence, never edit completed public bundles.
-8. Update the handoff/chronology and refresh `neuristor runs index`.
+| Module | Purpose |
+|---|---|
+| [artifact_catalog.py](../src/neuristor/orchestration/artifact_catalog.py) | A lightweight human-readable catalog, not another database or artifact copy. |
+| [boundary_workflows.py](../src/neuristor/orchestration/boundary_workflows.py) | Coarse exploration followed by fine boundary verification in one run bundle. |
+| [loss_comparison.py](../src/neuristor/orchestration/loss_comparison.py) | Bundle a comparison of two matched completed steady-search runs. |
+| [loss_scopes.py](../src/neuristor/orchestration/loss_scopes.py) | Render both saved loss candidates without repeating their optimization. |
+| [map_viewers.py](../src/neuristor/orchestration/map_viewers.py) | Presentation-only revisions of completed maps, without new trajectories. |
+| [map_workflows.py](../src/neuristor/orchestration/map_workflows.py) | Screened map and point-media orchestration behind the public workflows API. |
+| [optimizer_audit.py](../src/neuristor/orchestration/optimizer_audit.py) | Reproducible local derivative, timestep and L-BFGS-B experiments. |
+| [optimizer_review.py](../src/neuristor/orchestration/optimizer_review.py) | Review completed derivative and expanded-search experiments on a common basis. |
+| [sample_study.py](../src/neuristor/orchestration/sample_study.py) | One sample, one recipe, one portable evidence folder. |
+| [trend_validation.py](../src/neuristor/orchestration/trend_validation.py) | Controlled fresh integrations for the documented full-map tendencies. |
 
-The new pipeline automates evidence. It does not resolve the sample/TIA mismatch
-or retroactively turn earlier optimization attempts into accepted calibrations.
+## Figures and animations
+
+Render saved or simulated numerical trajectories. Playback speed is separate from integration timestep. Do not change physical states or invent R(T) paths to improve a display.
+
+| Module | Purpose |
+|---|---|
+| [boundary_maps.py](../src/neuristor/plotting/boundary_maps.py) | Display sampled classifications and boundary brackets without interpolating them. |
+| [frequency_sensitivity.py](../src/neuristor/plotting/frequency_sensitivity.py) | Direct f_i(theta) profiles from saved simulations, using measured current names. |
+| [loss_comparison.py](../src/neuristor/plotting/loss_comparison.py) | Presentation-ready plots from saved verification samples, without simulation. |
+| [map_animations.py](../src/neuristor/plotting/map_animations.py) | Portable point-to-GIF drill-downs, using authoritative current-drive physics. |
+| [optimizer_diagnostics.py](../src/neuristor/plotting/optimizer_diagnostics.py) | Plots of saved parameter perturbations with raw scientific eligibility visible. |
+| [replay_plots.py](../src/neuristor/plotting/replay_plots.py) | Voltage/resistance comparison graphics and lightweight per-current animations. |
+| [trend_validation.py](../src/neuristor/plotting/trend_validation.py) | Display controlled simulations without filling unresolved parameter points. |
+| [visualization.py](../src/neuristor/plotting/visualization.py) | Small, consistent plotting surface for run bundles and the dashboard. |
+
+## User interfaces
+
+Terminal-adjacent viewers and Streamlit controls delegate calculations to workflows. The run manager enforces lifecycle rules through RunRegistry; the portable presentation server uses only the standard library.
+
+| Module | Purpose |
+|---|---|
+| [dashboard.py](../src/neuristor/interfaces/dashboard.py) | Archive-first Streamlit dashboard for completed scientific run bundles. |
+| [playground.py](../src/neuristor/interfaces/playground.py) | Editable Streamlit laboratory replay; physics and saved runs live in workflows. |
+| [presentation_server.py](../src/neuristor/interfaces/presentation_server.py) | Read-only loopback delivery for the presentation's local HTML viewers. |
+| [run_manager.py](../src/neuristor/interfaces/run_manager.py) | Loopback-only artifact library with explicit, recoverable run deletion. |
+
+## Historical compatibility helpers
+
+Older sample-library and plotting behavior, retained to interpret historical evidence. These helpers do not replace the authoritative time-domain solvers.
+
+| Module | Purpose |
+|---|---|
+| [plots.py](../src/neuristor/legacy/plots.py) | plots.py |
+| [sample_library.py](../src/neuristor/legacy/sample_library.py) | Sample preset library and R-T calibration helpers. |
+
+## Compatible imports and historical source
+
+The small old-name modules at `src/neuristor/` are compatibility aliases, not
+alternate implementations. For example, `neuristor.extrema` refers to the same
+module object as `neuristor.analysis.extrema`; private names and monkeypatches
+are preserved. Edit the grouped implementation and use its path in new code.
+`dashboard.py` is likewise a bridge to `interfaces/dashboard.py`.
+
+Pre-refactor scripts are in `archive/scripts/`, outside the supported API.
+Attributed upstream source is in `archive/references/`. Frozen source trees
+inside result bundles are evidence, not active implementation; never refactor them.
+
+## Extend and verify
+
+Add a pure function at the lowest useful layer, coordinate it through workflows,
+expose one CLI command, and add a versioned recipe when configuration-driven.
+Return a standard RunBundle containing config, metrics, report, numerical tables
+and relative artifact paths. See [AGENTS.md](../AGENTS.md) and
+[CONTRIBUTING.md](../CONTRIBUTING.md) for required tests and recipe checks.
+
+`neuristor runs index` generates `runs/catalog/source_inventory.csv` with every
+owned Python file's role, size and purpose without executing historical scripts.

@@ -9,7 +9,7 @@ each raw measurement and immutable run bundle.
   reviewed normalized sweep.
 - `parameter_estimates/` contains the current environmental-conductance and thermal-
   capacitance analyses.
-- `reviewed_runs/` exposes the complete tracked `public_jobs/` archive, including
+- `reviewed_runs/` exposes the complete tracked `runs/published/` archive, including
   superseded and historical runs. Use `docs/ARCHIVE_INDEX.md` to distinguish them.
 
 Do not edit files through a reviewed-run link. Re-run and publish a new bundle instead.

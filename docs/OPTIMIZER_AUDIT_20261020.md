@@ -129,10 +129,10 @@ they do not establish that optimizer choice alone explains the model mismatch.
 
 ## Reviewed evidence
 
-- Audit: `public_jobs/20261020_185046_finite-difference-and-gradient-optimization-audi_21879a`.
-- Expanded frequency: `public_jobs/20261020_184721_expanded-optimizer-test-frequency-only-specimen-_aae50f`.
-- Expanded combined: `public_jobs/20261020_184721_expanded-optimizer-test-frequency-amplitude-spec_d5e6bb`.
-- Common saved-data review: `public_jobs/20261020_195947_optimizer-budget-derivative-and-gradient-review_555769`.
+- Audit: `runs/published/20261020_185046_finite-difference-and-gradient-optimization-audi_21879a`.
+- Expanded frequency: `runs/published/20261020_184721_expanded-optimizer-test-frequency-only-specimen-_aae50f`.
+- Expanded combined: `runs/published/20261020_184721_expanded-optimizer-test-frequency-amplitude-spec_d5e6bb`.
+- Common saved-data review: `runs/published/20261020_195947_optimizer-budget-derivative-and-gradient-review_555769`.
 
 Software checks: 186 tests passed; repository validation passed. The exact three
 new numerical recipes and the saved-data review command completed. No physical

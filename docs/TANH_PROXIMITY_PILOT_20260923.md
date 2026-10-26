@@ -33,4 +33,4 @@ sustained traces and the resistance/monotonicity constraints. Verify against
 all current controls and smaller timesteps; this pilot alone does not warrant
 claiming the channel/circuit discrepancy is resolved.
 
-Canonical bundle: `runs/20260923_061836_tanh-proximity-bounded-pilot-labels-300-to-700_11a3f7`.
+Canonical bundle: `runs/local/20260923_061836_tanh-proximity-bounded-pilot-labels-300-to-700_11a3f7`.

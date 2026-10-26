@@ -17,13 +17,13 @@ ID and explains that its entire folder—including nested study stages—will mo
 After confirmation the run disappears from active history. Open **Trash — restore
 deleted runs** and click **Restore** to bring it back to its original location.
 
-Opening `artifacts/index.html` directly as a file still supports browsing, but
+Opening `runs/catalog/index.html` directly as a file still supports browsing, but
 its delete buttons are disabled. Browsers do not grant ordinary HTML files
 filesystem deletion authority. Use the local manager URL for file operations.
 
 ## Protections and meaning
 
-- Only direct, non-symlink folders in `runs/` with `completed` or `failed` status
+- Only direct, non-symlink folders in `runs/local/` with `completed` or `failed` status
   can be moved. Unknown-status/live jobs, published bundles, and legacy jobs are protected.
 - A run referenced by an experiment TOML is protected until that recipe is updated.
 - A run supplying GIFs to a live fixed-scale viewer is protected until that viewer is removed.
@@ -32,7 +32,7 @@ filesystem deletion authority. Use the local manager URL for file operations.
 - Trash preserves files and manifests byte-for-byte. A separate `deletion.json`
   records the original location and restore ID. Restoring never overwrites an existing folder.
 - Trashed folders are excluded from active run discovery and the live file inventory.
-- Trash is project-local `runs/.trash/`, **not** the macOS Trash. It remains ignored
+- Trash is project-local `runs/local/.trash/`, **not** the macOS Trash. It remains ignored
   by Git and consumes disk space. No permanent erase or automatic expiry is implemented.
 - Moving a run can make old handwritten links to its local path unavailable;
   restoring repairs those paths. Review any needed evidence before deleting.

@@ -4,11 +4,11 @@ The cooling hook is a reproducible property of the fitted minor-loop law. It is 
 
 ## Evidence and scope
 
-Selected fit: `search_1` in `runs/20260922_175152_background-settled-oscillations-for-original-lab_f426de`. Replay: `runs/20260922_204643_steady-oscillation-search-best-search-1-finest-t_ac96b8`, timestep 0.00625 ns. Detailed inspection uses original label 500 (measured plateau 380.749 µA). One settled cycle spans 157.26–178.34 ns, with temperature 331.288–339.699 K.
+Selected fit: `search_1` in `runs/local/20260922_175152_background-settled-oscillations-for-original-lab_f426de`. Replay: `runs/local/20260922_204643_steady-oscillation-search-best-search-1-finest-t_ac96b8`, timestep 0.00625 ns. Detailed inspection uses original label 500 (measured plateau 380.749 µA). One settled cycle spans 157.26–178.34 ns, with temperature 331.288–339.699 K.
 
 The internal direction correctly switches between +1 and −1. The cooling path contains an approximately 4.97 Ω decrease in R as T falls through 338.239–337.900 K. Replaying the identical fine-grid temperature history through the archived upstream VO2 class, with the fitted parameters, agrees within 0.0000611 Ω across the full history. Temperatures stay within both implementations' clamp intervals. Five existing hysteresis/reversal tests pass. A separate double-precision derivative check confirms the hook without a time integrator.
 
-Diagnostic files: `outputs/cooling_audit/`: `500_label_internal_state.csv`, `analytic_derivative.csv`, `diagnosis.json`, `gamma_slope_scan.csv`, `finite_difference_check.json`, `heating_cooling_check.png`, `proximity_slope.png`. These are exploratory diagnostics, not a published run bundle. Scripts there reproduce the inspection using existing physics; no new workflow was added.
+Diagnostic files: `runs/scratch/cooling_audit/`: `500_label_internal_state.csv`, `analytic_derivative.csv`, `diagnosis.json`, `gamma_slope_scan.csv`, `finite_difference_check.json`, `heating_cooling_check.png`, `proximity_slope.png`. These are exploratory diagnostics, not a published run bundle. Scripts there reproduce the inspection using existing physics; no new workflow was added.
 
 ## Mathematical cause
 
@@ -65,4 +65,4 @@ No new large optimization was launched, and no GIF or completed bundle was overw
 
 Zhang et al., *Collective dynamics and long-range order in thermal neuristor networks*, Nature Communications 15, 6986 (2024), Methods Eq. (3): https://doi.org/10.1038/s41467-024-51254-4 . Accessible author-hosted PDF: https://escholarship.org/content/qt0tw9628s/qt0tw9628s_noSplash_252a39ee6f42c1bbc1d23df15e2b599e.pdf . The sine/tanh proximity law is given there. The derivative analysis and parameter admissibility diagnosis above are our own calculations, not claims made by the paper.
 
-Archived executable reference: `references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/model.py`, functions P, Tpr_func, g and reversal. Its R output is kΩ; the comparison explicitly converts it to Ω.
+Archived executable reference: `archive/references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/model.py`, functions P, Tpr_func, g and reversal. Its R output is kΩ; the comparison explicitly converts it to Ω.

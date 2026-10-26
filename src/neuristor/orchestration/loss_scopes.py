@@ -70,7 +70,7 @@ def export_loss_scopes(config, base, frequency_run, combined_run, *, output_root
     dataset = prepare_inference_dataset(raw, holdout_drives_mV=[float(raw.nominal_drive_mV.min())])
     bundle = RunBundle.create(name='Loss function comparison all 44 stacked GIFs', model='loss-scopes',
         kind='analysis', config=dict(recipe=resolved_copy(config), sources={k:str(v[0]) for k,v in parents.items()}, frames=frames),
-        output_root=output_root or 'runs', command=command)
+        output_root=output_root or 'runs/local', command=command)
     print(f'RUN_DIRECTORY={bundle.root}', flush=True)
     try:
         from neuristor.provenance import snapshot_package

@@ -65,7 +65,7 @@ different historical objectives by their numerical scores.
 
 ## Results
 
-Search bundle: `public_jobs/20261003_183555_simple-relative-squared-extrema-fitting-pilot_96b944`.
+Search bundle: `runs/published/20261003_183555_simple-relative-squared-extrema-fitting-pilot_96b944`.
 85 unique candidates, 181.55 seconds searching, 228.17 seconds including all nine
 verification batches (three parameter vectors × three timesteps × 22 records).
 No candidate was eligible on all nine targets. `diagnostic_1` is the best
@@ -101,7 +101,7 @@ show imposed measured current, measured/simulated voltage and simulated R(T)
 over static major-branch guides. R and T are simulated, not experimental channels.
 
 Reviewed GIF bundle:
-`public_jobs/20261003_183956_simple-loss-diagnostic-1-all-current-gif-replay-_4e79ac`.
+`runs/published/20261003_183956_simple-loss-diagnostic-1-all-current-gif-replay-_4e79ac`.
 22 GIFs / 22 PNGs, 48 readable frames each; replay/search voltage difference
 <=0.0093 mV. Full replay temperature range 317.46–364.07 K. Its historical
 persistence summary is separate from the new extrema gate; do not substitute

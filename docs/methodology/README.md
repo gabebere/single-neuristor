@@ -20,7 +20,7 @@ Intentionally deferred until Gabriel approves Section 1:
 
 Scientific source-of-truth files used for Section 1:
 
-- `references/papers/collective Dynamics.pdf`
-- `references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/model.py`
+- `archive/references/papers/collective Dynamics.pdf`
+- `archive/references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/model.py`
 - `src/neuristor/model.py`
 - `src/neuristor/current_drive_sim.py`

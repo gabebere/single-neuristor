@@ -20,4 +20,4 @@ path = "thermal.C_th_pJ_per_K"
 values = [5.0, 10.0, 25.0, 49.62776831, 100.0]
 
 [output]
-root = "runs"
+root = "runs/local"

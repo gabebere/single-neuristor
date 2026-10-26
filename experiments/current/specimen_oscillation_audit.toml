@@ -21,12 +21,12 @@ S_e_mW_per_K = 0.0036751265
 T0_K = 314.4
 
 [resistance]
-preset = "../../presets/resistance_100425_chip1_gap3.json"
+preset = "../../data/parameters/resistance_100425_chip1_gap3.json"
 start_branch = "insulator"
 
 [audit]
 data_directory = "../../data/experimental/tia_current_sweep"
-reference_bundle = "../../public_jobs/20260907_125315_physics-anchored-specimen-waveform-inference_717797"
+reference_bundle = "../../runs/published/20260907_125315_physics-anchored-specimen-waveform-inference_717797"
 reference_mode = "relaxed"
 # These labels identify records; the measured currents are the simulation inputs.
 source_settings_mV = [300.0, 500.0, 800.0]
@@ -48,4 +48,4 @@ minimum_retention = 0.5
 minimum_coherence = 0.4
 
 [output]
-root = "runs"
+root = "runs/local"

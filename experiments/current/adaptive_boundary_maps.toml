@@ -18,7 +18,7 @@ C_th_pJ_per_K = 0.072
 S_e_mW_per_K = 0.006
 T0_K = 298.0
 [resistance]
-preset = "../../presets/resistance_100425_chip1_gap3.json"
+preset = "../../data/parameters/resistance_100425_chip1_gap3.json"
 start_branch = "insulator"
 [resistance.parameters]
 # Stay inside the measured static R(T) interval, without the old 5 K padding.
@@ -65,4 +65,4 @@ high = 0.012
 hard_low = 0.0003
 hard_high = 0.03
 [output]
-root = "runs"
+root = "runs/local"

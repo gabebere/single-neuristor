@@ -34,5 +34,5 @@ paper release, and the quantitative sample/TIA match remains unresolved.
   the release identity is known.
 
 None of these external steps are implied by `neuristor runs publish`. It only
-copies a completed local bundle to `public_jobs/`. This refactor does not push
+copies a completed local bundle to `runs/published/`. This refactor does not push
 GitHub changes or alter completed historical bundles.

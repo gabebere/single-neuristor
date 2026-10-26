@@ -57,7 +57,7 @@ def test_feature_score_prefers_matched_waveform_to_wrong_amplitude_or_decay():
 
 def test_archived_upper_boundary_is_a_detector_false_success():
     root = Path(__file__).resolve().parents[1]
-    frame = pd.read_csv(root / "public_jobs/20260907_125315_physics-anchored-specimen-waveform-inference_717797/fitted_traces.csv")
+    frame = pd.read_csv(root / "runs/published/20260907_125315_physics-anchored-specimen-waveform-inference_717797/fitted_traces.csv")
     frame = frame[(frame.fit_mode == "relaxed") & (frame.nominal_drive_mV == 800)]
     measured, _ = audit_voltage(frame.time_ns.to_numpy(), frame.measured_voltage_mV.to_numpy())
     predicted, _ = audit_voltage(frame.time_ns.to_numpy(), frame.predicted_voltage_mV.to_numpy())

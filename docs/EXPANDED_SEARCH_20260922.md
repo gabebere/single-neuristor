@@ -43,7 +43,7 @@ only after circuit calibration. Adding unconstrained parameters can conceal a
 wrong observation model. Same-device static R(T) does not establish uniform
 heating during a driven filamentary transition.
 
-Evidence: [expanded bundle](../public_jobs/20260921_210646_expanded-persistence-aware-joint-inference_694804/),
+Evidence: [expanded bundle](../runs/published/20260921_210646_expanded-persistence-aware-joint-inference_694804),
 particularly `parameters.csv`, `summary.csv`, `verification.csv` and its source
 snapshot. The recipe is `experiments/current/specimen_joint_expanded.toml`.
 Raw scores should not be compared to the previous loss: the bundle re-evaluates

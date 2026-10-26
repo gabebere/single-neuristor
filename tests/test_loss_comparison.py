@@ -60,9 +60,9 @@ def test_compare_steady_cli_uses_saved_samples_and_current_titles(tmp_path):
                 measured_mV=200+10*np.sin(t*.3),predicted_mV=200+20*np.sin(t*.33))))
         pd.concat(traces).to_csv(root/'verification_traces.csv',index=False)
     result=CliRunner().invoke(app,['analyze','compare-steady','--frequency-run',str(parents[0]),
-        '--combined-run',str(parents[1]),'--output-root',str(tmp_path/'output')])
+        '--combined-run',str(parents[1]),'--output-root',str(tmp_path/'runs/scratch/documents')])
     assert result.exit_code==0,result.output+repr(result.exception)
-    bundle=next((tmp_path/'output').glob('*/run.json')).parent
+    bundle=next((tmp_path/'runs/scratch/documents').glob('*/run.json')).parent
     assert json.loads((bundle/'run.json').read_text())['status']=='completed'
     scope=json.loads((bundle/'metrics.json').read_text())
     np.testing.assert_allclose(scope['representative_current_uA'],[230.,420.,605.])

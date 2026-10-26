@@ -20,7 +20,7 @@ C_th_pJ_per_K = 0.047873236
 S_e_mW_per_K = 0.0036751265
 T0_K = 314.4
 [resistance]
-preset = "../../presets/resistance_100425_chip1_gap3.json"
+preset = "../../data/parameters/resistance_100425_chip1_gap3.json"
 start_branch = "insulator"
 
 [joint]
@@ -37,17 +37,17 @@ maximum_static_rmse_log10 = 0.35
 persistence_weight = 12.0
 missing_frequency_penalty = 1.0
 seed_parameter_tables = [
-  "../../public_jobs/20260907_125315_physics-anchored-specimen-waveform-inference_717797/parameter_comparison.csv",
-  "../../public_jobs/20260829_210212_amplitude-tuned-oscillation-priority-specimen-in_85526c/parameter_comparison.csv",
+  "../../runs/published/20260907_125315_physics-anchored-specimen-waveform-inference_717797/parameter_comparison.csv",
+  "../../runs/published/20260829_210212_amplitude-tuned-oscillation-priority-specimen-in_85526c/parameter_comparison.csv",
 ]
 
 [[joint.joint_seeds]]
-table = "../../public_jobs/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f/parameters.csv"
+table = "../../runs/published/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f/parameters.csv"
 candidate = "static_preserving"
 label = "prior_joint_static"
 
 [[joint.joint_seeds]]
-table = "../../public_jobs/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f/parameters.csv"
+table = "../../runs/published/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f/parameters.csv"
 candidate = "dynamic_diagnostic"
 label = "prior_joint_diagnostic"
 
@@ -70,4 +70,4 @@ Ea_over_k_K = [1800.0, 3300.0]
 Rm_ohm = [5.0, 80.0]
 
 [output]
-root = "runs"
+root = "runs/local"

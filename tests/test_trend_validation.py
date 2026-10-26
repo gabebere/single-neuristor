@@ -89,12 +89,12 @@ name = "low_current_control"
 current_uA = 100.0
 T0_K = 298.0
 '''
-    recipe=recipe.replace('../../presets/',str(ROOT/'presets')+'/')
+    recipe=recipe.replace('../../data/parameters/',str(ROOT/'data/parameters')+'/')
     recipe=recipe.replace('dt_ns = [0.0125, 0.00625, 0.003125]','dt_ns = [0.5, 0.25, 0.125]')
     path=tmp_path/'smoke.toml';path.write_text(recipe)
-    result=CliRunner().invoke(app,['analyze','validate-trends','--config',str(path),'--output-root',str(tmp_path/'runs')])
+    result=CliRunner().invoke(app,['analyze','validate-trends','--config',str(path),'--output-root',str(tmp_path/'runs/local')])
     assert result.exit_code==0,result.output+str(result.exception)
-    bundle=next((tmp_path/'runs').iterdir())
+    bundle=next((tmp_path/'runs/local').iterdir())
     assert json.loads((bundle/'run.json').read_text())['status']=='completed'
     table=pd.read_csv(bundle/'case_summary.csv')
     assert (table.classification=='nonoscillatory').all()

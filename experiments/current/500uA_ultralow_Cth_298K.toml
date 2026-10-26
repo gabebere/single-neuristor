@@ -47,6 +47,6 @@ start_us = 0.1
 stop_us = 0.3
 
 [output]
-root = "runs"
+root = "runs/local"
 scope_gif = true
 scope_frames = 96

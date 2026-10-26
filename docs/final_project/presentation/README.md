@@ -10,7 +10,7 @@ audit. No diagnostic parameter vector is presented as a new physical calibration
 
 ## Slide-to-evidence map
 
-All run directories below are relative to the repository's `public_jobs/` folder.
+All run directories below are relative to the repository's `runs/published/` folder.
 Short suffixes printed on slides resolve to the full IDs here.
 
 | Slide | Question and evidence |
@@ -55,7 +55,7 @@ identical measured voltage. No filtering, smoothing or resimulation was added.
 From this directory with Tectonic available:
 
 ```bash
-tectonic -X compile --keep-logs --outdir ../../../../output/pdf VO2_Fitting_Journey.tex
+tectonic -X compile --keep-logs --outdir ../../../../runs/scratch/documents/pdf VO2_Fitting_Journey.tex
 ```
 
 Alternatively use the installed LaTeX compile skill with this file's absolute path.

@@ -69,7 +69,7 @@ def run_map_animations(
         model="current",
         kind="analysis",
         config=resolved_copy(config),
-        output_root=output_root or config.get("output", {}).get("root", "runs"),
+        output_root=output_root or config.get("output", {}).get("root", "runs/local"),
         command=command,
     )
     print(f"RUN_DIRECTORY={bundle.root}", flush=True)
@@ -296,7 +296,7 @@ def run_physical_parameter_maps(
         model="current",
         kind="analysis",
         config=resolved_copy(config),
-        output_root=output_root or config.get("output", {}).get("root", "runs"),
+        output_root=output_root or config.get("output", {}).get("root", "runs/local"),
         command=command,
     )
     print(f"RUN_DIRECTORY={bundle.root}", flush=True)

@@ -35,4 +35,4 @@ start_us = 10.0
 stop_us = 38.0
 
 [output]
-root = "runs"
+root = "runs/local"

@@ -27,7 +27,7 @@ S_e_mW_per_K = 0.0036751265
 T0_K = 314.4
 
 [resistance]
-preset = "../../presets/resistance_100425_chip1_gap3.json"
+preset = "../../data/parameters/resistance_100425_chip1_gap3.json"
 start_branch = "insulator"
 
 [analysis]
@@ -175,4 +175,4 @@ upper = 3.0
 initial_value = 0.15696370990041864
 
 [output]
-root = "runs"
+root = "runs/local"

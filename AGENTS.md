@@ -13,8 +13,9 @@ Implementation modules are grouped into `analysis/`, `fitting/`, `plotting/`,
 `orchestration/`, `interfaces/`, and `legacy/` under `src/neuristor/`. Old-name
 root modules are compatibility aliases, not alternate implementations. Edit the
 grouped implementation, not a bridge. The authoritative physics and public
-workflow paths below stay unchanged. Folder guides and `docs/CODEBASE_MAP.md`
-explain the routing; `START_HERE.html` is the non-coder navigation entry point.
+workflow paths below stay unchanged. `docs/CODEBASE_MAP.md` explains the routing; the root `README.md` is the
+single collaborator entry point. Repository locations are defined in
+`src/neuristor/layout.py`; preserve frozen paths by resolving them at read time.
 
 1. `src/neuristor/model.py` is authoritative for the Yuanhang voltage circuit and
    hysteresis implementation.
@@ -52,7 +53,7 @@ Streamlit code.
 6. Document the command in the README or linked format specification.
 
 Do not add a new top-level one-off Python script. Pre-refactor scripts live in
-`legacy_scripts/` only as historical source and can be recovered exactly from the
+`archive/scripts/` only as historical source and can be recovered exactly from the
 `v0.1.0-working-baseline` tag.
 
 ## Run-bundle contract
@@ -60,8 +61,8 @@ Do not add a new top-level one-off Python script. Pre-refactor scripts live in
 New workflows write a directory containing `run.json`, `resolved_config.json`,
 `metrics.json`, a human-readable `report.md`, numerical tables, and figures when
 appropriate. All manifest artifact paths are relative to the bundle root. Exploratory
-runs belong in ignored `runs/`; reviewed evidence is copied with
-`neuristor runs publish RUN_ID` into tracked `public_jobs/`.
+runs belong in ignored `runs/local/`; reviewed evidence is copied with
+`neuristor runs publish RUN_ID` into tracked `runs/published/`.
 
 Never edit a completed public bundle in place. Re-run the experiment and publish a new
 bundle so provenance remains inspectable.
@@ -93,5 +94,5 @@ weaken tolerances merely to make a changed trajectory pass.
 - Prefer descriptive names with units, such as `C_th_pJ_per_K` and `duration_us`.
 - Public functions and non-obvious numerical choices need docstrings or comments that
   explain intent and physical meaning, not line-by-line syntax.
-- Generated scratch output stays in `runs/` or `outputs/`, never beside source files.
+- Generated scratch output stays in `runs/local/` or `runs/scratch/`, never beside source files.
 - Update `docs/ARCHIVE_INDEX.md` when adding reviewed scientific evidence.

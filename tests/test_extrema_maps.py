@@ -132,7 +132,7 @@ def test_parameter_batch_matches_independent_runs_and_refines():
 def test_switching_parameter_grid_extrema_converge_at_two_smaller_steps():
     from neuristor.current_domain_search import load_resistance_preset
     root = Path(__file__).resolve().parents[1]
-    rp, _, _ = load_resistance_preset(root / 'presets/resistance_100425_chip1_gap3.json')
+    rp, _, _ = load_resistance_preset(root / 'data/parameters/resistance_100425_chip1_gap3.json')
     base = CurrentDriveParams(t_end_s=600e-9, T0_K=298, T_init_K=298, resist_params=rp)
     features = []
     for dt in [.05, .025, .0125]:

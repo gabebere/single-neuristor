@@ -24,8 +24,8 @@ from neuristor.model import HysteresisArray, YuanhangResistParams
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SAMPLE_LIBRARY_DIR = ROOT / "presets" / "samples"
-LEGACY_SPECIMEN_PRESET_PATH = ROOT / "presets" / "resistance_100425_chip1_gap3.json"
+SAMPLE_LIBRARY_DIR = ROOT / "data/parameters" / "samples"
+LEGACY_SPECIMEN_PRESET_PATH = ROOT / "data/parameters" / "resistance_100425_chip1_gap3.json"
 DEFAULT_EXPERIMENTAL_DIR = ROOT / "data" / "experimental"
 
 _EPS = 1e-12

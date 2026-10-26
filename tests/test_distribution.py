@@ -112,8 +112,8 @@ def test_recipe_validator_catches_unavailable_local_history(tmp_path):
 
 def test_publication_catches_case_sensitive_bundle_paths():
     manifest = {"artifacts": [{"path": "Figures/point.png"}]}
-    assert len(manifest_case_errors("public_jobs/id/run.json", manifest, {"public_jobs/id/figures/point.png"})) == 1
-    assert manifest_case_errors("public_jobs/id/run.json", manifest, {"public_jobs/id/Figures/point.png"}) == []
+    assert len(manifest_case_errors("runs/published/id/run.json", manifest, {"runs/published/id/figures/point.png"})) == 1
+    assert manifest_case_errors("runs/published/id/run.json", manifest, {"runs/published/id/Figures/point.png"}) == []
 
 
 def test_legacy_case_resolution_keeps_missing_files_missing(tmp_path):

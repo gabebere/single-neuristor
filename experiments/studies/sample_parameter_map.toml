@@ -66,4 +66,4 @@ batch_size = 32
 workers = 2
 frames = 32                       # Playback only; not integration resolution.
 [output]
-root = "runs"
+root = "runs/local"

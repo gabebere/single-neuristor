@@ -1,6 +1,6 @@
 # Research handoff
 
-Last reviewed: **25 October 2026**. Read this, the root README, and AGENTS.md before
+Last scientific review: **25 October 2026**. Layout updated **26 October 2026**. Read this, the root README, and AGENTS.md before
 continuing. The [detailed research history](RESEARCH_HISTORY.md) preserves previous
 results, commands, parameter tables, and caveats without making them a new task list.
 
@@ -25,14 +25,14 @@ not be repeated as sustained-waveform agreement.
 
 | Need | Entry point |
 |---|---|
-| Plain-language navigation | [START_HERE](../START_HERE.md) |
+| Plain-language navigation | [Project guide](../README.md) |
 | Run and inspect a new sample | [SAMPLE_STUDY](SAMPLE_STUDY.md) |
 | Authoritative physics/code responsibilities | [CODEBASE_MAP](CODEBASE_MAP.md), [AGENTS](../AGENTS.md) |
 | Experimental inputs and units | [Data guide](../data/README.md) |
 | Reports, methodology, presentations | [Document guide](README.md) |
 | Current versus superseded evidence | [ARCHIVE_INDEX](ARCHIVE_INDEX.md) |
-| All local runs and files | [Artifact library](../artifacts/index.html) |
-| Paper claim → inputs → command → outputs | [Reproduction guide](../paper/README.md) |
+| All local runs and files | [Artifact library](../runs/catalog/index.html) |
+| Paper claim → inputs → command → outputs | [Reproduction guide](reproduction/README.md) |
 | Public/private material and GitHub release rules | [DATA_POLICY](DATA_POLICY.md) |
 
 Keep existing completed bundle IDs, contents, and relative artifact paths intact.
@@ -73,7 +73,7 @@ a 2 µs constant-current control becomes irregular at the finest step. This is
 a documented numerical phenomenon, not an established stable period-two state,
 bifurcation or measured device result. No calibration is adopted. See
 [waveform, exact settings and limits](ALTERNATING_AMPLITUDES_20261025.md).
-The vector is frozen under `presets/alternating_amplitude_relaxed_20260907.json`.
+The vector is frozen under `data/parameters/alternating_amplitude_relaxed_20260907.json`.
 44 classic GIFs now replay all 22 measured inputs at two displayed timesteps.
 Slide 22 gives tau_th=11.91 ns and central tau_e=0.13–12 ns, with the proposed
 electrothermal/hysteresis-memory explanation explicitly qualified.
@@ -200,3 +200,8 @@ Final checks: **174 tests** locally/fresh checkout, independent Linux Python
 3.10/3.13 checks, validation, real control/sample-study recipes and successful
 large-bundle reconstruction. These are software/reproducibility results, not a
 new experimental fit.
+
+The [26 October layout migration](REPOSITORY_LAYOUT.md) consolidates all jobs
+and outputs under `runs/`, with one root README for collaborators. The checkpoint
+before relocation is `b2ee2ff`. Bundle IDs and scientific contents are preserved;
+this is an organizational change, not a new research result.

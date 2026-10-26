@@ -66,7 +66,7 @@ is verified nonoscillatory; anchor C at 1.25 times C and at 0.75 times Cth leave
 the measured resistance-temperature interval. The latter two are censored
 extrapolations, not demonstrated physical nonoscillation boundaries.
 
-![Controlled one-parameter tests](../public_jobs/20261020_220155_extended-horizon-validation-of-parameter-explora_3599fb/figures/local_trends_original_map.png)
+![Controlled one-parameter tests](../runs/published/20261020_220155_extended-horizon-validation-of-parameter-explora_3599fb/figures/local_trends_original_map.png)
 
 For anchor A, increasing one quantity by 25% relative to its center gives:
 
@@ -96,7 +96,7 @@ fall below the direction-resolution rule. The table's full-range changes are
 descriptive. It does **not** establish that gamma is unimportant in other
 parameter regimes or outside this tested interval.
 
-![Coupled gamma tests](../public_jobs/20261020_220155_extended-horizon-validation-of-parameter-explora_3599fb/figures/gamma_validation.png)
+![Coupled gamma tests](../runs/published/20261020_220155_extended-horizon-validation-of-parameter-explora_3599fb/figures/gamma_validation.png)
 
 ### 4. Operating conditions and numerical limits matter
 
@@ -242,12 +242,12 @@ through agreement with the original period estimator. No case parameters changed
 
 ## Reviewed evidence and reproduction
 
-- Initial pass: `public_jobs/20261020_205903_fresh-controlled-validation-of-parameter-explora_5beaf6` — 466 fresh integrations; short windows left slow oscillators inconclusive.
-- Completed longer-window study: `public_jobs/20261020_220155_extended-horizon-validation-of-parameter-explora_3599fb` — reuses those 466 and adds 144 new integrations. Parent tables, hashes and source remain inspectable.
+- Initial pass: `runs/published/20261020_205903_fresh-controlled-validation-of-parameter-explora_5beaf6` — 466 fresh integrations; short windows left slow oscillators inconclusive.
+- Completed longer-window study: `runs/published/20261020_220155_extended-horizon-validation-of-parameter-explora_3599fb` — reuses those 466 and adds 144 new integrations. Parent tables, hashes and source remain inspectable.
 
 ```bash
 neuristor analyze validate-trends --config experiments/current/validate_parameter_trends_20261020.toml
-neuristor analyze validate-trends --config experiments/current/validate_parameter_trends_extended_20261020.toml --reuse-integrations public_jobs/20261020_205903_fresh-controlled-validation-of-parameter-explora_5beaf6
+neuristor analyze validate-trends --config experiments/current/validate_parameter_trends_extended_20261020.toml --reuse-integrations runs/published/20261020_205903_fresh-controlled-validation-of-parameter-explora_5beaf6
 ```
 
 The published-parent reuse check passed. The complete suite passed **192 tests**

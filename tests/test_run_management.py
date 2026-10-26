@@ -30,7 +30,7 @@ def project(tmp_path):
 
 def bundle(project, *, complete=True):
     run = RunBundle.create(name="Synthetic <run>", model="current", kind="study", config={},
-                           output_root=project / "runs", command="test", project_root=project)
+                           output_root=project / "runs/local", command="test", project_root=project)
     run.write_text("stages/child/data.csv", "measurement,value\n1,2", label="Synthetic child")
     if complete:
         run.complete()
@@ -46,7 +46,7 @@ def test_delete_and_restore_preserve_manifest_child_data_and_catalog(project):
     assert registry.discover() == []
     assert registry.trashed() == [metadata]
     build_artifact_catalog(project)
-    assert run.id not in (project / "artifacts/files.csv").read_text()
+    assert run.id not in (project / "runs/catalog/files.csv").read_text()
     registry.restore(metadata["trash_id"])
     assert registry.trashed() == []
     assert {p.relative_to(run.root): p.read_bytes() for p in run.root.rglob("*") if p.is_file()} == original
@@ -81,7 +81,7 @@ def test_recipe_references_and_symlink_lanes_block_deletion(project, tmp_path):
     recipes = project / "experiments"
     recipes.mkdir()
     recipe = recipes / "depends.toml"
-    recipe.write_text(f'source = "../runs/{run.id}/data.csv"')
+    recipe.write_text(f'source = "../runs/local/{run.id}/data.csv"')
     with pytest.raises(ValueError, match="recipe references"):
         RunRegistry(project).trash(run.id)
     recipe.unlink()
@@ -118,7 +118,7 @@ def test_static_catalog_actions_are_disabled_and_published_protected(project):
     public = bundle(project)
     RunRegistry(project).publish(public.id)
     build_artifact_catalog(project)
-    page = (project / "artifacts/index.html").read_text()
+    page = (project / "runs/catalog/index.html").read_text()
     assert f'button disabled data-run-id="{local.id}"' in page
     assert f'data-run-id="{public.id}"' not in page
     assert '"token":' not in page
@@ -143,7 +143,7 @@ def test_manager_http_confirmation_auth_delete_restore_and_containment(project):
             return response.read().decode()
 
     try:
-        page = request("/artifacts/index.html")
+        page = request("/runs/catalog/index.html")
         token = json.loads(re.search(r'enableRunManager\((\{[^\n]+\})\);', page)[1])["token"]
         for options in ({"auth": False}, {"foreign": True}):
             with pytest.raises(HTTPError) as error:
@@ -163,7 +163,7 @@ def test_manager_http_confirmation_auth_delete_restore_and_containment(project):
                 request(path)
             assert error.value.code == 403
         with pytest.raises(HTTPError) as error:
-            with urlopen(Request(origin + "/artifacts/index.html", headers={"Host": "other.invalid"}), timeout=5):
+            with urlopen(Request(origin + "/runs/catalog/index.html", headers={"Host": "other.invalid"}), timeout=5):
                 pass
         assert error.value.code == 403
     finally:

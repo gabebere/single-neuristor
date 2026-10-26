@@ -10,7 +10,7 @@ into parameter names so a recipe can be reviewed without reading Python.
 - `studies/`: complete measured R(T) → screened map → standalone GIF-enabled HTML.
 
 New sample users should start with [studies/sample_parameter_map.toml](studies/sample_parameter_map.toml).
-The [paper reproduction index](../paper/README.md) identifies supporting recipes
+The [paper reproduction index](../docs/reproduction/README.md) identifies supporting recipes
 without duplicating them or assigning premature final paper figure numbers.
 
 Run a recipe from the repository root:

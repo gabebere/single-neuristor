@@ -1,0 +1,468 @@
+\documentclass[aspectratio=169]{beamer}
+
+\usetheme{Madrid}
+\usecolortheme{seahorse}
+\usefonttheme{professionalfonts}
+
+\setbeamertemplate{navigation symbols}{}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+
+\graphicspath{{assets/}}
+
+\definecolor{tracepurple}{RGB}{119,52,219}
+\definecolor{tracegreen}{RGB}{28,166,76}
+\definecolor{tracered}{RGB}{235,64,69}
+\definecolor{softgray}{RGB}{245,246,248}
+
+\newcommand{\slidesource}[1]{%
+    \vfill
+    {\tiny\color{gray}#1}
+}
+
+% Loopback HTTP links avoid PDF viewers' refusal to launch local HTML files.
+% Start presentation viewers.command starts the read-only local service.
+\newcommand{\localhtmlbutton}[2]{%
+    \href{http://127.0.0.1:8767/#1}{\beamergotobutton{#2}}%
+}
+
+\tikzset{
+    flowbox/.style={
+        draw=structure.fg,
+        rounded corners=2pt,
+        fill=structure.fg!7,
+        minimum height=0.72cm,
+        text width=2.25cm,
+        align=center,
+        font=\scriptsize
+    },
+    flowarrow/.style={-{Stealth[length=2.2mm]}, thick, draw=structure.fg}
+}
+
+\title[VO\textsubscript{2} Neuristor Simulations]{
+Single VO\textsubscript{2} Neuristor Simulations
+}
+
+\subtitle{
+Model, specimen parameters, and loss-function comparison
+}
+
+\author[Gabriel Berezovsky]{
+Gabriel Berezovsky
+}
+
+\institute[Technion]{
+Quantum Materials for Neuromorphic Computation Lab\\
+Technion\\[0.25cm]
+Supervised by Prof. Yoav Kalcheim and Amir Gildor
+}
+
+\date{}
+
+\begin{document}
+
+% Main talk: model -> specimen -> test.
+
+\begin{frame}
+    \titlepage
+    \note{Open with the project arc: reproduce a published model, make it local and testable, adapt it to ideal current drive, and locate a physically interpretable oscillatory domain.}
+\end{frame}
+
+\begin{frame}{Goal: Model Specimen Behavior Across Current Inputs}
+\begin{block}{Experimental target}
+Use the supplied experimental data to reproduce the specimen's response to
+the 22 input currents studied in the paper.
+\end{block}
+\begin{enumerate}
+\item Preserve the published electrothermal and hysteresis equations.
+\item Set specimen parameters from the paper and supplied measurements.
+\item Compare voltage level, amplitude, and frequency.
+\end{enumerate}
+\slidesource{Experimental context: Gildor et al., arXiv:2604.04594v1. Numerical inputs: supplied traces and R(T) data.}
+\end{frame}
+
+\begin{frame}{Starting Point: Electrical Dynamics}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.59\textwidth}
+
+\textbf{Yuanhang voltage-source node equation}
+
+\vspace{0.18cm}
+
+\[
+C\frac{dV}{dt}
+=
+\frac{V_{in}-V}{R_{series}}
+-
+\frac{V}{R_{\mathrm{VO_2}}}
+\]
+
+\vspace{0.22cm}
+
+\begin{itemize}
+    \item \(C\,dV/dt\): charge stored at the neuristor node.
+    \item \((V_{in}-V)/R_{series}\): current delivered by the source.
+    \item \(V/R_{\mathrm{VO_2}}\): nonlinear leakage through VO\textsubscript{2}.
+    \item \(R_{\mathrm{VO_2}}=R(T,\mathcal H)\): temperature and memory couple the electrical and thermal problems.
+\end{itemize}
+
+\end{column}
+
+\begin{column}{0.36\textwidth}
+\centering
+\includegraphics[width=0.92\linewidth]{vo2_device.png}
+
+\vspace{0.2cm}
+{\small Voltage-source equivalent circuit.}
+\end{column}
+\end{columns}
+
+\slidesource{Starting point: Y.-H. Zhang et al., Nature Communications (2024).}
+\note{Explain the competition: the load charges the capacitor, while the VO2 path discharges it. The resistance is not fixed; it is controlled by the thermal state.}
+\end{frame}
+
+\begin{frame}{The Feedback Mechanism: Thermal Dynamics}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.61\textwidth}
+
+\textbf{Single-neuristor reduction}
+
+\vspace{0.15cm}
+
+\[
+C_{th}\frac{dT}{dt}
+=
+\underbrace{\frac{V^2}{R_{\mathrm{VO_2}}}}_{\text{Joule heating}}
+-
+\underbrace{S_e(T-T_0)}_{\text{cooling}}
++
+\underbrace{\sigma\eta(t)}_{\text{optional noise}}
+\]
+
+\vspace{0.2cm}
+
+\begin{itemize}
+    \item \(C_{th}\): thermal inertia of the active device.
+    \item \(S_e\): thermal conductance to substrate/environment.
+    \item Heating lowers \(R_{\mathrm{VO_2}}\); lower resistance changes the voltage and power.
+    \item This delayed negative feedback enables relaxation oscillations.
+\end{itemize}
+
+\end{column}
+
+\begin{column}{0.34\textwidth}
+\begin{block}{Two coupled state variables}
+\[
+V(t),\qquad T(t)
+\]
+\end{block}
+
+\begin{block}{Material memory}
+\[
+\mathcal H=
+\{\delta,T_r,g_r,T_{pr},\ldots\}
+\]
+\end{block}
+
+\begin{center}
+\small
+Electrical storage\\
+\(\Updownarrow\)\\
+Joule heating\\
+\(\Updownarrow\)\\
+Hysteretic switching
+\end{center}
+\end{column}
+\end{columns}
+
+\slidesource{For one isolated device, the inter-neuristor thermal coupling term is zero.}
+\note{Keep this physical: electrical and thermal storage provide two timescales. Hysteresis supplies distinct heating and cooling thresholds.}
+\end{frame}
+
+\begin{frame}{Material Law: Resistance and Hysteresis}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.45\textwidth}
+\small
+
+\[
+R(T,\mathcal H)
+=
+R_0 e^{E_a/(k_BT)}
+\underbrace{g(T,\mathcal H)}_{\text{insulating fraction}}
++R_m
+\]
+
+\[
+g=
+\frac{1}{2}
++\frac{1}{2}\tanh
+\left[
+\beta\left(
+\delta\frac{w}{2}+T_c-(T+T_p)
+\right)
+\right]
+\]
+
+\scriptsize
+\begin{itemize}
+    \setlength\itemsep{0.06cm}
+    \item \(T_c,w,\beta\): center, width, and steepness.
+    \item \(\delta=+1\): heating; \(\delta=-1\): cooling.
+    \item \(T_p\): minor-loop shift after a reversal.
+    \item The same law is used in both source configurations.
+\end{itemize}
+
+\end{column}
+
+\begin{column}{0.52\textwidth}
+\centering
+\begin{block}{Insulating and metallic limits}
+\small
+\(g\approx1\): insulating Arrhenius contribution.\\[0.18cm]
+\(g\approx0\): metallic floor \(R\approx R_m\).
+\end{block}
+\begin{block}{History matters}
+\small
+\(T_p=0\) before the first reversal. After a reversal, the stored state shifts the effective temperature to form a minor branch.
+\end{block}
+\end{column}
+\end{columns}
+
+\slidesource{Hysteresis: L. A. L. de Almeida et al., Optical Engineering (2002).}
+\note{Point out that fitting in log resistance is essential because the transition spans orders of magnitude. The specimen fit is introduced after the current-source reduction.}
+\end{frame}
+
+\begin{frame}{Minor Loops: The Proximity Function}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.58\textwidth}
+\footnotesize
+\textbf{A reversal shifts the effective temperature}
+\[
+T_{\mathrm{eff}}=T+T_p,\qquad
+T_p=m\,T_{pr}P(x;\gamma),\qquad
+x=\frac{T-T_r}{T_{pr}+\varepsilon}.
+\]
+\[
+\boxed{P(x;\gamma)=\frac{1-\sin(\gamma x)}{2}
+\left[1+\tanh(\pi^2-2\pi x)\right]}
+\]
+\begin{itemize}
+\setlength\itemsep{0.05cm}
+\item \(T_r\): latest detected reversal temperature; \(T_{pr}\): signed shift in K.
+\item \(m=0\) before the first reversal; \(m=1\) afterward.
+\item Near \(x=0\), \(P\approx1\): the shift preserves the reversal state.
+\item As \(x\to+\infty\), \(P\to0\): the selected major branch is recovered.
+\end{itemize}
+\end{column}
+\begin{column}{0.39\textwidth}
+\centering
+\begin{tikzpicture}[x=1.12cm,y=2.15cm]
+\draw[->] (0,0)--(3.6,0) node[right] {\(x\)};
+\draw[->] (0,0)--(0,1.25) node[above] {\(P\)};
+\foreach \x in {1,2,3} {
+  \draw (\x,0.025)--(\x,-0.025) node[below] {\scriptsize\x};
+}
+\draw (0.04,1)--(-0.04,1) node[left] {\scriptsize 1};
+% Analytic P(x; gamma=0.956269682), sampled at 121 uniformly spaced x values.
+\draw[very thick,tracepurple] plot coordinates {(0.0000,1.0000000) (0.0275,0.9737056) (0.0550,0.9474294) (0.0825,0.9211896) (0.1100,0.8950042) (0.1375,0.8688915) (0.1650,0.8428694) (0.1925,0.8169559) (0.2200,0.7911691) (0.2475,0.7655266) (0.2750,0.7400463) (0.3025,0.7147458) (0.3300,0.6896425) (0.3575,0.6647538) (0.3850,0.6400969) (0.4125,0.6156888) (0.4400,0.5915465) (0.4675,0.5676867) (0.4950,0.5441257) (0.5225,0.5208799) (0.5500,0.4979653) (0.5775,0.4753977) (0.6050,0.4531928) (0.6325,0.4313658) (0.6600,0.4099317) (0.6875,0.3889053) (0.7150,0.3683010) (0.7425,0.3481328) (0.7700,0.3284145) (0.7975,0.3091596) (0.8250,0.2903808) (0.8525,0.2720909) (0.8800,0.2543018) (0.9075,0.2370251) (0.9350,0.2202719) (0.9625,0.2040526) (0.9900,0.1883769) (1.0175,0.1732540) (1.0450,0.1586922) (1.0725,0.1446988) (1.1000,0.1312808) (1.1275,0.1184438) (1.1550,0.1061930) (1.1825,0.0945330) (1.2100,0.0834680) (1.2375,0.0730028) (1.2650,0.0631432) (1.2925,0.0538976) (1.3200,0.0452789) (1.3475,0.0373063) (1.3750,0.0300080) (1.4025,0.0234229) (1.4300,0.0176005) (1.4575,0.0125962) (1.4850,0.0084606) (1.5125,0.0052223) (1.5400,0.0028658) (1.5675,0.0013165) (1.5950,0.0004403) (1.6225,0.0000636) (1.6500,0.0000067) (1.6775,0.0001153) (1.7050,0.0002778) (1.7325,0.0004277) (1.7600,0.0005342) (1.7875,0.0005904) (1.8150,0.0006020) (1.8425,0.0005800) (1.8700,0.0005358) (1.8975,0.0004792) (1.9250,0.0004179) (1.9525,0.0003569) (1.9800,0.0002998) (2.0075,0.0002483) (2.0350,0.0002031) (2.0625,0.0001645) (2.0900,0.0001320) (2.1175,0.0001051) (2.1450,0.0000831) (2.1725,0.0000653) (2.2000,0.0000511) (2.2275,0.0000397) (2.2550,0.0000307) (2.2825,0.0000237) (2.3100,0.0000182) (2.3375,0.0000139) (2.3650,0.0000106) (2.3925,0.0000081) (2.4200,0.0000061) (2.4475,0.0000046) (2.4750,0.0000035) (2.5025,0.0000026) (2.5300,0.0000020) (2.5575,0.0000015) (2.5850,0.0000011) (2.6125,0.0000008) (2.6400,0.0000006) (2.6675,0.0000005) (2.6950,0.0000003) (2.7225,0.0000003) (2.7500,0.0000002) (2.7775,0.0000001) (2.8050,0.0000001) (2.8325,0.0000001) (2.8600,0.0000001) (2.8875,0.0000000) (2.9150,0.0000000) (2.9425,0.0000000) (2.9700,0.0000000) (2.9975,0.0000000) (3.0250,0.0000000) (3.0525,0.0000000) (3.0800,0.0000000) (3.1075,0.0000000) (3.1350,0.0000000) (3.1625,0.0000000) (3.1900,0.0000000) (3.2175,0.0000000) (3.2450,0.0000000) (3.2725,0.0000000) (3.3000,0.0000000)};
+\node[below left] at (0,0) {\scriptsize 0};
+\end{tikzpicture}
+
+\scriptsize Default \(\gamma=0.95627\); dimensionless \(x\geq0\) shown.
+\begin{block}{Role of \(\gamma\)}
+\footnotesize Controls the minor-loop shape. Major-loop data alone do not identify it.
+\end{block}
+\end{column}
+\end{columns}
+\slidesource{Default Yuanhang/Almeida law: \texttt{src/neuristor/model.py}. Implementation uses \(\varepsilon=10^{-6}\) K and float32 arithmetic.}
+\note{This is an algebraic memory correction, not a separate phase-relaxation ODE. The sine factor means the proximity function need not be monotone for arbitrary gamma. The plot shows the borrowed default, not a specimen fit. P(0)=(1+tanh(pi squared))/2 is extremely close to one, not mathematically exactly one. Before any reversal the mask m is zero and the major branch is used directly.}
+\end{frame}
+
+\begin{frame}{Minor Loops: Set the Shift at Each Reversal}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.51\textwidth}
+\footnotesize
+\textbf{1. Save the state, then change direction}
+\[
+T_r\leftarrow T,\quad
+g_r\leftarrow g(T,\mathcal H^-),\quad
+\delta\leftarrow\operatorname{sign}(T-T^{\mathrm{last}}).
+\]
+\(\mathcal H^-\) is the memory before changing the branch.
+
+\vspace{0.18cm}
+\textbf{2. Match the fraction at the reversal}
+\[
+g_r\simeq\frac12+\frac12\tanh\!\left[
+\beta\left(\delta\frac{w}{2}+T_c-T_r-T_{pr}\right)\right].
+\]
+Inverting the tanh gives the stored shift:
+\[
+\boxed{T_{pr}=\delta\frac{w}{2}+T_c-T_r
+-\frac{\operatorname{arctanh}(2g_r-1)}{\beta}.}
+\]
+\end{column}
+\begin{column}{0.46\textwidth}
+\footnotesize
+\textbf{3. Follow the resulting minor branch}
+\[
+g(T,\mathcal H)=\frac12+\frac12\tanh\!\left[
+\beta\left(\delta\frac{w}{2}+T_c-T-T_p\right)\right].
+\]
+\begin{block}{Why this carries memory}
+\footnotesize
+\(T_r,g_r\) set the starting point; \(T_{pr}P\) carries that state into the new direction. Each new reversal replaces the stored anchor and shift.
+\end{block}
+\begin{alertblock}{Detection in the solver}
+\footnotesize
+Accept motion if \(|T-T^{\mathrm{last}}|>0.01\) K. Reverse if its sign differs from \(\delta\). Smaller motion accumulates from the last accepted temperature.
+\end{alertblock}
+\end{column}
+\end{columns}
+\slidesource{\texttt{model.py:HysteresisArray}: matching uses \(P(0)\approx1\). Only exact float32 endpoints \(g_r=0,1\) are regularized for arctanh.}
+\note{The old branch is evaluated at the detected temperature, before delta changes; g_r is not simply the previous sample's fraction. The equation for Tpr follows by applying inverse tanh to the fraction law. Matching is approximate only because the implemented P(0) is nearly, rather than exactly, one and calculations use float32. The default effective width is w; in configured runs width_factor multiplies w. Tlast advances after accepted motion. The implementation keeps the latest reversal anchor, not a stack of all earlier turning points, so do not claim general return-point memory.}
+\end{frame}
+
+\begin{frame}{From Voltage Drive to Ideal Current Drive}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.47\textwidth}
+\begin{block}{Original voltage source}
+\[
+C\frac{dV}{dt}
+=
+\frac{V_{in}-V}{R_{series}}
+-\frac{V}{R}
+\]
+\[
+I_{\mathrm{src}} \text{ changes with } V
+\]
+\end{block}
+\end{column}
+
+\begin{column}{0.47\textwidth}
+\begin{alertblock}{Ideal imposed current}
+\[
+I_{in}=C\frac{dV}{dt}+\frac{V}{R}
+\]
+\[
+\boxed{
+C\frac{dV}{dt}=I_{in}-\frac{V}{R}
+}
+\]
+\end{alertblock}
+\end{column}
+\end{columns}
+
+\vspace{0.05cm}
+
+\begin{center}
+\footnotesize
+\begin{tabular}{ll}
+\toprule
+\textbf{Preserved} & \textbf{Assumed in the current-source reduction} \\
+\midrule
+Yuanhang \(R(T,\mathcal H)\) & one VO\textsubscript{2} device/domain \\
+single thermal state \(T\) & one thermal node \\
+Joule heating and cooling & ideal imposed current \\
+deterministic replay (\(\sigma=0\)) & no added phase-lag state \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0cm}
+\begin{center}
+\small \(C=0\): \(V=I_{in}R\). A series resistor does not change an ideal imposed current.
+\end{center}
+
+\note{Derive the current equation directly from KCL. This is the clean answer to whether we changed the mathematics: the hysteresis law is unchanged; only the source boundary condition differs.}
+\end{frame}
+
+\begin{frame}{Specimen R(T): Fit the Measured Major Loop}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.38\textwidth}
+\scriptsize
+\[
+\min_{\theta}\sum_i
+\left[\log_{10}R_{\mathrm{model}}(T_i;\theta)
+-\log_{10}R_i\right]^2
+\]
+
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Parameter} & \textbf{Specimen} & \textbf{Yuanhang} \\
+\midrule
+\(R_0\) (\(\Omega\)) & 0.7989 & 0.00536 \\
+\(E_a/k_B\) (K) & 2536.97 & 5220.47 \\
+\(R_m\) (\(\Omega\)) & 18.215 & 1286.32 \\
+\(T_c\) (K) & 333.494 & 332.806 \\
+\(w\) (K) & 6.882 & 7.194 \\
+\(\beta\) (K\(^{-1}\)) & 0.2992 & 0.2528 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.18cm}
+\begin{block}{Fit quality}
+\centering
+\(R^2=0.99873\)\qquad
+\(\mathrm{RMSE}_{\log_{10}R}=0.03663\)
+\end{block}
+\end{column}
+
+\begin{column}{0.60\textwidth}
+\centering
+\includegraphics[width=\linewidth]{../../runs/published/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/figures/resistance_fit.png}
+\end{column}
+\end{columns}
+
+\slidesource{264 measured points from sample 100425 chip1 gap3; reviewed fit bundle \texttt{0849a9}.}
+\note{The logarithmic residual gives comparable weight to both resistance decades. R0 is only the Arrhenius prefactor. The full insulating resistance includes the exponential term, so it remains far above the fitted metallic floor.}
+\end{frame}
+
+\begin{frame}{Specimen Parameters: Fitted Values and Unknowns}
+\centering
+\footnotesize
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Specimen value} & \textbf{Basis} \\
+\midrule
+\(R_0\) & 0.7989 \(\Omega\) & Fitted to measured R(T) \\
+\(E_a/k_B\) & 2536.97 K & Fitted to measured R(T) \\
+\(R_m\) & 18.215 \(\Omega\) & Fitted to measured R(T) \\
+\(T_c\) & 333.494 K & Fitted to measured R(T) \\
+\(w\) & 6.882 K & Fitted to measured R(T) \\
+\(\beta\) & 0.2992 K\(^{-1}\) & Fitted to measured R(T) \\
+\(T_0\) & 314.4 K & Adopted from paper temperatures$^*$ \\
+\midrule
+\multicolumn{3}{@{}l}{\textbf{Parameters still to determine for this specimen}} \\
+\(\gamma\) & Unknown & Minor-loop shape \\
+\(S_e\) & Unknown & Thermal conductance to the environment \\
+\(C\) & Unknown & Electrical capacitance \\
+\(C_{th}\) & Unknown & Thermal capacitance \\
+\bottomrule
+\end{tabular}
+\vspace{0.12cm}
+\par\scriptsize $^*$Paper temperatures: 41.1 and 41.4 \(^{\circ}\)C (314.25--314.55 K); midpoint adopted.
+\par\vspace{0.08cm}
+Noise strength is fixed at \(\sigma=0\).
+\slidesource{R(T) fit: bundle 0849a9. Ambient temperature: Gildor et al., arXiv:2604.04594v1, pp. 3, 5.}
+\note{Unknown means no established specimen value, not that no trial values or conditional estimates exist. Earlier borrowed gamma and trace-derived dynamic estimates are retained in the research archive; they are not presented as a successful specimen calibration. The six fitted major-loop constants, adopted ambient temperature, and four remaining quantities exhaust the independent parameters of the deterministic single-device model. Noise is fixed to zero. Input current and initial conditions are supplied operating conditions; the thermal time constant is derived. Rm includes its implementation scale factors, and w denotes the effective width. Numerical reversal thresholds and temperature bounds are solver settings.}
+\end{frame}
+
+\input{loss_function_story.tex}
+\input{loss_comparison_results.tex}
+\input{parameter_exploration.tex}
+\input{mica_specimen.tex}
+\input{process_flow.tex}
+\input{alternating_amplitudes.tex}
+\end{document}

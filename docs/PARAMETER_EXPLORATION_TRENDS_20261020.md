@@ -4,12 +4,12 @@ The presentation was restored to its previous 19 slides at Gabriel's request.
 The optimizer follow-up remains archived as evidence but is no longer included
 in the deck. No old numerical bundle was changed or deleted.
 
-[Full fixed-scale explorer with 1,258 GIFs](../public_jobs/20261007_123036_fixed-scale-viewer-portable-screened-parameter-m_4325d1/parameter_maps.html).
+[Full fixed-scale explorer with 1,258 GIFs](../runs/published/20261007_123036_fixed-scale-viewer-portable-screened-parameter-m_4325d1/parameter_maps.html).
 The HTML depends on its original `eaf6ab` media folder. The browser automation
 policy blocks local HTML, so no successful automated browser opening or
 end-to-end GIF interaction is claimed here. Local media files were verified.
 
-[Reviewed saved-data analysis](../public_jobs/20261020_202706_saved-full-parameter-exploration-trends_cf3c76/report.md)
+[Reviewed saved-data analysis](../runs/published/20261020_202706_saved-full-parameter-exploration-trends_cf3c76/report.md)
 contains the source hashes, exact analysis script, every matched-neighbor pair,
 1% and 5% change-bin summaries, nine representative parameter points, and three
 unaltered C-sweep GIF/PNG examples. No simulation was rerun.
@@ -25,7 +25,7 @@ other two parameters fixed in each column; its fixed-value titles use pF,
 pJ/K and µW/K. Source screens used a padded temperature interval and 110 MHz
 operating ceiling; this is not a measured specimen calibration.
 
-![Controlled slices](../public_jobs/20261020_202706_saved-full-parameter-exploration-trends_cf3c76/figures/controlled_trends.png)
+![Controlled slices](../runs/published/20261020_202706_saved-full-parameter-exploration-trends_cf3c76/figures/controlled_trends.png)
 
 There are 965 adjacent C pairs, 947 adjacent Cth pairs and 1,113 adjacent Se
 pairs with both endpoints eligible/converged in the finer GIF replays. These
@@ -39,7 +39,7 @@ while f -> f/s. Along a grid-aligned ratio-40 ray with Se=5.064 µW/K, 16 saved
 independent integrations follow inverse frequency scaling within 0.198%; Vpp
 ranges over 0.742% of the first point's value.
 
-![Common scale](../public_jobs/20261020_202706_saved-full-parameter-exploration-trends_cf3c76/figures/common_scale.png)
+![Common scale](../runs/published/20261020_202706_saved-full-parameter-exploration-trends_cf3c76/figures/common_scale.png)
 
 This suggests using amplitude/loop shape to examine capacitance ratio and Se,
 then frequency to adjust the common scale. Gamma and ambient must be stated;

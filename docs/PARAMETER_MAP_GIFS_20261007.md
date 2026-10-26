@@ -59,14 +59,14 @@ warning is shown without silently changing old map membership. This distinction
 matters when examining points close to the 110 MHz screening ceiling.
 
 The 3-point benchmark bundle is
-`runs/20261007_061058_portable-screened-parameter-map-with-point-gifs-_f34881`.
+`runs/local/20261007_061058_portable-screened-parameter-map-with-point-gifs-_f34881`.
 Its ZIP is approximately 3.5 MB. All three new replays pass eligibility and
 feature convergence and meet the visual resolution thresholds. Two require
 dt=0.003125 ns; the third passes at 0.00625 ns. Wall time approximately 42 s.
 That small-batch rate cannot be extrapolated linearly to a large batched solver.
 
 The full job started at 09:12 Israel time on 7 October 2026:
-`runs/20261007_061243_portable-screened-parameter-map-with-point-gifs_81ae34`.
+`runs/local/20261007_061243_portable-screened-parameter-map-with-point-gifs_81ae34`.
 Read `status.json` rather than assuming completion; two rendering workers are
 used and the integrator remains a local process. No ChatGPT calls are made by
 this numerical job. Failure/completion are captured in the run manifest.
@@ -81,7 +81,7 @@ Delivery checkpoint: 204/1,258 GIFs generated after approximately 6.3 minutes;
 current throughput projects about 39 minutes total (estimate, not a deadline).
 93 tests passed and repository validation passed. Four historical arctanh
 warnings remain. Completed benchmark published locally as
-`public_jobs/20261007_061058_portable-screened-parameter-map-with-point-gifs-_f34881`
+`runs/published/20261007_061058_portable-screened-parameter-map-with-point-gifs-_f34881`
 and copied to Desktop `VO2 Research Archive/04_Parameter_maps/`.
 No external upload or GitHub commit/push was performed. Full job remains local.
 
@@ -102,8 +102,8 @@ fallbacks (including heatmap row/column indices). Original mocked-DOM tests used
 only ordinary event arrays and did not expose this representation mismatch.
 
 Corrected complete viewer bundle:
-`runs/20261007_074702_portable-screened-parameter-map-with-point-gifs_eaf6ab`.
-The identical corrected bundle is also published locally under `public_jobs/`.
+`runs/local/20261007_074702_portable-screened-parameter-map-with-point-gifs_eaf6ab`.
+The identical corrected bundle is also published locally under `runs/published/`.
 No simulation was rerun. All 1,258 GIFs and PNGs are byte-preserved, with SHA-256
 media provenance. The old completed bundle remains unchanged. Original simulation
 source is preserved separately from the corrected viewer source.
@@ -120,7 +120,7 @@ Reproduce the viewer-only rebuild:
 
 ```bash
 neuristor analyze map-animations --config experiments/current/physical_parameter_map_gifs.toml \
-  --reuse-media runs/20261007_061243_portable-screened-parameter-map-with-point-gifs_81ae34
+  --reuse-media runs/local/20261007_061243_portable-screened-parameter-map-with-point-gifs_81ae34
 ```
 
 Reuse requires a completed bundle, identical source grid, identical physics and

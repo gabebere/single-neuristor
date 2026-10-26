@@ -65,9 +65,19 @@ def test_snapshot_has_complete_nested_sources_and_valid_hashes(tmp_path):
 
 
 def test_project_navigation_targets_exist():
-    source = (ROOT / "START_HERE.html").read_text()
-    for relative in re.findall(r'href="([^"]+)"', source):
-        assert (ROOT / relative).is_file(), relative
+    from urllib.parse import unquote
+
+    for page in (ROOT / "README.md", ROOT / "docs/README.md", ROOT / "runs/index.html"):
+        source = page.read_text()
+        targets = re.findall(r"\]\(([^)]+)\)", source) + re.findall(r'href="([^\"]+)"', source)
+        for relative in targets:
+            if relative.startswith(("http:", "https:", "#")):
+                continue
+            target = (page.parent / unquote(relative.split("#", 1)[0])).resolve()
+            # The local catalog is explicitly generated after checkout.
+            if target.is_relative_to(ROOT / "runs/catalog"):
+                continue
+            assert target.exists(), (page.name, relative)
 
 
 def test_paper_evidence_index_has_valid_paths_and_recipe_commands():
@@ -77,8 +87,8 @@ def test_paper_evidence_index_has_valid_paths_and_recipe_commands():
 
 
 def test_paper_index_rejects_invalid_links_and_recipe_commands(tmp_path):
-    (tmp_path / "paper").mkdir()
-    (tmp_path / "paper/reproduction.toml").write_text('''schema_version = 1
+    (tmp_path / "docs/reproduction").mkdir(parents=True)
+    (tmp_path / "docs/reproduction/reproduction.toml").write_text('''schema_version = 1
 [[evidence]]
 id = "invalid"
 claim_scope = "Navigation test, not a scientific claim"

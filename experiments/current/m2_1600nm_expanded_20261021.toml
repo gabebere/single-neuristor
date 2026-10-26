@@ -24,7 +24,7 @@ C_th_pJ_per_K = 1.5
 S_e_mW_per_K = 0.1
 T0_K = 298.0
 [resistance]
-preset = "../../public_jobs/20261021_062155_m2-1600nm-budgeted-r-t-exploration-review_c7387b/studies/broad/stages/20261021_061157_m2-1600nm-approximate-r-t-exploratory-3d-map-202_360212/resistance_preset.json"
+preset = "../../runs/published/20261021_062155_m2-1600nm-budgeted-r-t-exploration-review_c7387b/studies/broad/stages/20261021_061157_m2-1600nm-approximate-r-t-exploratory-3d-map-202_360212/resistance_preset.json"
 start_branch = "insulator"
 [resistance.parameters]
 gamma = 0.956269682               # Assumed; not identifiable from a major loop.
@@ -58,4 +58,4 @@ batch_size = 32
 workers = 4
 frames = 20                       # Playback only; not integration resolution.
 [output]
-root = "runs"
+root = "runs/local"

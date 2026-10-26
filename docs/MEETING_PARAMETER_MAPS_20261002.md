@@ -35,7 +35,7 @@ not an established universal physical cutoff for VO2.
 
 ## Parameter maps
 
-The [adjustable slice viewer](../public_jobs/20261002_152003_focused-dense-physically-screened-steady-state-e_c1772e/parameter_maps.html)
+The [adjustable slice viewer](../runs/published/20261002_152003_focused-dense-physically-screened-steady-state-e_c1772e/parameter_maps.html)
 adds three independent sliders, each selecting any sampled value for one locked
 parameter. Both frequency and Vpp heatmaps update together. Each colorbar uses
 only retained values in that slice, retaining the original MHz/mV units;
@@ -55,17 +55,17 @@ sample's static resistance preset and its fixed Yuanhang gamma. They are
 conditional model explorations. The separate laboratory fitting uses measured
 input waveforms and allows ambient temperature within its declared bounds.
 
-The original `runs/3d_domain_exploration.npy` has only binary oscillation labels.
+The original `runs/local/3d_domain_exploration.npy` has only binary oscillation labels.
 It contains neither frequency nor temperature trajectories and cannot support
 the requested filters. No denser version of that same 3D grid was found.
 
-- [Broad 9,261-point map](../public_jobs/20261002_135437_dense-physically-screened-steady-state-extrema-p_9ac3ad/report.md):
+- [Broad 9,261-point map](../runs/published/20261002_135437_dense-physically-screened-steady-state-extrema-p_9ac3ad/report.md):
   retains all original 15×15×15 grid coordinates and adds six useful intermediate
   values per axis. It has 66 retained oscillators after verification.
-- [Focused interactive 3D and heatmaps](../public_jobs/20261002_145342_focused-dense-physically-screened-steady-state-e_b9e298/parameter_maps.html):
+- [Focused interactive 3D and heatmaps](../runs/published/20261002_145342_focused-dense-physically-screened-steady-state-e_b9e298/parameter_maps.html):
   23×23×23 = **12,167** simulated points, **1,258** retained. Maximum retained
   frequency is **109.890 MHz**, maximum trajectory temperature **372.188 K**.
-  [Static heatmaps](../public_jobs/20261002_145342_focused-dense-physically-screened-steady-state-e_b9e298/heatmaps.png)
+  [Static heatmaps](../runs/published/20261002_145342_focused-dense-physically-screened-steady-state-e_b9e298/heatmaps.png)
   use common color limits across panels.
 
 Screening additionally requires the **entire** temperature trajectory within
@@ -104,7 +104,7 @@ sampled proximity monotonicity and temperature-domain checks. Search and fine
 verification use measured current prehistory. The complete 22-record comparison
 is repeated at 0.025, 0.0125 and 0.00625 ns.
 
-The [completed 79-candidate pilot](../public_jobs/20261002_145243_meeting-extrema-only-physically-screened-fitting_32d91d/report.md)
+The [completed 79-candidate pilot](../runs/published/20261002_145243_meeting-extrema-only-physically-screened-fitting_32d91d/report.md)
 found **zero acceptable target-frequency matches**.
 Its best available vector largely produced tiny high-frequency
 numerical features rather than the measured oscillations; these fail the 110 MHz
@@ -124,7 +124,7 @@ missing-frequency penalty, not a measured error on a valid frequency estimate.
 Verification: **83 tests passed**, including scalar/batched trajectory agreement,
 switching-feature convergence at two smaller timesteps, false-cycle rejection,
 extrema phase/DC/startup invariance and numerical-reuse provenance. Repository
-validation passed. Reviewed bundles are copied into `public_jobs/`; this task did
+validation passed. Reviewed bundles are copied into `runs/published/`; this task did
 not make a Git commit or push to GitHub.
 
 ## Reproduction

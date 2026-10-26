@@ -48,7 +48,7 @@ hysteresis algorithm and the normal Yuanhang capacities, which exceed the floors
 
 ## Fresh numerical evidence
 
-The [new audit bundle](../public_jobs/20260921_124525_independent-units-stability-and-specimen-replay-_ffaded/report.md)
+The [new audit bundle](../runs/published/20260921_124525_independent-units-stability-and-specimen-replay-_ffaded/report.md)
 contains the exact reproduction script, inputs, source hashes, dirty-tree patch,
 tables and figure. All 22 baseline-corrected input histories are retained from
 their first recorded sample, including 296 ns before the pulse. Analysis uses
@@ -72,7 +72,7 @@ Temperatures span 314.40–341.30 K, within the specimen resistance domain.
 Small periodic components do not alone establish persistence. The 190 µA agreement
 is partly calibration reuse: the neighboring pre-onset state determined Se.
 
-![Fresh comparison and local stability](../public_jobs/20260921_124525_independent-units-stability-and-specimen-replay-_ffaded/figures/audit.png)
+![Fresh comparison and local stability](../runs/published/20260921_124525_independent-units-stability-and-specimen-replay-_ffaded/figures/audit.png)
 
 ## Why the present parameters settle instead of oscillating
 
@@ -215,7 +215,7 @@ pytest -q
 neuristor validate
 neuristor simulate voltage --config experiments/voltage/yuanhang_oscillator.toml
 neuristor analyze model-validation --config experiments/current/specimen_model_validation.toml
-python public_jobs/20260921_124525_independent-units-stability-and-specimen-replay-_ffaded/reproduce.py
+python runs/published/20260921_124525_independent-units-stability-and-specimen-replay-_ffaded/reproduce.py
 ```
 
 Each numerical command creates a new run. The audit does not establish an error

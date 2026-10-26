@@ -63,7 +63,7 @@ their original numerical/source history remains intact.
 
 The first fresh-checkout run exposed one hidden dependency: four fitting recipes
 pointed to an ignored local run's `parameters.csv`. The exact table is now
-versioned under `presets/search_seeds/` with its source ID/hash, and those recipes
+versioned under `data/parameters/search_seeds/` with its source ID/hash, and those recipes
 refer to it. No seed values changed. Repository validation now also catches
 missing declared relative recipe inputs; a regression test covers this case.
 Fresh-checkout and remote verification are being repeated after this correction.
@@ -93,7 +93,7 @@ of this mismatch. Truly missing/ambiguous files still fail validation.
 The large-map download has two complementary assets: the easy-to-share HTML/GIF
 ZIP (589,752,448 bytes), and complete source/numerical/PNG provenance without GIF
 duplication (108,319,199 bytes). Their hashes and scopes are in
-`results/releases.toml`. All 1,263 ZIP members were checked against the complete
+`runs/releases.toml`. All 1,263 ZIP members were checked against the complete
 original bundle and were identical. The provenance export only normalizes
 physical path case to the original declared spelling; original bundles remain
 unchanged. Both assets passed the disclosure inspection.
@@ -117,7 +117,7 @@ scientific description needs correction, not an unreviewed merge.
   `6de837`: 264 R(T) rows, 27 grid points, one retained oscillator at
   23.215319 MHz and one embedded GIF. No new calibration was adopted.
 - The [dated Release](https://github.com/gabebere/single-neuristor/releases/tag/research-library-2026-10-20)
-  is published, not a draft. Remote asset sizes/hashes match `results/releases.toml`.
+  is published, not a draft. Remote asset sizes/hashes match `runs/releases.toml`.
   Reconstructing the map from those bytes in the fresh checkout restored all
   **2,561 declared artifacts** and passed validation. The old packaging mirror
   is redundant and is not needed for restoration.

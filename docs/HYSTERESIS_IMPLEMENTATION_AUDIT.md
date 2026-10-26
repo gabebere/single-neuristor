@@ -10,7 +10,7 @@ or promoting an oscillatory domain as a physical result.
 
 The upstream implementation is vendored at:
 
-`references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/model.py`
+`archive/references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/model.py`
 
 The local implementation is:
 
@@ -129,13 +129,13 @@ derive its metrics and archive artifacts from that result.
   extension. Their electrical/thermal equations and fitted R(T) parameters are
   original, but their reversal geometry is not the exact Yuanhang algorithm.
 - New runs always use the Yuanhang reference implementation and no longer store
-  a current-source mode selector. Obsolete active presets/scripts were deleted;
+  a current-source mode selector. Obsolete active data/parameters/scripts were deleted;
   Git history is the recovery path if an audit needs them later.
 
 ## Verification commands
 
 ```bash
-python legacy_scripts/audit_model_fidelity.py
+python archive/scripts/audit_model_fidelity.py
 python -m unittest discover -s tests -v
 ```
 

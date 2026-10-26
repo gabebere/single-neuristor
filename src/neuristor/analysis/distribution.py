@@ -154,7 +154,7 @@ def validate_publication_index(root: Path) -> list[str]:
         elif name.lower().endswith((".pdf", ".zip", ".tar", ".gz", ".tgz")):
             data = subprocess.run(["git", "cat-file", "blob", oid], cwd=root, check=True, capture_output=True).stdout
             errors.extend(_check_payload(name, io.BytesIO(data), allowed))
-        if name.startswith("public_jobs/") and name.endswith("/run.json") and mode == "100644":
+        if name.startswith("runs/published/") and name.endswith("/run.json") and mode == "100644":
             data = subprocess.run(["git", "cat-file", "blob", oid], cwd=root, check=True, capture_output=True).stdout
             errors.extend(manifest_case_errors(name, json.loads(data), tracked_paths))
     return errors
@@ -172,7 +172,7 @@ def manifest_case_errors(name: str, manifest: dict, tracked_paths: set[str]) -> 
     # This frozen parent recorded the macOS directory spelling, while its child
     # declared Figures/. Both refer to the same verified PNG. Do not rewrite an
     # old manifest to fix packaging; RunRegistry resolves this unique legacy case.
-    legacy_parent = "public_jobs/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs_ec2d1e/run.json"
+    legacy_parent = "runs/published/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs_ec2d1e/run.json"
     legacy_artifact = ("stages/20261007_083920_sample-r-t-to-screened-map-and-embedded-gifs-poi_56b6f3/"
                        "figures/point_00025.png")
     for artifact in manifest.get("artifacts", []):

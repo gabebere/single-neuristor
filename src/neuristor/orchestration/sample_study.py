@@ -203,7 +203,7 @@ def run_sample_study(config, *, output_root=None, command="neuristor study run")
         model="current",
         kind="study",
         config=resolved_copy(config),
-        output_root=output_root or config.get("output", {}).get("root", "runs"),
+        output_root=output_root or config.get("output", {}).get("root", "runs/local"),
         command=command,
     )
     print(f"STUDY_DIRECTORY={bundle.root}", flush=True)

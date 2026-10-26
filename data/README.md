@@ -16,8 +16,8 @@ and record units and the source hash.
 The mV in an acquisition filename is a nominal drive label, not proof that the
 sample current has that value in µA. Use the measured current channel.
 
-Historical sample-library imports also live under `presets/samples/data/` and
-`new_samples/`; these remain separate from the canonical TIA dataset.
+Historical sample-library imports also live under `data/parameters/samples/data/` and
+`data/experimental/additional_samples/`; these remain separate from the canonical TIA dataset.
 Gabriel approved public release of this project's experimental numerical data
 and our generated results on 20 October 2026. Preserve provenance and do not
 extend that permission to new unapproved inputs or third-party manuscripts.

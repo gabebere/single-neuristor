@@ -304,7 +304,7 @@ def run_simulation(
     """Execute one simulation and persist its complete portable run bundle."""
 
     validate_config(config)
-    output = output_root or _table(config, "output").get("root", "runs")
+    output = output_root or _table(config, "output").get("root", "runs/local")
     bundle = RunBundle.create(
         name=str(config["name"]),
         model=str(config["model"]),
@@ -459,7 +459,7 @@ def run_sweep(
     if len(points) > max_points:
         raise ConfigError(f"Sweep has {len(points)} points, exceeding sweep.max_points={max_points}")
 
-    output = output_root or _table(config, "output").get("root", "runs")
+    output = output_root or _table(config, "output").get("root", "runs/local")
     bundle = RunBundle.create(
         name=str(config["name"]),
         model=str(config["model"]),
@@ -576,7 +576,7 @@ def run_resistance_fit(
     local_passes: int = 180,
     method: str = "auto",
     bootstrap_samples: int = 500,
-    output_root: str | Path = "runs",
+    output_root: str | Path = "runs/local",
     command: str = "neuristor fit resistance",
 ) -> RunBundle:
     """Fit R(T) data and archive the preset, metrics, source data, and overlay."""
@@ -697,7 +697,7 @@ def run_lab_analysis(
     data_directory: str | Path,
     *,
     name: str,
-    output_root: str | Path = "runs",
+    output_root: str | Path = "runs/local",
     command: str = "neuristor analyze lab",
 ) -> RunBundle:
     """Archive and summarize the professor-supplied numerical waveforms."""
@@ -843,7 +843,7 @@ def run_environmental_conductance(
     bootstrap_samples: int = 1000,
     block_size: int = 10,
     seed: int = 20260817,
-    output_root: str | Path = "runs",
+    output_root: str | Path = "runs/local",
     command: str = "neuristor analyze conductance",
 ) -> RunBundle:
     """Archive the quasi-steady specimen environmental-conductance estimate."""
@@ -1000,7 +1000,7 @@ def run_thermal_capacitance(
     bootstrap_samples: int = 1000,
     fit_window_jitter_ns: int = 2,
     seed: int = 20260817,
-    output_root: str | Path = "runs",
+    output_root: str | Path = "runs/local",
     command: str = "neuristor analyze thermal-capacitance",
 ) -> RunBundle:
     """Archive a conditional thermal time-constant and capacitance estimate."""
@@ -1238,7 +1238,7 @@ def run_model_validation(
     resolved = resolved_copy(config)
     resolved.setdefault("lab_validation", {})["data_directory"] = str(data_directory)
     resolved.setdefault("resistance", {})["resolved_source"] = resistance_source
-    output = output_root or _table(config, "output").get("root", "runs")
+    output = output_root or _table(config, "output").get("root", "runs/local")
     bundle = RunBundle.create(
         name=str(config["name"]),
         model="specimen-model-validation",
@@ -1805,7 +1805,7 @@ def run_lab_replay(config, *, output_root=None, command="neuristor analyze repla
     resolved["resistance"] = {"preset": "yuanhang", "start_branch": params.start_branch,
                               "parameters": dataclasses.asdict(rp)}
     bundle = RunBundle.create(name=config["name"], model="lab-replay", kind="analysis", config=resolved,
-                              output_root=output_root or config.get("output", {}).get("root", "runs"), command=command)
+                              output_root=output_root or config.get("output", {}).get("root", "runs/local"), command=command)
     try:
         raw, _ = load_converted_sweep(data)
         traces, summary = replay_sweep(raw, params)
@@ -1919,7 +1919,7 @@ def run_joint_inference(config, *, output_root=None, command="neuristor analyze 
     if len(seeds) > int(settings["population"]):
         raise ValueError("Population must accommodate the named seeds")
     bundle = RunBundle.create(name=config["name"], model="joint-inference", kind="analysis",
-                              config=resolved_copy(config), output_root=output_root or config.get("output", {}).get("root", "runs"),
+                              config=resolved_copy(config), output_root=output_root or config.get("output", {}).get("root", "runs/local"),
                               command=command)
     try:
         files = [rt_path, Path(config["_source"]), *seed_paths, *data_path.glob("*_converted.csv")]
@@ -2102,7 +2102,7 @@ def run_waveform_parameter_inference(
     resolved = resolved_copy(config)
     resolved.setdefault("inference", {})["data_directory"] = str(data_directory)
     resolved.setdefault("resistance", {})["resolved_source"] = resistance_source
-    output = output_root or _table(config, "output").get("root", "runs")
+    output = output_root or _table(config, "output").get("root", "runs/local")
     bundle = RunBundle.create(
         name=str(config["name"]),
         model="global-waveform-parameter-inference",
@@ -2397,7 +2397,7 @@ def run_steady_search(config, *, output_root=None, command='neuristor analyze fi
     bootstrap_path=resolve(settings['static_bootstrap'])
     bootstrap=pd.read_csv(bootstrap_path)
     bundle=RunBundle.create(name=config['name'],model='steady-inference',kind='analysis',
-        config=resolved_copy(config),output_root=output_root or config.get('output',{}).get('root','runs'),command=command)
+        config=resolved_copy(config),output_root=output_root or config.get('output',{}).get('root','runs/local'),command=command)
     print(f'RUN_DIRECTORY={bundle.root}',flush=True)
     start=monotonic();deadline=start+settings['total_seconds']
     status_path=bundle.add_artifact('status.json',label='Live status and best candidate')
@@ -2650,7 +2650,7 @@ def export_saved_scope(source, *, output_root=None, frames=96, original_labels_u
     traces = pd.read_csv(source/'traces.csv')
     bundle = RunBundle.create(name='Saved replay stacked current voltage hysteresis in amperes',
         model='lab-replay', kind='analysis', config=config,
-        output_root=output_root or 'runs', command=command)
+        output_root=output_root or 'runs/local', command=command)
     try:
         for name in ('traces.csv', 'summary.csv', 'metrics.json', 'comparison.html', 'recipe.toml'):
             shutil.copy2(source/name, bundle.add_artifact(name, label=f'Unchanged source {name}'))

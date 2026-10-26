@@ -29,7 +29,7 @@ into successful results.
 For just one source:
 
 ```bash
-neuristor analyze refresh-maps --source public_jobs/YOUR_RUN_ID
+neuristor analyze refresh-maps --source runs/published/YOUR_RUN_ID
 ```
 
 Revisions copy the original numerical tables byte-for-byte and record their
@@ -44,7 +44,7 @@ deletion until that viewer is removed. Sample-study revisions default to embedde
 GIFs and remain standalone. To explicitly embed a dense map's media:
 
 ```bash
-neuristor analyze refresh-maps --source public_jobs/YOUR_RUN_ID --embed-gifs
+neuristor analyze refresh-maps --source runs/published/YOUR_RUN_ID --embed-gifs
 ```
 
 Embedding can produce a very large HTML (base64 adds roughly one third to GIF

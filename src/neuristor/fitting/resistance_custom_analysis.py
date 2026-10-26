@@ -7,8 +7,8 @@ and optimizes a major-loop parameter set against a measured temperature trajecto
 Example:
   python resistance_custom_analysis.py \
     --data data/experimental/100425_chip1_gap3.tsv \
-    --save-json presets/resistance_100425_chip1_gap3.json \
-    --save-plot outputs/resistance_fit_100425_chip1_gap3.png
+    --save-json data/parameters/resistance_100425_chip1_gap3.json \
+    --save-plot runs/scratch/resistance_fit_100425_chip1_gap3.png
 """
 from __future__ import annotations
 
@@ -881,12 +881,12 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--data", required=True, help="Path to TSV-like experimental data file.")
     parser.add_argument(
         "--save-json",
-        default="presets/resistance_100425_chip1_gap3.json",
+        default="data/parameters/resistance_100425_chip1_gap3.json",
         help="Where to write fitted parameter preset JSON.",
     )
     parser.add_argument(
         "--save-plot",
-        default="outputs/resistance_fit_100425_chip1_gap3.png",
+        default="runs/scratch/resistance_fit_100425_chip1_gap3.png",
         help="Where to write fit-vs-data plot PNG.",
     )
     parser.add_argument("--seed", type=int, default=42, help="RNG seed for fitting reproducibility.")

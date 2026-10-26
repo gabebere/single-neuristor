@@ -66,7 +66,7 @@ Content:
 - Our first goal: reproduce the single-device dynamics locally.
 
 Use this file as a source:
-- `references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/model.py`
+- `archive/references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/model.py`
 
 Speaker move:
 Emphasize that the project began by understanding and porting an existing model, not inventing a new one.
@@ -151,7 +151,7 @@ Content:
 - We calibrated the resistance model to the measured specimen.
 - Fitting target: heating/cooling branches of measured R(T).
 - Stored specimen preset:
-  `presets/resistance_100425_chip1_gap3.json`
+  `data/parameters/resistance_100425_chip1_gap3.json`
 
 Useful numbers:
 - Fit RMSE log10: about `0.0373`
@@ -204,7 +204,7 @@ Content:
 - Current-source model: `src/neuristor/current_drive_sim.py`
 - Search/analysis backend: `src/neuristor/current_domain_search.py`
 - GUI and history system: `app.py`
-- Public shareable runs: `public_jobs/`
+- Public shareable runs: `runs/published/`
 
 Visual:
 - Screenshot of app interface or History tab.
@@ -353,7 +353,7 @@ Show pipeline:
    - transient
    - sustained oscillation
    - metallic lock
-6. Save selected runs to `public_jobs/`.
+6. Save selected runs to `runs/published/`.
 
 Visual:
 - Flowchart or screenshots from History tab.
@@ -370,8 +370,8 @@ Paper-frequency analog:
 - Frequency: `35.7-60.7 MHz`
 
 Visuals:
-- `public_jobs/20260707_145140_paper_frequency_f881d2/paper_frequency_operating_window.png`
-- `public_jobs/20260707_145140_paper_frequency_f881d2/paper_frequency_three_regimes.png`
+- `runs/published/20260707_145140_paper_frequency_f881d2/paper_frequency_operating_window.png`
+- `runs/published/20260707_145140_paper_frequency_f881d2/paper_frequency_three_regimes.png`
 
 Speaker move:
 Say this matches the paper's frequency scale and qualitative regime structure, not the absolute energy/current calibration.
@@ -398,8 +398,8 @@ Content:
 - This helps explain why oscillation happens.
 
 Visual:
-- `public_jobs/20260707_145140_paper_frequency_f881d2/current_sweep.gif`
-- `public_jobs/20260707_145140_paper_frequency_f881d2/paper_frequency_1800uA_time_evolution_10s.gif`
+- `runs/published/20260707_145140_paper_frequency_f881d2/current_sweep.gif`
+- `runs/published/20260707_145140_paper_frequency_f881d2/paper_frequency_1800uA_time_evolution_10s.gif`
 
 Speaker move:
 This is a "value of simulation" slide: seeing internal state not directly observable in real time.
@@ -415,7 +415,7 @@ Validated sample-scale run:
 - Frequency: `7.1-14.3 MHz`
 
 Visual:
-- `public_jobs/20260707_145140_sample_scale_89ffb4/validated_sample_operating_window.png`
+- `runs/published/20260707_145140_sample_scale_89ffb4/validated_sample_operating_window.png`
 
 Speaker move:
 Use this as an honesty/control slide: same mechanism, slower time scale.
@@ -432,7 +432,7 @@ Interpretation:
 - Absolute calibration likely needs better device geometry, circuit/readout model, or additional experimental constraints.
 
 Visual:
-- Optional: `public_jobs/20260707_154737_390uA_valley_ff1d22/390uA_nonzero_valley_trial.png`
+- Optional: `runs/published/20260707_154737_390uA_valley_ff1d22/390uA_nonzero_valley_trial.png`
 
 ### Slide 23: Engineering Contributions
 
@@ -489,16 +489,16 @@ High-priority:
 
 - `docs/manuscript/figures/hysteresis.png`
 - `docs/manuscript/figures/fit_resistance_rt.png`
-- `public_jobs/20260707_145140_paper_frequency_f881d2/paper_frequency_three_regimes.png`
-- `public_jobs/20260707_145140_paper_frequency_f881d2/paper_frequency_operating_window.png`
-- `public_jobs/20260707_145140_paper_frequency_f881d2/paper_frequency_energy_cycle.png`
-- `public_jobs/20260707_145140_paper_frequency_f881d2/current_sweep.gif`
-- `public_jobs/20260707_145140_paper_frequency_f881d2/paper_frequency_1800uA_time_evolution_10s.gif`
-- `public_jobs/20260707_145140_sample_scale_89ffb4/validated_sample_operating_window.png`
+- `runs/published/20260707_145140_paper_frequency_f881d2/paper_frequency_three_regimes.png`
+- `runs/published/20260707_145140_paper_frequency_f881d2/paper_frequency_operating_window.png`
+- `runs/published/20260707_145140_paper_frequency_f881d2/paper_frequency_energy_cycle.png`
+- `runs/published/20260707_145140_paper_frequency_f881d2/current_sweep.gif`
+- `runs/published/20260707_145140_paper_frequency_f881d2/paper_frequency_1800uA_time_evolution_10s.gif`
+- `runs/published/20260707_145140_sample_scale_89ffb4/validated_sample_operating_window.png`
 
 Optional:
 
-- `public_jobs/20260707_154737_390uA_valley_ff1d22/390uA_nonzero_valley_trial.png`
+- `runs/published/20260707_154737_390uA_valley_ff1d22/390uA_nonzero_valley_trial.png`
 - Streamlit screenshots from Samples, Experiment, and History.
 
 ## Prompt Pack for ChatGPT

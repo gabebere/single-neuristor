@@ -24,9 +24,9 @@ or deleted. Old document/output locations remain to protect provenance and links
 
 - `START_HERE.html` / `.md`: non-coder navigation.
 - Folder READMEs and `docs/CODEBASE_MAP.md`: exact responsibilities.
-- `artifacts/source_inventory.csv`: owned Python files, role, size, first-line purpose;
+- `runs/catalog/source_inventory.csv`: owned Python files, role, size, first-line purpose;
   generated with the existing `neuristor runs index` command, not a new database.
-- `paper/reproduction.toml`: five supporting evidence IDs, inputs, commands,
+- `docs/reproduction/reproduction.toml`: five supporting evidence IDs, inputs, commands,
   output contracts and references. Final paper figure assignment remains open.
 - `CITATION.cff`, upstream MIT notice, contribution and release guidance.
 - A recorded local environment and configured GitHub checks. These are not a

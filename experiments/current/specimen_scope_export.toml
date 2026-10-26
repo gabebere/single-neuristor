@@ -48,4 +48,4 @@ scope_frames = 96
 legacy_cursor_animations = false
 
 [output]
-root = "runs"
+root = "runs/local"

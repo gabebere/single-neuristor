@@ -97,7 +97,7 @@ class SimulationConvergenceTests(unittest.TestCase):
         self.assertAlmostEqual(candidate_report["dT_step_over_reversal"], expected_candidate, places=12)
 
     def test_yuanhang_current_control_settles_across_timesteps(self) -> None:
-        payload = json.loads((ROOT / "presets" / "resistance_100425_chip1_gap3.json").read_text())
+        payload = json.loads((ROOT / "data/parameters" / "resistance_100425_chip1_gap3.json").read_text())
         resist = YuanhangResistParams(**payload["resist_params"])
         for dt_ns in (0.05, 0.025):
             params = CurrentDriveParams(
@@ -116,7 +116,7 @@ class SimulationConvergenceTests(unittest.TestCase):
             self.assertLess(float(np.ptp(out["V_vo2"][late]) * 1e3), 1.0)
 
     def test_vectorized_current_sweep_matches_serial_traces(self) -> None:
-        payload = json.loads((ROOT / "presets" / "resistance_100425_chip1_gap3.json").read_text())
+        payload = json.loads((ROOT / "data/parameters" / "resistance_100425_chip1_gap3.json").read_text())
         params = CurrentDriveParams(
             dt_s=0.1e-9,
             t_end_s=500e-9,
@@ -197,7 +197,7 @@ class SimulationConvergenceTests(unittest.TestCase):
         self.assertLess(relative_difference, 0.02)
 
     def test_yuanhang_current_relaxation_oscillator_converges(self) -> None:
-        payload = json.loads((ROOT / "presets" / "resistance_100425_chip1_gap3.json").read_text())
+        payload = json.loads((ROOT / "data/parameters" / "resistance_100425_chip1_gap3.json").read_text())
         resist = YuanhangResistParams(**payload["resist_params"])
         frequencies = []
         for dt_ns in (0.01582, 0.00791):

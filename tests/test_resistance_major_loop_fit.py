@@ -65,7 +65,7 @@ def test_major_loop_workflow_archives_uncertainty_and_residuals(tmp_path: Path) 
         method="major-loop",
         bootstrap_samples=6,
         seed=11,
-        output_root=tmp_path / "runs",
+        output_root=tmp_path / "runs/local",
         command="test fit",
     )
 

@@ -1,7 +1,7 @@
 # Run-bundle contract
 
-Run schema version `1` is a portable directory. It can be copied between `runs/` and
-`public_jobs/` without rewriting internal paths.
+Run schema version `1` is a portable directory. It can be copied between `runs/local/` and
+`runs/published/` without rewriting internal paths.
 
 ## Required metadata
 
@@ -28,9 +28,9 @@ Non-finite values are serialized as JSON `null`, not nonstandard `NaN` tokens.
 
 ## Storage lanes
 
-- `runs/`: local, ignored, exploratory.
-- `public_jobs/`: tracked, reviewed evidence.
-- `jobs/`: ignored historical Streamlit jobs.
+- `runs/local/`: local, ignored, exploratory.
+- `runs/published/`: tracked, reviewed evidence.
+- `runs/legacy/`: ignored historical Streamlit jobs.
 
 `neuristor runs publish RUN_ID` copies a local bundle to the public lane and changes
 the copied manifest's storage label. It refuses to overwrite an existing public ID.
@@ -42,7 +42,7 @@ report explaining what changed.
 
 `neuristor runs manage` provides confirmed Delete/Restore controls for eligible
 local trials. `RunRegistry.trash` moves the intact folder to
-`runs/.trash/TRASH_ID/bundle`, with an administrative `deletion.json` beside it.
+`runs/local/.trash/TRASH_ID/bundle`, with an administrative `deletion.json` beside it.
 This sidecar is not a new scientific run manifest or another metadata database.
 Active discovery and inventory exclude trashed data; restore refuses overwrites.
 Published, running, legacy, symlinked and recipe-referenced runs are protected.

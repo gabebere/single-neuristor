@@ -18,7 +18,7 @@ C_th_pJ_per_K = 0.047873236
 S_e_mW_per_K = 0.0036751265
 T0_K = 298.0
 [resistance]
-preset = "../../presets/resistance_100425_chip1_gap3.json"
+preset = "../../data/parameters/resistance_100425_chip1_gap3.json"
 start_branch = "insulator"
 [maps]
 # Follow-up on the retained domain of the broad 9,261-point map.
@@ -49,10 +49,10 @@ high = 20.0
 count = 21
 extra_values = [0.39, 16.4]
 [output]
-root = "runs"
+root = "runs/local"
 
 [animations]
-source = "../../public_jobs/20261002_152003_focused-dense-physically-screened-steady-state-e_c1772e"
+source = "../../runs/published/20261002_152003_focused-dense-physically-screened-steady-state-e_c1772e"
 dt_ns = 0.00625
 maximum_refinements = 2
 batch_size = 128

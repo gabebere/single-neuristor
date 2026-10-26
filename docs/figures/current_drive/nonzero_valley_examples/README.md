@@ -28,5 +28,5 @@ neuristor simulate current \
 ```
 
 The exact multi-panel historical generator is retained as
-`legacy_scripts/generate_nonzero_valley_examples.py` and in the
+`archive/scripts/generate_nonzero_valley_examples.py` and in the
 `v0.1.0-working-baseline` Git tag.

@@ -21,8 +21,8 @@ from neuristor.workflows import _current_params_from_config
 def parents_and_data(tmp_path, monkeypatch):
     recipe = Path('experiments/current/specimen_frequency_only_20261020.toml').resolve()
     text = recipe.read_text().replace('[150.0,250.0]', '[1.0,3.0]')
-    text = text.replace('../../presets/resistance_100425_chip1_gap3.json',
-                        str(Path('presets/resistance_100425_chip1_gap3.json').resolve()))
+    text = text.replace('../../data/parameters/resistance_100425_chip1_gap3.json',
+                        str(Path('data/parameters/resistance_100425_chip1_gap3.json').resolve()))
     recipe = tmp_path/'recipe.toml'
     recipe.write_text(text)
     config = load_toml(recipe)

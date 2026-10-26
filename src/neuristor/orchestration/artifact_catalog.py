@@ -15,6 +15,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 from neuristor.runs import RunRegistry, find_project_root
+from neuristor.layout import CATALOG
 
 
 # The exported file remains read-only. The loopback manager enables these
@@ -91,7 +92,7 @@ def build_source_inventory(root: Path, output: Path) -> int:
     outside the supported API even when they are still executable.
     """
     rows = []
-    for folder in ("src", "tests", "legacy_scripts", "Simulations_on_VO2"):
+    for folder in ("src", "tests", "archive/scripts", "docs/presentation"):
         for path in sorted((root / folder).rglob("*.py")):
             if "__pycache__" in path.parts:
                 continue
@@ -137,7 +138,7 @@ def build_artifact_catalog(project_root: str | Path | None = None, output_direct
     them. The catalog itself is not a standalone shareable research artifact.
     """
     root = find_project_root(project_root)
-    output = Path(output_directory).expanduser().resolve() if output_directory else root / "artifacts"
+    output = Path(output_directory).expanduser().resolve() if output_directory else root / CATALOG
     output.mkdir(parents=True, exist_ok=True)
     registry = RunRegistry(root)
     records = registry.discover()
@@ -217,18 +218,12 @@ def build_artifact_catalog(project_root: str | Path | None = None, output_direct
     # One inventory for the old loose outputs as well as current bundles. No
     # copying or rehashing gigabytes of media is needed to make them findable.
     produced_roots = (
-        "runs",
-        "public_jobs",
-        "jobs",
+        "runs/local",
+        "runs/published",
+        "runs/legacy",
+        "runs/scratch",
         "docs",
-        "output",
-        "outputs",
-        "Simulations_on_VO2",
-        "presentations",
         "data",
-        "presets",
-        "new_samples",
-        "paper",
         "archive",
     )
     extensions = {".html", ".pdf", ".gif", ".png", ".csv", ".tsv", ".json", ".jsonl", ".tex", ".zip", ".md"}
@@ -245,7 +240,7 @@ def build_artifact_catalog(project_root: str | Path | None = None, output_direct
                     )
                     count += 1
     document_links = []
-    for folder in ("docs", "output/pdf", "Simulations_on_VO2", "presentations"):
+    for folder in ("docs", "runs/scratch/documents/pdf"):
         for path in sorted((root / folder).rglob("*.pdf")):
             document_links.append(f"<li>{link(path, path.relative_to(root).as_posix())}</li>")
     page = f"""<!doctype html><html lang="en"><meta charset="utf-8"><title>VO2 research artifacts</title>
@@ -261,8 +256,8 @@ button[data-run-id]{{color:#9d2836}}button:disabled{{cursor:default;opacity:.5}}
 Read the report and research handoff before adopting any parameters. Published means locally archived,
 not necessarily committed or pushed to GitHub. Older bundles remain immutable.</p>
 <p>{link(root / "docs/RESEARCH_HANDOFF.md", "Scientific handoff")} ·
-{link(root / "START_HERE.html", "Project navigation")} ·
-{link(root / "paper/README.md", "Paper reproduction guide")} ·
+{link(root / "README.md", "Project guide")} ·
+{link(root / "docs/reproduction/README.md", "Paper reproduction guide")} ·
 {link(root / "docs/ARCHIVE_INDEX.md", "Reviewed chronology")} ·
 {link(root / "docs/SAMPLE_STUDY.md", "Run a new sample study")} ·
 <a href="runs.csv">Run catalog CSV</a> · <a href="files.csv">Complete file inventory CSV</a> ·

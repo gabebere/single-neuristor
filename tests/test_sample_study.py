@@ -117,7 +117,7 @@ def test_sample_study_cli_completes_empty_domain_without_zip(tmp_path):
         "--config",
         str(RECIPE),
         "--output-root",
-        str(tmp_path / "runs"),
+        str(tmp_path / "runs/local"),
         "--set",
         "input.amplitude_uA=1",
         "--set",
@@ -131,7 +131,7 @@ def test_sample_study_cli_completes_empty_domain_without_zip(tmp_path):
     ]
     result = CliRunner().invoke(app, arguments)
     assert result.exit_code == 0, result.output + repr(result.exception)
-    root = next((tmp_path / "runs").iterdir())
+    root = next((tmp_path / "runs/local").iterdir())
     manifest = json.loads((root / "run.json").read_text())
     assert manifest["status"] == "completed"
     assert manifest["summary"]["embedded_gifs"] == 0
@@ -152,7 +152,7 @@ def test_catalog_lists_evidence_without_mutating_or_copying_it(tmp_path):
         model="current",
         kind="study",
         config={},
-        output_root=tmp_path / "runs",
+        output_root=tmp_path / "runs/local",
         command="test",
         project_root=tmp_path,
     )
@@ -161,11 +161,11 @@ def test_catalog_lists_evidence_without_mutating_or_copying_it(tmp_path):
     original = (bundle.root / "run.json").read_bytes()
     summary = build_artifact_catalog(tmp_path)
     assert summary["run_records"] == 1
-    catalog = (tmp_path / "artifacts/index.html").read_text()
+    catalog = (tmp_path / "runs/catalog/index.html").read_text()
     assert "A &lt;map&gt;" in catalog and "Sample studies" in catalog
     assert "successful fit" not in catalog
     assert (bundle.root / "run.json").read_bytes() == original
-    assert set(path.name for path in (tmp_path / "artifacts").iterdir()) == {
+    assert set(path.name for path in (tmp_path / "runs/catalog").iterdir()) == {
         "index.html", "runs.csv", "files.csv", "source_inventory.csv"
     }
-    assert pd.read_csv(tmp_path / "artifacts/source_inventory.csv").empty
+    assert pd.read_csv(tmp_path / "runs/catalog/source_inventory.csv").empty

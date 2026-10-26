@@ -134,7 +134,7 @@ def run_trend_validation(config,*,output_root=None,command='neuristor analyze va
     cases=plan_cases(s)
     reused=load_integration_cache(reuse_integrations,params,s) if reuse_integrations else None
     bundle=RunBundle.create(name=config['name'],model='current',kind='analysis',config=resolved_copy(config),
-        output_root=output_root or config.get('output',{}).get('root','runs'),command=command)
+        output_root=output_root or config.get('output',{}).get('root','runs/local'),command=command)
     print(f'RUN_DIRECTORY={bundle.root}',flush=True)
     start=time.monotonic();measurements=[]
     try:

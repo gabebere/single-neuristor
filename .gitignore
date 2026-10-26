@@ -1,15 +1,23 @@
-# Codex-only docs
+# Local research outputs. Only reviewed published bundles are versioned.
+/runs/local/
+/runs/legacy/
+/runs/scratch/
+/runs/catalog/
+/runs/published/20261007_074702_portable-screened-parameter-map-with-point-gifs_eaf6ab/
+
+# Former scratch locations may be recreated by historical scripts.
+/jobs/
+/outputs/
+/output/
+/tmp/
+/presentation_package_*/
+/presentation_package_*.zip
+
+# Local-only agent notes
 README_FOR_CODEX.md
 IMPLEMENTATION_GUIDE.md
-jobs/
-/runs/*
-!/runs/README.md
 
-# Curated public jobs live in public_jobs/ and are intentionally
-# not ignored. Use `neuristor runs publish RUN_ID` for reviewed local evidence;
-# committing/pushing to GitHub is a separate reviewed operation.
-
-# OS / Python build junk
+# OS, Python caches, builds and local environments
 .DS_Store
 __pycache__/
 .pytest_cache/
@@ -18,35 +26,13 @@ __pycache__/
 *.egg-info/
 build/
 dist/
-
-# Local environments
 .venv/
 
-# Never upload reference paper/manuscript PDFs or local private material.
-# Existing tracked files must also be removed from the index (ignore is not enough).
+# Third-party papers and private material never enter Git or Releases.
 /private/
-/references/papers/*.pdf
-/references/reference_graphs.zip
+/archive/references/papers/*.pdf
+/archive/references/reference_graphs.zip
 /docs/final_project/references/*.pdf
-
-# Complete 1,258-GIF package is a same-repository Release asset, not source Git.
-/public_jobs/20261007_074702_portable-screened-parameter-map-with-point-gifs_eaf6ab/
-
-# Rebuildable local inventories enumerate scratch/private-machine paths.
-/artifacts/index.html
-/artifacts/runs.csv
-/artifacts/files.csv
-/artifacts/source_inventory.csv
-
-# Generated analysis outputs
-outputs/
-
-# Disposable render/package workspaces. Curated figures and presentation
-# sources belong under docs/, Simulations_on_VO2/, or public_jobs/ instead.
-output/
-tmp/
-presentation_package_*/
-presentation_package_*.zip
 
 # LaTeX build intermediates
 *.aux

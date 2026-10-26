@@ -1,0 +1,22 @@
+# No credentials, private PDFs, or duplicated media are stored in this index.
+schema_version = 1
+repository = "gabebere/single-neuristor"
+tag = "research-library-2026-10-20"
+status = "published and asset digests verified on 2026-10-20"
+code_commit = "b46f76f93b700c1d9ff53dff82e12d009f0409ac"
+
+[[asset]]
+name = "VO2_parameter_map_with_GIFs.zip"
+bytes = 589752448
+sha256 = "b60155142b66cae2467f7c8683f210229163e308c70efeb7d128d509f9050c73"
+scope = "Original corrected 1,258-GIF HTML viewer; conditional exploration, not experimental calibration"
+source = "runs/published/20261007_074702_portable-screened-parameter-map-with-point-gifs_eaf6ab/VO2_parameter_map_with_GIFs.zip"
+url = "https://github.com/gabebere/single-neuristor/releases/download/research-library-2026-10-20/VO2_parameter_map_with_GIFs.zip"
+
+[[asset]]
+name = "VO2_parameter_map_provenance.tar.gz"
+bytes = 108319199
+sha256 = "9f8f39fb5dd33f3468b07c7e7f341810d3cf6ad700440f3837dab6e956220d7a"
+scope = "Frozen source, resolved inputs, numerical checks and PNGs omitted from the lightweight shareable ZIP; no duplicate GIF folder"
+source = "runs/scratch/distribution/VO2_parameter_map_provenance.tar.gz"
+url = "https://github.com/gabebere/single-neuristor/releases/download/research-library-2026-10-20/VO2_parameter_map_provenance.tar.gz"

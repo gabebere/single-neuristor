@@ -858,8 +858,8 @@ def run_sweep_make_gif(
     I_stop_uA: int = 2000,
     I_step_uA: int = 50,
     frame_duration_s: float = 0.5,
-    frames_dir: str | Path = "outputs/current_sweep_frames",
-    gif_path: str | Path = "outputs/current_sweep.gif",
+    frames_dir: str | Path = "runs/scratch/current_sweep_frames",
+    gif_path: str | Path = "runs/scratch/current_sweep.gif",
     seed: Optional[int] = None,
 ) -> Dict[str, object]:
     """Run the current sweep, save PNG frames, and create GIF."""
@@ -918,8 +918,8 @@ def main() -> None:
         I_stop_uA=2000,
         I_step_uA=50,
         frame_duration_s=0.5,
-        frames_dir="outputs/current_sweep_frames",
-        gif_path="outputs/current_sweep.gif",
+        frames_dir="runs/scratch/current_sweep_frames",
+        gif_path="runs/scratch/current_sweep.gif",
         seed=123,
     )
     print("Done.")

@@ -40,9 +40,6 @@ package-dir = { "" = "src" }
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.setuptools.package-data]
-neuristor = ["README.md", "*/README.md"]
-
 [tool.ruff]
 line-length = 120
 target-version = "py310"

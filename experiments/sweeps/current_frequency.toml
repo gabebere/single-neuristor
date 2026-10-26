@@ -14,4 +14,4 @@ stop = 800.0
 step = 50.0
 
 [output]
-root = "runs"
+root = "runs/local"

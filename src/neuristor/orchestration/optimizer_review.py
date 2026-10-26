@@ -34,7 +34,7 @@ def review_optimizer_runs(audit_run,frequency_run,combined_run,*,output_root=Non
         if not json.loads((sources[name]/'metrics.json').read_text())['verification_complete']:
             raise ValueError('Expanded verification is incomplete')
     bundle=RunBundle.create(name='Optimizer budget derivative and gradient review',model='optimizer-review',kind='analysis',
-        config={'sources':{n:str(p) for n,p in sources.items()}},output_root=output_root or 'runs',command=command)
+        config={'sources':{n:str(p) for n,p in sources.items()}},output_root=output_root or 'runs/local',command=command)
     try:
         snapshot_package(bundle)
         audit=sources['audit']

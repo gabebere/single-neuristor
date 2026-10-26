@@ -98,11 +98,11 @@ search objective improved. Refinement therefore matters for ranking as well as
 waveform shape. The diagnostic fit pays a large static-data cost and does not
 beat the static-preserving fit on fine-step validation; it is not preferred.
 
-![Joint static and dynamic fits](../public_jobs/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f/figures/joint_summary.png)
+![Joint static and dynamic fits](../runs/published/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f/figures/joint_summary.png)
 
-![Representative waveforms](../public_jobs/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f/figures/joint_traces.png)
+![Representative waveforms](../runs/published/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f/figures/joint_traces.png)
 
-The [parameter table](../public_jobs/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f/parameters.csv)
+The [parameter table](../runs/published/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f/parameters.csv)
 records full precision. Static-preserving gives C=6.806 pF, Se=3.738 µW/K,
 Cth=0.05928 pJ/K and gamma=0.1757; the diagnostic gives C=4.964 pF,
 Se=3.519 µW/K, Cth=0.03970 pJ/K and gamma=0.1787. Both again favor C well
@@ -142,12 +142,12 @@ pytest -q
 neuristor validate
 ```
 
-The immutable [bundle report](../public_jobs/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f/report.md)
+The immutable [bundle report](../runs/published/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f/report.md)
 links its numerical tables through the manifest. It includes source snapshots,
 input/source hashes, bounds, budget, every objective call and separate validation
 metrics. The command creates a new bundle rather than modifying this evidence.
 
-The requested [presentation](../Simulations_on_VO2/main.pdf) retains its title,
+The requested [presentation](presentation/main.pdf) retains its title,
 author, laboratory and supervisors. Three method slides and five result slides
 were added before the closing baseline slide; editable result source is
-`Simulations_on_VO2/joint_fit_results.tex`. Full suite: 64 tests passed.
+`docs/presentation/joint_fit_results.tex`. Full suite: 64 tests passed.

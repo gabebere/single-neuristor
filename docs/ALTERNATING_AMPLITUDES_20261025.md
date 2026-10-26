@@ -1,11 +1,11 @@
 # Alternating oscillation amplitudes — recovered 25 October 2026
 
-[Open the illustrated finding and interactive replays](../public_jobs/20261025_082439_documented-alternating-amplitude-historical-simu_1072ef/index.html)
-or [read the full audit](../public_jobs/20261025_082439_documented-alternating-amplitude-historical-simu_1072ef/report.md).
+[Open the illustrated finding and interactive replays](../runs/published/20261025_082439_documented-alternating-amplitude-historical-simu_1072ef/index.html)
+or [read the full audit](../runs/published/20261025_082439_documented-alternating-amplitude-historical-simu_1072ef/report.md).
 
 The exact vector is now saved in
-`presets/alternating_amplitude_relaxed_20260907.json`.
-[Open the classic 44-GIF current sweep](../public_jobs/20261025_091004_fixed-alternating-amplitude-classic-gifs_4b9e8c/START_HERE.html):
+`data/parameters/alternating_amplitude_relaxed_20260907.json`.
+[Open the classic 44-GIF current sweep](../runs/published/20261025_091004_fixed-alternating-amplitude-classic-gifs_4b9e8c/START_HERE.html):
 22 measured-current records at 0.025 and 0.00625 ns, with current above simulated
 voltage above native R(T). A third timestep is retained numerically. Original
 0.025 ns samples match the historical outputs within 1.53e-11 mV. Middle panels
@@ -39,7 +39,7 @@ successive resets are shallow, deep, shallow, deep. Peak heights alone differ
 much less. Adjacent-cycle amplitudes have correlation −0.99939; amplitudes two
 cycles apart have correlation +0.99924. A median amplitude would hide the pattern.
 
-![Archived waveform, matched measurement, amplitudes and return plot](../public_jobs/20261025_082439_documented-alternating-amplitude-historical-simu_1072ef/figures/archived_alternating_amplitudes.png)
+![Archived waveform, matched measurement, amplitudes and return plot](../runs/published/20261025_082439_documented-alternating-amplitude-historical-simu_1072ef/figures/archived_alternating_amplitudes.png)
 
 The primary-peak spacing is about 24.5 ns; a pair repeats in about 49 ns.
 Thus counting individual peaks and counting complete large/small pairs give
@@ -56,7 +56,7 @@ different descriptive rates. This does not imply two independent oscillators.
   baseline-corrected input over 150–250 ns, and extends to 2 µs. The last 1 µs
   alternates regularly at 0.025 and 0.0125 ns but becomes irregular at 0.00625 ns.
 
-![Timestep and longer-horizon limitation](../public_jobs/20261025_082439_documented-alternating-amplitude-historical-simu_1072ef/figures/timestep_and_horizon_check.png)
+![Timestep and longer-horizon limitation](../runs/published/20261025_082439_documented-alternating-amplitude-historical-simu_1072ef/figures/timestep_and_horizon_check.png)
 
 The appropriate documented claim is **alternating-amplitude oscillations in a
 historical diagnostic simulation**. A stable long-time period-two attractor,
@@ -69,7 +69,7 @@ long-time state is not converged by these checks.
 C=6.835494476 pF; Cth=0.04421419302 pJ/K; Se=0.003712762043 mW/K;
 T0=Tinit=314.363069806 K; Tc=333.338417242 K; w=7.041456088 K;
 beta=0.3144377018 /K; gamma=0.1569637099; Vinit=0; insulating initial branch.
-Other resistance parameters use `presets/resistance_100425_chip1_gap3.json`.
+Other resistance parameters use `data/parameters/resistance_100425_chip1_gap3.json`.
 C and gamma lie outside that historical fit's configured constrained intervals;
 those intervals are not universal laws. No fit or physical calibration is adopted.
 
@@ -84,7 +84,7 @@ The archived finding includes a portable copy, the exact standard CLI run,
 18 native replays (three source labels × two input modes × three timesteps),
 original numerical inputs, per-cycle measurements, detection-sensitivity tables,
 parameter provenance and frozen package source. Analysis scripts preserve their
-original repository-relative `runs/double_oscillation_20261025/` working layout;
+original repository-relative `runs/local/double_oscillation_20261025/` working layout;
 the portable TOML control can run directly from the evidence bundle.
 
 Primary-cycle amplitudes are each raw peak minus its own preceding raw trough.

@@ -172,7 +172,7 @@ def fit_resistance(
     local_passes: int = typer.Option(180, "--local-passes", min=0),
     method: str = typer.Option("auto", "--method", help="auto, major-loop, or stateful"),
     bootstrap_samples: int = typer.Option(500, "--bootstrap-samples", min=0),
-    output_root: Path = typer.Option(Path("runs"), "--output-root"),
+    output_root: Path = typer.Option(Path("runs/local"), "--output-root"),
 ) -> None:
     """Fit Yuanhang resistance/hysteresis parameters to measured R(T)."""
 
@@ -194,7 +194,7 @@ def fit_resistance(
 def analyze_lab(
     data_directory: Path = typer.Option(..., "--data", exists=True, file_okay=False, readable=True),
     name: str = typer.Option("Measured laboratory current sweep", "--name"),
-    output_root: Path = typer.Option(Path("runs"), "--output-root"),
+    output_root: Path = typer.Option(Path("runs/local"), "--output-root"),
 ) -> None:
     """Analyze professor-supplied numerical current/voltage waveforms."""
 
@@ -518,7 +518,7 @@ def analyze_conductance(
     block_size: int = typer.Option(10, "--block-size", min=1),
     seed: int = typer.Option(20260817, "--seed"),
     name: str = typer.Option("Environmental thermal-conductance estimate", "--name"),
-    output_root: Path = typer.Option(Path("runs"), "--output-root"),
+    output_root: Path = typer.Option(Path("runs/local"), "--output-root"),
 ) -> None:
     """Estimate environmental thermal conductance from a settled pre-onset trace."""
 
@@ -569,7 +569,7 @@ def analyze_thermal_capacitance(
     fit_window_jitter_ns: int = typer.Option(2, "--fit-window-jitter-ns", min=0),
     seed: int = typer.Option(20260817, "--seed"),
     name: str = typer.Option("Thermal time constant and capacitance estimate", "--name"),
-    output_root: Path = typer.Option(Path("runs"), "--output-root"),
+    output_root: Path = typer.Option(Path("runs/local"), "--output-root"),
 ) -> None:
     """Fit the specimen thermal time constant from nonswitching heating edges."""
 
@@ -667,7 +667,7 @@ def runs_manage(port: int = typer.Option(0, "--port", min=0, max=65535)) -> None
     from .interfaces.run_manager import create_manager
 
     with create_manager(port=port) as server:
-        typer.echo(f"Run manager: http://127.0.0.1:{server.server_port}/artifacts/index.html")
+        typer.echo(f"Run manager: http://127.0.0.1:{server.server_port}/runs/catalog/index.html")
         typer.echo("Delete moves local runs to recoverable trash. Published/running runs are protected.")
         typer.echo("Keep this terminal running; press Ctrl+C to stop.")
         try:
@@ -735,7 +735,7 @@ def runs_visualize(
     if record.model != "current" or not trace_path.is_file():
         typer.echo("This command requires a current-drive run with traces.csv.", err=True)
         raise typer.Exit(2)
-    output = output_directory or (find_project_root() / "outputs" / "run_visuals" / run_id)
+    output = output_directory or (find_project_root() / "runs/scratch" / "run_visuals" / run_id)
     output = output.expanduser().resolve()
     frame = pd.read_csv(trace_path)
     peak_current_uA = float(frame["current_uA"].max()) if "current_uA" in frame else 0.0

@@ -3,7 +3,7 @@
 Every new command writes the same small contract.  ``run.json`` is the index;
 all paths inside it are relative to the run directory, making bundles portable
 across machines and GitHub clones.  The registry also understands historical
-``public_jobs/*/job.json`` records so the new dashboard does not discard years
+``runs/published/*/job.json`` records so the new dashboard does not discard years
 of provenance.
 """
 
@@ -19,6 +19,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping
+
+from .layout import LOCAL_RUNS, PUBLISHED_RUNS, LEGACY_RUNS, resolve_recorded_path
 
 
 RUN_SCHEMA_VERSION = 1
@@ -125,6 +127,10 @@ class RunBundle:
         output = Path(output_root).expanduser()
         if not output.is_absolute():
             output = project / output
+        # Older recipes used the flat runs/ lane. Keep them usable while every
+        # new standard bundle joins the consolidated local lane.
+        if output.resolve() == (project / "runs").resolve():
+            output = project / LOCAL_RUNS
         output.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.now(timezone.utc)
         run_id = f"{timestamp:%Y%m%d_%H%M%S}_{_slug(name)}_{uuid.uuid4().hex[:6]}"
@@ -248,6 +254,7 @@ class RunRecord:
                         path = find_project_root(self.root) / path
                     else:
                         path = self.root / path
+                path = resolve_recorded_path(path, find_project_root(self.root))
                 paths.append(resolve_archive_case(path.resolve()))
         return paths if declared else self.files()
 
@@ -260,11 +267,11 @@ class RunRegistry:
 
     def discover(self, *, include_private_legacy: bool = True) -> list[RunRecord]:
         records: list[RunRecord] = []
-        records.extend(self._new_records(self.project_root / "runs", storage="local"))
-        records.extend(self._new_records(self.project_root / "public_jobs", storage="public"))
-        records.extend(self._legacy_records(self.project_root / "public_jobs", storage="public"))
+        records.extend(self._new_records(self.project_root / LOCAL_RUNS, storage="local"))
+        records.extend(self._new_records(self.project_root / PUBLISHED_RUNS, storage="public"))
+        records.extend(self._legacy_records(self.project_root / PUBLISHED_RUNS, storage="public"))
         if include_private_legacy:
-            records.extend(self._legacy_records(self.project_root / "jobs", storage="legacy-local"))
+            records.extend(self._legacy_records(self.project_root / LEGACY_RUNS, storage="legacy-local"))
         # Publishing intentionally leaves the exploratory source in ``runs``.
         # Prefer the reviewed public copy so the archive does not show one run twice.
         priority = {"public": 0, "local": 1, "legacy-local": 2}
@@ -287,11 +294,11 @@ class RunRegistry:
         mutable through this operation. Resolve containment rather than trusting
         the manifest's storage label or a symlink supplied as a run directory.
         """
-        lane = self.project_root / "runs"
+        lane = self.project_root / LOCAL_RUNS
         if record.storage != "local" or record.legacy:
             return "Published evidence and legacy jobs are protected."
-        if lane.is_symlink() or record.root.is_symlink() or record.root.parent != lane:
-            return "Only direct, non-symlink folders inside runs/ can be trashed."
+        if lane.parent.is_symlink() or lane.is_symlink() or record.root.is_symlink() or record.root.parent != lane:
+            return "Only direct, non-symlink folders inside runs/local/ can be trashed."
         if record.root.resolve().parent != lane.resolve() or record.root.name != record.id:
             return "Run identity or location does not match its manifest."
         if record.status not in {"completed", "failed"}:
@@ -300,7 +307,10 @@ class RunRegistry:
             return "An experiment recipe references this run; preserve it or update the recipe first."
         for viewer in self.discover():
             dependencies = viewer.manifest.get("summary", {}).get("media_dependencies", [])
-            if viewer.status == "completed" and str(record.root.resolve()) in dependencies:
+            if viewer.status == "completed" and any(
+                resolve_recorded_path(path, self.project_root).resolve() == record.root.resolve()
+                for path in dependencies
+            ):
                 return "A fixed-scale viewer links to this run's GIFs; remove that viewer first."
         return None
 
@@ -315,8 +325,8 @@ class RunRegistry:
         reason = self.trash_reason(record)
         if reason:
             raise ValueError(reason)
-        trash = self.project_root / "runs" / ".trash"
-        if trash.is_symlink():
+        trash = self.project_root / "runs/local" / ".trash"
+        if any(path.is_symlink() for path in (trash.parent.parent, trash.parent, trash)):
             raise ValueError("Trash must not be a symlink.")
         trash.mkdir(exist_ok=True)
         timestamp = datetime.now(timezone.utc)
@@ -324,7 +334,7 @@ class RunRegistry:
         entry = trash / trash_id
         entry.mkdir()
         metadata = dict(trash_id=trash_id, run_id=record.id, name=record.name,
-                        original_path=f"runs/{record.id}", deleted_at=timestamp.isoformat())
+                        original_path=f"runs/local/{record.id}", deleted_at=timestamp.isoformat())
         sidecar = entry / "deletion.json"
         try:
             sidecar.write_text(json.dumps(metadata, indent=2) + "\n")
@@ -339,8 +349,8 @@ class RunRegistry:
 
     def trashed(self) -> list[dict[str, Any]]:
         """List recoverable entries outside active discovery; never follow symlinks."""
-        trash = self.project_root / "runs" / ".trash"
-        if trash.is_symlink():
+        trash = self.project_root / "runs/local" / ".trash"
+        if any(path.is_symlink() for path in (trash.parent.parent, trash.parent, trash)):
             raise ValueError("Trash must not be a symlink.")
         entries = []
         for sidecar in sorted(trash.glob("*/deletion.json"), reverse=True):
@@ -355,17 +365,17 @@ class RunRegistry:
         """Restore a trashed bundle at its original path, refusing any overwrite."""
         if not re.fullmatch(r"\d{8}_\d{6}_[a-f0-9]{12}", trash_id):
             raise ValueError("Invalid trash ID.")
-        lane = self.project_root / "runs"
+        lane = self.project_root / "runs/local"
         trash = lane / ".trash"
         entry = trash / trash_id
         source = entry / "bundle"
-        if any(path.is_symlink() for path in (lane, trash, entry, source, entry / "deletion.json")):
+        if any(path.is_symlink() for path in (lane.parent, lane, trash, entry, source, entry / "deletion.json")):
             raise ValueError("Trash and bundle paths must not be symlinks.")
         metadata = json.loads((entry / "deletion.json").read_text())
         run_id = metadata["run_id"]
         if not run_id or Path(run_id).name != run_id or run_id in {".", ".."}:
             raise ValueError("Invalid original run ID.")
-        if metadata.get("original_path") != f"runs/{run_id}" or metadata.get("trash_id") != trash_id:
+        if metadata.get("original_path") not in {f"runs/local/{run_id}", f"runs/{run_id}"} or metadata.get("trash_id") != trash_id:
             raise ValueError("Trash metadata does not match its original path.")
         destination = lane / run_id
         if destination.exists() or destination.is_symlink():
@@ -379,7 +389,7 @@ class RunRegistry:
         record = self.get(run_id)
         if record.storage == "public":
             return record
-        destination = self.project_root / "public_jobs" / record.id
+        destination = self.project_root / "runs/published" / record.id
         if destination.exists():
             raise FileExistsError(f"Public destination already exists: {destination}")
         shutil.copytree(record.root, destination)

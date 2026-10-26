@@ -36,13 +36,13 @@ def validate_repository(project_root: str | Path | None = None) -> ValidationRep
 
     root = find_project_root(project_root)
     report = ValidationReport()
-    manifest = root / "paper/reproduction.toml"
+    manifest = root / "docs/reproduction/reproduction.toml"
     if manifest.exists():
         try:
             report.checked_evidence, errors = validate_reproduction_index(root)
             report.errors.extend(errors)
         except (OSError, ValueError, tomllib.TOMLDecodeError) as exc:
-            report.errors.append(f"paper/reproduction.toml: {exc}")
+            report.errors.append(f"docs/reproduction/reproduction.toml: {exc}")
     experiment_root = root / "experiments"
     for path in sorted(experiment_root.rglob("*.toml")) if experiment_root.is_dir() else []:
         try:
@@ -111,7 +111,7 @@ def validate_reproduction_index(root: Path) -> tuple[int, list[str]]:
     decisions. Evidence paths must stay inside the project.
     """
     root = root.resolve()
-    payload = tomllib.loads((root / "paper/reproduction.toml").read_text())
+    payload = tomllib.loads((root / "docs/reproduction/reproduction.toml").read_text())
     if payload.get("schema_version") != 1:
         raise ValueError("Unsupported paper evidence schema")
     records = payload.get("evidence", [])

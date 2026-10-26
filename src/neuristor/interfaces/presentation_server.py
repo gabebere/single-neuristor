@@ -21,13 +21,13 @@ from urllib.parse import unquote, urlsplit
 from urllib.request import urlopen
 
 PORT = 8767
-SERVICE = 'neuristor-presentation-viewers-v2'
+SERVICE = 'neuristor-presentation-viewers-v3'
 LOSS_RUN = '20261021_054434_loss-function-comparison-all-44-stacked-gifs_15921f'
 MAP_RUN = '20261007_123036_fixed-scale-viewer-portable-screened-parameter-m_4325d1'
 MEDIA_RUN = '20261007_074702_portable-screened-parameter-map-with-point-gifs_eaf6ab'
 BUNDLES = (LOSS_RUN, MAP_RUN, MEDIA_RUN)
-VIEWERS = {'/loss-gifs': f'/public_jobs/{LOSS_RUN}/START_HERE.html',
-           '/parameter-map': f'/public_jobs/{MAP_RUN}/parameter_maps.html'}
+VIEWERS = {'/loss-gifs': f'/runs/published/{LOSS_RUN}/START_HERE.html',
+           '/parameter-map': f'/runs/published/{MAP_RUN}/parameter_maps.html'}
 
 
 def presentation_project_root(project_root=None):
@@ -38,7 +38,7 @@ def presentation_project_root(project_root=None):
 def completed_mica_reviews(project):
     """Find locally published M2 reviews; never link an unfinished expansion."""
     result = []
-    for root in (project/'public_jobs').glob('*m2-1600nm*review*'):
+    for root in (project/'runs/published').glob('*m2-1600nm*review*'):
         try:
             manifest = json.loads((root/'run.json').read_text())
         except (OSError, ValueError):
@@ -51,7 +51,7 @@ def completed_mica_reviews(project):
 def completed_alternating_gifs(project):
     """Locate completed frozen-vector GIF studies for the final slide only."""
     result = []
-    for root in (project/'public_jobs').glob('*fixed-alternating-amplitude-classic-gifs*'):
+    for root in (project/'runs/published').glob('*fixed-alternating-amplitude-classic-gifs*'):
         if root.is_symlink():
             continue
         try:
@@ -66,7 +66,7 @@ def completed_alternating_gifs(project):
 def create_presentation_server(project_root=None, *, port=PORT):
     """Create an IPv4-loopback server restricted to the reviewed display bundles."""
     project = presentation_project_root(project_root)
-    roots = [(project/'public_jobs'/name).resolve() for name in BUNDLES]
+    roots = [(project/'runs/published'/name).resolve() for name in BUNDLES]
 
     class Handler(SimpleHTTPRequestHandler):
         def log_message(self, format, *args):
@@ -80,6 +80,14 @@ def create_presentation_server(project_root=None, *, port=PORT):
             # Some immutable historical bundles spelled Figures/figures
             # differently in HTML and on disk. Resolve only unambiguous matches
             # so a copy also works on case-sensitive filesystems.
+            # Frozen viewers still request the former /public_jobs prefix.
+            # Translate only that known lane; the allowlist below still checks
+            # resolved targets, including symlinks and traversal attempts.
+            route = unquote(urlsplit(path).path)
+            if route.startswith('/public_jobs/'):
+                path = '/runs/published/' + route[len('/public_jobs/'):]
+            elif route.startswith('/runs/public_jobs/'):
+                path = '/runs/published/' + route[len('/runs/public_jobs/'):]
             candidate = Path(super().translate_path(path))
             if candidate.exists():
                 return str(candidate)
@@ -116,9 +124,9 @@ def create_presentation_server(project_root=None, *, port=PORT):
                 return BytesIO(body)
             viewers = dict(VIEWERS)
             if mica:
-                viewers['/mica-map'] = f'/public_jobs/{mica[-1].name}/parameter_maps.html'
+                viewers['/mica-map'] = f'/runs/published/{mica[-1].name}/parameter_maps.html'
             if alternating:
-                viewers['/alternating-gifs'] = f'/public_jobs/{alternating[-1].name}/START_HERE.html'
+                viewers['/alternating-gifs'] = f'/runs/published/{alternating[-1].name}/START_HERE.html'
             if route in viewers:
                 self.send_response(302)
                 self.send_header('Location', viewers[route])
@@ -161,7 +169,7 @@ def ensure_running(project_root=None, *, port=PORT):
             raise RuntimeError(f'Port {port} belongs to a different service or checkout')
         return True
     if not check():
-        log = project/'outputs'/'presentation_viewers.log'
+        log = project/'runs/scratch'/'presentation_viewers.log'
         log.parent.mkdir(parents=True, exist_ok=True)
         with log.open('ab') as stream:
             options = dict(start_new_session=True) if os.name != 'nt' else dict(
@@ -180,17 +188,17 @@ def ensure_running(project_root=None, *, port=PORT):
 def check_presentation_files(project_root=None):
     """Fail clearly when only the PDF, rather than its linked viewers, was copied."""
     project = presentation_project_root(project_root)
-    required = [project/'Simulations_on_VO2'/'main.pdf']
+    required = [project/'docs/presentation'/'main.pdf']
     required.extend(project/path.lstrip('/') for path in VIEWERS.values())
-    required.append(project/'public_jobs'/MEDIA_RUN/'GIFs')
+    required.append(project/'runs/published'/MEDIA_RUN/'GIFs')
     missing = [str(path.relative_to(project)) for path in required if not path.exists()]
     if not completed_mica_reviews(project):
-        missing.append('public_jobs/<completed M2 1600 nm review>/parameter_maps.html')
+        missing.append('runs/published/<completed M2 1600 nm review>/parameter_maps.html')
     if not completed_alternating_gifs(project):
-        missing.append('public_jobs/<completed alternating amplitude GIF sweep>/START_HERE.html')
+        missing.append('runs/published/<completed alternating amplitude GIF sweep>/START_HERE.html')
     if missing:
         raise FileNotFoundError('Missing presentation files:\n  ' + '\n  '.join(missing)
-            + '\nCopy the presentation and its public_jobs viewer/media bundles; the PDF alone is insufficient.')
+            + '\nCopy the presentation and its runs/published viewer/media bundles; the PDF alone is insufficient.')
     return required[0]
 
 

@@ -232,7 +232,7 @@ high-current pair, the same late major-branch inversion gives apparent
 `ΔP/ΔT` slopes of 4.64 and 55.31 µW/K, respectively (ratio 11.93).
 Across the 16 baseline/output-window choices, that ratio is 11.52–12.78.
 Across all 1000 paired draws in the
-[archived static R(T) bootstrap](../public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv), its
+[archived static R(T) bootstrap](../runs/published/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv), its
 2.5–97.5% range is 10.73–13.14. The high-current records retain small
 periodic output, so they are only approximately steady; the bootstrap still
 does not account for a changed driven R(T), spatial temperature, or an active
@@ -253,7 +253,7 @@ resistance remains roughly 190–341 Ω while the conditional replay approaches 
 18.2 Ω metallic floor. The gap is a branch-wide issue, not an isolated waveform.
 
 There is a particularly simple onset ordering check. From the 250 to 300 mV
-source labels, the corrected late output/current ratio falls from 1680.5 to
+source labels, the corrected late runs/scratch/documents/current ratio falls from 1680.5 to
 1017.4 Ω while their product falls from 60.73 to 53.23 µW. At the 350 mV
 label, both fall further, to 710.7 Ω and 50.76 µW. Without baseline
 subtraction, the raw output-current products also fall, from 62.01 to

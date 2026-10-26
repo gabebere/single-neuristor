@@ -33,7 +33,7 @@ Its single-device thermal equation is
 C_{th}\frac{dT}{dt}=\frac{V^2}{R_{VO2}}-S_e(T-T_0).
 \]
 
-The upstream numerical units are ns, kOhm, pF, mW, and mW ns/K. The corresponding baseline values in `references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/model.py` are:
+The upstream numerical units are ns, kOhm, pF, mW, and mW ns/K. The corresponding baseline values in `archive/references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/model.py` are:
 
 | Parameter | Yuanhang value | SI value |
 |---|---:|---:|
@@ -84,8 +84,8 @@ temperature-dependent state and/or nonideal source/measurement circuit matters.
 
 ### Evidence from the numerical plateaus
 
-The [measured sweep](../public_jobs/20260817_134254_measured-laboratory-current-sweep_a45254/figures/lab_summary.png)
-and [settled pre-onset trace](../public_jobs/20260817_153807_environmental-thermal-conductance-estimate_761640/figures/environmental_conductance.png)
+The [measured sweep](../runs/published/20260817_134254_measured-laboratory-current-sweep_a45254/figures/lab_summary.png)
+and [settled pre-onset trace](../runs/published/20260817_153807_environmental-thermal-conductance-estimate_761640/figures/environmental_conductance.png)
 come directly from the professor-supplied numerical exports. The fitted specimen
 prediction `V=I*18.3 Ohm` remains far below the measured high-current plateau, while
 Yuanhang's much larger metallic resistance produces a much larger floor. None of
@@ -105,7 +105,7 @@ The low voltage predicted with the 18.3 Ohm specimen `Rm` is not itself a numeri
 The checked-in `experiments/sweeps/current_capacitance_map.toml` recipe evaluates a
 current-faceted grid centered on Yuanhang's `C` and `C_th`, at 300, 400, 500, 600,
 700, and 800 uA. The archived figure below used the denser pre-refactor 7 by 7 recipe;
-its exact generator remains in `legacy_scripts/sweep_current_capacitances.py` and the
+its exact generator remains in `archive/scripts/sweep_current_capacitances.py` and the
 working-baseline tag. Both workflows exclude startup behavior from cycle metrics.
 
 At the nominal Yuanhang capacitances:
@@ -178,7 +178,7 @@ The 22 converted traces contain the measured time, input current, and output vol
 no values are recovered from images. They cover 41.9--943.3 uA. A conservative
 periodic-peak detector identifies coherent oscillations from 233.5 to 621.8 uA at
 41.7--62.5 MHz, reproducing the operating range reported in Figure 7.
-The [archived sweep summary](../public_jobs/20260817_134254_measured-laboratory-current-sweep_a45254/figures/lab_summary.png)
+The [archived sweep summary](../runs/published/20260817_134254_measured-laboratory-current-sweep_a45254/figures/lab_summary.png)
 shows average output voltage, maximum output power, and detected frequency directly
 from those files.
 
@@ -350,14 +350,14 @@ neuristor sweep run \
   --config experiments/sweeps/current_capacitance_map.toml
 neuristor analyze conductance \
   --data data/experimental/tia_current_sweep \
-  --resistance-preset presets/resistance_100425_chip1_gap3.json \
-  --resistance-bootstrap public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
+  --resistance-preset data/parameters/resistance_100425_chip1_gap3.json \
+  --resistance-bootstrap runs/published/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
   --ambient-K 314.4 --ambient-interval-K 314.25,314.55
 pytest -q
 neuristor validate
 ```
 
-New outputs are standard bundles under `runs/`. Use `neuristor runs publish RUN_ID`
-to copy reviewed evidence into the Git-tracked `public_jobs/` archive. The former
+New outputs are standard bundles under `runs/local/`. Use `neuristor runs publish RUN_ID`
+to copy reviewed evidence into the Git-tracked `runs/published/` archive. The former
 screenshot-digitization code and its derived artifacts were removed; Git history is
 their recovery path.

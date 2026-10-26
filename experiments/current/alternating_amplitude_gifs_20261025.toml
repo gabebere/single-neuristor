@@ -23,17 +23,17 @@ C_th_pJ_per_K = 0.044214193020215925
 S_e_mW_per_K = 0.003712762043427252
 T0_K = 314.363069805982
 [resistance]
-preset = "../../presets/alternating_amplitude_relaxed_20260907.json"
+preset = "../../data/parameters/alternating_amplitude_relaxed_20260907.json"
 start_branch = "insulator"
 
 [analysis]
 start_us = 1.0
 stop_us = 2.0
 [output]
-root = "runs"
+root = "runs/local"
 
 [animation_study]
-source_bundle = "../../public_jobs/20260907_125315_physics-anchored-specimen-waveform-inference_717797"
+source_bundle = "../../runs/published/20260907_125315_physics-anchored-specimen-waveform-inference_717797"
 time_steps_ns = [0.025, 0.0125, 0.00625]
 render_steps_ns = [0.025, 0.00625]
 window_ns = [-30.0, 280.0]

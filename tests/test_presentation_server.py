@@ -16,7 +16,7 @@ from neuristor.interfaces.presentation_server import BUNDLES, SERVICE, VIEWERS, 
 
 def test_viewer_routes_media_and_read_only_boundary(tmp_path):
     for bundle in BUNDLES:
-        root = tmp_path/'public_jobs'/bundle
+        root = tmp_path/'runs/published'/bundle
         root.mkdir(parents=True)
         (root/'START_HERE.html').write_text('<h1>Test loss viewer</h1>')
         (root/'parameter_maps.html').write_text('<h1>Test heatmap viewer</h1>')
@@ -27,7 +27,7 @@ def test_viewer_routes_media_and_read_only_boundary(tmp_path):
     private = tmp_path/'private'
     private.mkdir()
     (private/'paper.pdf').write_bytes(b'not for serving')
-    (tmp_path/'public_jobs'/BUNDLES[0]/'leak.pdf').symlink_to(private/'paper.pdf')
+    (tmp_path/'runs/published'/BUNDLES[0]/'leak.pdf').symlink_to(private/'paper.pdf')
     with create_presentation_server(tmp_path, port=0) as server:
         thread=Thread(target=server.serve_forever, daemon=True)
         thread.start()
@@ -71,7 +71,7 @@ def test_presentation_server_cli_background(tmp_path, monkeypatch):
 
 def test_mica_alias_advances_only_to_completed_reviews(tmp_path):
     def review(name, status):
-        root=tmp_path/'public_jobs'/name
+        root=tmp_path/'runs/published'/name
         root.mkdir(parents=True)
         (root/'run.json').write_text(json.dumps({'status':status}))
         (root/'parameter_maps.html').write_text(name)
@@ -107,7 +107,7 @@ def test_portable_script_runs_without_installation(tmp_path):
 
 
 def test_alternating_gallery_requires_completion_and_serves_its_gifs(tmp_path):
-    root=tmp_path/'public_jobs'/'20261025_fixed-alternating-amplitude-classic-gifs_test'
+    root=tmp_path/'runs/published'/'20261025_fixed-alternating-amplitude-classic-gifs_test'
     root.mkdir(parents=True)
     (root/'run.json').write_text(json.dumps({'status':'running'}))
     (root/'START_HERE.html').write_text('alternating gallery')
@@ -141,14 +141,14 @@ def test_present_checks_assets_starts_viewers_before_opening_pdf(tmp_path, monke
     with pytest.raises(FileNotFoundError,match='PDF alone is insufficient'):
         ps.present(tmp_path)
     assert not events
-    pdf=tmp_path/'Simulations_on_VO2'/'main.pdf';pdf.parent.mkdir();pdf.write_bytes(b'%PDF')
+    pdf=tmp_path/'docs/presentation'/'main.pdf';pdf.parent.mkdir(parents=True);pdf.write_bytes(b'%PDF')
     for path in VIEWERS.values():
         target=tmp_path/path.lstrip('/');target.parent.mkdir(parents=True,exist_ok=True);target.write_text('viewer')
-    (tmp_path/'public_jobs'/ps.MEDIA_RUN/'GIFs').mkdir(parents=True)
-    mica=tmp_path/'public_jobs'/'20261025_090000_m2-1600nm-presentation-review_test'
+    (tmp_path/'runs/published'/ps.MEDIA_RUN/'GIFs').mkdir(parents=True)
+    mica=tmp_path/'runs/published'/'20261025_090000_m2-1600nm-presentation-review_test'
     mica.mkdir();(mica/'run.json').write_text(json.dumps({'status':'completed'}))
     (mica/'parameter_maps.html').write_text('mica')
-    alternating=tmp_path/'public_jobs'/'20261025_fixed-alternating-amplitude-classic-gifs_test'
+    alternating=tmp_path/'runs/published'/'20261025_fixed-alternating-amplitude-classic-gifs_test'
     alternating.mkdir();(alternating/'run.json').write_text(json.dumps({'status':'completed'}))
     (alternating/'START_HERE.html').write_text('alternating')
     assert ps.present(tmp_path)==pdf

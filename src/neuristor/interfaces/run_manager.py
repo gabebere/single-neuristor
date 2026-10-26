@@ -63,12 +63,12 @@ def create_manager(project_root=None, *, port: int = 0) -> ThreadingHTTPServer:
             path = unquote(urlsplit(self.path).path)
             if path == "/":
                 self.send_response(302)
-                self.send_header("Location", "/artifacts/index.html")
+                self.send_header("Location", "/runs/catalog/index.html")
                 self.end_headers()
                 return
-            if path == "/artifacts/index.html":
+            if path == "/runs/catalog/index.html":
                 with lock:
-                    page = (root / "artifacts/index.html").read_text()
+                    page = (root / "runs/catalog/index.html").read_text()
                     bootstrap = json.dumps(dict(token=token)).replace("<", "\\u003c")
                     page = page.replace("</html>", f"<script>enableRunManager({bootstrap});</script></html>")
                 self.reply(200, page, content_type="text/html; charset=utf-8")

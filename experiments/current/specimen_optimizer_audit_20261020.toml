@@ -19,7 +19,7 @@ C_th_pJ_per_K = 0.047873236
 S_e_mW_per_K = 0.0036751265
 T0_K = 314.4
 [resistance]
-preset = "../../presets/resistance_100425_chip1_gap3.json"
+preset = "../../data/parameters/resistance_100425_chip1_gap3.json"
 start_branch = "insulator"
 [steady]
 feature_method = "extrema"
@@ -35,8 +35,8 @@ maximum_evaluations = 256
 window_ns = [150.0,250.0]
 data_directory = "../../data/experimental/tia_current_sweep"
 resistance_data = "../../data/experimental/100425_chip1_gap3.tsv"
-static_bootstrap = "../../public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv"
-seed_table = "../../presets/search_seeds/controlled_loss_20261020.csv"
+static_bootstrap = "../../runs/published/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv"
+seed_table = "../../data/parameters/search_seeds/controlled_loss_20261020.csv"
 seed_candidates = ["reference_eef073","diagnostic_1","original_static"]
 seed = 20261020
 # Matched evaluation cap, seeds, bounds and starts; these are diagnostic bounds.
@@ -68,12 +68,12 @@ Rs_315K_ohm = [1200.0,5000.0]
 Ea_over_k_K = [1800.0,3300.0]
 Rm_ohm = [5.0,80.0]
 [output]
-root = "runs"
+root = "runs/local"
 
 [optimizer_audit]
 sources = [
-  "../../public_jobs/20261020_155947_controlled-frequency-only-specimen-fit_543408",
-  "../../public_jobs/20261020_165107_controlled-frequency-amplitude-specimen-fit_5ad999",
+  "../../runs/published/20261020_155947_controlled-frequency-only-specimen-fit_543408",
+  "../../runs/published/20261020_165107_controlled-frequency-amplitude-specimen-fit_5ad999",
 ]
 # Fractions of normalized log-coordinate ranges, not increments in SI units.
 normalized_steps = [0.001, 0.005, 0.02]

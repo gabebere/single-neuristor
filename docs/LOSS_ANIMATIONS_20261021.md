@@ -2,7 +2,7 @@
 
 The two retained objectives each have 22 animations: **44 GIFs total**. Later
 optimizer follow-up runs are excluded, as requested. Open the
-[all-current viewer](../public_jobs/20261021_054434_loss-function-comparison-all-44-stacked-gifs_15921f/START_HERE.html).
+[all-current viewer](../runs/published/20261021_054434_loss-function-comparison-all-44-stacked-gifs_15921f/START_HERE.html).
 The folder also contains one full-trace PNG per GIF and compressed numerical samples.
 
 Each animation has measured input current at the top, measured output and simulated
@@ -35,8 +35,8 @@ Reproduce locally:
 ```bash
 neuristor analyze loss-scopes \
   --config experiments/current/specimen_frequency_only_20261020.toml \
-  --frequency-run public_jobs/20261020_155947_controlled-frequency-only-specimen-fit_543408 \
-  --combined-run public_jobs/20261020_165107_controlled-frequency-amplitude-specimen-fit_5ad999 \
+  --frequency-run runs/published/20261020_155947_controlled-frequency-only-specimen-fit_543408 \
+  --combined-run runs/published/20261020_165107_controlled-frequency-amplitude-specimen-fit_5ad999 \
   --frames 96
 ```
 

@@ -111,7 +111,7 @@ separate laboratory replay/fitting commands for that research question.
 ## Output folder
 
 ```text
-runs/<study-id>/
+runs/local/<study-id>/
 ├── parameter_maps.html       # Share THIS file alone: all GIFs and fit image embedded
 ├── START_HERE.html           # Local study navigation and evidence links
 ├── report.md, metrics.json   # Method, assumptions, exclusions and results
@@ -141,12 +141,12 @@ reproducibility archive containing raw/numerical data and source snapshots.
 
 ## History, preservation and checks
 
-`neuristor runs index` rebuilds `artifacts/index.html`, `runs.csv` and `files.csv`.
+`neuristor runs index` rebuilds `runs/catalog/index.html`, `runs.csv` and `files.csv`.
 It links canonical outputs rather than copying gigabytes or adding a database.
 Old public runs remain untouched. The former Desktop archive was separately
 consolidated on 16 October 2026: [canonical results and unique notes](../archive/desktop_consolidation_20261016/index.html).
 No scientific results were changed by that filing. See
-[the archive policy](../artifacts/README.md) and [the scientific chronology](ARCHIVE_INDEX.md).
+[the archive policy](../runs/README.md) and [the scientific chronology](ARCHIVE_INDEX.md).
 
 ```bash
 pytest -q

@@ -2,8 +2,8 @@
 schema_version = 1
 
 [[authored_pdf]]
-path = "Simulations_on_VO2/main.pdf"
-sha256 = "0993578e2ff1811061cdabe4477e68c0f90ad7a2d45224ccbdaf30a546638c72"
+path = "docs/presentation/main.pdf"
+sha256 = "338d4718cba05b3c5f680aed207b01672aa2ed988a5b173ee38a4f07098cedf5"
 
 [[authored_pdf]]
 path = "docs/final_project/Simulations_for_VO2_AGC.pdf"

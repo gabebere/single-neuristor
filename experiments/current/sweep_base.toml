@@ -30,4 +30,4 @@ start_branch = "insulator"
 start_us = 2.0
 
 [output]
-root = "runs"
+root = "runs/local"

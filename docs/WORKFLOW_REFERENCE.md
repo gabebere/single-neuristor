@@ -8,11 +8,11 @@
 A reproducible research codebase for current- and voltage-driven VO₂ neuristor
 simulations, laboratory-trace analysis, parameter sweeps, and evidence archival.
 
-**Taking over the project? Start with the [research handoff](../docs/RESEARCH_HANDOFF.md).**
+**Taking over the project? Start with the [research handoff](RESEARCH_HANDOFF.md).**
 It records the current scientific status, parameter assumptions, trial history,
 corrected claims, reproducible commands and the next bounded investigation.
 
-The [21 September discrepancy audit](../docs/DISCREPANCY_AUDIT_20260921.md)
+The [21 September discrepancy audit](DISCREPANCY_AUDIT_20260921.md)
 checks units and implementation, fixes a separate small-capacitance bug in the
 voltage solver, and documents why the current-source mismatch remains, with
 new timestep evidence and a literature-guided measurement plan.
@@ -25,13 +25,13 @@ human-readable TOML  ->  neuristor CLI  ->  tested physics  ->  portable run bun
 ```
 
 The original Yuanhang Zhang implementation is preserved under
-[`references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/`](../references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/).
+[`archive/references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/`](../archive/references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0).
 The last known-working pre-refactor repository is permanently tagged
 [`v0.1.0-working-baseline`](https://github.com/gabebere/single-neuristor/tree/v0.1.0-working-baseline).
 
 The current final-project report, measurements, reviewed analysis bundles, figures,
 and animations are organized from one documented entry point:
-[`docs/final_project/`](../docs/final_project/). Its PDF and report-specific media are
+[`docs/final_project/`](final_project). Its PDF and report-specific media are
 stored there directly; relative data links point to canonical measurements and run
 bundles so scientific evidence is not duplicated.
 
@@ -46,9 +46,9 @@ V_{\mathrm{floor}} \approx I R_{\mathrm{metal}},
 not by electrical capacitance. Capacitance changes how quickly voltage approaches
 the floor and can change oscillation timing, but it cannot raise the steady floor.
 The full derivation, lab comparison, limitations, and figures are in
-[`docs/CURRENT_DRIVE_CALIBRATION.md`](../docs/CURRENT_DRIVE_CALIBRATION.md).
+[`docs/CURRENT_DRIVE_CALIBRATION.md`](CURRENT_DRIVE_CALIBRATION.md).
 
-![Current input and nonzero voltage oscillations](../docs/figures/current_drive/nonzero_valley_examples/current_input_voltage_output.png)
+![Current input and nonzero voltage oscillations](figures/current_drive/nonzero_valley_examples/current_input_voltage_output.png)
 
 ## Quick start
 
@@ -146,7 +146,7 @@ contains exactly one cooling/heating reversal and otherwise uses the stateful fi
 
 ## Experiment recipes
 
-Recipes live under [`experiments/`](../experiments/) and state units in every physical
+Recipes live under [`experiments/`](../experiments) and state units in every physical
 field name. A minimal current-source recipe looks like this:
 
 ```toml
@@ -177,7 +177,7 @@ start_branch = "insulator"
 ```
 
 The complete schema and path-resolution rules are documented in
-[`docs/EXPERIMENT_FORMAT.md`](../docs/EXPERIMENT_FORMAT.md).
+[`docs/EXPERIMENT_FORMAT.md`](EXPERIMENT_FORMAT.md).
 
 ### Capacitance and current studies
 
@@ -220,19 +220,19 @@ contains 12,167 sampled combinations and 1,258 retained oscillators. Three
 independent sliders explore the slices; each heatmap colorbar rescales to the
 retained points in its selected slice, in MHz or mV. These are
 conditional model results, not new specimen parameter estimates. Methods, results
-and interactive figures are in [the meeting review](../docs/MEETING_PARAMETER_MAPS_20261002.md).
+and interactive figures are in [the meeting review](MEETING_PARAMETER_MAPS_20261002.md).
 To re-render an existing map without recomputing its trajectories, add
-`--reuse-numerics runs/RUN_ID`; exact physics/settings must match and CSV hashes
+`--reuse-numerics runs/local/RUN_ID`; exact physics/settings must match and CSV hashes
 are preserved in the new bundle.
 
 The `specimen_steady_relative.toml` trial uses the simpler equal-weight squared
 relative frequency/Vpp loss, with physical eligibility and static R(T) checks
-separate from the loss. See [method and trial review](../docs/SIMPLE_EXTREMA_LOSS_20261003.md).
+separate from the loss. See [method and trial review](SIMPLE_EXTREMA_LOSS_20261003.md).
 
 To add right-click point GIFs to the screened parameter map, use `map-animations`.
 It preserves the source map, refines simulation timesteps when needed and packages
 the viewer plus media in one offline ZIP. Use `--limit 3` for a benchmark; omit it
-for all retained points. See [sharing and refinement methods](../docs/PARAMETER_MAP_GIFS_20261007.md).
+for all retained points. See [sharing and refinement methods](PARAMETER_MAP_GIFS_20261007.md).
 
 Analyze the professor-supplied numerical oscilloscope exports and archive their
 measured traces:
@@ -248,8 +248,8 @@ oscillation onset:
 ```bash
 neuristor analyze conductance \
   --data data/experimental/tia_current_sweep \
-  --resistance-preset presets/resistance_100425_chip1_gap3.json \
-  --resistance-bootstrap public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
+  --resistance-preset data/parameters/resistance_100425_chip1_gap3.json \
+  --resistance-bootstrap runs/published/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
   --ambient-K 314.4 \
   --ambient-interval-K 314.25,314.55
 ```
@@ -271,10 +271,10 @@ the moderate nonswitching heating edges to obtain the thermal time constant and
 ```bash
 neuristor analyze thermal-capacitance \
   --data data/experimental/tia_current_sweep \
-  --resistance-preset presets/resistance_100425_chip1_gap3.json \
-  --resistance-bootstrap public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
+  --resistance-preset data/parameters/resistance_100425_chip1_gap3.json \
+  --resistance-bootstrap runs/published/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
   --conductance-mW-per-K 0.003675126546984294 \
-  --conductance-bootstrap public_jobs/20260817_153807_environmental-thermal-conductance-estimate_761640/conductance_bootstrap.csv \
+  --conductance-bootstrap runs/published/20260817_153807_environmental-thermal-conductance-estimate_761640/conductance_bootstrap.csv \
   --ambient-K 314.4 --electrical-capacitance-pF 0.39 \
   --selected-drives-mV 100,150,200 --fit-window-ns 15,35
 ```
@@ -352,7 +352,7 @@ persistent candidate retains all 11 experimental oscillators but also oscillates
 with the smallest three-current feature score still decays at the upper boundary.
 The old reference loses persistence at 570 uA as well at the finer steps. These
 findings and the numerical evidence are in the current audit bundle listed in
-[`docs/ARCHIVE_INDEX.md`](../docs/ARCHIVE_INDEX.md).
+[`docs/ARCHIVE_INDEX.md`](ARCHIVE_INDEX.md).
 
 Use a cheaper inverse consistency check before another broad search:
 
@@ -390,10 +390,10 @@ The bundle records separate static error, voltage, amplitude, frequency and
 persistence metrics, source snapshots, optimizer termination and the full loss
 definition. The TOML declares bounds, engineering weights and every budget.
 
-Every command writes the same portable directory under `runs/`:
+Every command writes the same portable directory under `runs/local/`:
 
 ```text
-runs/<run-id>/
+runs/local/<run-id>/
 ├── run.json                # index, status, command, Git provenance
 ├── resolved_config.json    # exact inputs after overrides
 ├── metrics.json            # normalized scalar results
@@ -402,19 +402,19 @@ runs/<run-id>/
 └── figures/                # generated visual evidence
 ```
 
-`runs/` is ignored by Git for exploratory work. When a run is worth preserving:
+`runs/local/` is ignored by Git for exploratory work. When a run is worth preserving:
 
 ```bash
 neuristor runs publish RUN_ID
-git add public_jobs/RUN_ID
+git add runs/published/RUN_ID
 git commit -m "Archive <description>"
 git push
 ```
 
-Publishing copies the immutable bundle into tracked [`public_jobs/`](../public_jobs/);
+Publishing copies the immutable bundle into tracked [`runs/published/`](../runs/published);
 it does not silently make a Git commit. Historical `job.json` records and new
 `run.json` bundles appear together in the dashboard. The bundle contract is specified
-in [`docs/RUN_BUNDLES.md`](../docs/RUN_BUNDLES.md).
+in [`docs/RUN_BUNDLES.md`](RUN_BUNDLES.md).
 
 ## Models
 
@@ -462,12 +462,12 @@ includes them.
 | `experiments/` | Versioned, reusable simulation and sweep recipes |
 | `tests/` | Physics convergence, hysteresis, CLI, and archive tests |
 | `docs/` | Scientific interpretation, evidence, and specifications |
-| `presets/` | Resistance fits and sample parameter sets |
-| `public_jobs/` | Git-tracked, dashboard-readable run evidence |
-| `legacy_scripts/` | Frozen pre-CLI one-offs; not the active interface |
-| `references/` | Upstream implementation and source papers |
+| `data/parameters/` | Resistance fits and sample parameter sets |
+| `runs/published/` | Git-tracked, dashboard-readable run evidence |
+| `archive/scripts/` | Frozen pre-CLI one-offs; not the active interface |
+| `archive/references/` | Upstream implementation and source papers |
 
-See [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) for dependency rules and
+See [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) for dependency rules and
 [`AGENTS.md`](../AGENTS.md) for the safe change protocol used by humans and AI agents.
 
 ## Verification
@@ -507,7 +507,7 @@ neuristor analyze replay-lab --config experiments/current/specimen_lab_replay.to
 neuristor analyze fit-joint --config experiments/current/specimen_joint_expanded.toml
 ```
 
-See [expanded search results and interface notes](../docs/EXPANDED_SEARCH_20260922.md).
+See [expanded search results and interface notes](EXPANDED_SEARCH_20260922.md).
 
 The standard replay command now always exports synchronized progressively drawn V(t),
 measured imposed I(t), and the simulated R(T) trajectory over heating/cooling major
@@ -525,7 +525,7 @@ Open `scope_viewer.html` in the output bundle for an offline current slider,
 To export the **exact selected saved replay** without rerunning the simulator:
 
 ```bash
-neuristor analyze export-scope --source runs/20260921_215248_interactive-specimen-laboratory-replay_eef073
+neuristor analyze export-scope --source runs/local/20260921_215248_interactive-specimen-laboratory-replay_eef073
 ```
 
 This writes three vertically stacked panels (input current, voltage comparison,
@@ -573,7 +573,7 @@ from the winners. The diagnostic leaves the physics trajectory unchanged. Final
 verification reports admissibility for each current and timestep, including old
 references that fail the new condition. This is a sampled monotonicity constraint,
 not proof of every hysteresis memory property. See the
-[cooling-hook diagnosis](../docs/HYSTERESIS_HOOK_DIAGNOSIS_20260922.md).
+[cooling-hook diagnosis](HYSTERESIS_HOOK_DIAGNOSIS_20260922.md).
 
 ### Bounded tanh-proximity pilot
 

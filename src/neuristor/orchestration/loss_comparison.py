@@ -51,7 +51,7 @@ def compare_steady_runs(frequency_run, combined_run, *, output_root=None, comman
     config = dict(sources={n:str(p) for n,p in sources.items()}, protocol=protocol(parents['frequency_only']))
     bundle = RunBundle.create(name='Controlled frequency and amplitude loss comparison',
         model='steady-loss-comparison', kind='analysis', config=config,
-        output_root=output_root or 'runs', command=command)
+        output_root=output_root or 'runs/local', command=command)
     try:
         from neuristor.provenance import snapshot_package
         snapshot_package(bundle)

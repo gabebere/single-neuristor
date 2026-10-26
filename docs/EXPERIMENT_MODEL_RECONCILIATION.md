@@ -12,7 +12,7 @@ measured TIA output, approximately 40–60 MHz oscillations over roughly
 200–600 µA, and output-derived energy around 1.2–1.9 pJ per event (Figures 6–7
 and Table 2). It gives a physical electrothermal explanation, but does **not**
 specify a numerical neuristor simulation and parameter vector to reproduce.
-Our July [paper-frequency analog](../public_jobs/20260707_145140_paper_frequency_f881d2/professor_paper_simulation_report.md)
+Our July [paper-frequency analog](../runs/published/20260707_145140_paper_frequency_f881d2/professor_paper_simulation_report.md)
 is our own illustrative ideal-source simulation, not an undisclosed simulation
 from that preprint. It oscillated at 1.4–2.1 mA and 35.7–60.7 MHz, with
 36–54 pJ per cycle: matching the frequency scale did not match the measured
@@ -25,9 +25,9 @@ None of those can be inferred from Figure 6 alone.
 The reproducible comparison is therefore: **feed each of the 22 supplied measured
 current waveforms into one frozen ideal-current model**, then compare its sampled
 output with the corresponding measured output. The authoritative results and
-input configuration are the immutable [frozen validation bundle](../public_jobs/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/)
+input configuration are the immutable [frozen validation bundle](../runs/published/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7)
 and [recipe](../experiments/current/specimen_model_validation.toml). The
-[persistence audit](../public_jobs/20260914_073330_sustained-oscillation-audit-and-three-current-ma_26ff13/)
+[persistence audit](../runs/published/20260914_073330_sustained-oscillation-audit-and-three-current-ma_26ff13)
 corrects the earlier interpretation of oscillations as sustained based on peak
 counts alone. Later fitted parameter sets are *diagnostic searches*, not substitutes
 for the frozen prediction or genuine blind replications.
@@ -52,7 +52,7 @@ their agreement with the CSVs.
 | The measured 2 µA major R(T) loop describes the mounted driven device, including its local temperature and branch history | The static log-resistance fit is accurate on that measured loop | Transfer to a possible filament, contacts, nonuniform temperature and dynamic minor loops is untested; γ is borrowed from Yuanhang. |
 | `T₀=314.4 K`, `S_e=3.675 µW/K`, `C_th=0.047873 pJ/K`, `C=0.39 pF` are hardware quantities | Conditional ambient, settled pre-onset, early-edge and timing analyses | The conductance uses static thermometry and assumed channel meaning; `C_th` moves −21% with a synthetic +2 ns current advance; `C` is an unresolved timing bound, not a positive measurement. |
 
-Other frozen parameters come from the [sample R(T) preset](../presets/resistance_100425_chip1_gap3.json):
+Other frozen parameters come from the [sample R(T) preset](../data/parameters/resistance_100425_chip1_gap3.json):
 `R_m=18.215 Ω`, `T_c=333.494 K`, `w=6.882 K`, `β=0.2992 K⁻¹`,
 `R₀=0.7989 Ω`, `E_a/k_B=2537 K`, and borrowed `γ=0.95627`. The model begins
 at `T₀` on the insulating branch; the actual leakage and recovery state were
@@ -87,8 +87,8 @@ low in mean. The sign change rules out a simple fixed output offset. Across
 all 22 currents, the experiment has 11 nominal persistent oscillatory records
 from approximately 228 to 606 µA; the frozen model has none. The nominal
 thresholds are operational and a 300 ns pulse cannot establish an infinite-time
-limit cycle. See the [full comparison table](../public_jobs/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/comparison.csv)
-and [sampled waveforms](../public_jobs/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/comparison_traces.csv).
+limit cycle. See the [full comparison table](../runs/published/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/comparison.csv)
+and [sampled waveforms](../runs/published/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/comparison_traces.csv).
 
 At the high Figure 6 panel, reading the output as a device-terminal drop would
 give about 231 Ω from 174.86 mV / 756.62 µA. If the same mounted device were
@@ -119,7 +119,7 @@ The archived comparison below also shows the stable pre-onset control,
 oscillatory onset, Figure 6 middle-panel record and approximately 607 µA
 boundary on common time axes. It is not a plot of all three Figure 6 panels.
 
-![Measured and frozen predictions at four currents](../public_jobs/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/figures/representative_traces.png)
+![Measured and frozen predictions at four currents](../runs/published/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/figures/representative_traces.png)
 
 ## Why the 607 µA resistance conflict is large
 
@@ -133,7 +133,7 @@ roughly 181 mV measured. Its roughly 28 mV mean error, when converted into
 assumed heating power, shifts the thermal estimate by about 5 K near a steep
 transition and magnifies the inverse resistance discrepancy. This is a
 conditional inconsistency, not independent temperature evidence or proof of
-a tenfold material-parameter error. The full [inverse bundle](../public_jobs/20260914_074731_conditional-hysteresis-reconstruction-from-measu_fa4b66/)
+a tenfold material-parameter error. The full [inverse bundle](../runs/published/20260914_074731_conditional-hysteresis-reconstruction-from-measu_fa4b66)
 and [circuit audit](CHANNEL_CIRCUIT_AUDIT.md) give the waveforms and limitations.
 
 Two broader checks avoid making the conclusion hinge on that one point. After
@@ -213,7 +213,7 @@ neuristor analyze reconstruct-hysteresis --config experiments/current/specimen_h
 The first command replays all 22 measured currents with the frozen specimen
 vector; the second audits persistence and controlled exploratory candidates
 (its map uses a different, anchored reference vector); the third performs the
-conditional inverse test. Each writes a new ignored `runs/` bundle. Do not
+conditional inverse test. Each writes a new ignored `runs/local/` bundle. Do not
 replace these with a per-current fit when making the comparison.
 
 The paper-panel table above is calculated directly from the immutable frozen
@@ -225,7 +225,7 @@ python - <<'PY'
 import pandas as pd
 from neuristor.oscillation_audit import audit_voltage
 
-path = 'public_jobs/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/comparison_traces.csv'
+path = 'runs/published/20260829_100718_specimen-model-prediction-versus-measured-curren_eefab7/comparison_traces.csv'
 traces = pd.read_csv(path)
 for label in (100, 500, 1000):
     row = traces[traces.nominal_drive_mV == label]

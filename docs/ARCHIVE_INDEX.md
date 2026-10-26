@@ -92,9 +92,9 @@ See [methods and interpretation](OPTIMIZER_AUDIT_20261020.md).
 [Methods, measured-current examples and limits](LOSS_COMPARISON_20261020.md).
 Two bounded searches with fixed R(T)/T0 and four unknowns, 250 evaluations each:
 
-- [Frequency-only search](../public_jobs/20261020_155947_controlled-frequency-only-specimen-fit_543408/report.md).
-- [Frequency and amplitude search](../public_jobs/20261020_165107_controlled-frequency-amplitude-specimen-fit_5ad999/report.md).
-- [Reviewed comparison and figures](../public_jobs/20261020_170231_controlled-frequency-and-amplitude-loss-comparis_26574a/report.md).
+- [Frequency-only search](../runs/published/20261020_155947_controlled-frequency-only-specimen-fit_543408/report.md).
+- [Frequency and amplitude search](../runs/published/20261020_165107_controlled-frequency-amplitude-specimen-fit_5ad999/report.md).
+- [Reviewed comparison and figures](../runs/published/20261020_170231_controlled-frequency-and-amplitude-loss-comparis_26574a/report.md).
 
 These are unsuccessful diagnostic attempts, not accepted calibrations. Passing
 target cycle/frequency counts at the finest step: 10/11 and 8/11; amplitudes remain
@@ -111,7 +111,7 @@ approved numerical inputs, documentation and compact reviewed evidence on `main`
 through [PR #4](https://github.com/gabebere/single-neuristor/pull/4).
 [The dated Release](https://github.com/gabebere/single-neuristor/releases/tag/research-library-2026-10-20)
 holds the large GIF map and complementary source/numerical/PNG provenance.
-The [selected-results page](../results/index.html) labels controls, static fits,
+The [selected-results page](../runs/index.html) labels controls, static fits,
 conditional exploration and rejected fitting trials separately.
 
 See [the full consolidation record](CONSOLIDATION_20261020.md): 174 local/fresh-
@@ -138,7 +138,7 @@ consolidated guide now. Local filing does not constitute a GitHub backup.
 ## Active final-project manuscript
 
 - [Adaptive boundary exploration](BOUNDARY_SEARCH.md), 8 October 2026:
-  [reviewed coarse/fine and open-scale viewer](../public_jobs/20261008_105134_adaptive-coarse-to-fine-oscillation-boundary-sea_504198/parameter_maps.html).
+  [reviewed coarse/fine and open-scale viewer](../runs/published/20261008_105134_adaptive-coarse-to-fine-oscillation-boundary-sea_504198/parameter_maps.html).
   42 coarse points and 211 fine/refinement points; 18 transition brackets, 15
   narrowed to the requested width. The common C/Cth scale is analytically open.
   No verified oscillator touches a searched outer face, but 35 time-unresolved,
@@ -152,10 +152,10 @@ consolidated guide now. Local filing does not constitute a GitHub backup.
 - [Fixed-scale parameter-map displays](MAP_DISPLAY.md): 13 preserved historical
   maps/studies have new viewer revisions, discoverable through **Updated
   fixed-scale viewer** links in the artifact hub. [Complete 1,258-GIF map with
-  fixed scales](../runs/20261007_123036_fixed-scale-viewer-portable-screened-parameter-m_4325d1/parameter_maps.html)
+  fixed scales](../runs/local/20261007_123036_fixed-scale-viewer-portable-screened-parameter-m_4325d1/parameter_maps.html)
   reuses the `eaf6ab` numerical data and GIFs without resimulation. This local
   HTML depends on the original public GIF folder; it is not a standalone email
-  attachment. Old HTML/ZIPs are unchanged. A fresh [sample-study run](../runs/20261007_123034_sample-r-t-to-screened-map-and-embedded-gifs_9f299d/parameter_maps.html)
+  attachment. Old HTML/ZIPs are unchanged. A fresh [sample-study run](../runs/local/20261007_123034_sample-r-t-to-screened-map-and-embedded-gifs_9f299d/parameter_maps.html)
   also uses stable scales and remains standalone. No scientific parameters changed.
 
 - [Organized library and paper evidence](STRUCTURE_MIGRATION_20261007.md):
@@ -167,12 +167,12 @@ consolidated guide now. Local filing does not constitute a GitHub backup.
   release occurred.
 
 - [Unified sample-study program](SAMPLE_STUDY.md): reusable declared-unit R(T)
-  fit → screened Cth/Se/C grid → refined point GIF workflow. [Standalone example](../public_jobs/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs_ec2d1e/parameter_maps.html)
+  fit → screened Cth/Se/C grid → refined point GIF workflow. [Standalone example](../runs/published/20261007_083908_sample-r-t-to-screened-map-and-embedded-gifs_ec2d1e/parameter_maps.html)
   embeds its fit image and all GIFs, without a ZIP. Same-sample static RMSE
   0.0366276; 27 grid combinations, one retained oscillator near 23.2 MHz.
   Default screening uses the **measured**, not padded, R(T) domain. Gamma and
   dynamic constants are assumptions; this is a software demonstration, not a
-  new laboratory calibration. The [artifact hub](../artifacts/index.html) provides
+  new laboratory calibration. The [artifact hub](../runs/catalog/index.html) provides
   categorized chronology, presentations and a full CSV file inventory, linking
   existing evidence without deleting or duplicating historical media.
 
@@ -184,7 +184,7 @@ consolidated guide now. Local filing does not constitute a GitHub backup.
   Corrected complete viewer `20261007_074702_portable-screened-parameter-map-with-point-gifs_eaf6ab`
   reuses all 1,258 GIFs unchanged and supersedes the original HTML/ZIP. Ordinary
   JSON point metadata and defensive event lookup correct the selection mapping.
-  The corrected bundle is copied to `public_jobs/` with all GIFs unchanged.
+  The corrected bundle is copied to `runs/published/` with all GIFs unchanged.
 
 - [3 October simple extrema loss](SIMPLE_EXTREMA_LOSS_20261003.md): equal-weight
   squared relative frequency/Vpp objective, separate feasibility checks. Reviewed
@@ -198,18 +198,18 @@ consolidated guide now. Local filing does not constitute a GitHub backup.
 
 - [2 October meeting implementation](MEETING_PARAMETER_MAPS_20261002.md):
   extrema-only late-window voltage fitting and screened C/Cth/Se maps.
-  [Adjustable slice viewer](../public_jobs/20261002_152003_focused-dense-physically-screened-steady-state-e_c1772e/parameter_maps.html)
+  [Adjustable slice viewer](../runs/published/20261002_152003_focused-dense-physically-screened-steady-state-e_c1772e/parameter_maps.html)
   adds three independent sliders and visible-slice frequency/Vpp normalization,
   with unchanged numerical CSVs. This is the corrected historical slice viewer;
   the eaf6ab media viewer above is the latest complete historical GIF rendering.
   It supersedes initial slider rendering `2bffd0` by correcting floating-point
   indexing; all 69 slices preserve their exact eligible-point counts.
-  [Focused interactive 3D and six heatmaps](../public_jobs/20261002_145342_focused-dense-physically-screened-steady-state-e_b9e298/parameter_maps.html)
+  [Focused interactive 3D and six heatmaps](../runs/published/20261002_145342_focused-dense-physically-screened-steady-state-e_b9e298/parameter_maps.html)
   retain 1,258 of 12,167 simulated combinations after physical/numerical screens.
-  [Broad map report](../public_jobs/20261002_135437_dense-physically-screened-steady-state-extrema-p_9ac3ad/report.md)
+  [Broad map report](../runs/published/20261002_135437_dense-physically-screened-steady-state-extrema-p_9ac3ad/report.md)
   preserves every original 15^3 coordinate plus added intermediate values.
   Neither map is a specimen calibration; the 110 MHz threshold is an operating
-  filter. The [79-candidate extrema fitting pilot](../public_jobs/20261002_145243_meeting-extrema-only-physically-screened-fitting_32d91d/report.md)
+  filter. The [79-candidate extrema fitting pilot](../runs/published/20261002_145243_meeting-extrema-only-physically-screened-fitting_32d91d/report.md)
   found no acceptable laboratory match at three verification timesteps.
 
 - [Expanded search and interactive laboratory](EXPANDED_SEARCH_20260922.md):
@@ -221,13 +221,13 @@ consolidated guide now. Local filing does not constitute a GitHub backup.
 
 
 - [Budgeted joint inference](JOINT_INFERENCE_20260921.md) and
-  `public_jobs/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f/`:
+  `runs/published/20260921_130032_budgeted-joint-resistance-and-waveform-inference_6b5d8f/`:
   joint raw-static/feature fit with eleven shared parameters, two static-loss
   weights and 201 simulated search candidates. All five reference/fitted vectors
   were verified on 22 currents at three smaller timesteps. The static-preserving
   result improves the excluded-current feature score but recovers only 4/11
   persistent oscillators; the diagnostic recovers 5/11. No new calibration.
-  Methods/results were added to `Simulations_on_VO2/main.tex` and `main.pdf`.
+  Methods/results were added to `docs/presentation/main.tex` and `main.pdf`.
 
 - [Research handoff](RESEARCH_HANDOFF.md): consolidated entry point for continuing
   the work, updated 21 September 2026. Read its corrected interpretation and
@@ -236,7 +236,7 @@ consolidated guide now. Local filing does not constitute a GitHub backup.
   review, separate voltage-source capacitance-floor fix, same-device confirmation,
   LT1228 capacitance/bandwidth evidence, conditional major-branch stability
   derivation, filament hypothesis and ordered calibration experiments.
-- `public_jobs/20260921_124525_independent-units-stability-and-specimen-replay-_ffaded/`:
+- `runs/published/20260921_124525_independent-units-stability-and-specimen-replay-_ffaded/`:
   fresh replay of all 22 measured inputs at 0.05/0.025/0.0125 ns, with zero
   predicted versus 11 measured persistent records. Finest late-mean RMSE is
   45.33 mV; the last refinement changes any late mean by at most 0.266 mV.
@@ -266,7 +266,7 @@ consolidated guide now. Local filing does not constitute a GitHub backup.
   11 measured oscillators, and historical peak counts are distinguished from
   persistence checks.
 
-- `public_jobs/20260914_074731_conditional-hysteresis-reconstruction-from-measu_fa4b66/`:
+- `runs/published/20260914_074731_conditional-hysteresis-reconstruction-from-measu_fa4b66/`:
   conditional inverse hysteresis consistency test on all 22 measured records,
   eight one-at-a-time cases, four gamma values, and three replay steps. At about
   607 µA, measured resistance is 298 Ω versus 26–34 Ω replayed under central
@@ -290,7 +290,7 @@ consolidated guide now. Local filing does not constitute a GitHub backup.
 - `docs/final_project/supplementary/` presents the manuscript's derived R(T)
   trajectory, synchronized current/voltage--R(T) animation, current evidence figures,
   and selected historical animations. Generated evidence remains authoritative in its
-  immutable `public_jobs/` bundle.
+  immutable `runs/published/` bundle.
 - `20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9` is the reviewed
   sample-specific major-loop fit, including the normalized data, fitted preset, residual
   figure, parameter table, and 1000 block-bootstrap parameter samples.
@@ -315,7 +315,7 @@ consolidated guide now. Local filing does not constitute a GitHub backup.
   direct demonstration that `C` changes timing while the metallic bound is `I*Rm`.
 - The numerical laboratory workflow archives measured current/voltage traces, the
   Figure 7 operating window, and a baseline-corrected environmental-conductance
-  estimate in immutable `public_jobs/` bundles.
+  estimate in immutable `runs/published/` bundles.
 - `20260827_142103_measured-laboratory-current-sweep-with-current-l_ec6ec4`: canonical
   archive of all 22 normalized traces, the measured 41.7--62.5 MHz operating window,
   separate onset waveforms, and the shared-axis bracket used in the manuscript. Its
@@ -394,9 +394,9 @@ consolidated guide now. Local filing does not constitute a GitHub backup.
 
 ## Historical artifacts
 
-- `public_jobs/`: tracked reviewed evidence. The registry reads both historical July
+- `runs/published/`: tracked reviewed evidence. The registry reads both historical July
   2026 `job.json` records and current portable `run.json` bundles.
-- `Simulations_on_VO2/`: Beamer presentation source, compiled deck, figures, and
+- `docs/presentation/`: Beamer presentation source, compiled deck, figures, and
   animations. Its first section preserves the July 2026 mechanism study; the current
   continuation documents the specimen parameter-estimation chain and frozen forward
   comparison. The original July-only version remains recoverable from Git history.
@@ -416,15 +416,15 @@ neuristor sweep run \
   --config experiments/sweeps/current_capacitance_map.toml
 neuristor analyze conductance \
   --data data/experimental/tia_current_sweep \
-  --resistance-preset presets/resistance_100425_chip1_gap3.json \
-  --resistance-bootstrap public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
+  --resistance-preset data/parameters/resistance_100425_chip1_gap3.json \
+  --resistance-bootstrap runs/published/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
   --ambient-K 314.4 --ambient-interval-K 314.25,314.55
 neuristor analyze thermal-capacitance \
   --data data/experimental/tia_current_sweep \
-  --resistance-preset presets/resistance_100425_chip1_gap3.json \
-  --resistance-bootstrap public_jobs/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
+  --resistance-preset data/parameters/resistance_100425_chip1_gap3.json \
+  --resistance-bootstrap runs/published/20260816_125905_sample-r-t-major-loop-hysteresis-fit_0849a9/parameter_bootstrap.csv \
   --conductance-mW-per-K 0.003675126546984294 \
-  --conductance-bootstrap public_jobs/20260817_153807_environmental-thermal-conductance-estimate_761640/conductance_bootstrap.csv \
+  --conductance-bootstrap runs/published/20260817_153807_environmental-thermal-conductance-estimate_761640/conductance_bootstrap.csv \
   --ambient-K 314.4 --electrical-capacitance-pF 0.39 \
   --selected-drives-mV 100,150,200 --fit-window-ns 15,35
 neuristor analyze model-validation \
@@ -436,5 +436,5 @@ neuristor validate
 The laboratory workflows read the checked-in numerical exports directly. The former
 screenshot digitizer, image-fit preset, screenshot sequence, and image-derived bundle
 were removed; the corresponding history remains recoverable through Git. Other
-pre-refactor reproduction sources remain in `legacy_scripts/` and in the
+pre-refactor reproduction sources remain in `archive/scripts/` and in the
 `v0.1.0-working-baseline` tag.

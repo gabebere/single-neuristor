@@ -75,7 +75,7 @@ def run_boundary_maps(config, *, output_root=None, command='neuristor analyze bo
         raise ValueError('Boundary maps require the ideal-current model')
     reused = load_boundary_cache(reuse_exploration, params, current_uA, settings) if reuse_exploration else None
     bundle = RunBundle.create(name=config['name'], model='current', kind='analysis',
-        config=resolved_copy(config), output_root=output_root or config.get('output', {}).get('root', 'runs'),
+        config=resolved_copy(config), output_root=output_root or config.get('output', {}).get('root', 'runs/local'),
         command=command)
     print(f'RUN_DIRECTORY={bundle.root}', flush=True)
     try:

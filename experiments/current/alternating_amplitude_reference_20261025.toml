@@ -23,7 +23,7 @@ C_th_pJ_per_K = 0.044214193020215925
 S_e_mW_per_K = 0.003712762043427252
 T0_K = 314.363069805982
 [resistance]
-preset = "../../presets/resistance_100425_chip1_gap3.json"
+preset = "../../data/parameters/resistance_100425_chip1_gap3.json"
 start_branch = "insulator"
 [resistance.parameters]
 Tc_K = 333.3384172420717
@@ -34,4 +34,4 @@ gamma = 0.15696370990041864
 start_us = 1.0
 stop_us = 2.0
 [output]
-root = "runs"
+root = "runs/local"

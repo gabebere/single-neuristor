@@ -80,11 +80,11 @@ def test_oscillation_audit_command_writes_reviewable_bundle(tmp_path: Path) -> N
         "--set", "audit.grid.C_pF=[0.39]", "--set", "audit.grid.tau_th_ns=[13.0]",
         "--set", "audit.grid.gamma=[0.956269682]", "--set", "audit.grid.include_reference=false",
         "--set", "time.dt_ns=0.2", "--set", "audit.verification_dt_ns=[0.2]",
-        "--output-root", str(tmp_path / "runs"),
+        "--output-root", str(tmp_path / "runs/local"),
     ]
     result = runner.invoke(app, arguments)
     assert result.exit_code == 0, result.output + repr(result.exception)
-    run = next((tmp_path / "runs").iterdir())
+    run = next((tmp_path / "runs/local").iterdir())
     manifest = json.loads((run / "run.json").read_text())
     assert manifest["status"] == "completed"
     assert all((run / item["path"]).is_file() for item in manifest["artifacts"])
@@ -96,7 +96,7 @@ def test_oscillation_audit_command_writes_reviewable_bundle(tmp_path: Path) -> N
     original_manifest = (run / "run.json").read_bytes()
     rerender = runner.invoke(app, arguments + ["--reuse-numerics", str(run)])
     assert rerender.exit_code == 0, rerender.output + repr(rerender.exception)
-    refreshed = next(path for path in (tmp_path / "runs").iterdir() if path != run)
+    refreshed = next(path for path in (tmp_path / "runs/local").iterdir() if path != run)
     assert (refreshed / "parameter_map.csv").read_bytes() == (run / "parameter_map.csv").read_bytes()
     refreshed_manifest = json.loads((refreshed / "run.json").read_text())
     assert refreshed_manifest["numerical_source"]["id"] == manifest["id"]
@@ -108,7 +108,7 @@ def test_oscillation_audit_command_writes_reviewable_bundle(tmp_path: Path) -> N
 
 def test_current_workflow_writes_complete_bundle(tmp_path: Path) -> None:
     config = load_toml(_tiny_current_config(tmp_path))
-    bundle = run_simulation(config, output_root=tmp_path / "runs", command="test")
+    bundle = run_simulation(config, output_root=tmp_path / "runs/local", command="test")
     assert (bundle.root / "run.json").is_file()
     assert (bundle.root / "resolved_config.json").is_file()
     assert (bundle.root / "metrics.json").is_file()
@@ -137,12 +137,12 @@ def test_runtime_failure_is_visible_in_bundle(tmp_path: Path) -> None:
     config = copy.deepcopy(load_toml(_tiny_current_config(tmp_path)))
     config["resistance"]["preset"] = "missing-preset.json"
     try:
-        run_simulation(config, output_root=tmp_path / "runs", command="test failure")
+        run_simulation(config, output_root=tmp_path / "runs/local", command="test failure")
     except ConfigError:
         pass
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("Missing resistance preset should fail")
-    manifests = list((tmp_path / "runs").glob("*/run.json"))
+    manifests = list((tmp_path / "runs/local").glob("*/run.json"))
     assert len(manifests) == 1
     manifest = json.loads(manifests[0].read_text())
     assert manifest["status"] == "failed"
@@ -152,23 +152,23 @@ def test_runtime_failure_is_visible_in_bundle(tmp_path: Path) -> None:
 def test_cli_runs_current_recipe(tmp_path: Path) -> None:
     config = _tiny_current_config(tmp_path)
     result = runner.invoke(
-        app, ["simulate", "current", "--config", str(config), "--output-root", str(tmp_path / "runs")]
+        app, ["simulate", "current", "--config", str(config), "--output-root", str(tmp_path / "runs/local")]
     )
     assert result.exit_code == 0, result.output
     assert "Completed:" in result.output
-    manifests = list((tmp_path / "runs").glob("*/run.json"))
+    manifests = list((tmp_path / "runs/local").glob("*/run.json"))
     assert len(manifests) == 1
 
 
 def test_registry_discovers_new_and_legacy_public_records(tmp_path: Path) -> None:
     (tmp_path / "src").mkdir()
     (tmp_path / "pyproject.toml").write_text("[project]\nname='test'\nversion='0'\n")
-    local = tmp_path / "runs" / "new-id"
+    local = tmp_path / "runs/local" / "new-id"
     local.mkdir(parents=True)
     (local / "run.json").write_text(
         json.dumps({"id": "new-id", "name": "new", "model": "current", "kind": "simulation", "status": "completed"})
     )
-    legacy = tmp_path / "public_jobs" / "old-id"
+    legacy = tmp_path / "runs/published" / "old-id"
     legacy.mkdir(parents=True)
     (legacy / "job.json").write_text(
         json.dumps({"id": "old-id", "name": "old", "source_model": "voltage", "type": "legacy", "status": "completed"})
@@ -181,7 +181,7 @@ def test_registry_prefers_published_copy_of_same_run(tmp_path: Path) -> None:
     (tmp_path / "src").mkdir()
     (tmp_path / "pyproject.toml").write_text("[project]\nname='test'\nversion='0'\n")
     manifest = {"id": "same-id", "name": "same", "model": "current", "kind": "simulation", "status": "completed"}
-    for root, storage in ((tmp_path / "runs", "local"), (tmp_path / "public_jobs", "public")):
+    for root, storage in ((tmp_path / "runs/local", "local"), (tmp_path / "runs/published", "public")):
         directory = root / "same-id"
         directory.mkdir(parents=True)
         (directory / "run.json").write_text(json.dumps({**manifest, "storage": storage}))
@@ -214,7 +214,7 @@ path = "electrical.C_pF"
 values = [0.0, 1.0]
 """
     )
-    bundle = run_sweep(load_toml(sweep_path), output_root=tmp_path / "runs", command="test sweep")
+    bundle = run_sweep(load_toml(sweep_path), output_root=tmp_path / "runs/local", command="test sweep")
     summary = pd.read_csv(bundle.root / "sweep.csv")
     assert summary["electrical.C_pF"].tolist() == [0.0, 1.0]
     assert (bundle.root / "figures" / "sweep.png").is_file()
@@ -300,7 +300,7 @@ def test_environmental_conductance_cli_writes_bundle(tmp_path: Path) -> None:
     oscillating.to_csv(tmp_path / "200mv0_converted.csv", header=False, index=False)
     preset = tmp_path / "resistance.json"
     preset.write_text(json.dumps({"resist_params": dataclasses.asdict(params)}))
-    output_root = tmp_path / "runs"
+    output_root = tmp_path / "runs/local"
     result = runner.invoke(
         app,
         [
@@ -476,7 +476,7 @@ def test_thermal_capacitance_cli_writes_bundle(tmp_path: Path) -> None:
         )
     preset = tmp_path / "resistance.json"
     preset.write_text(json.dumps({"resist_params": dataclasses.asdict(params)}))
-    output_root = tmp_path / "runs"
+    output_root = tmp_path / "runs/local"
     result = runner.invoke(
         app,
         [
@@ -539,7 +539,7 @@ def test_lab_analysis_cli_archives_first_oscillating_trace_plot(tmp_path: Path) 
     )
     stable.to_csv(tmp_path / "100mv0_converted.csv", header=False, index=False)
     oscillating.to_csv(tmp_path / "200mv0_converted.csv", header=False, index=False)
-    output_root = tmp_path / "runs"
+    output_root = tmp_path / "runs/local"
     result = runner.invoke(
         app,
         [

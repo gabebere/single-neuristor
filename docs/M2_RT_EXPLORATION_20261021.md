@@ -1,13 +1,13 @@
 # M2 1600 nm R–T exploration — 21 October 2026
 
-[Open the interactive review](../public_jobs/20261021_062155_m2-1600nm-budgeted-r-t-exploration-review_c7387b/parameter_maps.html)
-or [read the full report](../public_jobs/20261021_062155_m2-1600nm-budgeted-r-t-exploration-review_c7387b/report.md).
+[Open the interactive review](../runs/published/20261021_062155_m2-1600nm-budgeted-r-t-exploration-review_c7387b/parameter_maps.html)
+or [read the full report](../runs/published/20261021_062155_m2-1600nm-budgeted-r-t-exploration-review_c7387b/report.md).
 This is a conditional diagnostic with **zero retained points**, not a calibration.
 
 ## Expanded stage: 1,843 additional grid entries
 
-[Open the larger interactive maps](../public_jobs/20261021_064103_m2-1600nm-expanded-r-t-exploration-review_226099/parameter_maps.html)
-or [read the expanded report](../public_jobs/20261021_064103_m2-1600nm-expanded-r-t-exploration-review_226099/report.md).
+[Open the larger interactive maps](../runs/published/20261021_064103_m2-1600nm-expanded-r-t-exploration-review_226099/parameter_maps.html)
+or [read the expanded report](../runs/published/20261021_064103_m2-1600nm-expanded-r-t-exploration-review_226099/report.md).
 The original review is unchanged. The expansion adds a wider 8³ grid and an
 11³ grid around onset: **2,616 sampled grid entries across both stages**, including
 overlapping settings. It reuses the exact prior approximate R–T fit, 500 µA,

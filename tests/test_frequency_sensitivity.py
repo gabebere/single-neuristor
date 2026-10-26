@@ -76,9 +76,9 @@ def test_optimizer_review_cli_saved_artifact_smoke(tmp_path):
         pd.DataFrame([dict(candidate='search_1',gamma=.8)]).to_csv(source/'parameters.csv',index=False)
         (source/'optimization_history.jsonl').write_text('{}\n')
     result=CliRunner().invoke(app,['analyze','review-optimizer','--audit-run',str(audit),
-        '--frequency-run',str(parents[0]),'--combined-run',str(parents[1]),'--output-root',str(tmp_path/'output')])
+        '--frequency-run',str(parents[0]),'--combined-run',str(parents[1]),'--output-root',str(tmp_path/'runs/scratch/documents')])
     assert result.exit_code==0,result.output+repr(result.exception)
-    bundle=next((tmp_path/'output').glob('*/run.json')).parent
+    bundle=next((tmp_path/'runs/scratch/documents').glob('*/run.json')).parent
     assert json.loads((bundle/'metrics.json').read_text())['method_candidates']==6
     assert len(pd.read_csv(bundle/'method_summary.csv'))==18
     assert (bundle/'figures/frequency_profiles.png').is_file()

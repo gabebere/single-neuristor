@@ -70,7 +70,7 @@ def refresh_map_viewer(source, *, output_root=None, embed_gifs=None,
         config={"viewer_refresh": {"source": str(source), "source_run_id": original["id"],
                                    "display_version": DISPLAY_VERSION, "embed_gifs": standalone},
                 "original_numerical_config": config},
-        output_root=output_root or "runs", command=command,
+        output_root=output_root or "runs/local", command=command,
     )
     print(f"RUN_DIRECTORY={bundle.root}", flush=True)
     try:

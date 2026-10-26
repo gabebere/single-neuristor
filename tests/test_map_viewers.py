@@ -39,7 +39,7 @@ def source(tmp_path):
     config = dict(maps=dict(maximum_frequency_MHz=110., fixed_values=dict(zip(AXES, [1., .003, 1.]))),
                   input=dict(amplitude_uA=500.))
     run = RunBundle.create(name="Synthetic map", model="current", kind="analysis", config=config,
-                           output_root=tmp_path / "runs", command="test", project_root=tmp_path)
+                           output_root=tmp_path / "runs/local", command="test", project_root=tmp_path)
     rows = [dict(zip(AXES, values), point_index=i, included=i != 7,
                  frequency_MHz=(20. if values[0] == 1 else 70.) + values[2] - 1 if i != 7 else 1000.,
                  extrema_vpp_mV=100. + i * 10 if i != 7 else 10000., temperature_max_K=350.)
@@ -76,7 +76,7 @@ def test_refresh_cli_preserves_source_and_stabilizes_every_slider(source, monkey
         pytest.fail("Viewer refresh must not run a simulation")
     monkeypatch.setattr("neuristor.analysis.physical_maps.evaluate_map", forbidden)
     result = CliRunner().invoke(app, ["analyze", "refresh-maps", "--source", str(original.root),
-                                      "--output-root", str(project / "runs")])
+                                      "--output-root", str(project / "runs/local")])
     assert result.exit_code == 0, result.output + repr(result.exception)
     viewer = next(r for r in RunRegistry(project).discover() if r.id != original.id)
     payloads = plot_payloads((viewer.root / "parameter_maps.html").read_text())
@@ -107,8 +107,8 @@ def test_refresh_cli_preserves_source_and_stabilizes_every_slider(source, monkey
     registry = RunRegistry(project)
     assert "links to this run's GIFs" in registry.trash_reason(registry.get(original.id))
     build_artifact_catalog(project)
-    assert "Updated fixed-scale viewer" in (project / "artifacts/index.html").read_text()
-    assert refresh_existing_maps(project_root=project, output_root=project / "runs") == []
+    assert "Updated fixed-scale viewer" in (project / "runs/catalog/index.html").read_text()
+    assert refresh_existing_maps(project_root=project, output_root=project / "runs/local") == []
     registry.trash(viewer.id)
     assert registry.trash_reason(registry.get(original.id)) is None
 
@@ -116,13 +116,13 @@ def test_refresh_cli_preserves_source_and_stabilizes_every_slider(source, monkey
 def test_refreshed_study_preserves_standalone_format_without_copying_gifs(source):
     project, media = source
     parent = RunBundle.create(name="Synthetic sample", model="current", kind="study", config={},
-                              output_root=project / "runs", command="test", project_root=project)
+                              output_root=project / "runs/local", command="test", project_root=project)
     import shutil
     shutil.copytree(media.root, parent.root / "stages/grid")
     parent.write_json("stages.json", dict(grid="stages/grid", media="stages/grid"), label="Stages")
     parent.write_text("parameter_maps.html", "old standalone export", label="Old HTML")
     parent.complete()
-    viewer = refresh_map_viewer(parent.root, output_root=project / "runs")
+    viewer = refresh_map_viewer(parent.root, output_root=project / "runs/local")
     assert viewer.manifest["summary"]["standalone"]
     assert viewer.manifest["summary"]["embedded_gifs"] == 1
     html = (viewer.root / "parameter_maps.html").read_text()
@@ -136,4 +136,4 @@ def test_refresh_refuses_failed_source(source):
     project, original = source
     original.fail(RuntimeError("synthetic"))
     with pytest.raises(ValueError, match="completed"):
-        refresh_map_viewer(original.root, output_root=project / "runs")
+        refresh_map_viewer(original.root, output_root=project / "runs/local")

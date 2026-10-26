@@ -19,7 +19,7 @@ C_th_pJ_per_K = 0.047873236
 S_e_mW_per_K = 0.0036751265
 T0_K = 298.0
 [resistance]
-preset = "../../presets/resistance_100425_chip1_gap3.json"
+preset = "../../data/parameters/resistance_100425_chip1_gap3.json"
 start_branch = "insulator"
 
 [maps]
@@ -53,4 +53,4 @@ count = 15
 extra_values = [0.39, 1.0, 3.0, 7.0, 16.4, 30.0]
 
 [output]
-root = "runs"
+root = "runs/local"

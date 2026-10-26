@@ -11,10 +11,10 @@ remaining simulations are completed.
 - [Experimental comparison](../EXPERIMENT_MODEL_RECONCILIATION.md):
   paper-panel assumptions, frozen-model results and discriminating tests for
   supervisor discussion.
-- [`data/`](data/): raw measurements and reviewed numerical results.
-- [`supplementary/`](supplementary/): selected figures and animations for inspection
+- [`data/`](data): raw measurements and reviewed numerical results.
+- [`supplementary/`](supplementary): selected figures and animations for inspection
   and presentation.
-- [`references/`](references/): the experimental manuscript, Yuanhang paper, and
+- [`archive/references/`](references): the experimental manuscript, Yuanhang paper, and
   original Yuanhang implementation used by this project.
 
 The report PDF and report-specific media are stored directly in this directory. The
@@ -65,7 +65,7 @@ corrections, reproduction instructions and the completed channel/circuit audit.
 
 ## Supplementary media
 
-An eight-slide research presentation is available in [`presentation/`](presentation/):
+An eight-slide research presentation is available in [`presentation/`](presentation):
 editable LaTeX, a reviewed PDF, and a slide-by-slide evidence map. It explains the
 sequence from initial calibration through waveform fitting, oscillation/amplitude
 trade-offs, persistence checks, and the conditional resistance reconstruction.
@@ -91,7 +91,7 @@ than used as current quantitative evidence.
 ## Rebuilding the report
 
 From the repository root, compile `docs/final_project/main.tex`, write the build output
-as `output/pdf/Simulations_for_VO2_AGC.pdf`, and refresh the identically named PDF in
+as `runs/scratch/documents/pdf/Simulations_for_VO2_AGC.pdf`, and refresh the identically named PDF in
 this directory. The checked-in copy is the current readable snapshot; `main.tex`
 remains the editable source.
 
