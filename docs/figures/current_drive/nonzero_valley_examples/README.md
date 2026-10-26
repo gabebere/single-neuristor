@@ -27,6 +27,6 @@ neuristor simulate current \
   --config experiments/current/nonzero_voltage_valley.toml
 ```
 
-The exact multi-panel historical generator is retained as
-`archive/scripts/generate_nonzero_valley_examples.py` and in the
-`v0.1.0-working-baseline` Git tag.
+The exact multi-panel historical generator is recoverable from the
+`v0.1.0-working-baseline` Git tag as `scripts/generate_nonzero_valley_examples.py`.
+[Recovery details](../../../REPOSITORY_LAYOUT.md).

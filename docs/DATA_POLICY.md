@@ -16,7 +16,7 @@ GitHub release assets, ZIPs/tars, and symlinks.
 | Our source, tests, recipes and documentation | Versioned in the canonical repository; retain attribution. |
 | Experimental numerical data and our derived results | Approved for public inclusion; keep units, hashes and limitations. |
 | Our authored reports/presentations and generated figures | May be included; do not bundle copies of reference PDFs. |
-| Third-party docs/reproduction/manuscript PDFs | Local `private/` storage only; use bibliographic links publicly. |
+| Third-party paper/manuscript PDFs | Local `private/` storage only; use bibliographic links publicly. |
 | Upstream implementation | Keep its original license and source attribution. |
 | New collaborator material with unclear permission | Private by default until explicitly approved. |
 | Environments, caches and scratch output | Local, not source deliverables. |

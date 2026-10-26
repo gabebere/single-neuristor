@@ -15,8 +15,8 @@ from typer.testing import CliRunner
 from neuristor.cli import app
 from neuristor.config import load_toml
 from neuristor.current_drive_sim import CurrentDriveParams
-from neuristor.map_animations import resolved_rt_path, animation_controls_html, replay_animation_batch
-from neuristor.physical_maps import AXES, slice_heatmap_values
+from neuristor.plotting.map_animations import resolved_rt_path, animation_controls_html, replay_animation_batch
+from neuristor.analysis.physical_maps import AXES, slice_heatmap_values
 from neuristor.runs import RunBundle
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -97,7 +97,7 @@ heat.handlers.plotly_click({points:[{customdata:-1}]});assert.equal(element('poi
 
 
 def test_refinement_halves_dt_when_visual_jumps_remain(monkeypatch):
-    import neuristor.map_animations as module
+    import neuristor.plotting.map_animations as module
     steps=[]
     def simulate(current,params,**columns):
         steps.append(params.dt_s*1e9)
@@ -156,4 +156,4 @@ def test_map_animation_cli_portable_zip_and_original_map_preserved(tmp_path):
     rebuilt=next((tmp_path/'reused').glob('*/run.json')).parent
     assert not json.loads((rebuilt/'metrics.json').read_text())['resimulated']
     assert (rebuilt/'GIFs/point_00000.gif').read_bytes()==(root/'GIFs/point_00000.gif').read_bytes()
-    assert (rebuilt/'original_simulation_source/neuristor/map_animations.py').exists()
+    assert (rebuilt/'original_simulation_source/neuristor/plotting/map_animations.py').exists()

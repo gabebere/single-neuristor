@@ -1,4 +1,6 @@
 # Only these exact authored PDF bytes are approved, not third-party references.
+# Retired authored reports retain their approved byte identities for historical
+# exports. Their files are recoverable from Git; these paths are historical.
 schema_version = 1
 
 [[authored_pdf]]

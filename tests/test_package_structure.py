@@ -1,4 +1,4 @@
-"""Grouped source, import compatibility, paper navigation, and frozen provenance."""
+"""Canonical source imports, paper navigation, and frozen provenance."""
 
 from __future__ import annotations
 
@@ -10,37 +10,23 @@ import re
 import subprocess
 import sys
 
-import pytest
-
 from neuristor.provenance import package_source_files, snapshot_package
 from neuristor.runs import RunBundle
 from neuristor.validation import validate_reproduction_index
 
 ROOT = Path(__file__).resolve().parents[1]
-GROUPS = {
-    "analysis": "experimental_waveforms extrema metrics lab_estimates model_validation oscillation_audit lab_replay physical_maps",
-    "fitting": "resistance_custom_analysis parameter_inference joint_inference steady_inference current_domain_search",
-    "plotting": "visualization replay_plots map_animations",
-    "orchestration": "map_workflows sample_study artifact_catalog",
-    "interfaces": "dashboard playground",
-    "legacy": "plots sample_library",
-}
-
-
-@pytest.mark.parametrize("group,module", [(g, m) for g, modules in GROUPS.items() for m in modules.split()])
-def test_old_import_is_the_actual_grouped_module(group, module):
-    old = importlib.import_module(f"neuristor.{module}")
-    canonical = importlib.import_module(f"neuristor.{group}.{module}")
-    assert old is canonical
-
-
-def test_alias_preserves_private_names_and_monkeypatches(monkeypatch):
-    old = importlib.import_module("neuristor.map_animations")
-    canonical = importlib.import_module("neuristor.plotting.map_animations")
-    sentinel = object()
-    monkeypatch.setattr(old, "_structure_test_marker", sentinel, raising=False)
-    assert canonical._structure_test_marker is sentinel
-    assert old.replay_animation_batch.__globals__ is canonical.replay_animation_batch.__globals__
+def test_owned_modules_import_from_the_canonical_source_tree():
+    package = ROOT / "src/neuristor"
+    for source in package_source_files():
+        relative = source.relative_to(package).with_suffix("")
+        if relative.name == "__init__":
+            continue
+        module = importlib.import_module("neuristor." + ".".join(relative.parts))
+        # The retained dashboard entrypoint delegates to its actual interface.
+        if relative.as_posix() == "dashboard":
+            assert module is importlib.import_module("neuristor.interfaces.dashboard")
+        else:
+            assert Path(module.__file__).resolve() == source.resolve()
 
 
 def test_snapshot_has_complete_nested_sources_and_valid_hashes(tmp_path):
@@ -58,7 +44,7 @@ def test_snapshot_has_complete_nested_sources_and_valid_hashes(tmp_path):
     # this child interpreter's path is the newly frozen recursive package.
     result = subprocess.run(
         [sys.executable, "-I", "-c", f"import sys; sys.path.insert(0, {str(bundle.root / 'source')!r}); "
-         "import neuristor.cli; import neuristor.extrema as a; import neuristor.analysis.extrema as b; assert a is b"],
+         "import neuristor.cli; import neuristor.analysis.extrema as a; import neuristor.analysis.extrema as b; assert a is b"],
         cwd=tmp_path, capture_output=True, text=True, timeout=60,
     )
     assert result.returncode == 0, result.stderr

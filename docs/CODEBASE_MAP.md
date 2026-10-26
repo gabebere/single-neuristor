@@ -72,7 +72,6 @@ Fit static resistance or search dynamic parameters using the recorded objective.
 
 | Module | Purpose |
 |---|---|
-| [current_domain_search.py](../src/neuristor/fitting/current_domain_search.py) | Methodical oscillation-domain search for the ideal current-driven VO2 model. |
 | [joint_inference.py](../src/neuristor/fitting/joint_inference.py) | Budgeted joint static/dynamic inference using the authoritative simulator. |
 | [optimizer_audit.py](../src/neuristor/fitting/optimizer_audit.py) | Cached normalized-coordinate evaluations and bounded gradient score trials. |
 | [parameter_inference.py](../src/neuristor/fitting/parameter_inference.py) | Global inverse fitting of the current-drive model to measured waveforms. |
@@ -122,26 +121,23 @@ Terminal-adjacent viewers and Streamlit controls delegate calculations to workfl
 | [presentation_server.py](../src/neuristor/interfaces/presentation_server.py) | Read-only loopback delivery for the presentation's local HTML viewers. |
 | [run_manager.py](../src/neuristor/interfaces/run_manager.py) | Loopback-only artifact library with explicit, recoverable run deletion. |
 
-## Historical compatibility helpers
+## Retired code and saved-fit verification
 
-Older sample-library and plotting behavior, retained to interpret historical evidence. These helpers do not replace the authoritative time-domain solvers.
+Unused one-off scripts, the old voltage plotting frontend, and the dormant
+current-domain search have been removed. Use current workflows and recipes.
+[Recovery points](REPOSITORY_LAYOUT.md) retain their history without placing
+archived code beside active implementation.
 
-| Module | Purpose |
-|---|---|
-| [plots.py](../src/neuristor/legacy/plots.py) | plots.py |
-| [sample_library.py](../src/neuristor/legacy/sample_library.py) | Sample preset library and R-T calibration helpers. |
+[fitting/saved_fit_replay.py](../src/neuristor/fitting/saved_fit_replay.py) retains
+only the numerical detector needed to reproduce stored resistance-fit metrics.
+It has no sample create/delete/rename interface and does not replace the solver.
+The corresponding regression test still reproduces all six measured sample fits.
 
-## Compatible imports and historical source
-
-The small old-name modules at `src/neuristor/` are compatibility aliases, not
-alternate implementations. For example, `neuristor.extrema` refers to the same
-module object as `neuristor.analysis.extrema`; private names and monkeypatches
-are preserved. Edit the grouped implementation and use its path in new code.
-`dashboard.py` is likewise a bridge to `interfaces/dashboard.py`.
-
-Pre-refactor scripts are in `archive/scripts/`, outside the supported API.
-Attributed upstream source is in `archive/references/`. Frozen source trees
-inside result bundles are evidence, not active implementation; never refactor them.
+Active code imports the grouped modules directly, for example
+`neuristor.analysis.extrema` and `neuristor.plotting.map_animations`.
+The root `dashboard.py` remains the documented dashboard entrypoint. Public
+physics, workflow and CLI paths are unchanged. Frozen sources in result bundles
+retain their own original modules and are never refactored in place.
 
 ## Extend and verify
 

@@ -30,9 +30,6 @@ dist/
 
 # Third-party papers and private material never enter Git or Releases.
 /private/
-/archive/references/papers/*.pdf
-/archive/references/reference_graphs.zip
-/docs/final_project/references/*.pdf
 
 # LaTeX build intermediates
 *.aux

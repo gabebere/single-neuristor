@@ -20,7 +20,7 @@ Intentionally deferred until Gabriel approves Section 1:
 
 Scientific source-of-truth files used for Section 1:
 
-- `archive/references/papers/collective Dynamics.pdf`
-- `archive/references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/model.py`
+- Zhang et al., DOI [10.1038/s41467-024-51254-4](https://doi.org/10.1038/s41467-024-51254-4); PDFs stay in ignored `private/`.
+- [Original Zhang model in verified Git history](https://github.com/gabebere/single-neuristor/blob/12be9a9a729e03b164464fad0daab7c1b9d4f4c4/references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/model.py).
 - `src/neuristor/model.py`
 - `src/neuristor/current_drive_sim.py`

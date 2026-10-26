@@ -88,11 +88,11 @@ def build_source_inventory(root: Path, output: Path) -> int:
     """Inventory owned Python files without importing scripts or running studies.
 
     This is a generated navigation aid, not a second scientific database. The
-    first docstring line provides intent; historical scripts remain explicitly
-    outside the supported API even when they are still executable.
+    first docstring line provides intent. Retired scripts live in Git history
+    and are not mixed into the active source inventory.
     """
     rows = []
-    for folder in ("src", "tests", "archive/scripts", "docs/presentation"):
+    for folder in ("src", "tests"):
         for path in sorted((root / folder).rglob("*.py")):
             if "__pycache__" in path.parts:
                 continue
@@ -224,7 +224,6 @@ def build_artifact_catalog(project_root: str | Path | None = None, output_direct
         "runs/scratch",
         "docs",
         "data",
-        "archive",
     )
     extensions = {".html", ".pdf", ".gif", ".png", ".csv", ".tsv", ".json", ".jsonl", ".tex", ".zip", ".md"}
     count = 0

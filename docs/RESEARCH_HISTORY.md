@@ -1,5 +1,10 @@
 # Research history: VO2 current-driven simulations (through 16 October 2026)
 
+Historical paths below describe the files at each dated checkpoint. Retired code
+and document assemblies are now available through the
+[layout and recovery record](REPOSITORY_LAYOUT.md); current results and measured
+inputs remain in this checkout.
+
 This is the preserved detailed research log, not the current task list. Start with
 [the concise handoff](RESEARCH_HANDOFF.md). Dated statements below describe their
 own checkpoints; later entries and the current handoff supersede older claims.
@@ -31,7 +36,7 @@ current-ranked examples per fresh search. No new physical calibration is adopted
 
 ## Project files consolidated from Desktop (16 October 2026)
 
-Use [the consolidated Desktop guide](../archive/desktop_consolidation_20261016/index.html)
+Use [the consolidated Desktop guide](https://github.com/gabebere/single-neuristor/blob/12be9a9a729e03b164464fad0daab7c1b9d4f4c4/archive/desktop_consolidation_20261016/index.html)
 instead of the former `Desktop/VO2 Research Archive` location. All 926 content
 files were accounted for: 914 exact duplicates remain at existing project paths,
 and 12 unique historical notes/index/recipe files are preserved under `archive/`.
@@ -125,7 +130,7 @@ fitting, plotting, orchestration, interfaces, and legacy helpers; authoritative
 physics paths and public commands are unchanged. Old imports alias the same
 module object. The replay UI has an explicit rerunnable main entry point.
 
-[Migration/verification record](STRUCTURE_MIGRATION_20261007.md) documents what
+[Migration/verification record](https://github.com/gabebere/single-neuristor/blob/12be9a9a729e03b164464fad0daab7c1b9d4f4c4/docs/STRUCTURE_MIGRATION_20261007.md) documents what
 moved and what did not. The actual sample-study rerun reproduces the preceding
 ec2d1e metrics, numerical tables, GIF and standalone HTML exactly. Both current
 and voltage control recipes ran successfully; 134 tests passed with four existing
@@ -466,13 +471,13 @@ Recommended reading order:
 1. This handoff, especially Sections 5–8.
 2. [Experiment/model reconciliation](EXPERIMENT_MODEL_RECONCILIATION.md):
    colleague-facing paper-panel comparison and assumption ledger.
-3. [Eight-slide presentation](final_project/presentation/VO2_Fitting_Journey.pdf)
-   and its [source/evidence map](final_project/presentation/README.md).
-4. [Research report](final_project/Simulations_for_VO2_AGC.pdf), especially Sections
+3. [Eight-slide presentation](https://github.com/gabebere/single-neuristor/blob/12be9a9a729e03b164464fad0daab7c1b9d4f4c4/docs/final_project/presentation/VO2_Fitting_Journey.pdf)
+   and its [source/evidence map](https://github.com/gabebere/single-neuristor/blob/12be9a9a729e03b164464fad0daab7c1b9d4f4c4/docs/final_project/presentation/README.md).
+4. [Research report](https://github.com/gabebere/single-neuristor/blob/12be9a9a729e03b164464fad0daab7c1b9d4f4c4/docs/final_project/Simulations_for_VO2_AGC.pdf), especially Sections
    4–6 for parameter assumptions and 9–12 for fitting and the latest diagnostics.
 5. [Archive index](ARCHIVE_INDEX.md) for current versus superseded bundles.
 6. [Root README](../README.md), [AGENTS.md](../AGENTS.md), and the relevant recipe
-   before changing code. Read [architecture](ARCHITECTURE.md) for implementation.
+   before changing code. Read [architecture](CODEBASE_MAP.md) for implementation.
 
 The next recommended task is **experimental confirmation of the measurement-channel
 and circuit map**, followed by a same-device thermal/dynamic check. See Section 8.

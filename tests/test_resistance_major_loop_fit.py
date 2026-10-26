@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from neuristor.resistance_custom_analysis import fit_major_loop_resistance_params
+from neuristor.fitting.resistance_custom_analysis import fit_major_loop_resistance_params
 from neuristor.workflows import run_resistance_fit
 
 

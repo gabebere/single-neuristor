@@ -15,9 +15,9 @@ from typer.testing import CliRunner
 
 from neuristor.cli import app
 from neuristor.config import ConfigError, load_toml
-from neuristor.map_animations import animation_controls_html, write_standalone_map
-from neuristor.sample_study import load_study_rt, plan_sample_study
-from neuristor.artifact_catalog import build_artifact_catalog
+from neuristor.plotting.map_animations import animation_controls_html, write_standalone_map
+from neuristor.orchestration.sample_study import load_study_rt, plan_sample_study
+from neuristor.orchestration.artifact_catalog import build_artifact_catalog
 from neuristor.runs import RunBundle
 
 ROOT = Path(__file__).resolve().parents[1]

@@ -6,7 +6,7 @@ import pytest
 from typer.testing import CliRunner
 
 from neuristor.cli import app
-from neuristor.steady_inference import settled_features, settled_loss
+from neuristor.fitting.steady_inference import settled_features, settled_loss
 
 ROOT=Path(__file__).resolve().parents[1]
 SETTINGS=dict(frequency_tolerance_fraction=.025,amplitude_tolerance_fraction=.075)

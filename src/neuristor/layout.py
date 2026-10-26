@@ -23,8 +23,6 @@ FORMER_LOCATIONS = {
     "tmp": Path("runs/scratch/tmp"),
     "presets": Path("data/parameters"),
     "new_samples": Path("data/experimental/additional_samples"),
-    "references": Path("archive/references"),
-    "legacy_scripts": Path("archive/scripts"),
     "Simulations_on_VO2": Path("docs/presentation"),
     "paper": Path("docs/reproduction"),
     "environments": Path("docs/environment"),

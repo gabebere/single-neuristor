@@ -1,8 +1,9 @@
 # Attribution and third-party notices
 
 The voltage-source and float32-faithful hysteresis implementation derives from
-Yuanhang Zhang's original repository, preserved under
-`archive/references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0/`.
+Yuanhang Zhang's original implementation, recoverable from
+[the verified repository history](https://github.com/gabebere/single-neuristor/tree/12be9a9a729e03b164464fad0daab7c1b9d4f4c4/references/yuanhangzhang98-collective_dynamics_neuristor-217d4f0).
+The complete upstream MIT notice is retained below.
 The ideal-current extension and workflow library are maintained in this project.
 
 Primary model references:

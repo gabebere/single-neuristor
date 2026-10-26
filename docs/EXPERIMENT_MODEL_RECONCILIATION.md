@@ -69,7 +69,7 @@ An unmodeled filament/phase memory state remains a separate hypothesis.
 
 The table evaluates the **same 150–250 ns late window** on the archived sampled
 measured and frozen-model traces, with the documented
-[`audit_voltage` metric](../src/neuristor/oscillation_audit.py). The robust span
+[`audit_voltage` metric](https://github.com/gabebere/single-neuristor/blob/12be9a9a729e03b164464fad0daab7c1b9d4f4c4/src/neuristor/oscillation_audit.py). The robust span
 is the 95th minus 5th voltage percentile. Periodic Vpp is the fitted dominant
 sinusoidal component, not the raw peak-to-peak range. A frequency is meaningful
 only when the component is appreciable; the flat predictions have none.

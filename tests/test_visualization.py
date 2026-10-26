@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 from PIL import Image
 
-from neuristor.visualization import (
+from neuristor.plotting.visualization import (
     animate_current_resistance_temperature,
     plot_lab_detection_window_trace,
     plot_lab_oscillation_bracket,
@@ -61,9 +61,9 @@ def test_current_rt_animation_writes_multiframe_gif(tmp_path: Path) -> None:
 
 
 def test_scope_animation_supports_simulated_voltage_without_measured_trace(tmp_path: Path) -> None:
-    from neuristor.lab_replay import major_branches
+    from neuristor.analysis.lab_replay import major_branches
     from neuristor.model import YuanhangResistParams
-    from neuristor.replay_plots import write_scope_gif
+    from neuristor.plotting.replay_plots import write_scope_gif
 
     trace = _trace()
     frame = pd.DataFrame({

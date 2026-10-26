@@ -189,7 +189,7 @@ third-party paper/manuscript PDFs. Private copies must stay local and out of rel
 Historical public commits already contain some paper PDFs; deleting them from a
 new checkout does not erase that history. No force-push/history purge is authorized.
 
-Consult the [consolidation record](CONSOLIDATION_20261020.md) for backup,
+Consult the [consolidation record](https://github.com/gabebere/single-neuristor/blob/12be9a9a729e03b164464fad0daab7c1b9d4f4c4/docs/CONSOLIDATION_20261020.md) for backup,
 verification and actual GitHub status; do not infer remote backup from a local
 commit or catalog. This cleanup does not introduce a new physical calibration.
 
@@ -205,3 +205,8 @@ The [26 October layout migration](REPOSITORY_LAYOUT.md) consolidates all jobs
 and outputs under `runs/`, with one root README for collaborators. The checkpoint
 before relocation is `b2ee2ff`. Bundle IDs and scientific contents are preserved;
 this is an organizational change, not a new research result.
+
+Unused archives, import wrappers and older document assemblies were pruned on
+26 October. Scientific records, measured data, supported commands and completed
+bundles are preserved. Use [the recovery map](REPOSITORY_LAYOUT.md) for retired
+files; the latest organization checkpoints remain local until explicitly pushed.

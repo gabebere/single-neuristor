@@ -4,8 +4,7 @@ Simulate a VO₂ neuristor, fit measured resistance loops, and explore current-d
 oscillations with interactive maps and synchronized voltage/R(T) animations.
 Gabriel Berezovsky · supervised by Amir Gildor and Prof. Yoav Kalcheim.
 
-**Start with this page.** It combines the former README, Start Here, project guide,
-and Amir setup instructions. The [research handoff](docs/RESEARCH_HANDOFF.md)
+**Start with this page.** It contains project navigation, installation, and Amir’s presentation setup. The [research handoff](docs/RESEARCH_HANDOFF.md)
 states the current conclusions and next unresolved question.
 
 The solver and static R(T) fitting are tested. A physically supported quantitative
@@ -119,12 +118,11 @@ them. Published, running and recipe-referenced runs are protected.
 | `data/` | Measured inputs and saved parameter sets in `data/parameters/` |
 | `runs/` | All jobs, results, generated outputs and their catalog |
 | `docs/` | Methods, handoff, history, presentations, reproduction and environment records |
-| `archive/` | Historical notes/scripts and attributed upstream reference source |
 | `private/` | Local reference PDFs and unapproved material; never distributed |
 
 [Migration record](docs/REPOSITORY_LAYOUT.md) maps every former folder to its new
-home. The source package keeps its purpose-specific groups and compatible imports;
-the authoritative physics remains in `model.py` and `current_drive_sim.py`.
+home and records recovery points for retired files. Active imports use the
+purpose-specific source groups; the authoritative physics remains in `model.py` and `current_drive_sim.py`.
 
 ## Common commands
 
@@ -144,7 +142,6 @@ the authoritative physics remains in `model.py` and `current_drive_sim.py`.
 | Archive dashboard | `neuristor dashboard` |
 
 Use `neuristor --help` and each command's `--help`.
-[Detailed workflow reference](docs/WORKFLOW_REFERENCE.md) ·
 [Boundary search](docs/BOUNDARY_SEARCH.md) · [Map displays](docs/MAP_DISPLAY.md).
 
 ## Develop and verify

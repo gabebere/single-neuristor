@@ -10,9 +10,9 @@ question. Update it when a new result changes the handoff state.
 ## Source-of-truth hierarchy
 
 Implementation modules are grouped into `analysis/`, `fitting/`, `plotting/`,
-`orchestration/`, `interfaces/`, and `legacy/` under `src/neuristor/`. Old-name
-root modules are compatibility aliases, not alternate implementations. Edit the
-grouped implementation, not a bridge. The authoritative physics and public
+`orchestration/`, and `interfaces/` under `src/neuristor/`. Import the canonical
+grouped modules directly. Retired scripts, plotting code, and old import wrappers
+are recoverable from Git history and are not active alternatives. The authoritative physics and public
 workflow paths below stay unchanged. `docs/CODEBASE_MAP.md` explains the routing; the root `README.md` is the
 single collaborator entry point. Repository locations are defined in
 `src/neuristor/layout.py`; preserve frozen paths by resolving them at read time.
@@ -52,9 +52,11 @@ Streamlit code.
 5. Add tests at the lowest useful layer and one command/bundle smoke test.
 6. Document the command in the README or linked format specification.
 
-Do not add a new top-level one-off Python script. Pre-refactor scripts live in
-`archive/scripts/` only as historical source and can be recovered exactly from the
-`v0.1.0-working-baseline` tag.
+Do not add a new top-level one-off Python script. Retired implementations belong
+in Git history, not a new archive folder. Recover pre-refactor scripts from
+`v0.1.0-working-baseline`; recover the complete pre-pruning tree from
+`cleanup-before-pruning-20261026`. `docs/REPOSITORY_LAYOUT.md` records verified
+GitHub history separately from local-only checkpoints.
 
 ## Run-bundle contract
 

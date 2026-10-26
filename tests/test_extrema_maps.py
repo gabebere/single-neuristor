@@ -8,8 +8,8 @@ from typer.testing import CliRunner
 
 from neuristor.cli import app
 from neuristor.current_drive_sim import CurrentDriveParams, simulate_current_parameter_grid, simulate_current_step
-from neuristor.extrema import voltage_extrema, extrema_loss
-from neuristor.physical_maps import screen_trajectory
+from neuristor.analysis.extrema import voltage_extrema, extrema_loss
+from neuristor.analysis.physical_maps import screen_trajectory
 
 
 def test_simple_loss_equal_relative_errors_and_separate_rejection():
@@ -55,7 +55,7 @@ def test_frequency_only_loss_ignores_amplitude_error_but_keeps_diagnostics():
 def test_slice_normalization_uses_only_visible_screened_points():
     import itertools
     import pandas as pd
-    from neuristor.physical_maps import AXES, slice_heatmap_values
+    from neuristor.analysis.physical_maps import AXES, slice_heatmap_values
     axes = [np.array([1., 2.]), np.array([.003, .006]), np.array([1., 3.])]
     rows = []
     for cth, se, c in itertools.product(*axes):
@@ -130,9 +130,9 @@ def test_parameter_batch_matches_independent_runs_and_refines():
 
 
 def test_switching_parameter_grid_extrema_converge_at_two_smaller_steps():
-    from neuristor.current_domain_search import load_resistance_preset
+    from neuristor.workflows import resistance_from_config
     root = Path(__file__).resolve().parents[1]
-    rp, _, _ = load_resistance_preset(root / 'data/parameters/resistance_100425_chip1_gap3.json')
+    rp, _, _ = resistance_from_config({'resistance': {'preset': str(root / 'data/parameters/resistance_100425_chip1_gap3.json')}})
     base = CurrentDriveParams(t_end_s=600e-9, T0_K=298, T_init_K=298, resist_params=rp)
     features = []
     for dt in [.05, .025, .0125]:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from neuristor.parameter_inference import _relative_amplitude_loss, _sustained_oscillation_loss
+from neuristor.fitting.parameter_inference import _relative_amplitude_loss, _sustained_oscillation_loss
 
 
 def test_relative_amplitude_loss_is_symmetric_by_ratio() -> None:

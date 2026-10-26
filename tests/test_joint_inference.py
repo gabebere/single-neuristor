@@ -6,9 +6,9 @@ from typer.testing import CliRunner
 
 from neuristor.cli import app
 from neuristor.config import load_toml
-from neuristor.joint_inference import (NAMES, natural_vector, joint_model, encode, decode,
+from neuristor.fitting.joint_inference import (NAMES, natural_vector, joint_model, encode, decode,
                                       static_rmse, voltage_features, feature_loss)
-from neuristor.resistance_custom_analysis import load_experimental_rt
+from neuristor.fitting.resistance_custom_analysis import load_experimental_rt
 from neuristor.workflows import _current_params_from_config
 
 ROOT = Path(__file__).resolve().parents[1]

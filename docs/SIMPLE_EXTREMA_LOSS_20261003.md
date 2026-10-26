@@ -48,7 +48,7 @@ neuristor analyze fit-steady --config experiments/current/specimen_steady_relati
 ## Desktop archive
 
 **Location update, 16 October 2026:** use the
-[consolidated project guide](../archive/desktop_consolidation_20261016/index.html).
+[consolidated project guide](https://github.com/gabebere/single-neuristor/blob/12be9a9a729e03b164464fad0daab7c1b9d4f4c4/archive/desktop_consolidation_20261016/index.html).
 The following describes the original delivery; duplicate Desktop copies are now
 in recoverable Trash, with unique notes preserved inside this repository.
 

@@ -144,7 +144,7 @@ reproducibility archive containing raw/numerical data and source snapshots.
 `neuristor runs index` rebuilds `runs/catalog/index.html`, `runs.csv` and `files.csv`.
 It links canonical outputs rather than copying gigabytes or adding a database.
 Old public runs remain untouched. The former Desktop archive was separately
-consolidated on 16 October 2026: [canonical results and unique notes](../archive/desktop_consolidation_20261016/index.html).
+consolidated on 16 October 2026: [canonical results and unique notes](https://github.com/gabebere/single-neuristor/blob/12be9a9a729e03b164464fad0daab7c1b9d4f4c4/archive/desktop_consolidation_20261016/index.html).
 No scientific results were changed by that filing. See
 [the archive policy](../runs/README.md) and [the scientific chronology](ARCHIVE_INDEX.md).
 

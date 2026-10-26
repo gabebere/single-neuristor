@@ -1,88 +1,95 @@
-# Repository layout
+# Layout and recovery
 
-Reorganized on 26 October 2026. The [root README](../README.md) is the single
-collaborator entry point. Scientific conclusions remain in
-[RESEARCH_HANDOFF.md](RESEARCH_HANDOFF.md); implementation responsibilities are
-in [CODEBASE_MAP.md](CODEBASE_MAP.md).
+The [root README](../README.md) is the collaborator entry point.
+[CODEBASE_MAP.md](CODEBASE_MAP.md) describes the maintained implementation.
 
-## Former locations
+## Working tree
 
-| Before | Now |
+| Folder | Purpose |
 |---|---|
-| `public_jobs/` | `runs/published/` |
-| Flat `runs/RUN_ID/` | `runs/local/RUN_ID/` |
-| `jobs/` | `runs/legacy/` |
-| `outputs/` | `runs/scratch/` |
-| `output/` | `runs/scratch/documents/` |
-| `tmp/` | `runs/scratch/tmp/` |
-| Root `build/`, `__pycache__/` | `runs/scratch/build/`, `runs/scratch/python_cache/` |
-| `presentation_package_*` | `runs/scratch/packages/` |
-| `artifacts/` | `runs/catalog/` |
-| `results/index.html`, `results/releases.toml` | `runs/index.html`, `runs/releases.toml` |
-| `Simulations_on_VO2/` | `docs/presentation/` |
-| `paper/` | `docs/reproduction/` |
-| `environments/` | `docs/environment/` |
-| `presets/` | `data/parameters/` |
-| `new_samples/` | `data/experimental/additional_samples/` |
-| `references/` | `archive/references/` |
-| `legacy_scripts/` | `archive/scripts/` |
-| `START_HERE.md`, `START_HERE.html`, `Amir_readme.md`, `docs/PROJECT_GUIDE.md` | Root `README.md` |
-| `src/README.md`, source-folder READMEs | `docs/CODEBASE_MAP.md` |
-| `tests/README.md` | `CONTRIBUTING.md` |
-| Separate jobs/catalog/results READMEs | `runs/README.md` |
+| `src/neuristor/` | Physics, analysis, fitting, plotting, orchestration and interfaces |
+| `tests/` | Scientific and software regression checks |
+| `experiments/` | Editable recipes |
+| `data/` | Original numerical measurements and saved parameter sets |
+| `runs/` | Local trials, published evidence, scratch output and the generated catalog |
+| `docs/` | Maintained instructions, scientific records, methodology and current slides |
 
-Folder-specific documents describing unique data formats, scientific methods,
-upstream licensing or presentation sources remain beside those files. They are
-linked from the main guide instead of repeating the onboarding instructions.
-The active Python package keeps its established responsibility groups, public
-imports and authoritative physics paths.
+`private/` is local and ignored. Third-party PDFs are never redistributed.
 
-## Evidence preservation
+All active imports use their canonical implementation group, such as
+`neuristor.analysis.extrema`. The old import wrappers have been removed;
+`neuristor.dashboard` remains the documented dashboard entrypoint. Physics,
+public workflow and CLI entrypoints retain their established paths.
 
-Checkpoint `b2ee2ff` captures the complete versioned state before any moves.
-Ignored local trials, old jobs and scratch outputs were moved intact, not added
-to Git. No history was rewritten and no remote upload was performed.
+## What was removed on 26 October 2026
 
-Published bundle IDs and file contents are unchanged, including numerical data,
-reports, manifests, resolved recipes, source snapshots and source hashes. Their
-parent directory changed. Historical absolute paths are interpreted at read time
-by `neuristor.layout.resolve_recorded_path`; they are not rewritten in evidence.
-Existing trash sidecars with former `runs/ID` locations remain restorable into
-`runs/local/`. Active recipes, interfaces, indexes and document links use the new
-locations. Saved parameter values and measured numerical data are preserved.
+- Pre-CLI one-off scripts and the unused vendored upstream source tree.
+- The old voltage plotting frontend and dormant current-domain search backend.
+- The old sample interface's unused storage and create/delete/rename helpers.
+  Its numerical fit replay survives in `fitting/saved_fit_replay.py` because a
+  scientific regression test still verifies the six recorded measured fits.
+- Twenty-two old-name import wrappers, with all active callers updated.
+- Old report/supplement assemblies, unused backup slides and images, and guides
+  superseded by the README, codebase map and current CLI.
 
-`runs/public_jobs` is a relative compatibility symlink to `published`. A frozen
-historical viewer refers to `../../public_jobs/...`; this one alias keeps its
-file-based GIF links working without editing the viewer. It is not another storage
-lane. The presentation server also resolves the former `/public_jobs/` URL prefix
-and applies its existing resolved-path allowlist to every request.
+Original measurements, parameters, scientific notes, supported commands and
+published run bundles remain. Frozen source snapshots in result bundles are
+part of the evidence and remain unchanged. Unique ignored local research is
+retained because GitHub does not back it up.
 
-Local trials and published results remain distinct inside one `runs/` folder:
-merging them into a single undifferentiated lane would lose publication and
-recoverable-delete protections. Catalog generation reads these lanes directly,
-excludes trash and frozen sources from its file inventory, and does not follow
-the compatibility link as another copy of the evidence.
+## Recovery points
 
-To orient a collaborator, start at the root README. To reconstruct a historical
-path, use the table above. To continue a study, use the current versioned recipe
-and generate a new bundle rather than editing a completed one.
+| Checkpoint | Contents | Backup status |
+|---|---|---|
+| `12be9a9a729e03b164464fad0daab7c1b9d4f4c4` | Original scripts, upstream source and historical report assemblies before the folder reorganization | Verified on GitHub `main` on 26 October |
+| `b2ee2ff` | Full versioned state before reorganizing folders | Local commit |
+| `080ce19` / `cleanup-before-pruning-20261026` | Exact versioned state immediately before removing unused files | Local commit and annotated tag |
+| `v0.1.0-working-baseline` | Pre-refactor implementation | Tag verified on GitHub |
 
-## Verification of this migration
+[Browse the verified GitHub snapshot](https://github.com/gabebere/single-neuristor/tree/12be9a9a729e03b164464fad0daab7c1b9d4f4c4).
+The newer local checkpoints have not been pushed. No Git history was rewritten.
 
-- Original checkpoint: 201 passing tests and repository validation.
-- Reorganized checkout: 207 passing tests, including six relocation regressions.
-- Repository and staged publication checks pass: 47 recipes, five reproduction
-  entries, and the preserved archive plus three new local verification runs.
-- All 4,816 versioned published-bundle paths and Git blob identities match the
-  checkpoint after changing only their root prefix. Original Git letter case is
-  retained, including three historical `Figures/` folders.
-- Exact current-valley, original-voltage and 27-point sample-study recipes
-  complete under `runs/local/`; the sample exports its embedded-GIF HTML.
-- All four real presentation routes and the historical map's GIF dependency
-  load through the restricted loopback server. Guide links and document
-  symlink targets resolve locally.
-- A wheel built from clean staged sources imports successfully and contains
-  the new layout module without the removed source-folder guides.
+To inspect a removed file without restoring obsolete code into the working tree:
 
-No numerical fitting or simulation equations changed. Verification runs remain
-local and ignored; they are software checks rather than new reviewed evidence.
+```bash
+git show cleanup-before-pruning-20261026:archive/scripts/manual.py
+git show cleanup-before-pruning-20261026:src/neuristor/legacy/plots.py
+```
+
+Before the first reorganization, `public_jobs/` was the published lane, flat
+`runs/` held local trials, and `jobs/` held legacy jobs. Those lanes now live
+inside `runs/` as `published/`, `local/`, and `legacy/`. `outputs/`, `output/`,
+`tmp/`, caches and temporary packages moved into ignored `runs/scratch/`.
+The old `results/` front page is `runs/index.html`; `artifacts/` is `runs/catalog/`.
+`presets/` became `data/parameters/`; `new_samples/` became
+`data/experimental/additional_samples/`. The current slide source moved from
+`Simulations_on_VO2/` to `docs/presentation/`; `paper/` became `docs/reproduction/`.
+
+Historical path strings in dated notes describe those original trees. Maintained
+links lead to current files or verified GitHub history. Read-only path resolution
+in `layout.py` supports preserved run manifests without rewriting them. The
+`runs/public_jobs` symlink preserves relative GIF links in one frozen viewer;
+it is a navigation alias, not another collection of results.
+
+## Cleanup verification
+
+The full suite passes (184 tests). Removed alias-only tests were replaced by a
+canonical-package import check; numerical fidelity and convergence checks remain.
+Repository validation checks all 47 recipes and five reproduction records.
+
+Exact current-valley, voltage-control and 27-point sample-study recipes complete.
+Their numerical traces, static-fit summary, grid, smaller-step verification and
+animation checks match the pre-pruning runs byte for byte. Both authoritative
+physics files are unchanged, as are the calculation bodies retained for
+saved-fit replay. All four real presentation routes and the original GIF
+dependency load through the restricted local server.
+
+Measured data, saved parameters and complete published bundles are checked
+against the pre-pruning Git trees. Build checks use clean sources, so deleted
+wrappers cannot survive accidentally in a cached package.
+
+Temporary verification bundles and build workspaces created by this chat were
+removed after checking their outputs. The original 162 distinct research records
+remain discoverable; unique local trials, failed runs and reviewed evidence
+were not pruned. The maintained source package shrank from 83 to 58 Python
+modules, with a single authoritative implementation path for each capability.

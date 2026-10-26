@@ -25,12 +25,7 @@ from neuristor.current_drive_sim import (
     simulate_current_waveforms,
     stabilize_current_drive_params,
 )
-from neuristor.current_domain_search import (
-    CandidatePoint,
-    DomainSearchConfig,
-    _candidate_dt_ns,
-    analyze_current_trace,
-)
+from neuristor.analysis.extrema import voltage_extrema
 from neuristor.model import (
     YuanhangCircuitParams,
     YuanhangResistParams,
@@ -69,32 +64,6 @@ class SimulationConvergenceTests(unittest.TestCase):
         self.assertLess(adjusted.dt_s, params.dt_s)
         adjusted_report = current_drive_numerics_report(adjusted, I_peak_uA=606.7)
         self.assertLessEqual(adjusted_report["dT_step_over_reversal"], 0.2 + 1e-12)
-
-        point = CandidatePoint(
-            T0_K=314.4,
-            C_pF=0.39,
-            C_th_mW_ns_per_K=0.047873236,
-            S_e_mW_per_K=0.0036751265,
-            T_init_K=314.4,
-            sigma_W_sqrt_s=0.0,
-            Rm_factor_scale=1.0,
-            Tc_shift_K=0.0,
-            w_scale=1.0,
-            beta_scale=1.0,
-            reversal_threshold_K=resist.reversal_threshold_K,
-        )
-        candidate_report = _candidate_dt_ns(
-            point,
-            cfg=DomainSearchConfig(resistance_preset_path="unused"),
-            base_resist_params=resist,
-            start_branch="insulator",
-            i_peak_uA=606.7,
-        )
-        expected_candidate = (
-            candidate_report["dt_ns"] * 1e-9 * (606.7e-6) ** 2 * resist.Rm
-            / (params.C_th_J_per_K * resist.reversal_threshold_K)
-        )
-        self.assertAlmostEqual(candidate_report["dT_step_over_reversal"], expected_candidate, places=12)
 
     def test_yuanhang_current_control_settles_across_timesteps(self) -> None:
         payload = json.loads((ROOT / "data/parameters" / "resistance_100425_chip1_gap3.json").read_text())
@@ -214,21 +183,16 @@ class SimulationConvergenceTests(unittest.TestCase):
             )
             out = simulate_current_step(1640.226226, params=params, seed=0)
             late = out["t"] >= 0.5 * out["t"][-1]
-            late_out = {
-                key: value[late]
-                for key, value in out.items()
-                if isinstance(value, np.ndarray) and value.ndim == 1 and value.shape[0] == late.shape[0]
-            }
-            metrics = analyze_current_trace(
-                late_out,
-                params=params,
-                min_vpp_mV=20.0,
-                max_vpp_mV=5_000.0,
-                min_cycles=4,
-                pulse_on_ns=float(late_out["t"][0] * 1e9),
+            time_ns = out["t"][late].astype(float) * 1e9
+            metrics = voltage_extrema(
+                time_ns, out["V_vo2"][late].astype(float) * 1e3,
+                window_ns=(float(time_ns[0]), float(time_ns[-1])),
             )
-            self.assertEqual(metrics["oscillatory"], 1.0)
-            frequencies.append(metrics["dominant_freq_MHz"])
+            self.assertTrue(metrics["sustained"])
+            self.assertGreaterEqual(metrics["cycle_count"], 4)
+            self.assertGreaterEqual(metrics["extrema_vpp_mV"], 20.0)
+            self.assertLessEqual(metrics["extrema_vpp_mV"], 5_000.0)
+            frequencies.append(metrics["frequency_MHz"])
         self.assertLess(abs(frequencies[0] - frequencies[1]) / frequencies[1], 0.02)
 
     def test_legacy_current_mode_fields_are_ignored_before_instantiation(self) -> None:

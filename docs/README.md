@@ -1,30 +1,28 @@
-# Documents: methods, results, and context
+# Documentation
 
-| What you want | Where to look |
+Start with the [project README](../README.md). This index links the maintained
+instructions and scientific records without duplicating setup instructions.
+
+| Need | Guide |
 |---|---|
-| Plain-language overview of everything built | [Project guide](../README.md) |
-| Current scientific conclusions and open questions | [RESEARCH_HANDOFF.md](RESEARCH_HANDOFF.md) |
-| Detailed dated research record | [RESEARCH_HISTORY.md](RESEARCH_HISTORY.md) |
-| Approved public data versus private reference PDFs | [DATA_POLICY.md](DATA_POLICY.md) |
-| This consolidation, backup and remote status | [CONSOLIDATION_20261020.md](CONSOLIDATION_20261020.md) |
-| New-sample inputs and outputs | [SAMPLE_STUDY.md](SAMPLE_STUDY.md) |
-| Comparable slider heatmaps and historical viewer updates | [MAP_DISPLAY.md](MAP_DISPLAY.md) |
-| Recovered alternating-amplitude oscillations and numerical limits | [ALTERNATING_AMPLITUDES_20261025.md](ALTERNATING_AMPLITUDES_20261025.md) |
-| Model methodology source | [methodology/README.md](methodology/README.md) and `methodology/main.tex` |
-| Working project report and supplement | [final_project/README.md](final_project/README.md) |
-| Current presentation and portable viewer | [presentation/README.md](presentation/README.md) |
-| Reproduction recipes and evidence index | [reproduction/README.md](reproduction/README.md) |
-| Repository layout and former locations | [REPOSITORY_LAYOUT.md](REPOSITORY_LAYOUT.md) |
-| Fitting-trial presentation | [final_project/presentation/README.md](final_project/presentation/README.md) |
-| Earlier model/current-source derivation | `manuscript/theory_behind_simulations.tex` |
-| Reviewed chronology | [ARCHIVE_INDEX.md](ARCHIVE_INDEX.md) |
-| Code responsibilities | [CODEBASE_MAP.md](CODEBASE_MAP.md), [ARCHITECTURE.md](ARCHITECTURE.md) |
-| Run format and recipe specification | [RUN_BUNDLES.md](RUN_BUNDLES.md), [EXPERIMENT_FORMAT.md](EXPERIMENT_FORMAT.md) |
-| Full historical command guide | [WORKFLOW_REFERENCE.md](WORKFLOW_REFERENCE.md) |
-| Preparation for a public paper release | [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) |
+| Current conclusions and the next research question | [Research handoff](RESEARCH_HANDOFF.md) |
+| Run a new measured sample | [Sample studies](SAMPLE_STUDY.md) |
+| Understand the implementation | [Codebase map](CODEBASE_MAP.md) |
+| Edit recipes or inspect bundle contents | [Experiment format](EXPERIMENT_FORMAT.md), [run bundles](RUN_BUNDLES.md) |
+| Browse, remove or restore local trials | [Run management](RUN_MANAGEMENT.md) |
+| Understand parameter maps | [Boundary search](BOUNDARY_SEARCH.md), [map displays](MAP_DISPLAY.md) |
+| Read or edit the current slides | [Presentation](presentation/README.md) |
+| Read the methodology draft | [Methodology](methodology/README.md) |
+| Reproduce supporting evidence | [Reproduction guide](reproduction/README.md) |
+| Inspect recorded environment details | [Environment record](environment/README.md) |
+| Know what may be shared | [Data policy](DATA_POLICY.md), [release checklist](RELEASE_CHECKLIST.md) |
+| Find former locations or recover retired files | [Layout and recovery](REPOSITORY_LAYOUT.md) |
 
-Date-stamped analysis notes explain successive hypotheses, not simultaneous
-accepted calibrations. The handoff takes precedence over older fit claims.
-Presentation, reproduction and environment records now live under this folder.
-[Layout migration](REPOSITORY_LAYOUT.md) records the former paths. Scientific
-reports and frozen run contents retain their scientific meaning.
+[Research history](RESEARCH_HISTORY.md) preserves the dated reasoning, including
+failed approaches. [Reviewed chronology](ARCHIVE_INDEX.md) identifies the evidence
+and its limitations. Date-stamped method notes provide detailed provenance;
+the current handoff takes precedence over earlier fit claims.
+
+Older scripts, report assemblies, duplicate guides and unused slide assets are
+recoverable from Git history. The working tree contains the maintained guides,
+current presentation, measurements and complete reviewed result bundles.

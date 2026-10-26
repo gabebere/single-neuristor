@@ -1,5 +1,10 @@
 # Research archive index
 
+Historical paths below describe the files at each dated checkpoint. Retired code
+and document assemblies are now available through the
+[layout and recovery record](REPOSITORY_LAYOUT.md); current results and measured
+inputs remain in this checkout.
+
 This index distinguishes current quantitative evidence from historical simulation and
 presentation artifacts. That distinction matters because Git history preserves earlier
 experiments, while only the current solver and audit should be used for new numerical
@@ -114,7 +119,7 @@ holds the large GIF map and complementary source/numerical/PNG provenance.
 The [selected-results page](../runs/index.html) labels controls, static fits,
 conditional exploration and rejected fitting trials separately.
 
-See [the full consolidation record](CONSOLIDATION_20261020.md): 174 local/fresh-
+See [the full consolidation record](https://github.com/gabebere/single-neuristor/blob/12be9a9a729e03b164464fad0daab7c1b9d4f4c4/docs/CONSOLIDATION_20261020.md): 174 local/fresh-
 checkout tests, successful independent Linux Python 3.10/3.13 checks, actual
 control/sample-study runs and complete map reconstruction. A full private local
 snapshot preserves ignored exploratory history too. Third-party PDFs are excluded
@@ -123,7 +128,7 @@ This is a reproducibility/software checkpoint, **not a new accepted calibration*
 
 ## Desktop consolidation — 16 October 2026
 
-[Consolidated Desktop guide](../archive/desktop_consolidation_20261016/index.html)
+[Consolidated Desktop guide](https://github.com/gabebere/single-neuristor/blob/12be9a9a729e03b164464fad0daab7c1b9d4f4c4/archive/desktop_consolidation_20261016/index.html)
 maps 19 historical run-folder references back to existing project reports/viewers.
 All 926 Desktop content files were checked by SHA-256 and full-byte comparison:
 914 were already in the repository; 12 unique notes/index/recipe files were
@@ -158,7 +163,7 @@ consolidated guide now. Local filing does not constitute a GitHub backup.
   attachment. Old HTML/ZIPs are unchanged. A fresh [sample-study run](../runs/local/20261007_123034_sample-r-t-to-screened-map-and-embedded-gifs_9f299d/parameter_maps.html)
   also uses stable scales and remains standalone. No scientific parameters changed.
 
-- [Organized library and paper evidence](STRUCTURE_MIGRATION_20261007.md):
+- [Organized library and paper evidence](https://github.com/gabebere/single-neuristor/blob/12be9a9a729e03b164464fad0daab7c1b9d4f4c4/docs/STRUCTURE_MIGRATION_20261007.md):
   purpose-specific source packages, compatibility imports, plain-language project
   navigation, source inventory, and a five-item reproduction index. Physics and
   completed bundles are unchanged. Local sample-study verification `896056`
@@ -254,10 +259,10 @@ consolidated guide now. Local filing does not constitute a GitHub backup.
   plateau, conditional thermal inconsistency, a one-parameter conductance replay,
   and three targeted next tests. It introduces no new parameter calibration or
   reviewed simulation bundle.
-- [Experimental preprint](final_project/references/experimental_manuscript.pdf):
+- [Experimental preprint](https://arxiv.org/abs/2604.04594v1):
   the corrected local link now opens Gildor et al., arXiv:2604.04594v1. The
   previous target was Almeida et al. (2002); that distinct static-hysteresis
-  reference is retained as [Almeida](final_project/references/almeida_hysteresis_model.pdf).
+  reference is retained as [Almeida](https://doi.org/10.1117/1.1501095).
 
 - `docs/final_project/presentation/`: eight-slide LaTeX/Beamer research presentation
   dated 15 September 2026, with a reviewed PDF, editable source, lossless archived
@@ -436,5 +441,5 @@ neuristor validate
 The laboratory workflows read the checked-in numerical exports directly. The former
 screenshot digitizer, image-fit preset, screenshot sequence, and image-derived bundle
 were removed; the corresponding history remains recoverable through Git. Other
-pre-refactor reproduction sources remain in `archive/scripts/` and in the
+pre-refactor reproduction sources remain in Git history and in the
 `v0.1.0-working-baseline` tag.

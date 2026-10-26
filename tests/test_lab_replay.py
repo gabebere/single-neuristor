@@ -7,7 +7,7 @@ from typer.testing import CliRunner
 
 from neuristor.cli import app
 from neuristor.config import load_toml
-from neuristor.joint_inference import feature_loss, voltage_features, combined_feature_loss
+from neuristor.fitting.joint_inference import feature_loss, voltage_features, combined_feature_loss
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -42,7 +42,7 @@ def test_replay_cli_bundle_and_recipe(tmp_path):
     assert len(list((run/'GIFs').glob('*.gif'))) == 22
     assert len(list((run/'Figures').glob('*.png'))) == 22
     import pandas as pd
-    from neuristor.replay_plots import comparison_figure, write_current_gif
+    from neuristor.plotting.replay_plots import comparison_figure, write_current_gif
     from PIL import Image
     traces = pd.read_csv(run/'traces.csv')
     fig = comparison_figure(traces, all_currents=True)
@@ -57,7 +57,7 @@ def test_replay_cli_bundle_and_recipe(tmp_path):
 
 
 def test_playground_loads_and_groups_parameters():
-    ui = AppTest.from_file(str(ROOT/'src/neuristor/playground.py')).run(timeout=20)
+    ui = AppTest.from_file(str(ROOT/'src/neuristor/interfaces/playground.py')).run(timeout=20)
     assert not ui.exception
     assert any(n.label.startswith('Ambient temperature') for n in ui.number_input)
     assert any(b.label == 'Run all measured currents' for b in ui.button)
@@ -74,9 +74,9 @@ def test_playground_loads_and_groups_parameters():
 def test_major_branches_and_progressive_scope(tmp_path):
     import pandas as pd
     from PIL import Image, ImageChops
-    from neuristor.lab_replay import major_branches
+    from neuristor.analysis.lab_replay import major_branches
     from neuristor.workflows import _current_params_from_config
-    from neuristor.replay_plots import write_scope_gif, scope_gallery
+    from neuristor.plotting.replay_plots import write_scope_gif, scope_gallery
     p, *_ = _current_params_from_config(load_toml(ROOT/'experiments/current/specimen_lab_replay.toml'))
     branches = major_branches(p.resist_params)
     assert (branches.heating_ohm >= branches.cooling_ohm).all()

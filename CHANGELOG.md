@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased — 26 October repository cleanup
+
+- Consolidate jobs and outputs under `runs/`, with one collaborator README.
+- Remove unused archived scripts, plotting/search backends, old report assemblies
+  and unused slide assets; keep recovery points in Git history.
+- Replace 22 old-name Python import wrappers with canonical grouped imports.
+  Python callers should use e.g. `neuristor.analysis.extrema` and
+  `neuristor.plotting.map_animations`. CLI commands, `neuristor.workflows`,
+  authoritative physics paths and the dashboard entrypoint remain available.
+- Retain saved-fit numerical replay and its regression checks while removing
+  the unused sample-management interface code. Preserve measurements, parameters
+  and completed result bundles.
+
 ## 20 October 2026 — canonical research-library checkpoint
 
 - Consolidate the previously local software, recipes and reviewed evidence into

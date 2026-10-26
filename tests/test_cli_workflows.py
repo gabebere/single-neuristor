@@ -12,8 +12,8 @@ from typer.testing import CliRunner
 
 from neuristor.cli import app
 from neuristor.config import ConfigError, apply_overrides, load_toml
-from neuristor.experimental_waveforms import load_converted_sweep
-from neuristor.lab_estimates import (
+from neuristor.analysis.experimental_waveforms import load_converted_sweep
+from neuristor.analysis.lab_estimates import (
     estimate_environmental_conductance,
     estimate_thermal_capacitance,
     heating_branch_resistance_ohm,

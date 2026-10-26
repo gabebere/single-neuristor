@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from neuristor.lab_estimates import _thermal_temperature_from_power_K, reconstruct_hysteresis
+from neuristor.analysis.lab_estimates import _thermal_temperature_from_power_K, reconstruct_hysteresis
 from neuristor.model import YuanhangResistParams
 from neuristor.config import load_toml
 from neuristor.workflows import run_hysteresis_reconstruction

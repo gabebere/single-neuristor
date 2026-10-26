@@ -1,0 +1,2 @@
+# Search maintained source and documentation by default, not frozen run copies.
+/runs/

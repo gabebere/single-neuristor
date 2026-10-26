@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from neuristor.oscillation_audit import audit_voltage, compare_features
+from neuristor.analysis.oscillation_audit import audit_voltage, compare_features
 
 
 @pytest.mark.parametrize("frequency", [32.0, 50.0, 125.0, 160.0])

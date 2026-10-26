@@ -15,7 +15,7 @@ import pandas as pd
 from .config import ConfigError, apply_overrides, load_toml
 from .runs import RunRegistry, find_project_root
 from .validation import validate_repository
-from .visualization import animate_current_resistance_temperature, plot_resistance_temperature_trajectory
+from .plotting.visualization import animate_current_resistance_temperature, plot_resistance_temperature_trajectory
 from .workflows import (
     run_environmental_conductance,
     run_lab_analysis,
@@ -91,7 +91,7 @@ def study_plan(
     set_values: list[str] = typer.Option([], "--set", help="Override a dotted TOML path."),
 ) -> None:
     """Check units, input columns, bounds and workload without running a fit."""
-    from .sample_study import plan_sample_study
+    from .orchestration.sample_study import plan_sample_study
 
     try:
         plan = plan_sample_study(_configured(config, set_values, "current"))
@@ -450,7 +450,7 @@ def analyze_loss_scopes(
 def playground(port: int = typer.Option(8502, "--port", min=1, max=65535)) -> None:
     """Open the editable all-current Simulation Lab."""
     root = find_project_root()
-    entry = Path(__file__).with_name("playground.py")
+    entry = Path(__file__).parent / "interfaces/playground.py"
     args = [
         sys.executable,
         "-m",
@@ -644,7 +644,7 @@ def runs_index(
     output_directory: Optional[Path] = typer.Option(None, "--output-directory"),
 ) -> None:
     """Refresh a lightweight HTML/CSV catalog; never copy or delete evidence."""
-    from .artifact_catalog import build_artifact_catalog
+    from .orchestration.artifact_catalog import build_artifact_catalog
 
     typer.echo(json.dumps(build_artifact_catalog(output_directory=output_directory), indent=2))
 
@@ -679,7 +679,7 @@ def runs_manage(port: int = typer.Option(0, "--port", min=0, max=65535)) -> None
 @runs_app.command("delete")
 def runs_delete(run_id: str = typer.Argument(...), yes: bool = typer.Option(False, "--yes")) -> None:
     """Move a completed/failed local run to recoverable project trash."""
-    from .artifact_catalog import build_artifact_catalog
+    from .orchestration.artifact_catalog import build_artifact_catalog
 
     registry = RunRegistry()
     try:
@@ -700,7 +700,7 @@ def runs_delete(run_id: str = typer.Argument(...), yes: bool = typer.Option(Fals
 @runs_app.command("restore")
 def runs_restore(trash_id: str = typer.Argument(...)) -> None:
     """Restore a run from trash without overwriting any existing folder."""
-    from .artifact_catalog import build_artifact_catalog
+    from .orchestration.artifact_catalog import build_artifact_catalog
 
     try:
         result = RunRegistry().restore(trash_id)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import json
 import unittest
 from pathlib import Path
 
@@ -14,9 +15,8 @@ if str(SRC) not in sys.path:
 
 import neuristor.model as model
 from neuristor.model import HysteresisArray, YuanhangResistParams
-from neuristor.sample_library import (
+from neuristor.fitting.saved_fit_replay import (
     compute_rt_fit_metrics,
-    list_samples,
     load_experimental_rt_path,
     params_from_dict,
 )
@@ -102,8 +102,9 @@ class HysteresisReversalTests(unittest.TestCase):
 
     def test_saved_sample_fits_replay_to_stored_metrics(self) -> None:
         checked = 0
-        for sample in list_samples():
-            source_path = Path(str(sample.get("source_path", "")))
+        for path in sorted((ROOT / "data/parameters/samples").glob("*.json")):
+            sample = json.loads(path.read_text())
+            source_path = ROOT / str(sample.get("source_path", ""))
             if not source_path.is_file():
                 continue
             stored_rmse = float(sample["fit_metrics"]["rmse_log10"])

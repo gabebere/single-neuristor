@@ -2,7 +2,7 @@ from dataclasses import replace
 import numpy as np
 import pytest
 from neuristor.model import HysteresisArray,YuanhangResistParams
-from neuristor.steady_inference import settled_features,settled_loss
+from neuristor.fitting.steady_inference import settled_features,settled_loss
 
 
 def test_tanh_kernel_monotone_and_major_branches_unchanged():

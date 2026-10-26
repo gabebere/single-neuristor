@@ -5,8 +5,8 @@ recipe relevant to your change. Scientific continuation also needs
 [the research handoff](docs/RESEARCH_HANDOFF.md).
 
 Use the existing physics, pure analysis functions, public workflows, and TOML
-recipes. Put new implementation in the purpose-specific package, not an old-name
-compatibility bridge or a top-level one-off script. Comments should explain units,
+recipes. Put new implementation in the purpose-specific package and import it
+by its canonical path. Keep one-off scripts out of the root. Comments should explain units,
 assumptions, and non-obvious numerical choices.
 
 ```bash
@@ -31,7 +31,11 @@ Update the authored-PDF hash allowlist only after reviewing the changed document
 
 Tests cover numerical fidelity, zero-capacitance behavior, convergence, feature
 extraction, fitting, interfaces and bundle contracts. `test_package_structure.py`
-checks compatible imports, recursive frozen sources and navigation.
+checks canonical imports, recursive frozen sources and navigation.
 `test_run_management.py` uses synthetic temporary bundles for delete/restore;
 never test mutations against real laboratory evidence. See
 [the layout migration](docs/REPOSITORY_LAYOUT.md) before changing storage paths.
+
+Default ripgrep searches omit generated and frozen `runs/` copies. Search a
+particular evidence bundle explicitly with `rg --no-ignore PATTERN runs/published/RUN_ID`.
+Scientific snapshots remain immutable; change the maintained implementation in `src/`.

@@ -23,12 +23,12 @@ import pandas as pd
 
 from .config import ConfigError, apply_overrides, deep_set, load_toml, resolved_copy, source_directory, validate_config
 from .current_drive_sim import CurrentDriveParams, current_drive_operating_estimates, simulate_current_step
-from .experimental_waveforms import load_converted_sweep
-from .metrics import current_run_metrics, voltage_run_metrics
-from .lab_estimates import estimate_environmental_conductance, estimate_thermal_capacitance, reconstruct_hysteresis
-from .model_validation import capacitance_sensitivity, compare_model_to_lab
-from .oscillation_audit import AuditSettings, audit_voltage, evaluate_candidate, parameter_map
-from .parameter_inference import (
+from .analysis.experimental_waveforms import load_converted_sweep
+from .analysis.metrics import current_run_metrics, voltage_run_metrics
+from .analysis.lab_estimates import estimate_environmental_conductance, estimate_thermal_capacitance, reconstruct_hysteresis
+from .analysis.model_validation import capacitance_sensitivity, compare_model_to_lab
+from .analysis.oscillation_audit import AuditSettings, audit_voltage, evaluate_candidate, parameter_map
+from .fitting.parameter_inference import (
     PARAMETER_NAMES,
     FitParameter,
     ObjectiveWeights,
@@ -40,14 +40,14 @@ from .parameter_inference import (
     prepare_inference_dataset,
 )
 from .model import YuanhangCircuitParams, YuanhangResistParams, series_first, simulate_yuanhang
-from .resistance_custom_analysis import (
+from .fitting.resistance_custom_analysis import (
     fit_major_loop_resistance_params,
     fit_resistance_params,
     is_major_loop_temperature_trace,
     load_experimental_rt,
 )
 from .runs import RunBundle
-from .visualization import (
+from .plotting.visualization import (
     plot_current_run,
     plot_lab_detection_window_trace,
     plot_environmental_conductance_estimate,
@@ -326,8 +326,8 @@ def run_simulation(
             plot_current_run(result.frame, figure_path, title=str(config["name"]))
             output_settings = _table(config, "output")
             if bool(output_settings.get("scope_gif", False)):
-                from .lab_replay import major_branches
-                from .replay_plots import write_scope_gif
+                from .analysis.lab_replay import major_branches
+                from .plotting.replay_plots import write_scope_gif
 
                 params, amplitude_uA, *_ = _current_params_from_config(config)
                 scope_frame = pd.DataFrame({
@@ -524,7 +524,7 @@ def run_sweep(
 def run_map_animations(config, *, output_root=None, limit=None, reuse_media=None,
                        command="neuristor analyze map-animations", package=True):
     """Public entry point for offline maps with refined per-point animations."""
-    from .map_workflows import run_map_animations as run
+    from .orchestration.map_workflows import run_map_animations as run
     return run(config, output_root=output_root, limit=limit, reuse_media=reuse_media,
                command=command, package=package)
 
@@ -532,7 +532,7 @@ def run_map_animations(config, *, output_root=None, limit=None, reuse_media=None
 def run_physical_parameter_maps(config, *, output_root=None,
                                 command="neuristor analyze physical-maps", reuse_numerics=None):
     """Public entry point for screened and timestep-verified Cth/Se/C maps."""
-    from .map_workflows import run_physical_parameter_maps as run
+    from .orchestration.map_workflows import run_physical_parameter_maps as run
     return run(config, output_root=output_root, command=command, reuse_numerics=reuse_numerics)
 
 
@@ -550,7 +550,7 @@ def run_trend_validation(config, *, output_root=None, command="neuristor analyze
 
 def run_sample_study(config, *, output_root=None, command="neuristor study run"):
     """Fit a sample's major R(T) loop, then create a bounded map and GIF archive."""
-    from .sample_study import run_sample_study as run
+    from .orchestration.sample_study import run_sample_study as run
     return run(config, output_root=output_root, command=command)
 
 
@@ -1780,8 +1780,8 @@ def _oscillation_audit_report(metrics: Mapping[str, Any]) -> str:
 
 def run_lab_replay(config, *, output_root=None, command="neuristor analyze replay-lab") -> RunBundle:
     """Save an all-current comparison and mandatory synchronized three-panel GIFs."""
-    from .lab_replay import replay_sweep
-    from .replay_plots import comparison_figure, write_current_gif
+    from .analysis.lab_replay import replay_sweep
+    from .plotting.replay_plots import comparison_figure, write_current_gif
     import zipfile
 
     validate_config(config)
@@ -1821,8 +1821,8 @@ def run_lab_replay(config, *, output_root=None, command="neuristor analyze repla
             with zipfile.ZipFile(bundle.add_artifact("animations.zip", label="All current GIFs"), "w", compression=zipfile.ZIP_DEFLATED) as archive:
                 for path in bundle.path("animations").glob("*.gif"):
                     archive.write(path, path.name)
-        from .lab_replay import major_branches
-        from .replay_plots import write_scope_gif, scope_gallery
+        from .analysis.lab_replay import major_branches
+        from .plotting.replay_plots import write_scope_gif, scope_gallery
         branches = major_branches(rp)
         branches.to_csv(bundle.add_artifact("major_branches.csv", label="Heating and cooling major branches"), index=False)
         gallery = []
@@ -1884,7 +1884,7 @@ def run_lab_replay(config, *, output_root=None, command="neuristor analyze repla
 
 def run_joint_inference(config, *, output_root=None, command="neuristor analyze fit-joint") -> RunBundle:
     """Fit static R(T) and dynamic features jointly with a finite simulation budget."""
-    from .joint_inference import (NAMES, fit_joint, natural_vector, joint_model,
+    from .fitting.joint_inference import (NAMES, fit_joint, natural_vector, joint_model,
                                   static_rmse, rt_prediction, predict_features,
                                   voltage_features, feature_loss, combined_feature_loss)
     import matplotlib.pyplot as plt
@@ -2364,8 +2364,8 @@ def run_steady_search(config, *, output_root=None, command='neuristor analyze fi
     """Run a self-contained time-budgeted search with live durable checkpoints."""
     from time import monotonic
     from datetime import datetime, timezone
-    from .steady_inference import search_settled, evaluate_settled, settled_features, measured_current_targets
-    from .joint_inference import NAMES, natural_vector, static_rmse, encode
+    from .fitting.steady_inference import search_settled, evaluate_settled, settled_features, measured_current_targets
+    from .fitting.joint_inference import NAMES, natural_vector, static_rmse, encode
     import matplotlib.pyplot as plt
 
     validate_config(config)
@@ -2639,8 +2639,8 @@ def export_saved_scope(source, *, output_root=None, frames=96, original_labels_u
     import shutil
     import hashlib
     import zipfile
-    from .lab_replay import major_branches
-    from .replay_plots import write_scope_gif, scope_gallery
+    from .analysis.lab_replay import major_branches
+    from .plotting.replay_plots import write_scope_gif, scope_gallery
 
     source = Path(source).resolve()
     if frames < 2:
