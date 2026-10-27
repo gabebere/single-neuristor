@@ -8,7 +8,10 @@
   filament fits, conditional fraction scans and three-timestep verification.
 - Export original inputs, complete source, numerical checks, native branch
   histories, figures and an offline interactive comparison in a new local bundle.
-- Scientific outcome remains pending the declared trial; no calibration is adopted.
+- Complete 249 evaluations per arm on the presentation inputs. The added-parameter
+  search returns f=1 without an all-target fit; explicit fractional cases fail
+  temperature/cycle or convergence checks. Preserve reviewed evidence and limits;
+  no calibration is adopted.
 
 ## Unreleased — optional presentation reproduction
 

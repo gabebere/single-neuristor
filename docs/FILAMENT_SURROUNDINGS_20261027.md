@@ -1,6 +1,7 @@
 # Experimental hot filament and cold surroundings
 
-Status: implemented protocol; scientific trial pending. This is an optional
+Status: implemented and tested on the presentation measurements. The first
+bounded trial did not establish an improved quantitative fit. This is an optional
 forward-model extension, not a replacement specimen calibration.
 
 Gabriel confirmed that the measured R(T) loop and oscillation recordings use the
@@ -113,4 +114,69 @@ into a new bundle. No completed source bundle is edited.
 
 ## Trial results
 
-Pending the full declared recipe; implementation checks are not scientific fit results.
+Both arms completed **249 unique evaluations**, taking 557.16 s for the baseline
+and 551.34 s for the added-parameter arm. The returned filament candidate is
+**f=1**, exactly the existing combined-loss presentation vector. It is ineligible,
+so this is not a measurement of the filament fraction or evidence against the
+localization hypothesis. A finite search in five coordinates can also return a
+weaker diagnostic than a search in four: the full f=1 model family contains every
+baseline vector, irrespective of which seed a bounded search returns.
+
+At the finest **0.00625 ns** step:
+
+| Candidate | Passing cycle/frequency targets | Defined frequencies | Frequency MAPE on defined records | Diagnostic Vpp MAPE, all 11 | Mean voltage RMSE |
+|---|---:|---:|---:|---:|---:|
+| Frozen presentation frequency-only | 10/11 | 10/11 | 14.48% | 1965.70% | 83.67 mV |
+| Frozen presentation combined | 8/11 | 9/11 | 18.18% | 902.98% | 40.10 mV |
+| New baseline refit | 10/11 | 10/11 | 33.78% | 1592.15% | 56.03 mV |
+| Added-parameter search, returned f=1 | 8/11 | 9/11 | 18.18% | 902.98% | 40.10 mV |
+
+These different frequency denominators are not interchangeable rankings. None
+passes every target screen; all accepted all-target objective values remain null.
+Neither fitted candidate passes the feature and waveform convergence criteria
+on every target across both timestep halvings. No calibration is adopted.
+
+| Dynamic parameter | Baseline refit | Returned filament candidate |
+|---|---:|---:|
+| f | 1 | 1 |
+| C (pF) | 4.612496 | 6.253977 |
+| Cth (pJ/K) | 0.024892 | 0.030069 |
+| Se (µW/K) | 4.772955 | 4.096025 |
+| Cth/Se (ns) | 5.215323 | 7.340934 |
+| gamma | 0.721599 | 0.630809 |
+
+Holding either presentation vector's other parameters fixed, f=0.75 retains
+9/11 target cycle/frequency classifications at the finest step, but three
+targets exceed the configured temperature domain, reaching 378.25–378.46 K.
+Vpp errors rise to about 2266% and 1618%. At f=0.1, neither reference passes
+any target cycle/frequency check; hottest targets reach 483.34–485.43 K. Some
+smaller-f cases simply quench the oscillations, which is not amplitude agreement.
+These exclusions are calibration/operating screens, not physical impossibility
+proofs. The fixed cold background and inherited thermal bounds are also conditional.
+
+The original fits/replays are preserved in local bundle
+`20261027_175518_experimental-filament-and-cold-surroundings-pres_20c97c`
+(numerical code `93ffaa7`). Additional f<1 cases use
+`20261027_183751_experimental-filament-and-cold-surroundings-pres_1d1196`
+(verification code `2dc3e8d`) with the completed searches copied only after
+checking identical numerical modules, measured inputs and search configuration.
+
+The [reviewed evidence and offline comparison](../runs/published/20261027_184359_reviewed-filament-and-cold-surroundings-presenta_a6fe81/START_HERE.html)
+preserve exact numerical tables, acquisition-grid traces, inputs, parameters,
+figures, source and provenance. The compact review omits the large native arrays
+and full optimizer JSONL histories; they remain in the local numerical bundles
+and can be regenerated with the recipe. Its named `parameter_comparison.csv`
+also defines the order of the eleven coordinates in `candidates.json`.
+
+Verification: **216 tests pass**, repository validation passes, the baseline
+matches six pre-change scalar/batched finite-C/C=0 reference traces bit for bit,
+and an independent analytic RC control verifies convergent local heat allocation.
+All 56 native SI histories pass branch-current and branch-power conservation
+checks. The original presentation frequency/Vpp numbers are reproduced at f=1.
+Frequency estimates on non-target controls are raw feature diagnostics, not
+independent claims that those noisy records are sustained oscillators.
+
+A useful follow-up would constrain geometry, contact/readout contributions and
+heated-volume thermal parameters, and then test coupled thermal-volume seeds.
+This first search does not establish an identifiable f, an exhaustive absence
+of a matching parameter set, or that the professor's geometric explanation is wrong.

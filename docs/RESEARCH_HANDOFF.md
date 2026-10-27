@@ -1,6 +1,6 @@
 # Research handoff
 
-Last scientific review: **25 October 2026**. Layout updated **26 October 2026**. Read this, the root README, and AGENTS.md before
+Last scientific review: **27 October 2026**. Layout updated **26 October 2026**. Read this, the root README, and AGENTS.md before
 continuing. The [detailed research history](RESEARCH_HISTORY.md) preserves previous
 results, commands, parameter tables, and caveats without making them a new task list.
 
@@ -73,9 +73,12 @@ No new calibration was adopted during repository consolidation.
 
 On 27 October Gabriel confirmed that the fitted R(T) and oscillation data use
 the same electrode pair, with uniform stage heating for R(T). An optional
-[filament/cold-surroundings experiment](FILAMENT_SURROUNDINGS_20261027.md) is
-implemented for a controlled comparison. Its scientific trial is pending;
-implementation tests are not evidence of improved agreement or a new calibration.
+[filament/cold-surroundings experiment](FILAMENT_SURROUNDINGS_20261027.md) completed
+249 evaluations per arm. The added-parameter search returned f=1, the old combined
+candidate; no tested candidate passes every target or all convergence checks.
+Explicit f=0.75/0.1 cases worsen errors, exceed the calibrated temperature domain
+or quench oscillations. This bounded trial does not identify f or reject the
+localization hypothesis. No new calibration is adopted.
 
 An archived alternating-amplitude example was recovered in the 7 September
 relaxed simulation at source label 400 mV (~303 µA): primary-cycle Vpp alternates

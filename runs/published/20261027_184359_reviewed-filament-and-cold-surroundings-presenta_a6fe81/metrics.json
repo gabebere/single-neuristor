@@ -1,0 +1,78 @@
+{
+  "calibration_adopted": false,
+  "control_records": 11,
+  "elapsed_s": 192.55692287499915,
+  "finest_target_results": {
+    "baseline_fitted": {
+      "amplitude_MAPE_all": 15.921505221163983,
+      "defined_frequencies": 10,
+      "dt_ns": 0.00625,
+      "dynamic_loss": 449.6068192218938,
+      "eligible": false,
+      "filament_fraction": 1.0,
+      "frequency_MAPE_defined": 0.33783369697956817,
+      "invalid_count": 1,
+      "maximum_temperature_K": 365.0939636230469,
+      "mean_voltage_RMSE_mV": 56.02790619434691,
+      "objective_loss": null,
+      "proximity_admissible": true,
+      "records": 11,
+      "score": 1001449.6068192219,
+      "screened_targets": 10,
+      "temperature_valid": true
+    },
+    "filament_fitted": {
+      "amplitude_MAPE_all": 9.029837271636108,
+      "defined_frequencies": 9,
+      "dt_ns": 0.00625,
+      "dynamic_loss": 162.01259893946337,
+      "eligible": false,
+      "filament_fraction": 1.0,
+      "frequency_MAPE_defined": 0.18184545127073865,
+      "invalid_count": 3,
+      "maximum_temperature_K": 369.4241638183594,
+      "mean_voltage_RMSE_mV": 40.09982357474286,
+      "objective_loss": null,
+      "proximity_admissible": true,
+      "records": 11,
+      "score": 1003162.0125989395,
+      "screened_targets": 8,
+      "temperature_valid": true
+    }
+  },
+  "fit_counts": {
+    "baseline": 249,
+    "filament": 249
+  },
+  "fitted_filament_fraction": 1.0,
+  "original_measurements": 22,
+  "reference_contacts": "same electrodes; uniform stage heating (user confirmed)",
+  "search_source_run_id": "20261027_175518_experimental-filament-and-cold-surroundings-pres_20c97c",
+  "searches_reused": true,
+  "static_fit_unchanged": true,
+  "target_feature_convergence": {
+    "baseline_fitted": false,
+    "filament_fitted": false,
+    "presentation_combined": false,
+    "presentation_combined_f_0.1": false,
+    "presentation_combined_f_0.75": false,
+    "presentation_combined_fraction_scan": false,
+    "presentation_frequency": false,
+    "presentation_frequency_f_0.1": false,
+    "presentation_frequency_f_0.75": false,
+    "presentation_frequency_fraction_scan": false
+  },
+  "target_records": 11,
+  "target_waveform_convergence": {
+    "baseline_fitted": false,
+    "filament_fitted": false,
+    "presentation_combined": false,
+    "presentation_combined_f_0.1": false,
+    "presentation_combined_f_0.75": false,
+    "presentation_combined_fraction_scan": false,
+    "presentation_frequency": false,
+    "presentation_frequency_f_0.1": false,
+    "presentation_frequency_f_0.75": false,
+    "presentation_frequency_fraction_scan": false
+  }
+}

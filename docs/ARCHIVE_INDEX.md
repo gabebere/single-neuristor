@@ -10,6 +10,18 @@ presentation artifacts. That distinction matters because Git history preserves e
 experiments, while only the current solver and audit should be used for new numerical
 claims.
 
+## Experimental filament and cold surroundings — 27 October 2026
+
+- `20261027_184359_reviewed-filament-and-cold-surroundings-presenta_a6fe81`:
+  preserves the normalized hot-filament/cold-background diagnostic, fixed static
+  R(T), matched 249-evaluation searches, conditional fraction scans and all-current
+  checks at three timesteps. The added-parameter arm returns f=1, reproducing the
+  old combined candidate; no all-target accepted or fully converged fit is found.
+  Explicit f<1 cases fail cycle/temperature checks. Numerical inputs, source,
+  parameter table, figures and offline HTML are preserved with hashes. Full
+  native arrays remain local and are regenerable. No calibration or geometry
+  measurement is adopted. [Protocol, numbers and interpretation](FILAMENT_SURROUNDINGS_20261027.md).
+
 ## Recovered alternating-amplitude simulation — 25 October 2026
 
 - `20261025_091004_fixed-alternating-amplitude-classic-gifs_4b9e8c`:

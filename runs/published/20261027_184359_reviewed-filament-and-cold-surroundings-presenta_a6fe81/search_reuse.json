@@ -1,0 +1,17 @@
+{
+  "numerical_provenance": {
+    "branch": "codex/filament-surroundings-experiment",
+    "commit": "93ffaa7c2806fe35d436994cccd831d6511166c9",
+    "dirty": false
+  },
+  "sha256": {
+    "checkpoint_baseline.json": "106c10d04f6b4e08ec469d53f56150818a08f166e9258988a95931eb85ff1622",
+    "checkpoint_filament.json": "eefa35d4629dcd2df610ec393e953bf30fe500fbd172cb9203bae05b28c12170",
+    "search_baseline.jsonl": "2fa2ae6fc67299ecad8f3a148cd951e59f38450ce9e1f9c894dd8c800a8d7b58",
+    "search_filament.jsonl": "479b6e316625c279013fc5aa2c8479d076c27cf9e5d264ac0a824dd878695641",
+    "search_result_baseline.json": "7eff0aa8b407b46e659d9fa5dc52dd06fd190fe8619fef9eb409df32c281ee37",
+    "search_result_filament.json": "643a4f98b3c96bf3ddef404551104deb20895ba18f869e128df7f80e1a114da8"
+  },
+  "source_manifest_sha256": "104028df63e431200152fbec9b4984937e9dc57a577b34c8a23e48cb2987556e",
+  "source_run_id": "20261027_175518_experimental-filament-and-cold-surroundings-pres_20c97c"
+}

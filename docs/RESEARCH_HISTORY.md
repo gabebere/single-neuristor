@@ -1197,3 +1197,40 @@ a qualified electrothermal/hysteresis-memory explanation. The longer-run
 timestep limitation remains explicit. All original 21 slide texts are preserved.
 The loopback gallery button, 44 GIF frame counts and paths, exact recipe and
 compiled final slide are checked. 201 tests and repository validation pass.
+
+## 27 October 2026 — optional filament and cold surroundings
+
+Gabriel confirmed that R(T) used uniform stage heating across the same electrodes
+as the oscillation records. A normalized parallel model uses
+`G=f/R_fit(Tf,Hf)+(1-f)/R_fit(T0,H0)`, with only the hot branch's Joule power
+warming the filament; surrounding power goes to an ideal ambient reservoir.
+The f=1 solver limit preserves the original arithmetic and static curve.
+
+The fixed-static, unit-weight frequency/Vpp protocol completed 249 evaluations
+per arm with the same bounds, seeds and budgets. The baseline refit has finest-step
+frequency MAPE 33.78% on 10 defined targets and diagnostic Vpp MAPE 1592.15% on all
+11, with 10/11 passing cycle/frequency checks. The extra-parameter arm returns the
+old combined vector at f=1: 18.18% frequency MAPE on 9 defined targets, Vpp MAPE
+902.98%, and 8/11 passing. Neither is an accepted all-target fit; different
+frequency denominators preclude treating these as an unqualified improvement.
+The nested f=1 family contains the baseline too; the finite five-coordinate search
+return is not a unique optimum or a measurement of the geometric fraction.
+
+Explicit f=0.75 cases at three timesteps reach 378.25–378.46 K and leave three
+of 11 target paths outside the calibration domain. Explicit f=0.1 cases pass
+none of the target cycle/frequency checks and reach 483.34–485.43 K. Smaller
+fractions can suppress oscillations rather than reproduce their amplitudes.
+No candidate passes all target feature/waveform checks across both halvings.
+Current/power conservation is audited on 56 native histories; software checks
+pass 216 tests. The cold-reservoir approximation, thermal bounds and unresolved
+channel-to-device mapping remain limitations. No specimen calibration is adopted.
+
+[Full method, fitted values, evidence and next questions](FILAMENT_SURROUNDINGS_20261027.md).
+Reviewed bundle: `20261027_184359_reviewed-filament-and-cold-surroundings-presenta_a6fe81`.
+Original numerical source: `20261027_175518_experimental-filament-and-cold-surroundings-pres_20c97c`
+(code 93ffaa7). Additional fractional verification:
+`20261027_183751_experimental-filament-and-cold-surroundings-pres_1d1196`
+(code 2dc3e8d), reusing completed searches only after numerical-source/input checks.
+The compact tracked review omits full native arrays and optimizer JSONL histories;
+these stay local and the recipe regenerates them. Existing presentation routes
+and completed prior evidence remain unchanged.
