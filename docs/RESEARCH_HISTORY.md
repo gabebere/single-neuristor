@@ -1234,3 +1234,23 @@ Original numerical source: `20261027_175518_experimental-filament-and-cold-surro
 The compact tracked review omits full native arrays and optimizer JSONL histories;
 these stay local and the recipe regenerates them. Existing presentation routes
 and completed prior evidence remain unchanged.
+
+## 27 October 2026 — overnight fixed-f search launched (outcomes pending)
+
+At Gabriel's request, a broader eight-hour profile started at 21:35 Israel time
+on 27 October, with the original deadline 05:35 on 28 October. The
+[prespecified protocol](OVERNIGHT_FILAMENT_PROFILE_20261027.md) separates two
+thermal-bound families over nine fractions, refits four dynamic coordinates,
+uses independent/neighbor/reverse starts and initial optimizer-excluded currents,
+and follows with all-current timestep checks, paired mean-aware refinements and
+2 µs constant-current controls. This is an execution record, not a fit result.
+
+Source commit `8ae0081ba73b90474545ca8032843bba057a1c06` is pushed to
+`codex/overnight-filament-profile`. Software checks passed 223 tests and
+validation of 50 recipes, 165 archived records and five evidence entries.
+The authoritative physics modules are unchanged. The detached job executes
+its frozen source and inputs in local bundle
+`20261027_193458_overnight-fixed-f-filament-profile-and-cross-cur_5e8844`.
+Post-launch numerical evaluations were verified; a quiet monitor will inspect
+completion/failure. Local generated results are not yet backed up to GitHub.
+No scientific conclusion or calibration changes at launch.

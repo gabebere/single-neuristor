@@ -4,6 +4,16 @@
 bounded follow-up to the [249-evaluation trial](FILAMENT_SURROUNDINGS_20261027.md),
 not an adopted specimen calibration. Gabriel authorized an overnight search.
 
+The full job **started at 21:35 Israel time on 27 October**, with an eight-hour
+deadline at **05:35 on 28 October**. Local entry point:
+[`START_HERE.html`](../runs/local/20261027_193458_overnight-fixed-f-filament-profile-and-cross-cur_5e8844/START_HERE.html).
+Frozen source commit: `8ae0081ba73b90474545ca8032843bba057a1c06`, pushed on
+`codex/overnight-filament-profile`. The original supervisor PID is 33018; use the
+bundle's process/status files to identify any later restart. Numerical progress
+was verified after launch. A quiet 30-minute monitor is attached to this chat.
+The local bundle is ignored by Git; only the protocol/software are currently
+backed up on the new GitHub branch. Completed results will require separate review.
+
 ```bash
 neuristor analyze filament-profile --plan
 neuristor analyze filament-profile
