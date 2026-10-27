@@ -48,6 +48,10 @@ def validate_repository(project_root: str | Path | None = None) -> ValidationRep
         try:
             config = load_toml(path)
             report.errors.extend(validate_recipe_inputs(config, path))
+            if 'profile_search' in config:
+                from .orchestration.filament_profile import plan_filament_profile
+
+                plan_filament_profile(config)
             if config.get("kind") == "reproduction":
                 from .orchestration.presentation_reproduction import plan_presentation_reproduction
 

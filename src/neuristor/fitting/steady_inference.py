@@ -60,10 +60,20 @@ def settled_features(time_ns, voltage_mV, window_ns=(150., 250.), *, method="spe
 
 
 def settled_loss(measured, predicted, settings):
-    """Equal weight per trace, relative frequency/amplitude loss with no DC loss."""
+    """Relative feature loss, with a separately declared optional extrema mean-voltage term."""
     if measured.get('feature_method') == 'extrema':
         from neuristor.analysis.extrema import extrema_loss
-        return extrema_loss(measured, predicted, settings)
+        result = extrema_loss(measured, predicted, settings)
+        weight = float(settings.get('mean_voltage_weight', 0.0))
+        scale = float(settings.get('mean_voltage_scale_mV', 20.0))
+        if not np.isfinite([weight, scale]).all() or weight < 0 or scale <= 0:
+            raise ValueError('Mean-voltage weight must be nonnegative and scale positive')
+        if weight:
+            mean_error = float((predicted['mean_mV']-measured['mean_mV'])/scale)
+            result['mean_voltage_scaled_error'] = mean_error
+            if result['loss'] is not None:
+                result['loss'] += weight*mean_error**2
+        return result
     if measured['frequency_MHz'] is None or measured['robust_vpp_mV'] <= 0:
         raise ValueError('Optimization targets must contain measured oscillations')
     frequency_valid = (predicted['frequency_MHz'] is not None
@@ -186,7 +196,7 @@ def measured_current_targets(dataset, current_range_uA):
 
 
 def search_settled(dataset, rt, base, settings, seed_vectors, bootstrap,
-                   checkpoint, stop_requested=lambda: False):
+                   checkpoint, stop_requested=lambda: False, initial_records=None):
     """Time-boxed DE/Powell restarts with feasible correlated static seeds.
 
     First restarts hold all six major-loop parameters at the static fit; later
@@ -232,6 +242,31 @@ def search_settled(dataset, rt, base, settings, seed_vectors, bootstrap,
     best=None
     diagnostic_best=None
     simple = settings.get('loss_function') == 'relative_squared'
+    # A caller must verify the numerical source, inputs and search settings
+    # before supplying durable records. Optimizer state is restarted, but exact
+    # cached evaluations and the total unique-evaluation cap are preserved.
+    for record in initial_records or []:
+        if len(record.get('values', [])) != len(NAMES) or not np.isfinite(record.get('score', np.nan)):
+            raise ValueError('Malformed cached search evaluation')
+        if not fit_fraction and record.get('filament_fraction', base.filament_fraction) != base.filament_fraction:
+            raise ValueError('Cached evaluation uses a different filament fraction')
+        unit = encode(record['values'], bounds)
+        key = tuple(record['_cache_key']) if '_cache_key' in record else tuple(np.round(unit,12)) + ((round(record['filament_fraction'],12),) if fit_fraction else ())
+        if len(key) != len(NAMES)+int(fit_fraction) or not np.isfinite(key).all():
+            raise ValueError('Malformed cached parameter key')
+        if key in cache:
+            raise ValueError('Duplicate cached search evaluation')
+        cache[key] = record
+        if record.get('simulated') and not record['outside_domain'] and record['proximity_admissible']:
+            if diagnostic_best is None or record['score'] < diagnostic_best['score']:
+                diagnostic_best = record
+            if not simple or record['oscillations_eligible']:
+                elites.append(record)
+                if best is None or record['score'] < best['score']:
+                    best = record
+    history_count = len(cache)
+    elites.sort(key=lambda record: record['score'])
+    del elites[40:]
     for restart in range(int(settings['restarts'])):
         if monotonic()>=end or stop_requested() or history_count >= evaluation_limit: break
         fixed=restart<int(settings['fixed_resistance_restarts'])
@@ -257,6 +292,8 @@ def search_settled(dataset, rt, base, settings, seed_vectors, bootstrap,
                 v=decode(u,bounds); re=static_rmse(v,rt)
                 record=dict(restart=restart,static_fixed=fixed,values=v.tolist(),static_rmse_log10=float(re),
                             simulated=False,outside_domain=False,proximity_admissible=True)
+                if initial_records is not None:
+                    record['_cache_key'] = list(key)
                 if fit_fraction:
                     record['filament_fraction'] = fraction_value(short)
                 if re>maximum:

@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased — bounded overnight filament profile
+
+- Add `neuristor analyze filament-profile` with a frozen-source, checkpointed
+  eight-hour recipe, two thermal-bound families, fixed-f forward/reverse
+  continuations, adaptive midpoints and paired mean-aware refinements.
+- Preserve optimizer-excluded current checks, all-current physical diagnostics,
+  two timestep halvings, long controls and explicit failed acceptance gates.
+- Add live progress, named parameter tables and final evidence plots; guard
+  resume with source/input/environment hashes, exclusive locking and cached
+  evaluation caps. Physics and default fitting objectives remain unchanged.
+- Verify 223 tests and all 50 recipes. Overnight scientific outcomes are pending;
+  no calibration is adopted.
+
 ## Unreleased — experimental filament and cold surroundings
 
 - Add an optional normalized parallel-conductance model with separately

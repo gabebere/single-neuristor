@@ -1,5 +1,12 @@
 # Codebase map
 
+The bounded overnight filament workflow routes through `analyze filament-profile`
+→ `workflows.run_filament_profile` → `orchestration/filament_profile.py`.
+`fitting/filament_profile.py` defines thermal-bound/start families and acceptance
+gates; `plotting/filament_profile.py` renders progress and evidence. All fits and
+checks call the existing fitter and authoritative current-source solver. The
+[protocol](OVERNIGHT_FILAMENT_PROFILE_20261027.md) defines its scientific scope.
+
 The [root README](../README.md) is the collaborator guide. This page consolidates
 all former source-folder READMEs into one implementation reference.
 [Repository layout and former paths](REPOSITORY_LAYOUT.md).

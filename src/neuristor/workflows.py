@@ -2711,6 +2711,13 @@ def run_presentation_reproduction(config, *, output_root=None, resume=None,
     return run(config, output_root=output_root, resume=resume, command=command)
 
 
+def run_filament_profile(config=None, *, resume=None, output_root=None, prepare=False, command='neuristor analyze filament-profile'):
+    """Freeze, run or resume the bounded fixed-fraction overnight experiment."""
+    from .orchestration.filament_profile import run_filament_profile as run
+
+    return run(config, resume=resume, output_root=output_root, prepare=prepare, command=command)
+
+
 def run_filament_study(config, *, output_root=None, reuse_searches=None, command='neuristor analyze filament-study'):
     """Test the optional filament/cold-background model against presentation data."""
     from .orchestration.filament_study import run_filament_study as run

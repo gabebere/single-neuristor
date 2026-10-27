@@ -418,6 +418,36 @@ def analyze_filament_study(
     typer.echo(f"Results: {bundle.root / 'START_HERE.html'}")
 
 
+@analyze_app.command("filament-profile")
+def analyze_filament_profile(
+    config: Optional[Path] = typer.Option(None, "--config", "-c", exists=True, dir_okay=False),
+    set_values: list[str] = typer.Option([], "--set"),
+    output_root: Optional[Path] = typer.Option(None, "--output-root"),
+    resume: Optional[Path] = typer.Option(None, "--resume", exists=True, file_okay=False),
+    plan: bool = typer.Option(False, "--plan", help="Show the bounded schedule and current split without fitting."),
+    prepare: bool = typer.Option(False, "--prepare", help="Freeze executable source and inputs without starting fits."),
+) -> None:
+    """Run a checkpointed overnight filament-fraction profile and fine-step controls."""
+    from .orchestration.filament_profile import plan_filament_profile
+    from .workflows import run_filament_profile
+
+    try:
+        if resume is not None and (config is not None or set_values or output_root is not None or prepare or plan):
+            raise ConfigError("Resume uses the frozen recipe; do not combine it with configuration options")
+        cfg = None if resume else _configured(
+            config or find_project_root()/"experiments/current/specimen_filament_overnight_20261027.toml",
+            set_values, "current")
+        if plan:
+            typer.echo(json.dumps(plan_filament_profile(cfg), indent=2))
+            return
+        bundle = run_filament_profile(cfg, resume=resume, output_root=output_root, prepare=prepare, command=_command())
+        typer.echo(f"{'Prepared' if prepare else 'Completed'} profile: {bundle.root}")
+        typer.echo(f"Progress and results: {bundle.root / 'START_HERE.html'}")
+    except (ConfigError, OSError, ValueError, KeyError, InterruptedError) as exc:
+        typer.echo(f"Filament profile stopped: {exc}", err=True)
+        raise typer.Exit(1) from exc
+
+
 @analyze_app.command("review-optimizer")
 def analyze_review_optimizer(
     audit_run: Path = typer.Option(...,"--audit-run",exists=True,file_okay=False),

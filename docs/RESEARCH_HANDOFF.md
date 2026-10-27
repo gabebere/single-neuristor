@@ -71,6 +71,14 @@ No new calibration was adopted during repository consolidation.
 
 ## Latest fitting method versus requested next work
 
+An [eight-hour fixed-f profile](OVERNIGHT_FILAMENT_PROFILE_20261027.md) is now
+implemented for the requested overnight follow-up: nine fractions, separate
+inherited/volume-scaled thermal bounds, forward/reverse starts, initial 8/3
+current split, all-22 replay, paired mean-aware refinements and smaller-timestep
+and 2 µs controls. **Execution/results pending**; this protocol is not new
+scientific evidence. Its three initially excluded currents were seen historically,
+and final refinements use all 11 targets. No calibration is adopted.
+
 On 27 October Gabriel confirmed that the fitted R(T) and oscillation data use
 the same electrode pair, with uniform stage heating for R(T). An optional
 [filament/cold-surroundings experiment](FILAMENT_SURROUNDINGS_20261027.md) completed

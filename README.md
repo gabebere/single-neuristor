@@ -117,6 +117,9 @@ The 110 MHz cutoff is an operating screen, not a universal physical limit.
 
 For the optional hot-filament/cold-surroundings experiment on the presentation
 measurements, see [the declared model and comparison protocol](docs/FILAMENT_SURROUNDINGS_20261027.md).
+The broader [overnight fraction-profile protocol](docs/OVERNIGHT_FILAMENT_PROFILE_20261027.md)
+is available with `neuristor analyze filament-profile --plan`, then
+`neuristor analyze filament-profile` (up to eight hours; numerical outcomes pending).
 
 ## One home for jobs and results
 
