@@ -45,13 +45,17 @@ retained because GitHub does not back it up.
 | Checkpoint | Contents | Backup status |
 |---|---|---|
 | `12be9a9a729e03b164464fad0daab7c1b9d4f4c4` | Original scripts, upstream source and historical report assemblies before the folder reorganization | Verified on GitHub `main` on 26 October |
-| `b2ee2ff` | Full versioned state before reorganizing folders | Local commit |
-| `080ce19` / `cleanup-before-pruning-20261026` | Exact versioned state immediately before removing unused files | Local commit and annotated tag |
-| `d5df40b` | Exact versioned state before removing Streamlit | Local commit |
+| `b2ee2ff` | Full versioned state before reorganizing folders | Verified on GitHub cleanup branch |
+| `080ce19` / `cleanup-before-pruning-20261026` | Exact versioned state immediately before removing unused files | Verified GitHub commit and annotated tag |
+| `d5df40b` | Exact versioned state before removing Streamlit | Verified on GitHub cleanup branch |
+| `b4d85fb` | Tested presentation reconstruction, with 205 passing tests | Verified on GitHub cleanup branch |
 | `v0.1.0-working-baseline` | Pre-refactor implementation | Tag verified on GitHub |
 
 [Browse the verified GitHub snapshot](https://github.com/gabebere/single-neuristor/tree/12be9a9a729e03b164464fad0daab7c1b9d4f4c4).
-The newer local checkpoints have not been pushed. No Git history was rewritten.
+The cleanup checkpoints and recovery tag were verified on GitHub on 27 October
+2026. The updated code is on
+[`codex/organize-research-library`](https://github.com/gabebere/single-neuristor/tree/codex/organize-research-library);
+it has not been merged into `main`. No Git history was rewritten.
 
 To inspect a removed file without restoring obsolete code into the working tree:
 
