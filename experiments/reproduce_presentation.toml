@@ -1,0 +1,53 @@
+# Optional, compute-intensive reconstruction of the presentation's numerical work.
+# Inputs below are measured data, declared model settings and optimizer seeds.
+# No runs/published/, GitHub Release, or saved output is read during execution.
+schema_version = 1
+name = "Presentation reproduction from measured inputs"
+kind = "reproduction"
+model = "current"
+
+[reproduction]
+profile = "full"
+workers = 2
+# A planning allowance, not a benchmark or a hard time limit.
+time_allowance = "Several hours; allow overnight on slower computers. High CPU and memory use."
+
+[reproduction.inputs]
+specimen_data = "../data/experimental/100425_chip1_gap3.tsv"
+mica_data = "../data/experimental/m2_8.9_1stL_1600nm_A_RT.tsv"
+waveforms = "../data/experimental/tia_current_sweep"
+search_seeds = "../data/parameters/search_seeds/controlled_loss_20261020.csv"
+alternating_parameters = "../data/parameters/alternating_amplitude_relaxed_20260907.json"
+device_photo = "../docs/presentation/vo2_device.png"
+
+[reproduction.recipes]
+frequency_search = "current/specimen_frequency_only_20261020.toml"
+amplitude_search = "current/specimen_frequency_amplitude_20261020.toml"
+map_grid = "current/physical_parameter_map_gifs.toml"
+scaling = "current/validate_parameter_trends_extended_20261020.toml"
+mica_broad = "studies/m2_1600nm_coarse_20261021.toml"
+mica_lower = "studies/m2_1600nm_focused_20261021.toml"
+mica_transition = "studies/m2_1600nm_transition_20261021.toml"
+mica_onset = "studies/m2_1600nm_onset_20261021.toml"
+mica_expanded = "current/m2_1600nm_expanded_20261021.toml"
+mica_dense = "current/m2_1600nm_dense_onset_20261021.toml"
+alternating = "current/alternating_amplitude_gifs_20261025.toml"
+
+[reproduction.static_fit]
+seed = 20260816
+bootstrap_samples = 1000
+
+[reproduction.mica_checks]
+pilot_C_pF = [0.03, 0.1, 0.3, 1.0]
+pilot_C_th_pJ_per_K = [0.1, 0.3, 1.0]
+pilot_S_e_mW_per_K = [0.03, 0.1, 0.3]
+pilot_dt_ns = 0.0015625
+pilot_duration_ns = 600.0
+startup_dt_ns = [0.00078125, 0.000390625]
+startup_duration_ns = 150.0
+# Prespecified coordinates of the original 12 startup checks (Cth, Se, C).
+# No saved temperature or other simulation output is supplied.
+startup_points = [[1.5,0.13,0.5],[1.2,0.13,0.4],[1.8,0.13,0.6],
+ [1.5,0.12,0.5],[1.2,0.12,0.4],[1.8,0.12,0.6],
+ [0.8,0.15,0.3],[1.8,0.11,0.6],[1.5,0.11,0.5],
+ [1.2,0.11,0.4],[0.8,0.14,0.3],[1.5,0.15,0.6]]

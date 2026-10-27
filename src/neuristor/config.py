@@ -21,7 +21,7 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.10 compatibility
 
 SCHEMA_VERSION = 1
 SUPPORTED_MODELS = frozenset({"current", "voltage"})
-SUPPORTED_KINDS = frozenset({"simulation", "sweep"})
+SUPPORTED_KINDS = frozenset({"simulation", "sweep", "reproduction"})
 
 
 class ConfigError(ValueError):
@@ -148,6 +148,17 @@ def validate_config(config: Mapping[str, Any]) -> None:
         raise ConfigError(f"Unsupported kind={kind!r}; choose from {sorted(SUPPORTED_KINDS)}")
     if model not in SUPPORTED_MODELS:
         raise ConfigError(f"Unsupported model={model!r}; choose from {sorted(SUPPORTED_MODELS)}")
+
+    if kind == "reproduction":
+        reproduction = _require_table(config, "reproduction")
+        if reproduction.get("profile", "full") not in {"full", "smoke"}:
+            raise ConfigError("Reproduction profile must be full or smoke")
+        if int(reproduction.get("workers", 2)) < 1:
+            raise ConfigError("Reproduction workers must be positive")
+        for key in ("inputs", "recipes", "static_fit", "mica_checks"):
+            if not isinstance(reproduction.get(key), Mapping) or not reproduction[key]:
+                raise ConfigError(f"Reproduction requires a non-empty reproduction.{key} table")
+        return
 
     if kind == "sweep":
         sweep = _require_table(config, "sweep")

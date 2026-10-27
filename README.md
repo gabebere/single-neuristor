@@ -28,9 +28,10 @@ its outputs were generated; it does not establish experimental agreement.
 
 ## View the presentation: Amir and other collaborators
 
-Copy the shared project folder with `docs/presentation/`, `src/`, and the supplied
-`runs/published/` bundles together. Older viewers need their adjacent GIFs. In a
-Terminal opened inside the project, run:
+The presentation’s interactive examples can use supplied reviewed bundles or
+results recreated locally with the optional step below. For a supplied copy,
+keep `docs/presentation/`, `src/`, and `runs/published/` together; older viewers
+need their adjacent GIFs. In a Terminal opened inside the project, run:
 
 ```bash
 python3 --version
@@ -56,6 +57,42 @@ python -m pip install -e .
 
 On Windows activate with `.venv\Scripts\Activate.ps1`. For future sessions,
 activate the environment again before running `neuristor`.
+
+## Optional final setup step: recreate the presentation results
+
+**Optional, but recommended to demonstrate reproducibility.** After installing
+the project, run:
+
+```bash
+neuristor reproduce-presentation
+neuristor present
+```
+
+The first command reruns the presentation’s resistance fitting, both dynamic
+parameter searches, parameter grids, scaling checks, Mica studies, and animated
+current/voltage/R(T) replays. It creates the numerical tables, figures, GIFs and
+interactive HTML locally, then connects the presentation buttons to those new
+results. You do not need our saved simulation bundles or large GIF downloads.
+The original laboratory measurements and declared model/optimizer settings are
+necessary inputs and are included in the repository; the program does not
+recreate physical measurements.
+
+**Compute-intensive:** plan for a few hours, potentially overnight on slower
+computers. Expect sustained CPU use, significant memory use and several GB of
+output. This is a planning allowance, not a measured guarantee. The command
+prints stage progress and saves completed stages. If interrupted, run
+`neuristor reproduce-presentation --resume "PATH_PRINTED_BY_THE_COMMAND"`.
+
+For a fast preview of the work without running it, use
+`neuristor reproduce-presentation --plan`. The versioned recipe is
+[reproduce_presentation.toml](experiments/reproduce_presentation.toml).
+
+Fresh results, editable slide sources and all dependencies stay together in a
+new ignored `runs/local/` bundle, with `START_HERE.html` as its entry point.
+The supplied PDF remains the historical presentation; the recreated HTML and
+slide tables show the new results. Optimizer time budgets and software/hardware
+can affect the selected candidates, so inspect the new report when comparing
+numbers. Original results are preserved. [Scope and reproduction details](docs/reproduction/README.md).
 
 ## Run a new sample
 
@@ -131,6 +168,7 @@ purpose-specific source groups; the authoritative physics remains in `model.py` 
 | Current-source simulation | `neuristor simulate current --config FILE.toml` |
 | Original voltage circuit | `neuristor simulate voltage --config FILE.toml` |
 | Static resistance fit | `neuristor fit resistance --data FILE.tsv --method major-loop` |
+| Recreate presentation results | `neuristor reproduce-presentation` |
 | Laboratory replay | `neuristor analyze replay-lab --config FILE.toml` |
 | Screened maps | `neuristor analyze physical-maps --config FILE.toml` |
 | Adaptive boundary search | `neuristor analyze boundary-maps --config FILE.toml` |

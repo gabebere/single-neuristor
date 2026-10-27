@@ -4,6 +4,9 @@
 reviewed export. For viewing and portable setup, follow the
 [project instructions](../../README.md#view-the-presentation-amir-and-other-collaborators).
 The `.command` launcher starts the same restricted local viewer service.
+To compute the supporting results locally instead of receiving saved bundles,
+run `neuristor reproduce-presentation` after installation. This optional,
+compute-intensive step is described in the root README.
 
 ## Sources
 
@@ -41,8 +44,9 @@ Detailed methods and limits:
 
 ## Viewer dependencies
 
-The PDF buttons use `http://127.0.0.1:8767/`. Keep the complete project with its
-supplied `runs/published/` bundles when copying it to another computer. The
+The PDF buttons use `http://127.0.0.1:8767/`. A completed full reproduction
+supplies all four routes through its checked local manifest. Otherwise, keep
+the complete project with its supplied `runs/published/` bundles when copying it. The
 launcher checks these dependencies before opening the PDF:
 
 - Loss gallery `20261021_054434_…_15921f`.

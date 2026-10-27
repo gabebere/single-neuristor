@@ -7,6 +7,7 @@ the repository, private papers and arbitrary filesystem paths are not.
 from __future__ import annotations
 
 import argparse
+import hashlib
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -21,7 +22,7 @@ from urllib.parse import unquote, urlsplit
 from urllib.request import urlopen
 
 PORT = 8767
-SERVICE = 'neuristor-presentation-viewers-v3'
+SERVICE = 'neuristor-presentation-viewers-v4'
 LOSS_RUN = '20261021_054434_loss-function-comparison-all-44-stacked-gifs_15921f'
 MAP_RUN = '20261007_123036_fixed-scale-viewer-portable-screened-parameter-m_4325d1'
 MEDIA_RUN = '20261007_074702_portable-screened-parameter-map-with-point-gifs_eaf6ab'
@@ -33,6 +34,50 @@ VIEWERS = {'/loss-gifs': f'/runs/published/{LOSS_RUN}/START_HERE.html',
 def presentation_project_root(project_root=None):
     """Resolve relative to this file, so a copied project needs no installation."""
     return Path(project_root).resolve() if project_root is not None else Path(__file__).resolve().parents[3]
+
+
+def rebuilt_presentation(project):
+    """Read only a completed full reproduction's contained, checked link manifest.
+
+    The optional pointer is administrative metadata, not another result copy.
+    Smoke runs, unfinished runs, path escapes and private symlinks cannot become
+    presentation dependencies. The standalone launcher keeps standard-library
+    compatibility and needs no simulation packages to follow these links.
+    """
+    pointer = project/'runs/local/presentation.json'
+    if not pointer.exists():
+        return None
+    value = json.loads(pointer.read_text())
+    if not isinstance(value, dict) or value.get('schema_version') != 1 or not isinstance(value.get('bundle'), str):
+        raise ValueError('Invalid presentation reproduction pointer')
+    relative = Path(value['bundle'])
+    if relative.is_absolute() or relative.parts[:2] != ('runs', 'local') or len(relative.parts) != 3:
+        raise ValueError('Invalid presentation reproduction location')
+    location = project/relative
+    if location.is_symlink():
+        raise ValueError('Presentation reproduction must not be a symlink')
+    location = location.resolve()
+    if not location.is_relative_to(project.resolve()):
+        raise ValueError('Presentation reproduction is outside this checkout')
+    run = json.loads((location/'run.json').read_text())
+    raw = (location/'presentation_manifest.json').read_bytes()
+    manifest = json.loads(raw)
+    if not isinstance(run, dict) or not isinstance(manifest, dict):
+        raise ValueError('Invalid presentation reproduction manifest')
+    if (run.get('kind') != 'presentation-reproduction' or run.get('status') != 'completed'
+            or manifest.get('schema_version') != 1 or manifest.get('profile') != 'full'
+            or hashlib.sha256(raw).hexdigest() != value.get('manifest_sha256')):
+        raise ValueError('Presentation reproduction is incomplete or its manifest changed')
+    expected = {'/loss-gifs', '/parameter-map', '/mica-map', '/alternating-gifs'}
+    if not isinstance(manifest.get('routes'), dict) or set(manifest['routes']) != expected:
+        raise ValueError('Presentation reproduction has incomplete viewer links')
+    for path in [manifest.get('entry'), *manifest['routes'].values()]:
+        if not isinstance(path, str):
+            raise ValueError('Invalid presentation viewer path')
+        target = (location/path).resolve()
+        if Path(path).is_absolute() or not target.is_relative_to(location) or not target.is_file():
+            raise ValueError('Presentation viewer path is missing or escapes its bundle')
+    return location, manifest
 
 
 def completed_mica_reviews(project):
@@ -122,11 +167,23 @@ def create_presentation_server(project_root=None, *, port=PORT):
                 self.send_header('Content-Length', str(len(body)))
                 self.end_headers()
                 return BytesIO(body)
+            try:
+                recreated = rebuilt_presentation(project)
+            except (OSError, ValueError, KeyError, TypeError):
+                self.send_error(503, 'Invalid or incomplete presentation reproduction manifest')
+                return None
             viewers = dict(VIEWERS)
             if mica:
                 viewers['/mica-map'] = f'/runs/published/{mica[-1].name}/parameter_maps.html'
             if alternating:
                 viewers['/alternating-gifs'] = f'/runs/published/{alternating[-1].name}/START_HERE.html'
+            recreated_roots = []
+            if recreated:
+                location, manifest = recreated
+                prefix = '/' + location.relative_to(project).as_posix() + '/'
+                viewers.update({key: prefix + value for key, value in manifest['routes'].items()})
+                viewers['/reproduction'] = prefix + manifest['entry']
+                recreated_roots.append(location)
             if route in viewers:
                 self.send_response(302)
                 self.send_header('Location', viewers[route])
@@ -134,7 +191,7 @@ def create_presentation_server(project_root=None, *, port=PORT):
                 self.end_headers()
                 return None
             target = Path(self.translate_path(self.path)).resolve()
-            if not any(target.is_relative_to(root) for root in [*roots, *mica, *alternating]):
+            if not any(target.is_relative_to(root) for root in [*roots, *mica, *alternating, *recreated_roots]):
                 self.send_error(403, 'Only presentation viewer bundles are served')
                 return None
             return super().send_head()
@@ -189,6 +246,12 @@ def check_presentation_files(project_root=None):
     """Fail clearly when only the PDF, rather than its linked viewers, was copied."""
     project = presentation_project_root(project_root)
     required = [project/'docs/presentation'/'main.pdf']
+    recreated = rebuilt_presentation(project)
+    if recreated:
+        location, manifest = recreated
+        if not required[0].is_file():
+            raise FileNotFoundError('Missing presentation PDF: ' + str(required[0]))
+        return required[0]
     required.extend(project/path.lstrip('/') for path in VIEWERS.values())
     required.append(project/'runs/published'/MEDIA_RUN/'GIFs')
     missing = [str(path.relative_to(project)) for path in required if not path.exists()]

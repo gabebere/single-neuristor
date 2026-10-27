@@ -13,6 +13,7 @@ instructions and scientific records without duplicating setup instructions.
 | Understand parameter maps | [Boundary search](BOUNDARY_SEARCH.md), [map displays](MAP_DISPLAY.md) |
 | Read or edit the current slides | [Presentation](presentation/README.md) |
 | Read the methodology draft | [Methodology](methodology/README.md) |
+| Recreate all presentation results locally | [Optional setup step](../README.md#optional-final-setup-step-recreate-the-presentation-results) |
 | Reproduce supporting evidence | [Reproduction guide](reproduction/README.md) |
 | Inspect recorded environment details | [Environment record](environment/README.md) |
 | Know what may be shared | [Data policy](DATA_POLICY.md), [release checklist](RELEASE_CHECKLIST.md) |

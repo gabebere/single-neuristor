@@ -149,3 +149,16 @@ and relative artifact paths. See [AGENTS.md](../AGENTS.md) and
 
 `neuristor runs index` generates `runs/catalog/source_inventory.csv` with every
 owned Python file's role, size and purpose without executing historical scripts.
+
+Presentation reconstruction is coordinated by
+[orchestration/presentation_reproduction.py](../src/neuristor/orchestration/presentation_reproduction.py)
+through `workflows.run_presentation_reproduction` and one CLI command.
+[The versioned recipe](../experiments/reproduce_presentation.toml) declares the
+input closure and subordinate experiments. Numerical cycle measurements live in
+[analysis/alternating_amplitudes.py](../src/neuristor/analysis/alternating_amplitudes.py),
+fixed-vector integration/render coordination in
+[orchestration/alternating_amplitudes.py](../src/neuristor/orchestration/alternating_amplitudes.py),
+and figure/table rendering in
+[plotting/presentation.py](../src/neuristor/plotting/presentation.py).
+The portable HTTP server validates completed manifests and contains every served
+path inside the rebuilt bundle; it never needs the simulation dependencies.

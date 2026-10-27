@@ -2699,3 +2699,11 @@ Open START_HERE.html, or open individual files in GIFs. Figures holds final PNGs
         bundle.fail(exc)
         raise
     return bundle
+
+
+def run_presentation_reproduction(config, *, output_root=None, resume=None,
+                                  command='neuristor reproduce-presentation'):
+    """Recompute and reconnect presentation dependencies from measured source inputs."""
+    from .orchestration.presentation_reproduction import run_presentation_reproduction as run
+
+    return run(config, output_root=output_root, resume=resume, command=command)

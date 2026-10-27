@@ -40,6 +40,11 @@ Local publication (`runs publish`) is archival copying, not GitHub upload or
 scientific acceptance. Do not regenerate the entire research history to orient
 yourself.
 
+Optional presentation reconstruction is available with `neuristor reproduce-presentation`.
+It rebuilds the declared presentation dependencies from original measurements and
+settings, then connects local viewers to the new bundle. Allow several hours or
+overnight; this demonstrates the workflow and does not adopt a new calibration.
+
 ## Current scientific conclusions
 
 - The implemented ideal-current equation is `C dV/dt = I - V/R(T,H)`; `C=0`

@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — optional presentation reproduction
+
+- Add `neuristor reproduce-presentation`: rerun all declared presentation stages
+  from measured inputs without reading archived outputs or Release assets.
+- Save stage checksums and source/input/environment fingerprints for safe resume.
+- Regenerate numerical tables, figures, GIFs, HTML and editable slide result
+  tables; connect completed full results to the existing presentation buttons.
+- Document the optional setup step and the several-hour compute allowance.
+
 ## Unreleased — 26 October repository cleanup
 
 - Consolidate jobs and outputs under `runs/`, with one collaborator README.

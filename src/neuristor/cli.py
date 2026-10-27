@@ -85,6 +85,49 @@ def _announce_bundle(path: Path) -> None:
     typer.echo(f"Manifest: {path / 'run.json'}")
 
 
+@app.command("reproduce-presentation")
+def reproduce_presentation(
+    config: Optional[Path] = typer.Option(None, "--config", exists=True, dir_okay=False),
+    plan: bool = typer.Option(False, "--plan", help="Show inputs, stages and compute allowance without running experiments."),
+    resume: Optional[Path] = typer.Option(None, "--resume", exists=True, file_okay=False,
+        help="Resume an interrupted reproduction, keeping intact completed stages."),
+    workers: Optional[int] = typer.Option(None, "--workers", min=1, help="Animation rendering processes."),
+    output_root: Optional[Path] = typer.Option(None, "--output-root"),
+    smoke: bool = typer.Option(False, "--smoke", hidden=True),
+) -> None:
+    """Optionally recreate all presentation results and viewers (several hours)."""
+    from .orchestration.presentation_reproduction import plan_presentation_reproduction
+    from .workflows import run_presentation_reproduction
+
+    recipe = config or find_project_root()/"experiments/reproduce_presentation.toml"
+    try:
+        cfg = load_toml(recipe)
+        if resume is not None:
+            cfg = json.loads((resume/"resolved_config.json").read_text())
+            cfg["_source"] = str(recipe.resolve())
+        if workers is not None:
+            cfg["reproduction"]["workers"] = workers
+        if smoke:
+            cfg["reproduction"]["profile"] = "smoke"
+        if plan:
+            details = plan_presentation_reproduction(cfg)
+            details.pop("source_input_hashes")
+            typer.echo(json.dumps(details, indent=2))
+            return
+        bundle = run_presentation_reproduction(cfg, output_root=output_root, resume=resume, command=_command())
+        _announce_bundle(bundle.root)
+        typer.echo(f"Recreated results and figures: {bundle.root / 'START_HERE.html'}")
+        if bundle.manifest["summary"].get("presentation_activated"):
+            typer.echo("The slide viewer links now select this completed reproduction. Open with: neuristor present")
+        elif cfg["reproduction"].get("profile") == "smoke":
+            typer.echo("Developer smoke check only; the presentation still uses the full results.")
+        else:
+            typer.echo("Custom output location: open its START_HERE.html; the default slide links were not changed.")
+    except (ConfigError, OSError, ValueError, KeyError) as exc:
+        typer.echo(f"Reproduction stopped: {exc}", err=True)
+        raise typer.Exit(1) from exc
+
+
 @study_app.command("plan")
 def study_plan(
     config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False),

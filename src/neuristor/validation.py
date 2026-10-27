@@ -48,6 +48,10 @@ def validate_repository(project_root: str | Path | None = None) -> ValidationRep
         try:
             config = load_toml(path)
             report.errors.extend(validate_recipe_inputs(config, path))
+            if config.get("kind") == "reproduction":
+                from .orchestration.presentation_reproduction import plan_presentation_reproduction
+
+                plan_presentation_reproduction(config)
             if config.get("kind") == "sweep":
                 base_path = Path(str(config["sweep"]["base_config"]))
                 if not base_path.is_absolute():
