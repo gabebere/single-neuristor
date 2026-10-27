@@ -165,4 +165,13 @@ def test_filament_cli_writes_a_complete_diagnostic_bundle(tmp_path):
     for artifact in manifest["artifacts"]:
         assert (root / artifact["path"]).is_file()
     assert (root / "convergence.csv").is_file() and (root / "START_HERE.html").is_file()
-    assert len(list((root / "native").glob("*/*.npz"))) == 44
+    assert len(list((root / "native").glob("*/*.npz"))) == 56
+    from neuristor.orchestration.filament_study import _validated_search_reuse
+    from neuristor.config import ConfigError
+
+    resolved = json.loads((root / "resolved_config.json").read_text())
+    reused, provenance = _validated_search_reuse(root, resolved, [ROOT / "src/neuristor/current_drive_sim.py"])
+    assert reused == root and provenance["source_run_id"] == manifest["id"]
+    resolved["steady"]["frequency_weight"] = 0.0
+    with pytest.raises(ConfigError, match="recipe changed"):
+        _validated_search_reuse(root, resolved, [])

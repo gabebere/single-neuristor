@@ -407,11 +407,13 @@ def analyze_filament_study(
     config: Path = typer.Option(..., "--config", "-c", exists=True, dir_okay=False),
     set_values: list[str] = typer.Option([], "--set"),
     output_root: Optional[Path] = typer.Option(None, "--output-root"),
+    reuse_searches: Optional[Path] = typer.Option(None, "--reuse-searches", exists=True, file_okay=False,
+        help="Reuse completed searches after checking identical numerical code and inputs; rerun verification."),
 ) -> None:
     """Experimental filament versus original-model fits and timestep checks."""
     from .workflows import run_filament_study
 
-    bundle = run_filament_study(_configured(config, set_values, "current"), output_root=output_root, command=_command())
+    bundle = run_filament_study(_configured(config, set_values, "current"), output_root=output_root, reuse_searches=reuse_searches, command=_command())
     _announce_bundle(bundle.root)
     typer.echo(f"Results: {bundle.root / 'START_HERE.html'}")
 

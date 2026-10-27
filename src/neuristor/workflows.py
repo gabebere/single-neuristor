@@ -2711,8 +2711,8 @@ def run_presentation_reproduction(config, *, output_root=None, resume=None,
     return run(config, output_root=output_root, resume=resume, command=command)
 
 
-def run_filament_study(config, *, output_root=None, command='neuristor analyze filament-study'):
+def run_filament_study(config, *, output_root=None, reuse_searches=None, command='neuristor analyze filament-study'):
     """Test the optional filament/cold-background model against presentation data."""
     from .orchestration.filament_study import run_filament_study as run
 
-    return run(config, output_root=output_root, command=command)
+    return run(config, output_root=output_root, reuse_searches=reuse_searches, command=command)

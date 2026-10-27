@@ -70,6 +70,9 @@ table, not historical simulated trajectories. The protocol is:
 6. Replay the references, selected scan candidates and both fitted candidates
    across all 22 measured inputs at 0.025, 0.0125 and 0.00625 ns. The other 11
    records are previously seen controls, not independent blind validation.
+   Explicit f=0.75 and f=0.1 reference cases receive the same finer checks even
+   if the selected fit returns to f=1. Three representative native histories
+   per fractional case expose the actual branch currents and powers.
 7. Report both timestep halvings, class changes, frequency/Vpp relative changes
    (2% criterion) and waveform RMS differences (2 mV criterion). Missing cycles
    remain undefined. No tolerance is weakened to accept a changed trajectory.
@@ -88,6 +91,17 @@ and `report.md`. `native/` contains full SI branch histories for both new fitted
 models at the finest timestep. All manifests, original inputs and recursive code
 snapshots stay in a new ignored local RunBundle. Existing presentation files,
 viewer routes and completed published bundles are preserved.
+
+To extend verification after a completed run without repeating the searches:
+
+```bash
+neuristor analyze filament-study --config experiments/current/specimen_filament_surroundings_20261027.toml --reuse-searches PATH_TO_COMPLETED_BUNDLE
+```
+
+This checks unchanged measured inputs, numerical source and search settings.
+Only additional verification fractions may differ. It copies the searches with
+their original provenance and content hashes, then reruns scans and verification
+into a new bundle. No completed source bundle is edited.
 
 ## Evidence and physical motivation
 

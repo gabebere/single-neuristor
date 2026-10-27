@@ -76,6 +76,7 @@ root = "runs/local"
 # f is a conductance weight, not a measured filament area fraction.
 fractions = [1.0, 0.75, 0.5, 0.3, 0.2, 0.1, 0.05, 0.03, 0.01]
 fraction_bounds = [0.01, 1.0]
+verification_fractions = [0.75, 0.1]
 initial_fractions = [1.0, 0.1, 0.3, 0.1, 0.3]
 convergence_fraction = 0.02
 waveform_rms_tolerance_mV = 2.0

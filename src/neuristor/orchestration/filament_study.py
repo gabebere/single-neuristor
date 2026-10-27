@@ -116,7 +116,36 @@ def convergence_table(table, sampled, time_ns, settings):
     return pd.DataFrame(result)
 
 
-def run_filament_study(config, *, output_root=None, command="neuristor analyze filament-study"):
+def _validated_search_reuse(source, config, numerical_inputs):
+    """Permit more verification only when the search inputs/numerics are identical."""
+    source = Path(source).resolve()
+    manifest = json.loads((source / "run.json").read_text())
+    if manifest.get("status") != "completed" or manifest.get("model") != "experimental-filament-surroundings":
+        raise ConfigError("Search reuse requires a completed filament study")
+    before = json.loads((source / "resolved_config.json").read_text())
+    after = resolved_copy(config)
+    for value in [before, after]:
+        value["filament_study"].pop("verification_fractions", None)
+    if before != after:
+        raise ConfigError("Search recipe changed; only additional verification fractions may differ")
+    hashes = json.loads((source / "source_input_hashes.json").read_text())
+    for path in numerical_inputs:
+        if hashlib.sha256(path.read_bytes()).hexdigest() != hashes.get(str(path)):
+            raise ConfigError(f"Numerical source or measured input changed: {path.name}")
+    files = [
+        f"{prefix}_{model}.{ext}"
+        for model in ["baseline", "filament"]
+        for prefix, ext in [("search", "jsonl"), ("checkpoint", "json"), ("search_result", "json")]
+    ]
+    return source, dict(
+        source_run_id=manifest["id"],
+        numerical_provenance=manifest["provenance"],
+        source_manifest_sha256=hashlib.sha256((source / "run.json").read_bytes()).hexdigest(),
+        sha256={name: hashlib.sha256((source / name).read_bytes()).hexdigest() for name in files},
+    )
+
+
+def run_filament_study(config, *, output_root=None, reuse_searches=None, command="neuristor analyze filament-study"):
     """Run sensitivity scans, matched bounded fits, and three-step all-current checks."""
     from neuristor.workflows import _current_params_from_config
     from neuristor.plotting.filament_study import render_filament_study
@@ -154,6 +183,16 @@ def run_filament_study(config, *, output_root=None, command="neuristor analyze f
     rt_path = resolve(settings["resistance_data"])
     preset_path = resolve(config["resistance"]["preset"])
     seed_path = resolve(settings["seed_table"])
+    reuse = None
+    if reuse_searches is not None:
+        numerical = [
+            p
+            for p in package_source_files()
+            if p.parent.name in ["analysis", "fitting"] or p.name in ["model.py", "current_drive_sim.py"]
+        ]
+        reuse = _validated_search_reuse(
+            reuse_searches, config, [rt_path, preset_path, seed_path, *sorted(data.glob("*_converted.csv")), *numerical]
+        )
     raw, _ = load_converted_sweep(data)
     labels = sorted(raw.nominal_drive_mV.unique())
     provisional = prepare_inference_dataset(raw, holdout_drives_mV=[labels[0]])
@@ -218,6 +257,17 @@ def run_filament_study(config, *, output_root=None, command="neuristor analyze f
             label="Fixed static law and initial dynamic values",
         )
         candidates = dict(frozen)
+        # Always exercise the actual f<1 equations at both finer timesteps,
+        # including when the selected fit returns to the original-model limit.
+        for fraction in study.get("verification_fractions", [0.75, 0.1]):
+            if not np.isfinite(fraction) or not 0 < fraction < 1:
+                raise ConfigError("Explicit verification fractions must lie in (0,1)")
+            for name, record in frozen.items():
+                candidates[f"{name}_f_{fraction:g}"] = dict(values=record["values"], filament_fraction=fraction)
+        if reuse:
+            bundle.write_json(
+                "search_reuse.json", reuse[1], label="Verified original search inputs, numerics and content hashes"
+            )
         profile_rows = []
         for name, record in frozen.items():
             choices = []
@@ -265,39 +315,51 @@ def run_filament_study(config, *, output_root=None, command="neuristor analyze f
             bundle._save_manifest()
             records = []
             last_print = [0.0]
-            with history_path.open("w") as stream:
+            if reuse:
+                for filename in [f"search_{model}.jsonl", f"checkpoint_{model}.json", f"search_result_{model}.json"]:
+                    target = bundle.add_artifact(filename, label="Verified original search evidence")
+                    shutil.copy2(reuse[0] / filename, target)
+                    if hashlib.sha256(target.read_bytes()).hexdigest() != reuse[1]["sha256"][filename]:
+                        raise ConfigError("Search evidence changed while being copied")
+                records = [json.loads(line) for line in history_path.read_text().splitlines()]
+                result = json.loads((bundle.root / f"search_result_{model}.json").read_text())
+                if len(records) != result["unique_candidates"]:
+                    raise ConfigError("Search history/count mismatch")
+                print(f"Reusing {model}: {len(records)} verified evaluations", flush=True)
+            else:
+                with history_path.open("w") as stream:
 
-                def checkpoint(record, snapshot):
-                    records.append(record)
-                    stream.write(json.dumps(record, allow_nan=False) + "\n")
-                    stream.flush()
-                    _atomic(checkpoint_path, snapshot)
-                    _atomic(
-                        status_path,
-                        dict(
-                            stage="search",
-                            model=model,
-                            unique_candidates=snapshot["unique_candidates"],
-                            elapsed_s=time.monotonic() - started,
-                        ),
-                    )
-                    if time.monotonic() - last_print[0] >= 20:
-                        print(
-                            f"{model}: {snapshot['unique_candidates']} candidates; best accepted={snapshot['best'] is not None}",
-                            flush=True,
+                    def checkpoint(record, snapshot):
+                        records.append(record)
+                        stream.write(json.dumps(record, allow_nan=False) + "\n")
+                        stream.flush()
+                        _atomic(checkpoint_path, snapshot)
+                        _atomic(
+                            status_path,
+                            dict(
+                                stage="search",
+                                model=model,
+                                unique_candidates=snapshot["unique_candidates"],
+                                elapsed_s=time.monotonic() - started,
+                            ),
                         )
-                        last_print[0] = time.monotonic()
+                        if time.monotonic() - last_print[0] >= 20:
+                            print(
+                                f"{model}: {snapshot['unique_candidates']} candidates; best accepted={snapshot['best'] is not None}",
+                                flush=True,
+                            )
+                            last_print[0] = time.monotonic()
 
-                result = search_settled(
-                    dataset,
-                    rt,
-                    base,
-                    local,
-                    seeds,
-                    pd.DataFrame(),
-                    checkpoint,
-                    stop_requested=lambda: (bundle.root / "STOP").exists(),
-                )
+                    result = search_settled(
+                        dataset,
+                        rt,
+                        base,
+                        local,
+                        seeds,
+                        pd.DataFrame(),
+                        checkpoint,
+                        stop_requested=lambda: (bundle.root / "STOP").exists(),
+                    )
             results[model] = result
             bundle.write_json("search_result_" + model + ".json", result, label="Bounded " + model + " search result")
             usable = [r for r in records if r.get("simulated")]
@@ -334,6 +396,11 @@ def run_filament_study(config, *, output_root=None, command="neuristor analyze f
         keep = dataset.time_ns <= settings["window_ns"][1]
         time_ns = dataset.time_ns[keep]
         all_indices = np.arange(len(labels))
+        ranked = sorted(
+            dataset.train_indices,
+            key=lambda i: float(np.mean(dataset.current_uA[(dataset.time_ns >= 50) & (dataset.time_ns <= 250), i])),
+        )
+        representatives = {int(ranked[i]) for i in [0, len(ranked) // 2, len(ranked) - 1]}
         summaries = []
         replay_cache = {}
         for name, record in candidates.items():
@@ -342,7 +409,10 @@ def run_filament_study(config, *, output_root=None, command="neuristor analyze f
                 _atomic(status_path, dict(stage="verification", candidate=name, dt_ns=dt))
 
                 def native_callback(index, out, params):
-                    if dt != min(steps) or name not in ["baseline_fitted", "filament_fitted"]:
+                    fitted = name in ["baseline_fitted", "filament_fitted"]
+                    if dt != min(steps) or (
+                        not fitted and not (params.filament_fraction < 1 and index in representatives)
+                    ):
                         return
                     label = dataset.nominal_drives_mV[index]
                     voltage = out["V_vo2"].astype(float)
@@ -431,6 +501,8 @@ def run_filament_study(config, *, output_root=None, command="neuristor analyze f
         fine = pd.DataFrame(summaries)
         fine = fine[fine.dt_ns == min(steps)].set_index("candidate")
         metrics = dict(
+            searches_reused=bool(reuse),
+            search_source_run_id=reuse[1]["source_run_id"] if reuse else None,
             elapsed_s=time.monotonic() - started,
             original_measurements=len(labels),
             target_records=len(targets),
@@ -503,6 +575,13 @@ or confidence interval. All 22 currents are checked at three timesteps. The othe
 11 currents are previously inspected controls, not blind validation. Neither
 lower scalar error nor a completed bundle establishes an accepted specimen fit.
 The measured channel-to-device voltage/current mapping remains a separate issue.
+
+Explicit f<1 reference cases receive both finer timestep checks even if the
+selected candidate returns to f=1. Search reuse is recorded in search_reuse.json
+and metrics.json; it requires unchanged measured inputs, numerical model,
+analysis and fitting modules, and the same search configuration. Only additional
+verification fractions may differ. Reused searches are copied with hashes and
+their original code provenance. Sensitivity calculations and verification are new.
 
 Inspect summary.csv, verification.csv, and both timestep halvings in convergence.csv.
 Waveform RMS differences use the same acquisition grid and late loss window;
