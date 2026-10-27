@@ -71,6 +71,12 @@ No new calibration was adopted during repository consolidation.
 
 ## Latest fitting method versus requested next work
 
+On 27 October Gabriel confirmed that the fitted R(T) and oscillation data use
+the same electrode pair, with uniform stage heating for R(T). An optional
+[filament/cold-surroundings experiment](FILAMENT_SURROUNDINGS_20261027.md) is
+implemented for a controlled comparison. Its scientific trial is pending;
+implementation tests are not evidence of improved agreement or a new calibration.
+
 An archived alternating-amplitude example was recovered in the 7 September
 relaxed simulation at source label 400 mV (~303 µA): primary-cycle Vpp alternates
 near 239/353 mV. The short measured-input window survives two finer timesteps;

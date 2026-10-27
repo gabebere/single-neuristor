@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 from pathlib import Path
 from typing import Any, Iterable, Mapping, MutableMapping
 
@@ -191,6 +192,11 @@ def validate_config(config: Mapping[str, Any]) -> None:
     if model == "current":
         _positive(input_table, "amplitude_uA", "input", allow_zero=True)
         _positive(electrical, "C_pF", "electrical", allow_zero=True)
+        if 'filament_study' in config:
+            study = _require_table(config, 'filament_study')
+            bounds = study.get('fraction_bounds', [])
+            if len(bounds) != 2 or not all(math.isfinite(float(v)) for v in bounds) or not 0 < bounds[0] < bounds[1] <= 1:
+                raise ConfigError('filament_study.fraction_bounds must satisfy 0 < low < high <= 1')
     else:
         _positive(input_table, "amplitude_V", "input", allow_zero=True)
         _positive(electrical, "C_pF", "electrical")

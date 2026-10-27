@@ -92,7 +92,7 @@ def settled_loss(measured, predicted, settings):
                          and abs(pratio-1)<=.05 and abs(decay)<=np.log(1.2)))
 
 
-def evaluate_settled(dataset, values, base, indices, settings, dt_ns, measured=None):
+def evaluate_settled(dataset, values, base, indices, settings, dt_ns, measured=None, native_callback=None):
     """Simulate with real prehistory; return only settled-window objective features."""
     window = settings['window_ns']
     p = joint_model(values, base, dt_ns)
@@ -116,6 +116,11 @@ def evaluate_settled(dataset, values, base, indices, settings, dt_ns, measured=N
                    measured_current_A=float(np.mean(dataset.current_uA[(dataset.time_ns>=50)&(dataset.time_ns<=250),i]))*1e-6,
                    **{f'measured_{k}':v for k,v in m.items()},
                    **{f'predicted_{k}':v for k,v in pred.items()})
+        row.update(temperature_min_K=float(o['T'].min()), temperature_max_K=float(o['T'].max()),
+                   temperature_valid=bool(o['T'].min() >= p.resist_params.T_min_K
+                                          and o['T'].max() <= p.resist_params.T_max_K))
+        if native_callback is not None:
+            native_callback(int(i), o, p)
         if settings.get('require_monotone_proximity', False):
             slope = float(o['minimum_proximity_slope'])
             row.update(minimum_proximity_slope=slope if np.isfinite(slope) else None,
@@ -124,6 +129,12 @@ def evaluate_settled(dataset, values, base, indices, settings, dt_ns, measured=N
         # assigning them a fictitious measured target frequency.
         if m['frequency_MHz'] is not None and m['robust_vpp_mV'] > 0:
             row.update(settled_loss(m,pred,settings))
+        elif method == 'extrema':
+            # Controls without measured cycles still need a simulated class;
+            # no fictitious measured frequency or scientific loss is assigned.
+            row.update(sustained=bool(pred['sustained']), frequency_valid=bool(pred['sustained']
+                       and pred['frequency_MHz'] is not None and pred['extrema_vpp_mV'] > 0
+                       and pred['frequency_MHz'] <= settings.get('maximum_frequency_MHz', float('inf'))))
         rows.append(row)
         columns.append(voltage)
     return rows, np.column_stack(columns), outside
@@ -195,6 +206,21 @@ def search_settled(dataset, rt, base, settings, seed_vectors, bootstrap,
     if any(n not in NAMES for n in fixed_names):
         raise ValueError('Unknown fixed search parameter')
     always_fixed = {NAMES.index(n) for n in fixed_names}
+    fit_fraction = bool(settings.get('fit_filament_fraction', False))
+    fraction_bounds = np.asarray(settings.get('filament_fraction_bounds', [.01, 1.]), float)
+    if fit_fraction and (fraction_bounds.shape != (2,) or not np.isfinite(fraction_bounds).all()
+                         or not 0 < fraction_bounds[0] < fraction_bounds[1] <= 1):
+        raise ValueError('Filament fraction bounds must satisfy 0 < low < high <= 1')
+
+    def fraction_value(short):
+        if not fit_fraction:
+            return float(base.filament_fraction)
+        if short[-1] >= 1:
+            return float(fraction_bounds[1])
+        return float(np.clip(np.exp(np.log(fraction_bounds[0]) + short[-1]*np.log(fraction_bounds[1]/fraction_bounds[0])), *fraction_bounds))
+
+    def cache_key(short, expanded):
+        return tuple(np.round(expanded,12)) + ((round(fraction_value(short),12),) if fit_fraction else ())
     evaluation_limit = int(settings.get('maximum_evaluations', 2**63-1))
     if evaluation_limit < 1:
         raise ValueError('maximum_evaluations must be positive')
@@ -210,15 +236,15 @@ def search_settled(dataset, rt, base, settings, seed_vectors, bootstrap,
         if monotonic()>=end or stop_requested() or history_count >= evaluation_limit: break
         fixed=restart<int(settings['fixed_resistance_restarts'])
         active=np.array([i for i in range(11)
-                         if i not in always_fixed and (not fixed or i not in static_indices)])
-        if not len(active):
+                         if i not in always_fixed and (not fixed or i not in static_indices)], dtype=int)
+        if not len(active) and not fit_fraction:
             raise ValueError('At least one search parameter must remain free')
         rng=np.random.default_rng(int(settings['seed'])+restart*104729)
         stage_end=min(end,start+(restart+1)*settings['search_seconds']/settings['restarts'])
         de_end=monotonic()+.8*max(0,stage_end-monotonic())
         frozen_unit=encode(frozen,bounds)
         def expand(short):
-            u=frozen_unit.copy();u[active]=short
+            u=frozen_unit.copy();u[active]=short[:len(active)]
             return u
         local_best=[float('inf'),None]
         deadline=[de_end]
@@ -226,16 +252,19 @@ def search_settled(dataset, rt, base, settings, seed_vectors, bootstrap,
             nonlocal history_count,best,diagnostic_best
             if monotonic()>=deadline[0] or stop_requested() or history_count >= evaluation_limit:
                 raise StageExpired()
-            u=expand(short); key=tuple(np.round(u,12))
+            u=expand(short); key=cache_key(short,u)
             if key not in cache:
                 v=decode(u,bounds); re=static_rmse(v,rt)
                 record=dict(restart=restart,static_fixed=fixed,values=v.tolist(),static_rmse_log10=float(re),
                             simulated=False,outside_domain=False,proximity_admissible=True)
+                if fit_fraction:
+                    record['filament_fraction'] = fraction_value(short)
                 if re>maximum:
                     score=1e6+1e4*(re/maximum)**2
                 else:
                     try:
-                        rows,_,outside=evaluate_settled(dataset,v,base,dataset.train_indices,
+                        candidate_base = replace(base, filament_fraction=fraction_value(short)) if fit_fraction else base
+                        rows,_,outside=evaluate_settled(dataset,v,candidate_base,dataset.train_indices,
                             settings,settings['search_dt_ns'],measured)
                         invalid = sum(not r['frequency_valid'] for r in rows)
                         if simple:
@@ -292,19 +321,34 @@ def search_settled(dataset, rt, base, settings, seed_vectors, bootstrap,
             if np.any(v<bounds[:,0]) or np.any(v>bounds[:,1]) or static_rmse(v,rt)>maximum:continue
             population.append(encode(v,bounds)[active])
         if len(population)!=int(settings['population']):raise ValueError('Insufficient feasible population')
+        if fit_fraction:
+            # Preserve the same four-dimensional starts as the baseline arm;
+            # add one independently stratified, logarithmic conductance weight.
+            units=qmc.LatinHypercube(1,seed=int(settings['seed'])+restart+17).random(len(population)).ravel()
+            for i, f in enumerate(settings.get('initial_filament_fractions', [1., .1, .3])):
+                if i < len(units):
+                    if not fraction_bounds[0] <= f <= fraction_bounds[1]:
+                        raise ValueError('Initial filament fraction lies outside declared bounds')
+                    units[i]=np.log(f/fraction_bounds[0])/np.log(fraction_bounds[1]/fraction_bounds[0])
+            if best is not None:
+                index=min(len(seed_vectors),int(settings.get('initial_seed_count',3)))
+                if index < len(units):
+                    units[index]=np.log(best['filament_fraction']/fraction_bounds[0])/np.log(fraction_bounds[1]/fraction_bounds[0])
+            population=[np.r_[u, f] for u,f in zip(population,units)]
+        dimension=len(active)+int(fit_fraction)
         try:
-            differential_evolution(objective,[(0.,1.)]*len(active),init=np.asarray(population),
+            differential_evolution(objective,[(0.,1.)]*dimension,init=np.asarray(population),
                 maxiter=int(settings.get('maximum_generations',100000)),seed=int(settings['seed'])+restart,
                 polish=False,mutation=(.35,1.0),recombination=.8,tol=0,atol=0,updating='immediate')
         except StageExpired:pass
         deadline[0]=stage_end
         if local_best[1] is not None and not stop_requested():
             try:
-                minimize(objective,local_best[1],method='Powell',bounds=[(0.,1.)]*len(active),
+                minimize(objective,local_best[1],method='Powell',bounds=[(0.,1.)]*dimension,
                     options={'maxfev':int(settings['local_evaluations']),'xtol':.0005,'ftol':1e-5})
             except StageExpired:pass
         if local_best[1] is not None:
-            record=cache[tuple(np.round(expand(local_best[1]),12))]
+            record=cache[cache_key(local_best[1],expand(local_best[1]))]
             restart_results.append(dict(record,restart=restart,static_fixed=fixed))
     return dict(best=best,diagnostic_best=diagnostic_best,elites=elites,restarts=restart_results,
                 unique_candidates=history_count,elapsed_s=monotonic()-start)

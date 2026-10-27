@@ -2370,6 +2370,8 @@ def run_steady_search(config, *, output_root=None, command='neuristor analyze fi
 
     validate_config(config)
     settings=copy.deepcopy(config['steady'])
+    if settings.get('fit_filament_fraction', False):
+        raise ConfigError('Use neuristor analyze filament-study to fit and verify the experimental conductance split')
     simple_loss = settings.get('loss_function') == 'relative_squared'
     if settings['search_seconds']<=0 or settings['total_seconds']<=settings['search_seconds']:
         raise ValueError('Total budget must exceed positive search budget')
@@ -2707,3 +2709,10 @@ def run_presentation_reproduction(config, *, output_root=None, resume=None,
     from .orchestration.presentation_reproduction import run_presentation_reproduction as run
 
     return run(config, output_root=output_root, resume=resume, command=command)
+
+
+def run_filament_study(config, *, output_root=None, command='neuristor analyze filament-study'):
+    """Test the optional filament/cold-background model against presentation data."""
+    from .orchestration.filament_study import run_filament_study as run
+
+    return run(config, output_root=output_root, command=command)

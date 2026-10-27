@@ -162,3 +162,9 @@ and figure/table rendering in
 [plotting/presentation.py](../src/neuristor/plotting/presentation.py).
 The portable HTTP server validates completed manifests and contains every served
 path inside the rebuilt bundle; it never needs the simulation dependencies.
+
+The optional filament experiment keeps both electrical and thermal updates in
+`current_drive_sim.py`. The additional conductance-weight search coordinate is
+handled by `fitting/steady_inference.py`; `orchestration/filament_study.py` records
+the controlled presentation-data comparison, and `plotting/filament_study.py`
+renders its results. Original recipes use the exact `f=1` baseline.

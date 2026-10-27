@@ -79,8 +79,13 @@ class CurrentDriveParams:
     # Hysteresis / resistance
     resist_params: YuanhangResistParams = field(default_factory=YuanhangResistParams)
     start_branch: str = "insulator"
+    # Experimental normalized hot-filament/cold-surroundings conductance split.
+    # One is the original single-region model, with its original arithmetic.
+    filament_fraction: float = 1.0
 
     def __post_init__(self) -> None:
+        if not np.isfinite(self.filament_fraction) or not 0 < self.filament_fraction <= 1:
+            raise ValueError("filament_fraction must be finite and in (0, 1]")
         self.R_out_ohm = 0.0
         if float(self.C_F) < 0.0:
             raise ValueError("C_F must be non-negative; use C_F=0 for the algebraic RC=0 limit.")
@@ -145,6 +150,9 @@ def current_drive_numerics_report(
 ) -> Dict[str, float]:
     """Estimate fast/initial electrical timescales and step safety for a current-drive run."""
 
+    if params.filament_fraction != 1:
+        raise ValueError("Single-region operating estimates do not apply to the experimental filament model")
+
     h = HysteresisArray(
         params.resist_params,
         size=1,
@@ -202,6 +210,8 @@ def current_drive_operating_estimates(params: CurrentDriveParams, *, I_uA: float
     They are diagnostics, not replacements for a time-domain sweep.
     """
 
+    if params.filament_fraction != 1:
+        raise ValueError("Single-region operating estimates do not apply to the experimental filament model")
     rp = params.resist_params
     T_heat = float(rp.Tc_K + 0.5 * rp.w_eff)
     T_cool = float(rp.Tc_K - 0.5 * rp.w_eff)
@@ -378,6 +388,47 @@ class HysteresisSingleAdapter:
         return float(R_arr[0]), float(g_arr[0])
 
 
+def filament_effective_resistance(hot_reference_ohm, cold_reference_ohm, fraction):
+    """Normalize parallel paths to the measured uniform-temperature R(T) law.
+
+    G = f/R_fit(T_hot,H_hot) + (1-f)/R_fit(T0,H0). The weight is an
+    effective conductance share, not an independently measured area fraction.
+    The cold branch is held at ambient by an ideal thermal reservoir. Its
+    Joule heat is not deposited in the filament. Equal reference resistances
+    recover the measured R(T), and f=1 exactly preserves the original model.
+    """
+    if not np.isfinite(fraction) or not 0 < fraction <= 1:
+        raise ValueError("filament fraction must be in (0, 1]")
+    hot, cold = np.asarray(hot_reference_ohm), np.asarray(cold_reference_ohm)
+    if np.any(~np.isfinite(hot)) or np.any(hot <= 0) or np.any(~np.isfinite(cold)) or np.any(cold <= 0):
+        raise ValueError("Reference resistances must be finite and positive")
+    return _filament_resistance(hot, cold, fraction)
+
+
+def _filament_resistance(hot, cold, fraction):
+    # Validation is done once in the dataclass/public boundary, not each step.
+    if fraction == 1.0:
+        return hot
+    return hot / (_SIM_DTYPE(fraction) + _SIM_DTYPE(1 - fraction) * hot / cold)
+
+
+def filament_cold_reference(params):
+    """Freeze ambient R(T0,H0) using an independent copy of the initial branch."""
+    cold = HysteresisSingleAdapter(params.resist_params, params.start_branch)
+    cold.reset(params.T0_K)
+    return _SIM_DTYPE(cold.evaluate(params.T0_K)[0])
+
+
+def _filament_channels(voltage, hot, cold, fraction, ambient):
+    """Expose branch currents/powers; P remains total electrical dissipation."""
+    hot_current = voltage * _SIM_DTYPE(fraction) / hot
+    cold_current = voltage * _SIM_DTYPE(1 - fraction) / cold
+    return dict(R_reference_hot=hot, R_reference_cold=np.full_like(hot, cold),
+                I_filament=hot_current, I_surrounding=cold_current,
+                P_filament=voltage * hot_current, P_surrounding=voltage * cold_current,
+                T_surrounding=np.full_like(hot, ambient))
+
+
 def _time_grid(dt_s: float, t_end_s: float, t_pre_s: float) -> np.ndarray:
     total = float(t_pre_s) + float(t_end_s)
     if dt_s <= 0.0 or total <= 0.0:
@@ -434,20 +485,27 @@ def _simulate_with_current_trace(
     sigma = _SIM_DTYPE(params.sigma_W_sqrt_s)
     dt = _SIM_DTYPE(params.dt_s)
     T0 = _SIM_DTYPE(params.T0_K)
+    fraction = float(params.filament_fraction)
+    cold = filament_cold_reference(params) if fraction < 1 else None
+    hot_reference = np.empty_like(R) if fraction < 1 else None
 
     for k in range(n - 1):
         R_eq_k, g_eq_k = hyst.evaluate(T[k])
         g_eq_k = float(np.clip(g_eq_k, 0.0, 1.0))
         g_eq[k] = _SIM_DTYPE(g_eq_k)
         R_k_sim = _SIM_DTYPE(max(float(R_eq_k), _EPS))
+        if fraction < 1:
+            hot_reference[k] = R_k_sim
+            R_k_sim = _SIM_DTYPE(_filament_resistance(R_k_sim, cold, fraction))
         if C == 0.0:
             V[k] = _SIM_DTYPE(I_in[k] * R_k_sim)
         P_k = (V[k] * V[k]) / R_k_sim
+        filament_power = P_k if fraction == 1 else V[k] * V[k] * _SIM_DTYPE(fraction) / hot_reference[k]
 
         V_next = _advance_voltage_exact(V[k], I_in[k], R_k_sim, dt_s=float(dt), C_F=C)
         T_next = _advance_temperature_exact(
             T[k],
-            P_k,
+            filament_power,
             T0_K=float(T0),
             dt_s=float(dt),
             C_th_J_per_K=C_th,
@@ -464,6 +522,9 @@ def _simulate_with_current_trace(
     R_end_eq, g_end_eq = hyst.evaluate(T[-1])
     g_eq[-1] = _SIM_DTYPE(float(np.clip(g_end_eq, 0.0, 1.0)))
     R[-1] = _SIM_DTYPE(max(float(R_end_eq), _EPS))
+    if fraction < 1:
+        hot_reference[-1] = R[-1]
+        R[-1] = _SIM_DTYPE(_filament_resistance(R[-1], cold, fraction))
     if C == 0.0:
         V[-1] = _SIM_DTYPE(I_in[-1] * R[-1])
     P[-1] = (V[-1] * V[-1]) / R[-1]
@@ -479,6 +540,7 @@ def _simulate_with_current_trace(
         "g_dyn": g_eq.copy(),
         "R": R,
         "P": P,
+        **(_filament_channels(V, hot_reference, cold, fraction, T0) if fraction < 1 else {}),
     }
 
 
@@ -577,6 +639,9 @@ def _simulate_with_current_matrix(
     dt = _SIM_DTYPE(params.dt_s)
     T0 = _SIM_DTYPE(params.T0_K)
     minimum_proximity_slope = np.ones(n_currents)
+    fraction = float(params.filament_fraction)
+    cold = filament_cold_reference(params) if fraction < 1 else None
+    hot_reference = np.empty_like(R) if fraction < 1 else None
 
     for k in range(n_steps - 1):
         R_k, g_k = hyst.evaluate(T[k, :])
@@ -584,14 +649,18 @@ def _simulate_with_current_matrix(
             minimum_proximity_slope = np.minimum(
                 minimum_proximity_slope, hyst.proximity_temperature_slope(T[k, :]))
         R_k = np.maximum(np.asarray(R_k, dtype=_SIM_DTYPE), _SIM_DTYPE(_EPS))
+        if fraction < 1:
+            hot_reference[k, :] = R_k
+            R_k = _filament_resistance(R_k, cold, fraction)
         g_k = np.clip(np.asarray(g_k, dtype=_SIM_DTYPE), 0.0, 1.0)
         if np.any(algebraic):
             V[k, :] = np.where(algebraic, I_in[k, :] * R_k, V[k, :])
         P_k = (V[k, :] * V[k, :]) / R_k
+        filament_power = P_k if fraction == 1 else V[k, :] * V[k, :] * _SIM_DTYPE(fraction) / hot_reference[k, :]
         V[k + 1, :] = _advance_voltage_exact(V[k, :], I_in[k, :], R_k, dt_s=float(dt), C_F=C)
         T[k + 1, :] = _advance_temperature_exact(
             T[k, :],
-            P_k,
+            filament_power,
             T0_K=float(T0),
             dt_s=float(dt),
             C_th_J_per_K=C_th,
@@ -607,6 +676,9 @@ def _simulate_with_current_matrix(
             minimum_proximity_slope, hyst.proximity_temperature_slope(T[-1, :]))
     g_eq[-1, :] = np.clip(np.asarray(g_end, dtype=_SIM_DTYPE), 0.0, 1.0)
     R[-1, :] = np.maximum(np.asarray(R_end, dtype=_SIM_DTYPE), _SIM_DTYPE(_EPS))
+    if fraction < 1:
+        hot_reference[-1, :] = R[-1, :]
+        R[-1, :] = _filament_resistance(R[-1, :], cold, fraction)
     if np.any(algebraic):
         V[-1, :] = np.where(algebraic, I_in[-1, :] * R[-1, :], V[-1, :])
     P[-1, :] = (V[-1, :] * V[-1, :]) / R[-1, :]
@@ -622,6 +694,7 @@ def _simulate_with_current_matrix(
             "g_dyn": g_eq[:, idx].copy(),
             "R": R[:, idx].copy(),
             "P": P[:, idx].copy(),
+            **(_filament_channels(V[:, idx], hot_reference[:, idx], cold, fraction, T0) if fraction < 1 else {}),
             **({"minimum_proximity_slope": np.asarray(minimum_proximity_slope[idx])}
                if audit_proximity else {}),
         }

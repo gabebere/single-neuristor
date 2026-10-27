@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — experimental filament and cold surroundings
+
+- Add an optional normalized parallel-conductance model with separately
+  accounted branch currents and Joule heat; preserve the exact original f=1 limit.
+- Add a versioned presentation-data experiment comparing bounded baseline and
+  filament fits, conditional fraction scans and three-timestep verification.
+- Export original inputs, complete source, numerical checks, native branch
+  histories, figures and an offline interactive comparison in a new local bundle.
+- Scientific outcome remains pending the declared trial; no calibration is adopted.
+
 ## Unreleased — optional presentation reproduction
 
 - Add `neuristor reproduce-presentation`: rerun all declared presentation stages

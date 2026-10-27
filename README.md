@@ -115,6 +115,9 @@ Use `--set input.amplitude_uA=600` for an explicit current override.
 Major-loop data do not identify gamma or the dynamic thermal/electrical constants.
 The 110 MHz cutoff is an operating screen, not a universal physical limit.
 
+For the optional hot-filament/cold-surroundings experiment on the presentation
+measurements, see [the declared model and comparison protocol](docs/FILAMENT_SURROUNDINGS_20261027.md).
+
 ## One home for jobs and results
 
 All generated work belongs under [runs/](runs/README.md):
