@@ -1,0 +1,47 @@
+{
+  "anchor": "presentation_combined",
+  "elapsed_s": 4.380061499992735,
+  "id": "series_bottleneck_c36de038e043",
+  "metrics": {
+    "accepted_feature_loss": null,
+    "amplitude_MAPE_all": 1.0,
+    "defined_frequencies": 0,
+    "diagnostic_feature_score": 10.849004538998443,
+    "excessive_control_oscillations": 0,
+    "frequency_MAPE_defined": null,
+    "maximum_temperature_K": 355.5119934082031,
+    "mean_voltage_RMSE_mV": 62.76624742327183,
+    "passing_targets": 0,
+    "physical": true,
+    "rank": [
+      0,
+      3,
+      0,
+      10.849004538998443
+    ],
+    "shape_RMSE_defined_mV": null,
+    "targets": 3
+  },
+  "simulated": true,
+  "specification": {
+    "capacity_ratio": 10.0,
+    "cooling_ratio": 1.0,
+    "coupling_ratio": 0.0,
+    "kind": "series_bottleneck",
+    "weight": 0.75
+  },
+  "stage": "declared_grid",
+  "values": [
+    6.253977338903387,
+    0.004096025473087114,
+    7.340933813691281,
+    314.4,
+    333.49356636598696,
+    6.882302959338694,
+    0.2991563242902104,
+    0.6308092755643178,
+    2513.3391379829973,
+    2536.9654457644647,
+    18.21526990911648
+  ]
+}

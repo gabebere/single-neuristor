@@ -71,11 +71,17 @@ No new calibration was adopted during repository consolidation.
 
 ## Latest fitting method versus requested next work
 
-A separate [material-model pilot](MATERIAL_MODEL_PILOT_20261028.md) is implemented
-for the authorized follow-up. It compares warm parallel regions, a series VO₂
-bottleneck and finite switching time separately, with matched reference-vector
-ablations. **Numerical outcomes pending**; these optional hypotheses do not alter
-the supported solver or adopt a calibration.
+The [material-model pilot](MATERIAL_MODEL_PILOT_20261028.md) completed 119 cases,
+seven all-current replays/ablations and four 2 µs control cases. **No validated
+improvement was found.** Warm parallel regions retain 10/11 targets but overheat;
+the series bottleneck reduces amplitude partly by losing cycles (4/11 valid);
+finite switching time makes rounder waves but remains oversized, slower and
+outside calibration (9/11 valid). None passes the full convergence/long-control
+gates. These sparse tests do not rule out the mechanisms. The selected pilot
+baseline is a new trade-off and does not supersede the earlier 10/11 reference.
+[Reviewed comparisons and audit](../runs/published/20261028_111037_reviewed-partial-switching-material-model-pilot-_09fe72/START_HERE.html)
+preserve all cases, native reconstruction checks and exclusions. Existing default
+trajectories remain bitwise compatible; no calibration is adopted.
 
 The [overnight fixed-f profile](OVERNIGHT_FILAMENT_PROFILE_20261027.md) completed
 all planned stages in 7.06 hours: 21,232 stage-unique evaluations, nine fractions,

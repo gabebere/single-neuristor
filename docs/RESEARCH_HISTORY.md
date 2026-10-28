@@ -1313,3 +1313,70 @@ Initial excluded currents were seen historically, and final refinements fit all
 with a known-resistor control, plus a dedicated numerical-fidelity audit before
 another parameter search. No arbitrary f(t), new physical extension or calibration
 was adopted. [Protocol and reviewed evidence](OVERNIGHT_FILAMENT_PROFILE_20261027.md).
+
+## 28 October 2026 — controlled material-model pilot
+
+Gabriel authorized the proposed small comparison of warm surroundings, a series
+VO₂ bottleneck/access region and finite switching time. New opt-in physics
+preserves the original ideal-current KCL, exact C=0 limit and float32 hysteresis
+target. Uniform-temperature series/parallel weights recover the same measured
+R(T). Each region receives its actual Joule heat and mutual thermal exchange is
+equal/opposite. Finite phase lag is a separate phenomenological state with exact
+zero-lag delegation, without a new latent-heat model. No mechanisms are combined.
+
+The versioned recipe completes 87 grid cases and 32 shared local probes in
+14.12 minutes. It uses the same three historical dynamic anchors, fixes static
+R(T)/T0, screens actual 266.63/418.86/606.28 µA records plus 189.78/907.04 µA
+controls, and verifies four winners plus three exact-reference-vector mechanism-off
+ablations on all 22 inputs at 0.025/0.0125/0.00625/0.003125 ns. All four winners
+receive 2 µs constant-current checks at the three pilot currents and three finest
+steps. Records and anchors were seen before; this is not blind validation.
+
+At the finest step, the selected pilot baseline retains 7/11 targets, with
+frequency MAPE 32.83% on seven defined frequencies, Vpp MAPE 559.13% and all-record
+mean RMSE 37.97 mV. Warm parallel regions retain 10/11, with frequency MAPE 15.06%
+on ten, Vpp MAPE 1,639.00%, mean RMSE 64.02 mV and all-record maximum 415.79 K.
+The series bottleneck retains 4/11, with frequency MAPE 21.96% on four, Vpp MAPE
+521.96%, mean RMSE 45.80 mV and maximum 367.55 K. Finite switching time retains
+9/11, with frequency MAPE 36.67% on nine, Vpp MAPE 1,087.92%, mean RMSE 43.47 mV
+and maximum 394.65 K. Vpp uses all 11 targets; mean RMSE uses all 22 records.
+
+No candidate reproduces the falling-amplitude trend while keeping all three pilot
+target cycles. Series Vpp is 0/312.6/0 mV versus measured 101.8/34.8/9.6 mV:
+its lower aggregate error partly reflects quenching. Phase lag produces rounder
+waves and raises troughs but slows frequency and still overheats. Its selected
+6 ns lag is the largest trial value, not an identified sample timescale. Both
+spatial selections use capacity ratio 10 and zero coupling among the two tried
+values; this does not establish real thermal geometry or zero coupling.
+
+Every candidate fails the full shape/waveform-convergence and long-control gates.
+Across nine long-control current/timestep rows, baseline has six sustained/eight
+physical, warm parallel nine sustained/zero physical, series three sustained/nine
+physical, and phase lag nine sustained/six physical. The domain is
+284.8545–375.1625 K. The selected seven-target baseline does not supersede the
+earlier retained 10-target overnight reference: the sparse pilot prioritizes
+five-record physical screening at 0.025 ns and selects a different trade-off.
+Coarse exclusions can change with refinement. These bounded prototypes do not
+rule out localization, a different thermal mapping or finite phase kinetics.
+
+All 520 original artifact hashes and frozen source hashes pass independent audit.
+All 20 saved native finest histories reconstruct the voltage features; Joule
+partitions agree with V²/R within 2.38e-7 relative error, and topology-specific
+current/voltage identities pass. Analytic thermal exchange, RC-driven convergence
+and phase controls pass; 116 pre-change batched output arrays remain bitwise
+identical. The suite passes 246 tests and validation covers 51 recipes. Tight
+analytic charging tolerances are retained; late float32 RC plateaus are checked
+by exact canonical-solver identity. Numerical source commit: `0e39b5e`.
+
+Full local numerical bundle:
+`20261028_105307_partial-switching-material-model-comparison-pilo_fdbd33`.
+Compact reviewed bundle:
+`20261028_111037_reviewed-partial-switching-material-model-pilot-_09fe72`.
+All case specifications, tables, source/inputs, ablations and long controls are
+preserved. Twenty large native arrays stay local with explicit hashes/exclusions,
+not backed up to GitHub by the review. The results provide no verified quantitative
+improvement warranting another large fit without better circuit/channel or material
+constraints. The actual TIA feedback/probe-current boundary remains the next
+external constraint; fixed gain/offset corrections already failed in the earlier
+audit. No arbitrary f(t), per-current parameters, channel rescaling or calibration
+is adopted. [Full protocol and reviewed evidence](MATERIAL_MODEL_PILOT_20261028.md).

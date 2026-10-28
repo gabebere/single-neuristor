@@ -1,0 +1,11 @@
+{
+  "packages": {
+    "matplotlib": "3.10.6",
+    "numpy": "2.3.5",
+    "pandas": "2.3.3",
+    "plotly": "6.3.0",
+    "scipy": "1.16.3",
+    "torch": "2.12.0"
+  },
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:11:29) [Clang 20.1.8 ]"
+}

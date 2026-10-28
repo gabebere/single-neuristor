@@ -1,0 +1,10 @@
+{
+  "calibration_adopted": false,
+  "maximum_relative_heat_partition_error": 2.3785046702431543e-07,
+  "native_features_reconstructed": true,
+  "native_histories_audited": 20,
+  "original_hashes_verified": 520,
+  "original_run_id": "20261028_105307_partial-switching-material-model-comparison-pilo_fdbd33",
+  "scope": "No new numerical integrations; independent saved-channel identities and feature reconstruction",
+  "source_commit": "0e39b5ee587ddf18e4abd9fc654b123427d31986"
+}

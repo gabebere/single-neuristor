@@ -125,6 +125,8 @@ preserve the failures and numerical limits.
 The follow-up [material-model pilot](docs/MATERIAL_MODEL_PILOT_20261028.md) compares
 warm regions, a series VO₂ bottleneck and finite switching time separately:
 `neuristor analyze model-pilot --plan`, then `neuristor analyze model-pilot`.
+The completed 119-case pilot finds trade-offs without a validated improvement:
+[reviewed comparison](runs/published/20261028_111037_reviewed-partial-switching-material-model-pilot-_09fe72/START_HERE.html).
 
 ## One home for jobs and results
 

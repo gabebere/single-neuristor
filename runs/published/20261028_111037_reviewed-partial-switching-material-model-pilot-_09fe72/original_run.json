@@ -1,0 +1,2143 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Original measured/static input",
+      "path": "inputs/resistance_preset.json"
+    },
+    {
+      "label": "Original measured/static input",
+      "path": "inputs/resistance_data.tsv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/1000mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/100mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/1100mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/1200mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/150mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/200mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/250mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/300mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/350mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/400mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/450mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/500mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/50mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/550mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/600mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/650mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/700mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/750mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/800mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/850mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/900mv0_converted.csv"
+    },
+    {
+      "label": "Original current/voltage measurement",
+      "path": "inputs/current/950mv0_converted.csv"
+    },
+    {
+      "label": "Execution configuration rebound to copied inputs",
+      "media_type": "application/json",
+      "path": "execution_config.json"
+    },
+    {
+      "label": "Original recipe",
+      "path": "recipe.toml"
+    },
+    {
+      "label": "Frozen source __init__.py",
+      "path": "source/neuristor/__init__.py"
+    },
+    {
+      "label": "Frozen source analysis/__init__.py",
+      "path": "source/neuristor/analysis/__init__.py"
+    },
+    {
+      "label": "Frozen source analysis/alternating_amplitudes.py",
+      "path": "source/neuristor/analysis/alternating_amplitudes.py"
+    },
+    {
+      "label": "Frozen source analysis/boundary_search.py",
+      "path": "source/neuristor/analysis/boundary_search.py"
+    },
+    {
+      "label": "Frozen source analysis/distribution.py",
+      "path": "source/neuristor/analysis/distribution.py"
+    },
+    {
+      "label": "Frozen source analysis/experimental_waveforms.py",
+      "path": "source/neuristor/analysis/experimental_waveforms.py"
+    },
+    {
+      "label": "Frozen source analysis/extrema.py",
+      "path": "source/neuristor/analysis/extrema.py"
+    },
+    {
+      "label": "Frozen source analysis/frequency_sensitivity.py",
+      "path": "source/neuristor/analysis/frequency_sensitivity.py"
+    },
+    {
+      "label": "Frozen source analysis/lab_estimates.py",
+      "path": "source/neuristor/analysis/lab_estimates.py"
+    },
+    {
+      "label": "Frozen source analysis/lab_replay.py",
+      "path": "source/neuristor/analysis/lab_replay.py"
+    },
+    {
+      "label": "Frozen source analysis/loss_comparison.py",
+      "path": "source/neuristor/analysis/loss_comparison.py"
+    },
+    {
+      "label": "Frozen source analysis/metrics.py",
+      "path": "source/neuristor/analysis/metrics.py"
+    },
+    {
+      "label": "Frozen source analysis/model_validation.py",
+      "path": "source/neuristor/analysis/model_validation.py"
+    },
+    {
+      "label": "Frozen source analysis/optimizer_diagnostics.py",
+      "path": "source/neuristor/analysis/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Frozen source analysis/oscillation_audit.py",
+      "path": "source/neuristor/analysis/oscillation_audit.py"
+    },
+    {
+      "label": "Frozen source analysis/physical_maps.py",
+      "path": "source/neuristor/analysis/physical_maps.py"
+    },
+    {
+      "label": "Frozen source analysis/trend_validation.py",
+      "path": "source/neuristor/analysis/trend_validation.py"
+    },
+    {
+      "label": "Frozen source cli.py",
+      "path": "source/neuristor/cli.py"
+    },
+    {
+      "label": "Frozen source config.py",
+      "path": "source/neuristor/config.py"
+    },
+    {
+      "label": "Frozen source current_drive_sim.py",
+      "path": "source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Frozen source fitting/__init__.py",
+      "path": "source/neuristor/fitting/__init__.py"
+    },
+    {
+      "label": "Frozen source fitting/filament_profile.py",
+      "path": "source/neuristor/fitting/filament_profile.py"
+    },
+    {
+      "label": "Frozen source fitting/joint_inference.py",
+      "path": "source/neuristor/fitting/joint_inference.py"
+    },
+    {
+      "label": "Frozen source fitting/model_pilot.py",
+      "path": "source/neuristor/fitting/model_pilot.py"
+    },
+    {
+      "label": "Frozen source fitting/optimizer_audit.py",
+      "path": "source/neuristor/fitting/optimizer_audit.py"
+    },
+    {
+      "label": "Frozen source fitting/parameter_inference.py",
+      "path": "source/neuristor/fitting/parameter_inference.py"
+    },
+    {
+      "label": "Frozen source fitting/resistance_custom_analysis.py",
+      "path": "source/neuristor/fitting/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Frozen source fitting/saved_fit_replay.py",
+      "path": "source/neuristor/fitting/saved_fit_replay.py"
+    },
+    {
+      "label": "Frozen source fitting/steady_inference.py",
+      "path": "source/neuristor/fitting/steady_inference.py"
+    },
+    {
+      "label": "Frozen source interfaces/__init__.py",
+      "path": "source/neuristor/interfaces/__init__.py"
+    },
+    {
+      "label": "Frozen source interfaces/presentation_server.py",
+      "path": "source/neuristor/interfaces/presentation_server.py"
+    },
+    {
+      "label": "Frozen source interfaces/run_manager.py",
+      "path": "source/neuristor/interfaces/run_manager.py"
+    },
+    {
+      "label": "Frozen source layout.py",
+      "path": "source/neuristor/layout.py"
+    },
+    {
+      "label": "Frozen source model.py",
+      "path": "source/neuristor/model.py"
+    },
+    {
+      "label": "Frozen source orchestration/__init__.py",
+      "path": "source/neuristor/orchestration/__init__.py"
+    },
+    {
+      "label": "Frozen source orchestration/alternating_amplitudes.py",
+      "path": "source/neuristor/orchestration/alternating_amplitudes.py"
+    },
+    {
+      "label": "Frozen source orchestration/artifact_catalog.py",
+      "path": "source/neuristor/orchestration/artifact_catalog.py"
+    },
+    {
+      "label": "Frozen source orchestration/boundary_workflows.py",
+      "path": "source/neuristor/orchestration/boundary_workflows.py"
+    },
+    {
+      "label": "Frozen source orchestration/filament_profile.py",
+      "path": "source/neuristor/orchestration/filament_profile.py"
+    },
+    {
+      "label": "Frozen source orchestration/filament_study.py",
+      "path": "source/neuristor/orchestration/filament_study.py"
+    },
+    {
+      "label": "Frozen source orchestration/loss_comparison.py",
+      "path": "source/neuristor/orchestration/loss_comparison.py"
+    },
+    {
+      "label": "Frozen source orchestration/loss_scopes.py",
+      "path": "source/neuristor/orchestration/loss_scopes.py"
+    },
+    {
+      "label": "Frozen source orchestration/map_viewers.py",
+      "path": "source/neuristor/orchestration/map_viewers.py"
+    },
+    {
+      "label": "Frozen source orchestration/map_workflows.py",
+      "path": "source/neuristor/orchestration/map_workflows.py"
+    },
+    {
+      "label": "Frozen source orchestration/model_pilot.py",
+      "path": "source/neuristor/orchestration/model_pilot.py"
+    },
+    {
+      "label": "Frozen source orchestration/optimizer_audit.py",
+      "path": "source/neuristor/orchestration/optimizer_audit.py"
+    },
+    {
+      "label": "Frozen source orchestration/optimizer_review.py",
+      "path": "source/neuristor/orchestration/optimizer_review.py"
+    },
+    {
+      "label": "Frozen source orchestration/presentation_reproduction.py",
+      "path": "source/neuristor/orchestration/presentation_reproduction.py"
+    },
+    {
+      "label": "Frozen source orchestration/sample_study.py",
+      "path": "source/neuristor/orchestration/sample_study.py"
+    },
+    {
+      "label": "Frozen source orchestration/trend_validation.py",
+      "path": "source/neuristor/orchestration/trend_validation.py"
+    },
+    {
+      "label": "Frozen source plotting/__init__.py",
+      "path": "source/neuristor/plotting/__init__.py"
+    },
+    {
+      "label": "Frozen source plotting/boundary_maps.py",
+      "path": "source/neuristor/plotting/boundary_maps.py"
+    },
+    {
+      "label": "Frozen source plotting/filament_profile.py",
+      "path": "source/neuristor/plotting/filament_profile.py"
+    },
+    {
+      "label": "Frozen source plotting/filament_study.py",
+      "path": "source/neuristor/plotting/filament_study.py"
+    },
+    {
+      "label": "Frozen source plotting/frequency_sensitivity.py",
+      "path": "source/neuristor/plotting/frequency_sensitivity.py"
+    },
+    {
+      "label": "Frozen source plotting/loss_comparison.py",
+      "path": "source/neuristor/plotting/loss_comparison.py"
+    },
+    {
+      "label": "Frozen source plotting/map_animations.py",
+      "path": "source/neuristor/plotting/map_animations.py"
+    },
+    {
+      "label": "Frozen source plotting/model_pilot.py",
+      "path": "source/neuristor/plotting/model_pilot.py"
+    },
+    {
+      "label": "Frozen source plotting/optimizer_diagnostics.py",
+      "path": "source/neuristor/plotting/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Frozen source plotting/presentation.py",
+      "path": "source/neuristor/plotting/presentation.py"
+    },
+    {
+      "label": "Frozen source plotting/replay_plots.py",
+      "path": "source/neuristor/plotting/replay_plots.py"
+    },
+    {
+      "label": "Frozen source plotting/trend_validation.py",
+      "path": "source/neuristor/plotting/trend_validation.py"
+    },
+    {
+      "label": "Frozen source plotting/visualization.py",
+      "path": "source/neuristor/plotting/visualization.py"
+    },
+    {
+      "label": "Frozen source provenance.py",
+      "path": "source/neuristor/provenance.py"
+    },
+    {
+      "label": "Frozen source runs.py",
+      "path": "source/neuristor/runs.py"
+    },
+    {
+      "label": "Frozen source validation.py",
+      "path": "source/neuristor/validation.py"
+    },
+    {
+      "label": "Frozen source workflows.py",
+      "path": "source/neuristor/workflows.py"
+    },
+    {
+      "label": "Executable source snapshot",
+      "media_type": "application/json",
+      "path": "source_hashes.json"
+    },
+    {
+      "label": "Numerical package versions",
+      "media_type": "application/json",
+      "path": "environment.json"
+    },
+    {
+      "label": "Prespecified mechanism grid and selection",
+      "media_type": "application/json",
+      "path": "plan.json"
+    },
+    {
+      "label": "Actual measured currents and pilot roles",
+      "path": "current_split.csv"
+    },
+    {
+      "label": "Pilot status.json",
+      "path": "status.json"
+    },
+    {
+      "label": "Pilot report.md",
+      "path": "report.md"
+    },
+    {
+      "label": "Pilot metrics.json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Pilot START_HERE.html",
+      "path": "START_HERE.html"
+    },
+    {
+      "label": "Pilot history.jsonl",
+      "path": "history.jsonl"
+    },
+    {
+      "label": "Prespecified shared one-coordinate follow-ups",
+      "media_type": "application/json",
+      "path": "refinement_plan.json"
+    },
+    {
+      "label": "Winners and exact-vector mechanism-off comparisons",
+      "media_type": "application/json",
+      "path": "verification_plan.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_4bab574fc81e/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_4bab574fc81e/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_4bab574fc81e/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_2894e89c8ab9/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_2894e89c8ab9/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_2894e89c8ab9/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_79182973e08b/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_79182973e08b/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_79182973e08b/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_ba2e03499b7f/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_ba2e03499b7f/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_ba2e03499b7f/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_6aa5d7f06b0b/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_6aa5d7f06b0b/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_6aa5d7f06b0b/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_86fcbbba4168/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_86fcbbba4168/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_86fcbbba4168/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_2451fa50cddd/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_2451fa50cddd/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_2451fa50cddd/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_4eb20b44c2bb/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_4eb20b44c2bb/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_4eb20b44c2bb/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/baseline_bd29833325e3/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/baseline_bd29833325e3/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/baseline_bd29833325e3/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_bd5dbee86d8f/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_bd5dbee86d8f/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_bd5dbee86d8f/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_138b869f46ec/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_138b869f46ec/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_138b869f46ec/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_70c8d19cee6c/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_70c8d19cee6c/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_70c8d19cee6c/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_b1752f1a52f4/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_b1752f1a52f4/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_b1752f1a52f4/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_6913ab847f4d/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_6913ab847f4d/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_6913ab847f4d/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_3698718f0621/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_3698718f0621/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_3698718f0621/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/baseline_7691157b00a5/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/baseline_7691157b00a5/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/baseline_7691157b00a5/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_ac08ef0c54d1/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_ac08ef0c54d1/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_ac08ef0c54d1/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_92d0aaa29854/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_92d0aaa29854/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_92d0aaa29854/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_b237712b4dde/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_b237712b4dde/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_b237712b4dde/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_7b80c5c72f58/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_7b80c5c72f58/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_7b80c5c72f58/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_a7beefa6c427/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_a7beefa6c427/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_a7beefa6c427/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_938258195386/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_938258195386/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_938258195386/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_2603262c8946/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_2603262c8946/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_2603262c8946/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_213f5f75d2d4/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_213f5f75d2d4/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_213f5f75d2d4/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_1cd12ec2756b/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_1cd12ec2756b/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_1cd12ec2756b/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_4a874d91ea02/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_4a874d91ea02/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_4a874d91ea02/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_7f2a07a152ca/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_7f2a07a152ca/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_7f2a07a152ca/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_889dff788b3f/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_889dff788b3f/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_889dff788b3f/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_20a7093bab4c/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_20a7093bab4c/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_20a7093bab4c/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_6f7df96c8f72/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_6f7df96c8f72/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_6f7df96c8f72/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_e96c457493b7/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_e96c457493b7/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_e96c457493b7/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_30dd8b5b7cdb/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_30dd8b5b7cdb/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_30dd8b5b7cdb/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_7abb422a382c/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_7abb422a382c/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_7abb422a382c/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_090cf778f343/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_090cf778f343/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_090cf778f343/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_f55f38717ea2/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_f55f38717ea2/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_f55f38717ea2/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_75b6b43c75e3/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_75b6b43c75e3/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_75b6b43c75e3/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_0cb7d7599a9c/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_0cb7d7599a9c/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_0cb7d7599a9c/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_73f853cadb08/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_73f853cadb08/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_73f853cadb08/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_777968fed9bf/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_777968fed9bf/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_777968fed9bf/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_45a49d91873d/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_45a49d91873d/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_45a49d91873d/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_761cf4f1b4a9/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_761cf4f1b4a9/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_761cf4f1b4a9/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_ba13f1498b0d/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_ba13f1498b0d/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_ba13f1498b0d/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_380205a646c1/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_380205a646c1/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_380205a646c1/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_1501a158f188/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_1501a158f188/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_1501a158f188/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_c6c535e1c333/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_c6c535e1c333/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_c6c535e1c333/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_e60fe44b7ad3/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_e60fe44b7ad3/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_e60fe44b7ad3/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_418db68c9fe2/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_418db68c9fe2/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_418db68c9fe2/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_84d8bcc59e7c/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_84d8bcc59e7c/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_84d8bcc59e7c/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_fd3523287909/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_fd3523287909/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_fd3523287909/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_b5be764c8021/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_b5be764c8021/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_b5be764c8021/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_7b6cdddb2af7/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_7b6cdddb2af7/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_7b6cdddb2af7/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_57c95357ce9a/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_57c95357ce9a/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_57c95357ce9a/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_00b9e3a695d9/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_00b9e3a695d9/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_00b9e3a695d9/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_29b816e75c56/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_29b816e75c56/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_29b816e75c56/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_c2a131799b7c/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_c2a131799b7c/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_c2a131799b7c/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_82e97f684854/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_82e97f684854/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_82e97f684854/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_68121141ce0f/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_68121141ce0f/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_68121141ce0f/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_b0c45f7228f3/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_b0c45f7228f3/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_b0c45f7228f3/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_2b784aedcc70/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_2b784aedcc70/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_2b784aedcc70/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_c08f33d54aed/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_c08f33d54aed/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_c08f33d54aed/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_c9ae3a0827d9/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_c9ae3a0827d9/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_c9ae3a0827d9/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_bc41afa6446a/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_bc41afa6446a/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_bc41afa6446a/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_daa251547b58/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_daa251547b58/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_daa251547b58/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_a3fd8226dfd2/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_a3fd8226dfd2/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_a3fd8226dfd2/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_bd5d1a82695d/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_bd5d1a82695d/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_bd5d1a82695d/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_f657562c9eb6/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_f657562c9eb6/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_f657562c9eb6/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_8323a78ac9da/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_8323a78ac9da/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_8323a78ac9da/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_e0da41d73adc/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_e0da41d73adc/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_e0da41d73adc/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_45f60f7d9c92/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_45f60f7d9c92/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_45f60f7d9c92/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_c8ad71f33ec8/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_c8ad71f33ec8/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_c8ad71f33ec8/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_f9dbb3fec66e/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_f9dbb3fec66e/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_f9dbb3fec66e/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_93d7e99ddd2f/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_93d7e99ddd2f/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_93d7e99ddd2f/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_4bc9061c6c55/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_4bc9061c6c55/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_4bc9061c6c55/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_cee21ca768b4/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_cee21ca768b4/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_cee21ca768b4/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_bd2291067151/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_bd2291067151/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_bd2291067151/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_c36de038e043/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_c36de038e043/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_c36de038e043/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_4e8726705480/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_4e8726705480/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_4e8726705480/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_3453d268bef3/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_3453d268bef3/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_3453d268bef3/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_35a13140cf96/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_35a13140cf96/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_35a13140cf96/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_284f168b53ac/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_284f168b53ac/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_284f168b53ac/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_3db22fef20d3/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_3db22fef20d3/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_3db22fef20d3/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_78cdfb90ca03/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_78cdfb90ca03/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_78cdfb90ca03/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_95e4783accbc/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_95e4783accbc/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_95e4783accbc/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_ee24474baadc/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_ee24474baadc/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_ee24474baadc/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_41019671b8c2/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_41019671b8c2/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_41019671b8c2/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_adad958854e8/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_adad958854e8/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_adad958854e8/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_e60112353c33/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_e60112353c33/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_e60112353c33/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_26db278e59b8/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_26db278e59b8/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_26db278e59b8/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/baseline_bdb574060739/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/baseline_bdb574060739/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/baseline_bdb574060739/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_e45e525681e7/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_e45e525681e7/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_e45e525681e7/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_20bbba6f70b9/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_20bbba6f70b9/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_20bbba6f70b9/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_a0b0d5c81f56/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_a0b0d5c81f56/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_a0b0d5c81f56/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_be2f01890969/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_be2f01890969/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_be2f01890969/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_154340163e4a/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_154340163e4a/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_154340163e4a/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_efac2f2408a8/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_efac2f2408a8/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_efac2f2408a8/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_22f5c53d2591/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_22f5c53d2591/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_warm_parallel_22f5c53d2591/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_67c77499fced/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_67c77499fced/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_67c77499fced/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_609db84d6641/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_609db84d6641/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_609db84d6641/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_ca83c38801e4/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_ca83c38801e4/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_ca83c38801e4/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_2faabaf3b7b4/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_2faabaf3b7b4/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_2faabaf3b7b4/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_8ccf56f6f952/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_8ccf56f6f952/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_8ccf56f6f952/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_7e0e4e977ac2/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_7e0e4e977ac2/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_7e0e4e977ac2/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_9ce14c9ead5d/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_9ce14c9ead5d/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_9ce14c9ead5d/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_e56afe4ca616/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_e56afe4ca616/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_e56afe4ca616/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_b42e51c84685/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_b42e51c84685/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_b42e51c84685/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_f3d404078df0/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_f3d404078df0/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_f3d404078df0/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_d8229679698f/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_d8229679698f/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_d8229679698f/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_90a954e722e7/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_90a954e722e7/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_90a954e722e7/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_68f196db9441/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_68f196db9441/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_68f196db9441/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_78760876f601/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_78760876f601/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/warm_parallel_78760876f601/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_041bd08fa3c3/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_041bd08fa3c3/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_041bd08fa3c3/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_516cf8e50c6e/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_516cf8e50c6e/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_516cf8e50c6e/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_ce1d03a43c5c/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_ce1d03a43c5c/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_series_bottleneck_ce1d03a43c5c/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_8092f2b6eb50/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_8092f2b6eb50/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_8092f2b6eb50/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_b8875521542c/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_b8875521542c/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_b8875521542c/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_6972029cc349/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_6972029cc349/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_phase_lag_6972029cc349/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_1d07d8121f30/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_1d07d8121f30/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/series_bottleneck_1d07d8121f30/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_8a9e10caa537/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_8a9e10caa537/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/phase_lag_8a9e10caa537/case.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_46e2a39d1d7c/result.json"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_46e2a39d1d7c/features.csv"
+    },
+    {
+      "label": "cases evidence",
+      "path": "cases/refine_baseline_46e2a39d1d7c/case.json"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_phase_lag_2603262c8946/result.json"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_phase_lag_2603262c8946/convergence.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_phase_lag_2603262c8946/verification.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_phase_lag_2603262c8946/traces.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/matched_baseline_refine_warm_parallel_380205a646c1/result.json"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/matched_baseline_refine_warm_parallel_380205a646c1/convergence.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/matched_baseline_refine_warm_parallel_380205a646c1/verification.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/matched_baseline_refine_warm_parallel_380205a646c1/traces.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_series_bottleneck_777968fed9bf/result.json"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_series_bottleneck_777968fed9bf/convergence.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_series_bottleneck_777968fed9bf/verification.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_series_bottleneck_777968fed9bf/traces.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_warm_parallel_380205a646c1/result.json"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_warm_parallel_380205a646c1/convergence.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_warm_parallel_380205a646c1/verification.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_warm_parallel_380205a646c1/traces.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/matched_baseline_refine_series_bottleneck_777968fed9bf/result.json"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/matched_baseline_refine_series_bottleneck_777968fed9bf/convergence.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/matched_baseline_refine_series_bottleneck_777968fed9bf/verification.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/matched_baseline_refine_series_bottleneck_777968fed9bf/traces.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/matched_baseline_refine_phase_lag_2603262c8946/result.json"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/matched_baseline_refine_phase_lag_2603262c8946/convergence.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/matched_baseline_refine_phase_lag_2603262c8946/verification.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/matched_baseline_refine_phase_lag_2603262c8946/traces.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_baseline_516cf8e50c6e/result.json"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_baseline_516cf8e50c6e/convergence.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_baseline_516cf8e50c6e/verification.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_baseline_516cf8e50c6e/traces.csv"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_baseline_516cf8e50c6e/native/current_250.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_baseline_516cf8e50c6e/native/current_800.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_baseline_516cf8e50c6e/native/current_550.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_baseline_516cf8e50c6e/native/current_1200.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_baseline_516cf8e50c6e/native/current_350.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_warm_parallel_380205a646c1/native/current_250.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_warm_parallel_380205a646c1/native/current_800.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_warm_parallel_380205a646c1/native/current_550.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_warm_parallel_380205a646c1/native/current_1200.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_warm_parallel_380205a646c1/native/current_350.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_series_bottleneck_777968fed9bf/native/current_250.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_series_bottleneck_777968fed9bf/native/current_800.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_series_bottleneck_777968fed9bf/native/current_550.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_series_bottleneck_777968fed9bf/native/current_1200.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_series_bottleneck_777968fed9bf/native/current_350.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_phase_lag_2603262c8946/native/current_250.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_phase_lag_2603262c8946/native/current_800.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_phase_lag_2603262c8946/native/current_550.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_phase_lag_2603262c8946/native/current_1200.npz"
+    },
+    {
+      "label": "verification evidence",
+      "path": "verification/refine_phase_lag_2603262c8946/native/current_350.npz"
+    },
+    {
+      "label": "long_controls evidence",
+      "path": "long_controls/refine_phase_lag_2603262c8946/result.json"
+    },
+    {
+      "label": "long_controls evidence",
+      "path": "long_controls/refine_phase_lag_2603262c8946/features.csv"
+    },
+    {
+      "label": "long_controls evidence",
+      "path": "long_controls/refine_series_bottleneck_777968fed9bf/result.json"
+    },
+    {
+      "label": "long_controls evidence",
+      "path": "long_controls/refine_series_bottleneck_777968fed9bf/features.csv"
+    },
+    {
+      "label": "long_controls evidence",
+      "path": "long_controls/refine_warm_parallel_380205a646c1/result.json"
+    },
+    {
+      "label": "long_controls evidence",
+      "path": "long_controls/refine_warm_parallel_380205a646c1/features.csv"
+    },
+    {
+      "label": "long_controls evidence",
+      "path": "long_controls/refine_baseline_516cf8e50c6e/result.json"
+    },
+    {
+      "label": "long_controls evidence",
+      "path": "long_controls/refine_baseline_516cf8e50c6e/features.csv"
+    },
+    {
+      "label": "Actual pilot coverage and joint success",
+      "media_type": "application/json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Every declared and refined case, including failures",
+      "path": "screening.csv"
+    },
+    {
+      "label": "All-current and matched-vector ablation results",
+      "path": "comparison.csv"
+    },
+    {
+      "label": "All four mechanism winners at prespecified pilot currents",
+      "path": "figures/pilot_waveforms.png"
+    },
+    {
+      "label": "Offline all-current model comparison",
+      "media_type": "text/html",
+      "path": "START_HERE.html"
+    },
+    {
+      "label": "Models, grid, acceptance and limits",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    },
+    {
+      "label": "Immutable input/source/numerical artifact inventory",
+      "media_type": "application/json",
+      "path": "artifact_hashes.json"
+    }
+  ],
+  "command": "neuristor analyze model-pilot --config experiments/current/specimen_model_pilot_20261028.toml",
+  "created_at": "2026-10-28T10:53:07.177856+00:00",
+  "id": "20261028_105307_partial-switching-material-model-comparison-pilo_fdbd33",
+  "kind": "analysis",
+  "model": "experimental-material-model-pilot",
+  "name": "Partial-switching material-model comparison pilot",
+  "provenance": {
+    "branch": "codex/partial-switching-pilot",
+    "commit": "0e39b5ee587ddf18e4abd9fc654b123427d31986",
+    "dirty": false
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "local",
+  "summary": {
+    "calibration_adopted": false,
+    "declared_cases": 87,
+    "elapsed_s": 847.2762409590068,
+    "finite_screened_cases": 119,
+    "long_control_cases": 4,
+    "refinement_cases": 32,
+    "scope": "Fixed-grid mechanism pilot; records and historical anchors seen previously",
+    "state": "completed",
+    "successful_candidates": [],
+    "total_screened_cases": 119,
+    "verified_cases": 7
+  },
+  "updated_at": "2026-10-28T11:07:15.870923+00:00"
+}

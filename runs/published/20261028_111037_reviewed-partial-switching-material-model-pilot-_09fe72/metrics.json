@@ -1,0 +1,13 @@
+{
+  "calibration_adopted": false,
+  "declared_cases": 87,
+  "elapsed_s": 847.2762409590068,
+  "finite_screened_cases": 119,
+  "long_control_cases": 4,
+  "refinement_cases": 32,
+  "scope": "Fixed-grid mechanism pilot; records and historical anchors seen previously",
+  "state": "completed",
+  "successful_candidates": [],
+  "total_screened_cases": 119,
+  "verified_cases": 7
+}

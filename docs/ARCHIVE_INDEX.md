@@ -10,6 +10,21 @@ presentation artifacts. That distinction matters because Git history preserves e
 experiments, while only the current solver and audit should be used for new numerical
 claims.
 
+## Material-model comparison pilot — 28 October 2026
+
+- [`20261028_111037_reviewed-partial-switching-material-model-pilot-_09fe72`](../runs/published/20261028_111037_reviewed-partial-switching-material-model-pilot-_09fe72/START_HERE.html):
+  compares optional warm parallel regions, a series VO₂ bottleneck/access path
+  and finite phase response separately. All 119 screening/refinement cases, seven
+  all-current replays/ablations at four timesteps and four 2 µs controls complete.
+  No candidate passes all gates or reproduces the falling-amplitude trend across
+  the three pilot currents while retaining every cycle. Series amplitude reduction
+  partly reflects quenching; warm and phase-lag candidates exceed calibration.
+  The baseline is a different sparse-pilot selection, not a replacement for the
+  overnight retained reference. Source/input hashes, all tables and 20 native
+  feature/current/heat audits are preserved; large native arrays stay local with
+  explicit exclusions. No calibration is adopted.
+  [Protocol, results and interpretation](MATERIAL_MODEL_PILOT_20261028.md).
+
 ## Overnight fixed-f filament profile — 28 October 2026
 
 - [`20261028_033930_reviewed-overnight-filament-profile-20261028_039915`](../runs/published/20261028_033930_reviewed-overnight-filament-profile-20261028_039915/START_HERE.html):

@@ -1,0 +1,34 @@
+[
+  {
+    "joint_pass": false,
+    "kind": "baseline",
+    "maximum_temperature_K": 377.7500305175781,
+    "physical_rows": 8,
+    "rows": 9,
+    "sustained_rows": 6
+  },
+  {
+    "joint_pass": false,
+    "kind": "phase_lag",
+    "maximum_temperature_K": 394.4254760742187,
+    "physical_rows": 6,
+    "rows": 9,
+    "sustained_rows": 9
+  },
+  {
+    "joint_pass": false,
+    "kind": "series_bottleneck",
+    "maximum_temperature_K": 364.1756591796875,
+    "physical_rows": 9,
+    "rows": 9,
+    "sustained_rows": 3
+  },
+  {
+    "joint_pass": false,
+    "kind": "warm_parallel",
+    "maximum_temperature_K": 431.1324768066406,
+    "physical_rows": 0,
+    "rows": 9,
+    "sustained_rows": 9
+  }
+]

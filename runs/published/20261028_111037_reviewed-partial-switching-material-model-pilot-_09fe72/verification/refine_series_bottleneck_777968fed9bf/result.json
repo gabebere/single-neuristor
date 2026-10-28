@@ -1,0 +1,137 @@
+{
+  "acceptance": {
+    "amplitude_MAPE_all": 5.21962191611584,
+    "defined_frequencies": 4,
+    "failed_gates": [
+      "all_target_cycles",
+      "all_target_frequencies_defined",
+      "frequency_accuracy",
+      "amplitude_accuracy",
+      "mean_voltage_accuracy",
+      "numerically_converged",
+      "shape_accuracy"
+    ],
+    "false_positive_controls": 0,
+    "frequency_MAPE_defined": 0.21955700549450552,
+    "gates": {
+      "all_record_physical": true,
+      "all_target_cycles": false,
+      "all_target_frequencies_defined": false,
+      "amplitude_accuracy": false,
+      "frequency_accuracy": false,
+      "mean_voltage_accuracy": false,
+      "numerically_converged": false,
+      "quiet_controls": true,
+      "shape_accuracy": false
+    },
+    "mean_voltage_RMSE_mV": 45.80165971198243,
+    "passing_targets": 4,
+    "quiet_control_count": 8,
+    "success": false,
+    "target_records": 11
+  },
+  "amplitude_decreases_across_pilot": false,
+  "anchor": "overnight_primary",
+  "bound_clamped": false,
+  "changed_coordinate": "C_pF",
+  "elapsed_s": 4.535404291993473,
+  "id": "refine_series_bottleneck_777968fed9bf",
+  "maximum_temperature_K": 367.5494384765625,
+  "metrics": {
+    "accepted_feature_loss": null,
+    "amplitude_MAPE_all": 3.345524772257519,
+    "defined_frequencies": 1,
+    "diagnostic_feature_score": 78.07716850418744,
+    "excessive_control_oscillations": 0,
+    "frequency_MAPE_defined": 0.15625,
+    "maximum_temperature_K": 370.8207702636719,
+    "mean_voltage_RMSE_mV": 52.633947146106046,
+    "passing_targets": 1,
+    "physical": true,
+    "rank": [
+      0,
+      2,
+      0,
+      78.07716850418744
+    ],
+    "shape_RMSE_defined_mV": 139.90198646896138,
+    "targets": 3
+  },
+  "native_power_audit": [
+    {
+      "index": 4,
+      "relative_power_error": 2.169757818573239e-07
+    },
+    {
+      "index": 6,
+      "relative_power_error": 2.1579218770093538e-07
+    },
+    {
+      "index": 10,
+      "relative_power_error": 2.3785046702431543e-07
+    },
+    {
+      "index": 15,
+      "relative_power_error": 2.3243499493301808e-07
+    },
+    {
+      "index": 21,
+      "relative_power_error": 2.1149471794469345e-07
+    }
+  ],
+  "parent": "series_bottleneck_bd2291067151",
+  "pilot": {
+    "accepted_feature_loss": null,
+    "amplitude_MAPE_all": 3.329055861366026,
+    "defined_frequencies": 1,
+    "diagnostic_feature_score": 75.81145893266408,
+    "excessive_control_oscillations": 0,
+    "frequency_MAPE_defined": 0.15625,
+    "maximum_temperature_K": 367.5494384765625,
+    "mean_voltage_RMSE_mV": 45.80165971198244,
+    "passing_targets": 1,
+    "physical": true,
+    "rank": [
+      0,
+      2,
+      0,
+      75.81145893266408
+    ],
+    "shape_RMSE_defined_mV": 139.44310588969412,
+    "targets": 3
+  },
+  "realized_SI": {
+    "C_F": 7.931163479746408e-12,
+    "C_primary_J_per_K": 1.9900511702205278e-14,
+    "C_secondary_J_per_K": 6.633503900735092e-14,
+    "S_primary_W_per_K": 2.992897205866407e-06,
+    "S_secondary_W_per_K": 9.97632401955469e-07,
+    "coupling_W_per_K": 0.0,
+    "kind": "series_bottleneck",
+    "primary_fraction": 0.75
+  },
+  "role": "candidate",
+  "shape_RMSE_mV": null,
+  "simulated": true,
+  "specification": {
+    "capacity_ratio": 10.0,
+    "cooling_ratio": 1.0,
+    "coupling_ratio": 0.0,
+    "kind": "series_bottleneck",
+    "weight": 0.75
+  },
+  "stage": "shared_dynamic_refinement",
+  "values": [
+    7.931163479746408,
+    0.003990529607821876,
+    6.6492466440872375,
+    314.4,
+    333.49356636598696,
+    6.882302959338694,
+    0.2991563242902104,
+    0.956269682,
+    2513.3391379829973,
+    2536.9654457644647,
+    18.21526990911648
+  ]
+}

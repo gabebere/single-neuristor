@@ -1,0 +1,29 @@
+{
+  "caveat": "Historically seen records; fixed-grid mechanism pilot, not a blind test or calibration",
+  "control_currents_uA": [
+    189.78481489725564,
+    907.0417701985936
+  ],
+  "declared_cases": 87,
+  "full_verification_records": 22,
+  "mechanisms": [
+    "baseline",
+    "warm_parallel",
+    "series_bottleneck",
+    "phase_lag"
+  ],
+  "pilot_currents_uA": [
+    266.63381756349264,
+    418.8568677552722,
+    606.2799905984709
+  ],
+  "shared_refinements_up_to": 32,
+  "verification_cases_up_to": 7,
+  "verification_dt_ns": [
+    0.025,
+    0.0125,
+    0.00625,
+    0.003125
+  ],
+  "workers": 2
+}

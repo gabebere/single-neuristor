@@ -1,0 +1,1546 @@
+[
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "C_pF",
+    "elapsed_s": 2.4349115420045564,
+    "id": "refine_baseline_516cf8e50c6e",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 15.041460624699141,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 438.3499024883502,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.16975308641975304,
+      "maximum_temperature_K": 380.5843811035156,
+      "mean_voltage_RMSE_mV": 40.23449417097066,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        438.3499024883502
+      ],
+      "shape_RMSE_defined_mV": 168.20686969403533,
+      "targets": 3
+    },
+    "parent": "baseline_7691157b00a5",
+    "simulated": true,
+    "specification": {
+      "kind": "baseline"
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      3.965581739873204,
+      0.003990529607821876,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "C_pF",
+    "elapsed_s": 2.4349115420045564,
+    "id": "refine_baseline_b8875521542c",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 15.041460624699141,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 438.3499024883502,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.16975308641975304,
+      "maximum_temperature_K": 380.5843811035156,
+      "mean_voltage_RMSE_mV": 40.23449417097066,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        438.3499024883502
+      ],
+      "shape_RMSE_defined_mV": 168.20686969403533,
+      "targets": 3
+    },
+    "parent": "baseline_7691157b00a5",
+    "simulated": true,
+    "specification": {
+      "kind": "baseline"
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      7.931163479746408,
+      0.003990529607821876,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "S_e_mW_per_K",
+    "elapsed_s": 2.4349115420045564,
+    "id": "refine_baseline_a3fd8226dfd2",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 15.041460624699141,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 438.3499024883502,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.16975308641975304,
+      "maximum_temperature_K": 380.5843811035156,
+      "mean_voltage_RMSE_mV": 40.23449417097066,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        438.3499024883502
+      ],
+      "shape_RMSE_defined_mV": 168.20686969403533,
+      "targets": 3
+    },
+    "parent": "baseline_7691157b00a5",
+    "simulated": true,
+    "specification": {
+      "kind": "baseline"
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.002793370725475313,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "S_e_mW_per_K",
+    "elapsed_s": 2.4349115420045564,
+    "id": "refine_baseline_bc41afa6446a",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 15.041460624699141,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 438.3499024883502,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.16975308641975304,
+      "maximum_temperature_K": 380.5843811035156,
+      "mean_voltage_RMSE_mV": 40.23449417097066,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        438.3499024883502
+      ],
+      "shape_RMSE_defined_mV": 168.20686969403533,
+      "targets": 3
+    },
+    "parent": "baseline_7691157b00a5",
+    "simulated": true,
+    "specification": {
+      "kind": "baseline"
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.005586741450950626,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "tau_th_ns",
+    "elapsed_s": 2.4349115420045564,
+    "id": "refine_baseline_68121141ce0f",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 15.041460624699141,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 438.3499024883502,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.16975308641975304,
+      "maximum_temperature_K": 380.5843811035156,
+      "mean_voltage_RMSE_mV": 40.23449417097066,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        438.3499024883502
+      ],
+      "shape_RMSE_defined_mV": 168.20686969403533,
+      "targets": 3
+    },
+    "parent": "baseline_7691157b00a5",
+    "simulated": true,
+    "specification": {
+      "kind": "baseline"
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.003990529607821876,
+      4.654472650861066,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "tau_th_ns",
+    "elapsed_s": 2.4349115420045564,
+    "id": "refine_baseline_7f2a07a152ca",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 15.041460624699141,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 438.3499024883502,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.16975308641975304,
+      "maximum_temperature_K": 380.5843811035156,
+      "mean_voltage_RMSE_mV": 40.23449417097066,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        438.3499024883502
+      ],
+      "shape_RMSE_defined_mV": 168.20686969403533,
+      "targets": 3
+    },
+    "parent": "baseline_7691157b00a5",
+    "simulated": true,
+    "specification": {
+      "kind": "baseline"
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.003990529607821876,
+      9.308945301722131,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "gamma",
+    "elapsed_s": 2.4349115420045564,
+    "id": "refine_baseline_f9dbb3fec66e",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 15.041460624699141,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 438.3499024883502,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.16975308641975304,
+      "maximum_temperature_K": 380.5843811035156,
+      "mean_voltage_RMSE_mV": 40.23449417097066,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        438.3499024883502
+      ],
+      "shape_RMSE_defined_mV": 168.20686969403533,
+      "targets": 3
+    },
+    "parent": "baseline_7691157b00a5",
+    "simulated": true,
+    "specification": {
+      "kind": "baseline"
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.003990529607821876,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.9062696819999999,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": true,
+    "changed_coordinate": "gamma",
+    "elapsed_s": 2.4349115420045564,
+    "id": "refine_baseline_46e2a39d1d7c",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 15.041460624699141,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 438.3499024883502,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.16975308641975304,
+      "maximum_temperature_K": 380.5843811035156,
+      "mean_voltage_RMSE_mV": 40.23449417097066,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        438.3499024883502
+      ],
+      "shape_RMSE_defined_mV": 168.20686969403533,
+      "targets": 3
+    },
+    "parent": "baseline_7691157b00a5",
+    "simulated": true,
+    "specification": {
+      "kind": "baseline"
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.003990529607821876,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.98,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "presentation_frequency",
+    "bound_clamped": false,
+    "changed_coordinate": "C_pF",
+    "elapsed_s": 4.4603944170085015,
+    "id": "refine_warm_parallel_29b816e75c56",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 16.657305221832434,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 540.555848677243,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.2059045463120166,
+      "maximum_temperature_K": 424.4745788574219,
+      "mean_voltage_RMSE_mV": 66.39273945801678,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        540.555848677243
+      ],
+      "shape_RMSE_defined_mV": 198.06543963748993,
+      "targets": 3
+    },
+    "parent": "warm_parallel_bd5dbee86d8f",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "warm_parallel",
+      "weight": 0.5
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      3.752680979758441,
+      0.005794097192405672,
+      4.832621119253842,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.7074768145807939,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "presentation_frequency",
+    "bound_clamped": false,
+    "changed_coordinate": "C_pF",
+    "elapsed_s": 4.4603944170085015,
+    "id": "refine_warm_parallel_22f5c53d2591",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 16.657305221832434,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 540.555848677243,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.2059045463120166,
+      "maximum_temperature_K": 424.4745788574219,
+      "mean_voltage_RMSE_mV": 66.39273945801678,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        540.555848677243
+      ],
+      "shape_RMSE_defined_mV": 198.06543963748993,
+      "targets": 3
+    },
+    "parent": "warm_parallel_bd5dbee86d8f",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "warm_parallel",
+      "weight": 0.5
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      7.505361959516882,
+      0.005794097192405672,
+      4.832621119253842,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.7074768145807939,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "presentation_frequency",
+    "bound_clamped": false,
+    "changed_coordinate": "S_e_mW_per_K",
+    "elapsed_s": 4.4603944170085015,
+    "id": "refine_warm_parallel_e60fe44b7ad3",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 16.657305221832434,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 540.555848677243,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.2059045463120166,
+      "maximum_temperature_K": 424.4745788574219,
+      "mean_voltage_RMSE_mV": 66.39273945801678,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        540.555848677243
+      ],
+      "shape_RMSE_defined_mV": 198.06543963748993,
+      "targets": 3
+    },
+    "parent": "warm_parallel_bd5dbee86d8f",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "warm_parallel",
+      "weight": 0.5
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.360972828226345,
+      0.00405586803468397,
+      4.832621119253842,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.7074768145807939,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "presentation_frequency",
+    "bound_clamped": false,
+    "changed_coordinate": "S_e_mW_per_K",
+    "elapsed_s": 4.4603944170085015,
+    "id": "refine_warm_parallel_45f60f7d9c92",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 16.657305221832434,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 540.555848677243,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.2059045463120166,
+      "maximum_temperature_K": 424.4745788574219,
+      "mean_voltage_RMSE_mV": 66.39273945801678,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        540.555848677243
+      ],
+      "shape_RMSE_defined_mV": 198.06543963748993,
+      "targets": 3
+    },
+    "parent": "warm_parallel_bd5dbee86d8f",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "warm_parallel",
+      "weight": 0.5
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.360972828226345,
+      0.00811173606936794,
+      4.832621119253842,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.7074768145807939,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "presentation_frequency",
+    "bound_clamped": false,
+    "changed_coordinate": "tau_th_ns",
+    "elapsed_s": 4.4603944170085015,
+    "id": "refine_warm_parallel_b237712b4dde",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 16.657305221832434,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 540.555848677243,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.2059045463120166,
+      "maximum_temperature_K": 424.4745788574219,
+      "mean_voltage_RMSE_mV": 66.39273945801678,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        540.555848677243
+      ],
+      "shape_RMSE_defined_mV": 198.06543963748993,
+      "targets": 3
+    },
+    "parent": "warm_parallel_bd5dbee86d8f",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "warm_parallel",
+      "weight": 0.5
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.360972828226345,
+      0.005794097192405672,
+      3.3828347834776893,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.7074768145807939,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "presentation_frequency",
+    "bound_clamped": false,
+    "changed_coordinate": "tau_th_ns",
+    "elapsed_s": 4.4603944170085015,
+    "id": "refine_warm_parallel_ba13f1498b0d",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 16.657305221832434,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 540.555848677243,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.2059045463120166,
+      "maximum_temperature_K": 424.4745788574219,
+      "mean_voltage_RMSE_mV": 66.39273945801678,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        540.555848677243
+      ],
+      "shape_RMSE_defined_mV": 198.06543963748993,
+      "targets": 3
+    },
+    "parent": "warm_parallel_bd5dbee86d8f",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "warm_parallel",
+      "weight": 0.5
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.360972828226345,
+      0.005794097192405672,
+      6.765669566955379,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.7074768145807939,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "presentation_frequency",
+    "bound_clamped": false,
+    "changed_coordinate": "gamma",
+    "elapsed_s": 4.4603944170085015,
+    "id": "refine_warm_parallel_380205a646c1",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 16.657305221832434,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 540.555848677243,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.2059045463120166,
+      "maximum_temperature_K": 424.4745788574219,
+      "mean_voltage_RMSE_mV": 66.39273945801678,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        540.555848677243
+      ],
+      "shape_RMSE_defined_mV": 198.06543963748993,
+      "targets": 3
+    },
+    "parent": "warm_parallel_bd5dbee86d8f",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "warm_parallel",
+      "weight": 0.5
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.360972828226345,
+      0.005794097192405672,
+      4.832621119253842,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.6574768145807939,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "presentation_frequency",
+    "bound_clamped": false,
+    "changed_coordinate": "gamma",
+    "elapsed_s": 4.4603944170085015,
+    "id": "refine_warm_parallel_f55f38717ea2",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 16.657305221832434,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 540.555848677243,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.2059045463120166,
+      "maximum_temperature_K": 424.4745788574219,
+      "mean_voltage_RMSE_mV": 66.39273945801678,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        540.555848677243
+      ],
+      "shape_RMSE_defined_mV": 198.06543963748993,
+      "targets": 3
+    },
+    "parent": "warm_parallel_bd5dbee86d8f",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "warm_parallel",
+      "weight": 0.5
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.360972828226345,
+      0.005794097192405672,
+      4.832621119253842,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.757476814580794,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "C_pF",
+    "elapsed_s": 4.540706125000725,
+    "id": "refine_series_bottleneck_84d8bcc59e7c",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 1.0,
+      "defined_frequencies": 0,
+      "diagnostic_feature_score": 8.084972616622883,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": null,
+      "maximum_temperature_K": 353.6505126953125,
+      "mean_voltage_RMSE_mV": 53.23522374001215,
+      "passing_targets": 0,
+      "physical": true,
+      "rank": [
+        0,
+        3,
+        0,
+        8.084972616622883
+      ],
+      "shape_RMSE_defined_mV": null,
+      "targets": 3
+    },
+    "parent": "series_bottleneck_bd2291067151",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "series_bottleneck",
+      "weight": 0.75
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      3.965581739873204,
+      0.003990529607821876,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "C_pF",
+    "elapsed_s": 4.540706125000725,
+    "id": "refine_series_bottleneck_777968fed9bf",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 1.0,
+      "defined_frequencies": 0,
+      "diagnostic_feature_score": 8.084972616622883,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": null,
+      "maximum_temperature_K": 353.6505126953125,
+      "mean_voltage_RMSE_mV": 53.23522374001215,
+      "passing_targets": 0,
+      "physical": true,
+      "rank": [
+        0,
+        3,
+        0,
+        8.084972616622883
+      ],
+      "shape_RMSE_defined_mV": null,
+      "targets": 3
+    },
+    "parent": "series_bottleneck_bd2291067151",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "series_bottleneck",
+      "weight": 0.75
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      7.931163479746408,
+      0.003990529607821876,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "S_e_mW_per_K",
+    "elapsed_s": 4.540706125000725,
+    "id": "refine_series_bottleneck_ce1d03a43c5c",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 1.0,
+      "defined_frequencies": 0,
+      "diagnostic_feature_score": 8.084972616622883,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": null,
+      "maximum_temperature_K": 353.6505126953125,
+      "mean_voltage_RMSE_mV": 53.23522374001215,
+      "passing_targets": 0,
+      "physical": true,
+      "rank": [
+        0,
+        3,
+        0,
+        8.084972616622883
+      ],
+      "shape_RMSE_defined_mV": null,
+      "targets": 3
+    },
+    "parent": "series_bottleneck_bd2291067151",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "series_bottleneck",
+      "weight": 0.75
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.002793370725475313,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "S_e_mW_per_K",
+    "elapsed_s": 4.540706125000725,
+    "id": "refine_series_bottleneck_3db22fef20d3",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 1.0,
+      "defined_frequencies": 0,
+      "diagnostic_feature_score": 8.084972616622883,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": null,
+      "maximum_temperature_K": 353.6505126953125,
+      "mean_voltage_RMSE_mV": 53.23522374001215,
+      "passing_targets": 0,
+      "physical": true,
+      "rank": [
+        0,
+        3,
+        0,
+        8.084972616622883
+      ],
+      "shape_RMSE_defined_mV": null,
+      "targets": 3
+    },
+    "parent": "series_bottleneck_bd2291067151",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "series_bottleneck",
+      "weight": 0.75
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.005586741450950626,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "tau_th_ns",
+    "elapsed_s": 4.540706125000725,
+    "id": "refine_series_bottleneck_9ce14c9ead5d",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 1.0,
+      "defined_frequencies": 0,
+      "diagnostic_feature_score": 8.084972616622883,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": null,
+      "maximum_temperature_K": 353.6505126953125,
+      "mean_voltage_RMSE_mV": 53.23522374001215,
+      "passing_targets": 0,
+      "physical": true,
+      "rank": [
+        0,
+        3,
+        0,
+        8.084972616622883
+      ],
+      "shape_RMSE_defined_mV": null,
+      "targets": 3
+    },
+    "parent": "series_bottleneck_bd2291067151",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "series_bottleneck",
+      "weight": 0.75
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.003990529607821876,
+      4.654472650861066,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "tau_th_ns",
+    "elapsed_s": 4.540706125000725,
+    "id": "refine_series_bottleneck_00b9e3a695d9",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 1.0,
+      "defined_frequencies": 0,
+      "diagnostic_feature_score": 8.084972616622883,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": null,
+      "maximum_temperature_K": 353.6505126953125,
+      "mean_voltage_RMSE_mV": 53.23522374001215,
+      "passing_targets": 0,
+      "physical": true,
+      "rank": [
+        0,
+        3,
+        0,
+        8.084972616622883
+      ],
+      "shape_RMSE_defined_mV": null,
+      "targets": 3
+    },
+    "parent": "series_bottleneck_bd2291067151",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "series_bottleneck",
+      "weight": 0.75
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.003990529607821876,
+      9.308945301722131,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "gamma",
+    "elapsed_s": 4.540706125000725,
+    "id": "refine_series_bottleneck_2451fa50cddd",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 1.0,
+      "defined_frequencies": 0,
+      "diagnostic_feature_score": 8.084972616622883,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": null,
+      "maximum_temperature_K": 353.6505126953125,
+      "mean_voltage_RMSE_mV": 53.23522374001215,
+      "passing_targets": 0,
+      "physical": true,
+      "rank": [
+        0,
+        3,
+        0,
+        8.084972616622883
+      ],
+      "shape_RMSE_defined_mV": null,
+      "targets": 3
+    },
+    "parent": "series_bottleneck_bd2291067151",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "series_bottleneck",
+      "weight": 0.75
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.003990529607821876,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.9062696819999999,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": true,
+    "changed_coordinate": "gamma",
+    "elapsed_s": 4.540706125000725,
+    "id": "refine_series_bottleneck_fd3523287909",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 1.0,
+      "defined_frequencies": 0,
+      "diagnostic_feature_score": 8.084972616622883,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": null,
+      "maximum_temperature_K": 353.6505126953125,
+      "mean_voltage_RMSE_mV": 53.23522374001215,
+      "passing_targets": 0,
+      "physical": true,
+      "rank": [
+        0,
+        3,
+        0,
+        8.084972616622883
+      ],
+      "shape_RMSE_defined_mV": null,
+      "targets": 3
+    },
+    "parent": "series_bottleneck_bd2291067151",
+    "simulated": true,
+    "specification": {
+      "capacity_ratio": 10.0,
+      "cooling_ratio": 1.0,
+      "coupling_ratio": 0.0,
+      "kind": "series_bottleneck",
+      "weight": 0.75
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.003990529607821876,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.98,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "C_pF",
+    "elapsed_s": 2.7688063329987926,
+    "id": "refine_phase_lag_213f5f75d2d4",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 11.636963252720792,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 269.40439722204127,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.36977598248375293,
+      "maximum_temperature_K": 395.1723937988281,
+      "mean_voltage_RMSE_mV": 54.447303300120566,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        269.40439722204127
+      ],
+      "shape_RMSE_defined_mV": 134.62491878685023,
+      "targets": 3
+    },
+    "parent": "phase_lag_b1752f1a52f4",
+    "simulated": true,
+    "specification": {
+      "kind": "phase_lag",
+      "phase_tau_ns": 6.0
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      3.965581739873204,
+      0.003990529607821876,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "C_pF",
+    "elapsed_s": 2.7688063329987926,
+    "id": "refine_phase_lag_ac08ef0c54d1",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 11.636963252720792,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 269.40439722204127,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.36977598248375293,
+      "maximum_temperature_K": 395.1723937988281,
+      "mean_voltage_RMSE_mV": 54.447303300120566,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        269.40439722204127
+      ],
+      "shape_RMSE_defined_mV": 134.62491878685023,
+      "targets": 3
+    },
+    "parent": "phase_lag_b1752f1a52f4",
+    "simulated": true,
+    "specification": {
+      "kind": "phase_lag",
+      "phase_tau_ns": 6.0
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      7.931163479746408,
+      0.003990529607821876,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "S_e_mW_per_K",
+    "elapsed_s": 2.7688063329987926,
+    "id": "refine_phase_lag_26db278e59b8",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 11.636963252720792,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 269.40439722204127,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.36977598248375293,
+      "maximum_temperature_K": 395.1723937988281,
+      "mean_voltage_RMSE_mV": 54.447303300120566,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        269.40439722204127
+      ],
+      "shape_RMSE_defined_mV": 134.62491878685023,
+      "targets": 3
+    },
+    "parent": "phase_lag_b1752f1a52f4",
+    "simulated": true,
+    "specification": {
+      "kind": "phase_lag",
+      "phase_tau_ns": 6.0
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.002793370725475313,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "S_e_mW_per_K",
+    "elapsed_s": 2.7688063329987926,
+    "id": "refine_phase_lag_e60112353c33",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 11.636963252720792,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 269.40439722204127,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.36977598248375293,
+      "maximum_temperature_K": 395.1723937988281,
+      "mean_voltage_RMSE_mV": 54.447303300120566,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        269.40439722204127
+      ],
+      "shape_RMSE_defined_mV": 134.62491878685023,
+      "targets": 3
+    },
+    "parent": "phase_lag_b1752f1a52f4",
+    "simulated": true,
+    "specification": {
+      "kind": "phase_lag",
+      "phase_tau_ns": 6.0
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.005586741450950626,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "tau_th_ns",
+    "elapsed_s": 2.7688063329987926,
+    "id": "refine_phase_lag_6972029cc349",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 11.636963252720792,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 269.40439722204127,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.36977598248375293,
+      "maximum_temperature_K": 395.1723937988281,
+      "mean_voltage_RMSE_mV": 54.447303300120566,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        269.40439722204127
+      ],
+      "shape_RMSE_defined_mV": 134.62491878685023,
+      "targets": 3
+    },
+    "parent": "phase_lag_b1752f1a52f4",
+    "simulated": true,
+    "specification": {
+      "kind": "phase_lag",
+      "phase_tau_ns": 6.0
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.003990529607821876,
+      4.654472650861066,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "tau_th_ns",
+    "elapsed_s": 2.7688063329987926,
+    "id": "refine_phase_lag_a7beefa6c427",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 11.636963252720792,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 269.40439722204127,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.36977598248375293,
+      "maximum_temperature_K": 395.1723937988281,
+      "mean_voltage_RMSE_mV": 54.447303300120566,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        269.40439722204127
+      ],
+      "shape_RMSE_defined_mV": 134.62491878685023,
+      "targets": 3
+    },
+    "parent": "phase_lag_b1752f1a52f4",
+    "simulated": true,
+    "specification": {
+      "kind": "phase_lag",
+      "phase_tau_ns": 6.0
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.003990529607821876,
+      9.308945301722131,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.956269682,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": false,
+    "changed_coordinate": "gamma",
+    "elapsed_s": 2.7688063329987926,
+    "id": "refine_phase_lag_2603262c8946",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 11.636963252720792,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 269.40439722204127,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.36977598248375293,
+      "maximum_temperature_K": 395.1723937988281,
+      "mean_voltage_RMSE_mV": 54.447303300120566,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        269.40439722204127
+      ],
+      "shape_RMSE_defined_mV": 134.62491878685023,
+      "targets": 3
+    },
+    "parent": "phase_lag_b1752f1a52f4",
+    "simulated": true,
+    "specification": {
+      "kind": "phase_lag",
+      "phase_tau_ns": 6.0
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.003990529607821876,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.9062696819999999,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  },
+  {
+    "anchor": "overnight_primary",
+    "bound_clamped": true,
+    "changed_coordinate": "gamma",
+    "elapsed_s": 2.7688063329987926,
+    "id": "refine_phase_lag_041bd08fa3c3",
+    "metrics": {
+      "accepted_feature_loss": null,
+      "amplitude_MAPE_all": 11.636963252720792,
+      "defined_frequencies": 3,
+      "diagnostic_feature_score": 269.40439722204127,
+      "excessive_control_oscillations": 0,
+      "frequency_MAPE_defined": 0.36977598248375293,
+      "maximum_temperature_K": 395.1723937988281,
+      "mean_voltage_RMSE_mV": 54.447303300120566,
+      "passing_targets": 3,
+      "physical": false,
+      "rank": [
+        1,
+        0,
+        0,
+        269.40439722204127
+      ],
+      "shape_RMSE_defined_mV": 134.62491878685023,
+      "targets": 3
+    },
+    "parent": "phase_lag_b1752f1a52f4",
+    "simulated": true,
+    "specification": {
+      "kind": "phase_lag",
+      "phase_tau_ns": 6.0
+    },
+    "stage": "shared_dynamic_refinement",
+    "values": [
+      5.665116771247434,
+      0.003990529607821876,
+      6.6492466440872375,
+      314.4,
+      333.49356636598696,
+      6.882302959338694,
+      0.2991563242902104,
+      0.98,
+      2513.3391379829973,
+      2536.9654457644647,
+      18.21526990911648
+    ]
+  }
+]

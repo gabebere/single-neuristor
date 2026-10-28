@@ -9,9 +9,12 @@
 - Add a versioned 87-case mechanism grid, shared local probes, all-current
   timestep checks, exact-reference-vector ablations and 2 µs controls through
   `neuristor analyze model-pilot`. Save every case and an offline comparison.
-- Verify analytic thermal/RC/phase controls and bitwise compatibility of 116
-  pre-change output arrays. Scientific pilot outcomes are pending; no calibration
-  or change to existing default trajectories is adopted.
+- Complete 119 cases, seven all-current replays/ablations and four 2 µs control
+  cases in 14.12 minutes. No candidate passes every acceptance gate; preserve a
+  separate reviewed comparison and independent audit of 20 native histories.
+- Pass 246 tests, analytic thermal/RC/phase controls, all 51 recipes and bitwise
+  compatibility of 116 pre-change output arrays. No calibration or change to
+  existing default trajectories is adopted.
 
 ## Unreleased — bounded overnight filament profile
 

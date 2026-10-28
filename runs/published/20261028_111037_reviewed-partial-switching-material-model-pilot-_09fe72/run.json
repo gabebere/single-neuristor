@@ -1,0 +1,2103 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Unmodified pilot evidence START_HERE.html",
+      "path": "original_START_HERE.html"
+    },
+    {
+      "label": "Unmodified pilot evidence artifact_hashes.json",
+      "path": "original_artifact_hashes.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/baseline_7691157b00a5/case.json",
+      "path": "cases/baseline_7691157b00a5/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/baseline_7691157b00a5/features.csv",
+      "path": "cases/baseline_7691157b00a5/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/baseline_7691157b00a5/result.json",
+      "path": "cases/baseline_7691157b00a5/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/baseline_bd29833325e3/case.json",
+      "path": "cases/baseline_bd29833325e3/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/baseline_bd29833325e3/features.csv",
+      "path": "cases/baseline_bd29833325e3/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/baseline_bd29833325e3/result.json",
+      "path": "cases/baseline_bd29833325e3/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/baseline_bdb574060739/case.json",
+      "path": "cases/baseline_bdb574060739/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/baseline_bdb574060739/features.csv",
+      "path": "cases/baseline_bdb574060739/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/baseline_bdb574060739/result.json",
+      "path": "cases/baseline_bdb574060739/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_284f168b53ac/case.json",
+      "path": "cases/phase_lag_284f168b53ac/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_284f168b53ac/features.csv",
+      "path": "cases/phase_lag_284f168b53ac/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_284f168b53ac/result.json",
+      "path": "cases/phase_lag_284f168b53ac/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_3453d268bef3/case.json",
+      "path": "cases/phase_lag_3453d268bef3/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_3453d268bef3/features.csv",
+      "path": "cases/phase_lag_3453d268bef3/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_3453d268bef3/result.json",
+      "path": "cases/phase_lag_3453d268bef3/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_7abb422a382c/case.json",
+      "path": "cases/phase_lag_7abb422a382c/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_7abb422a382c/features.csv",
+      "path": "cases/phase_lag_7abb422a382c/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_7abb422a382c/result.json",
+      "path": "cases/phase_lag_7abb422a382c/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_8a9e10caa537/case.json",
+      "path": "cases/phase_lag_8a9e10caa537/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_8a9e10caa537/features.csv",
+      "path": "cases/phase_lag_8a9e10caa537/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_8a9e10caa537/result.json",
+      "path": "cases/phase_lag_8a9e10caa537/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_adad958854e8/case.json",
+      "path": "cases/phase_lag_adad958854e8/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_adad958854e8/features.csv",
+      "path": "cases/phase_lag_adad958854e8/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_adad958854e8/result.json",
+      "path": "cases/phase_lag_adad958854e8/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_b1752f1a52f4/case.json",
+      "path": "cases/phase_lag_b1752f1a52f4/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_b1752f1a52f4/features.csv",
+      "path": "cases/phase_lag_b1752f1a52f4/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_b1752f1a52f4/result.json",
+      "path": "cases/phase_lag_b1752f1a52f4/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_bd5d1a82695d/case.json",
+      "path": "cases/phase_lag_bd5d1a82695d/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_bd5d1a82695d/features.csv",
+      "path": "cases/phase_lag_bd5d1a82695d/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_bd5d1a82695d/result.json",
+      "path": "cases/phase_lag_bd5d1a82695d/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_c2a131799b7c/case.json",
+      "path": "cases/phase_lag_c2a131799b7c/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_c2a131799b7c/features.csv",
+      "path": "cases/phase_lag_c2a131799b7c/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_c2a131799b7c/result.json",
+      "path": "cases/phase_lag_c2a131799b7c/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_c9ae3a0827d9/case.json",
+      "path": "cases/phase_lag_c9ae3a0827d9/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_c9ae3a0827d9/features.csv",
+      "path": "cases/phase_lag_c9ae3a0827d9/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_c9ae3a0827d9/result.json",
+      "path": "cases/phase_lag_c9ae3a0827d9/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_ca83c38801e4/case.json",
+      "path": "cases/phase_lag_ca83c38801e4/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_ca83c38801e4/features.csv",
+      "path": "cases/phase_lag_ca83c38801e4/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_ca83c38801e4/result.json",
+      "path": "cases/phase_lag_ca83c38801e4/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_daa251547b58/case.json",
+      "path": "cases/phase_lag_daa251547b58/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_daa251547b58/features.csv",
+      "path": "cases/phase_lag_daa251547b58/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_daa251547b58/result.json",
+      "path": "cases/phase_lag_daa251547b58/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_e0da41d73adc/case.json",
+      "path": "cases/phase_lag_e0da41d73adc/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_e0da41d73adc/features.csv",
+      "path": "cases/phase_lag_e0da41d73adc/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/phase_lag_e0da41d73adc/result.json",
+      "path": "cases/phase_lag_e0da41d73adc/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_46e2a39d1d7c/case.json",
+      "path": "cases/refine_baseline_46e2a39d1d7c/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_46e2a39d1d7c/features.csv",
+      "path": "cases/refine_baseline_46e2a39d1d7c/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_46e2a39d1d7c/result.json",
+      "path": "cases/refine_baseline_46e2a39d1d7c/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_516cf8e50c6e/case.json",
+      "path": "cases/refine_baseline_516cf8e50c6e/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_516cf8e50c6e/features.csv",
+      "path": "cases/refine_baseline_516cf8e50c6e/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_516cf8e50c6e/result.json",
+      "path": "cases/refine_baseline_516cf8e50c6e/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_68121141ce0f/case.json",
+      "path": "cases/refine_baseline_68121141ce0f/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_68121141ce0f/features.csv",
+      "path": "cases/refine_baseline_68121141ce0f/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_68121141ce0f/result.json",
+      "path": "cases/refine_baseline_68121141ce0f/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_7f2a07a152ca/case.json",
+      "path": "cases/refine_baseline_7f2a07a152ca/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_7f2a07a152ca/features.csv",
+      "path": "cases/refine_baseline_7f2a07a152ca/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_7f2a07a152ca/result.json",
+      "path": "cases/refine_baseline_7f2a07a152ca/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_a3fd8226dfd2/case.json",
+      "path": "cases/refine_baseline_a3fd8226dfd2/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_a3fd8226dfd2/features.csv",
+      "path": "cases/refine_baseline_a3fd8226dfd2/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_a3fd8226dfd2/result.json",
+      "path": "cases/refine_baseline_a3fd8226dfd2/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_b8875521542c/case.json",
+      "path": "cases/refine_baseline_b8875521542c/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_b8875521542c/features.csv",
+      "path": "cases/refine_baseline_b8875521542c/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_b8875521542c/result.json",
+      "path": "cases/refine_baseline_b8875521542c/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_bc41afa6446a/case.json",
+      "path": "cases/refine_baseline_bc41afa6446a/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_bc41afa6446a/features.csv",
+      "path": "cases/refine_baseline_bc41afa6446a/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_bc41afa6446a/result.json",
+      "path": "cases/refine_baseline_bc41afa6446a/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_f9dbb3fec66e/case.json",
+      "path": "cases/refine_baseline_f9dbb3fec66e/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_f9dbb3fec66e/features.csv",
+      "path": "cases/refine_baseline_f9dbb3fec66e/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_baseline_f9dbb3fec66e/result.json",
+      "path": "cases/refine_baseline_f9dbb3fec66e/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_041bd08fa3c3/case.json",
+      "path": "cases/refine_phase_lag_041bd08fa3c3/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_041bd08fa3c3/features.csv",
+      "path": "cases/refine_phase_lag_041bd08fa3c3/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_041bd08fa3c3/result.json",
+      "path": "cases/refine_phase_lag_041bd08fa3c3/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_213f5f75d2d4/case.json",
+      "path": "cases/refine_phase_lag_213f5f75d2d4/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_213f5f75d2d4/features.csv",
+      "path": "cases/refine_phase_lag_213f5f75d2d4/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_213f5f75d2d4/result.json",
+      "path": "cases/refine_phase_lag_213f5f75d2d4/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_2603262c8946/case.json",
+      "path": "cases/refine_phase_lag_2603262c8946/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_2603262c8946/features.csv",
+      "path": "cases/refine_phase_lag_2603262c8946/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_2603262c8946/result.json",
+      "path": "cases/refine_phase_lag_2603262c8946/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_26db278e59b8/case.json",
+      "path": "cases/refine_phase_lag_26db278e59b8/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_26db278e59b8/features.csv",
+      "path": "cases/refine_phase_lag_26db278e59b8/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_26db278e59b8/result.json",
+      "path": "cases/refine_phase_lag_26db278e59b8/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_6972029cc349/case.json",
+      "path": "cases/refine_phase_lag_6972029cc349/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_6972029cc349/features.csv",
+      "path": "cases/refine_phase_lag_6972029cc349/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_6972029cc349/result.json",
+      "path": "cases/refine_phase_lag_6972029cc349/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_a7beefa6c427/case.json",
+      "path": "cases/refine_phase_lag_a7beefa6c427/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_a7beefa6c427/features.csv",
+      "path": "cases/refine_phase_lag_a7beefa6c427/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_a7beefa6c427/result.json",
+      "path": "cases/refine_phase_lag_a7beefa6c427/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_ac08ef0c54d1/case.json",
+      "path": "cases/refine_phase_lag_ac08ef0c54d1/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_ac08ef0c54d1/features.csv",
+      "path": "cases/refine_phase_lag_ac08ef0c54d1/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_ac08ef0c54d1/result.json",
+      "path": "cases/refine_phase_lag_ac08ef0c54d1/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_e60112353c33/case.json",
+      "path": "cases/refine_phase_lag_e60112353c33/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_e60112353c33/features.csv",
+      "path": "cases/refine_phase_lag_e60112353c33/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_phase_lag_e60112353c33/result.json",
+      "path": "cases/refine_phase_lag_e60112353c33/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_00b9e3a695d9/case.json",
+      "path": "cases/refine_series_bottleneck_00b9e3a695d9/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_00b9e3a695d9/features.csv",
+      "path": "cases/refine_series_bottleneck_00b9e3a695d9/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_00b9e3a695d9/result.json",
+      "path": "cases/refine_series_bottleneck_00b9e3a695d9/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_2451fa50cddd/case.json",
+      "path": "cases/refine_series_bottleneck_2451fa50cddd/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_2451fa50cddd/features.csv",
+      "path": "cases/refine_series_bottleneck_2451fa50cddd/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_2451fa50cddd/result.json",
+      "path": "cases/refine_series_bottleneck_2451fa50cddd/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_3db22fef20d3/case.json",
+      "path": "cases/refine_series_bottleneck_3db22fef20d3/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_3db22fef20d3/features.csv",
+      "path": "cases/refine_series_bottleneck_3db22fef20d3/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_3db22fef20d3/result.json",
+      "path": "cases/refine_series_bottleneck_3db22fef20d3/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_777968fed9bf/case.json",
+      "path": "cases/refine_series_bottleneck_777968fed9bf/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_777968fed9bf/features.csv",
+      "path": "cases/refine_series_bottleneck_777968fed9bf/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_777968fed9bf/result.json",
+      "path": "cases/refine_series_bottleneck_777968fed9bf/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_84d8bcc59e7c/case.json",
+      "path": "cases/refine_series_bottleneck_84d8bcc59e7c/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_84d8bcc59e7c/features.csv",
+      "path": "cases/refine_series_bottleneck_84d8bcc59e7c/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_84d8bcc59e7c/result.json",
+      "path": "cases/refine_series_bottleneck_84d8bcc59e7c/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_9ce14c9ead5d/case.json",
+      "path": "cases/refine_series_bottleneck_9ce14c9ead5d/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_9ce14c9ead5d/features.csv",
+      "path": "cases/refine_series_bottleneck_9ce14c9ead5d/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_9ce14c9ead5d/result.json",
+      "path": "cases/refine_series_bottleneck_9ce14c9ead5d/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_ce1d03a43c5c/case.json",
+      "path": "cases/refine_series_bottleneck_ce1d03a43c5c/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_ce1d03a43c5c/features.csv",
+      "path": "cases/refine_series_bottleneck_ce1d03a43c5c/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_ce1d03a43c5c/result.json",
+      "path": "cases/refine_series_bottleneck_ce1d03a43c5c/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_fd3523287909/case.json",
+      "path": "cases/refine_series_bottleneck_fd3523287909/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_fd3523287909/features.csv",
+      "path": "cases/refine_series_bottleneck_fd3523287909/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_series_bottleneck_fd3523287909/result.json",
+      "path": "cases/refine_series_bottleneck_fd3523287909/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_22f5c53d2591/case.json",
+      "path": "cases/refine_warm_parallel_22f5c53d2591/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_22f5c53d2591/features.csv",
+      "path": "cases/refine_warm_parallel_22f5c53d2591/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_22f5c53d2591/result.json",
+      "path": "cases/refine_warm_parallel_22f5c53d2591/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_29b816e75c56/case.json",
+      "path": "cases/refine_warm_parallel_29b816e75c56/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_29b816e75c56/features.csv",
+      "path": "cases/refine_warm_parallel_29b816e75c56/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_29b816e75c56/result.json",
+      "path": "cases/refine_warm_parallel_29b816e75c56/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_380205a646c1/case.json",
+      "path": "cases/refine_warm_parallel_380205a646c1/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_380205a646c1/features.csv",
+      "path": "cases/refine_warm_parallel_380205a646c1/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_380205a646c1/result.json",
+      "path": "cases/refine_warm_parallel_380205a646c1/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_45f60f7d9c92/case.json",
+      "path": "cases/refine_warm_parallel_45f60f7d9c92/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_45f60f7d9c92/features.csv",
+      "path": "cases/refine_warm_parallel_45f60f7d9c92/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_45f60f7d9c92/result.json",
+      "path": "cases/refine_warm_parallel_45f60f7d9c92/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_b237712b4dde/case.json",
+      "path": "cases/refine_warm_parallel_b237712b4dde/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_b237712b4dde/features.csv",
+      "path": "cases/refine_warm_parallel_b237712b4dde/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_b237712b4dde/result.json",
+      "path": "cases/refine_warm_parallel_b237712b4dde/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_ba13f1498b0d/case.json",
+      "path": "cases/refine_warm_parallel_ba13f1498b0d/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_ba13f1498b0d/features.csv",
+      "path": "cases/refine_warm_parallel_ba13f1498b0d/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_ba13f1498b0d/result.json",
+      "path": "cases/refine_warm_parallel_ba13f1498b0d/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_e60fe44b7ad3/case.json",
+      "path": "cases/refine_warm_parallel_e60fe44b7ad3/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_e60fe44b7ad3/features.csv",
+      "path": "cases/refine_warm_parallel_e60fe44b7ad3/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_e60fe44b7ad3/result.json",
+      "path": "cases/refine_warm_parallel_e60fe44b7ad3/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_f55f38717ea2/case.json",
+      "path": "cases/refine_warm_parallel_f55f38717ea2/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_f55f38717ea2/features.csv",
+      "path": "cases/refine_warm_parallel_f55f38717ea2/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/refine_warm_parallel_f55f38717ea2/result.json",
+      "path": "cases/refine_warm_parallel_f55f38717ea2/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_138b869f46ec/case.json",
+      "path": "cases/series_bottleneck_138b869f46ec/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_138b869f46ec/features.csv",
+      "path": "cases/series_bottleneck_138b869f46ec/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_138b869f46ec/result.json",
+      "path": "cases/series_bottleneck_138b869f46ec/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_154340163e4a/case.json",
+      "path": "cases/series_bottleneck_154340163e4a/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_154340163e4a/features.csv",
+      "path": "cases/series_bottleneck_154340163e4a/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_154340163e4a/result.json",
+      "path": "cases/series_bottleneck_154340163e4a/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_1cd12ec2756b/case.json",
+      "path": "cases/series_bottleneck_1cd12ec2756b/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_1cd12ec2756b/features.csv",
+      "path": "cases/series_bottleneck_1cd12ec2756b/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_1cd12ec2756b/result.json",
+      "path": "cases/series_bottleneck_1cd12ec2756b/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_1d07d8121f30/case.json",
+      "path": "cases/series_bottleneck_1d07d8121f30/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_1d07d8121f30/features.csv",
+      "path": "cases/series_bottleneck_1d07d8121f30/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_1d07d8121f30/result.json",
+      "path": "cases/series_bottleneck_1d07d8121f30/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_2894e89c8ab9/case.json",
+      "path": "cases/series_bottleneck_2894e89c8ab9/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_2894e89c8ab9/features.csv",
+      "path": "cases/series_bottleneck_2894e89c8ab9/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_2894e89c8ab9/result.json",
+      "path": "cases/series_bottleneck_2894e89c8ab9/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_2b784aedcc70/case.json",
+      "path": "cases/series_bottleneck_2b784aedcc70/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_2b784aedcc70/features.csv",
+      "path": "cases/series_bottleneck_2b784aedcc70/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_2b784aedcc70/result.json",
+      "path": "cases/series_bottleneck_2b784aedcc70/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_2faabaf3b7b4/case.json",
+      "path": "cases/series_bottleneck_2faabaf3b7b4/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_2faabaf3b7b4/features.csv",
+      "path": "cases/series_bottleneck_2faabaf3b7b4/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_2faabaf3b7b4/result.json",
+      "path": "cases/series_bottleneck_2faabaf3b7b4/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_3698718f0621/case.json",
+      "path": "cases/series_bottleneck_3698718f0621/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_3698718f0621/features.csv",
+      "path": "cases/series_bottleneck_3698718f0621/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_3698718f0621/result.json",
+      "path": "cases/series_bottleneck_3698718f0621/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_41019671b8c2/case.json",
+      "path": "cases/series_bottleneck_41019671b8c2/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_41019671b8c2/features.csv",
+      "path": "cases/series_bottleneck_41019671b8c2/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_41019671b8c2/result.json",
+      "path": "cases/series_bottleneck_41019671b8c2/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_4a874d91ea02/case.json",
+      "path": "cases/series_bottleneck_4a874d91ea02/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_4a874d91ea02/features.csv",
+      "path": "cases/series_bottleneck_4a874d91ea02/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_4a874d91ea02/result.json",
+      "path": "cases/series_bottleneck_4a874d91ea02/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_4bab574fc81e/case.json",
+      "path": "cases/series_bottleneck_4bab574fc81e/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_4bab574fc81e/features.csv",
+      "path": "cases/series_bottleneck_4bab574fc81e/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_4bab574fc81e/result.json",
+      "path": "cases/series_bottleneck_4bab574fc81e/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_4bc9061c6c55/case.json",
+      "path": "cases/series_bottleneck_4bc9061c6c55/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_4bc9061c6c55/features.csv",
+      "path": "cases/series_bottleneck_4bc9061c6c55/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_4bc9061c6c55/result.json",
+      "path": "cases/series_bottleneck_4bc9061c6c55/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_4e8726705480/case.json",
+      "path": "cases/series_bottleneck_4e8726705480/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_4e8726705480/features.csv",
+      "path": "cases/series_bottleneck_4e8726705480/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_4e8726705480/result.json",
+      "path": "cases/series_bottleneck_4e8726705480/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_4eb20b44c2bb/case.json",
+      "path": "cases/series_bottleneck_4eb20b44c2bb/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_4eb20b44c2bb/features.csv",
+      "path": "cases/series_bottleneck_4eb20b44c2bb/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_4eb20b44c2bb/result.json",
+      "path": "cases/series_bottleneck_4eb20b44c2bb/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_609db84d6641/case.json",
+      "path": "cases/series_bottleneck_609db84d6641/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_609db84d6641/features.csv",
+      "path": "cases/series_bottleneck_609db84d6641/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_609db84d6641/result.json",
+      "path": "cases/series_bottleneck_609db84d6641/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_6913ab847f4d/case.json",
+      "path": "cases/series_bottleneck_6913ab847f4d/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_6913ab847f4d/features.csv",
+      "path": "cases/series_bottleneck_6913ab847f4d/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_6913ab847f4d/result.json",
+      "path": "cases/series_bottleneck_6913ab847f4d/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_6aa5d7f06b0b/case.json",
+      "path": "cases/series_bottleneck_6aa5d7f06b0b/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_6aa5d7f06b0b/features.csv",
+      "path": "cases/series_bottleneck_6aa5d7f06b0b/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_6aa5d7f06b0b/result.json",
+      "path": "cases/series_bottleneck_6aa5d7f06b0b/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_6f7df96c8f72/case.json",
+      "path": "cases/series_bottleneck_6f7df96c8f72/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_6f7df96c8f72/features.csv",
+      "path": "cases/series_bottleneck_6f7df96c8f72/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_6f7df96c8f72/result.json",
+      "path": "cases/series_bottleneck_6f7df96c8f72/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_73f853cadb08/case.json",
+      "path": "cases/series_bottleneck_73f853cadb08/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_73f853cadb08/features.csv",
+      "path": "cases/series_bottleneck_73f853cadb08/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_73f853cadb08/result.json",
+      "path": "cases/series_bottleneck_73f853cadb08/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_75b6b43c75e3/case.json",
+      "path": "cases/series_bottleneck_75b6b43c75e3/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_75b6b43c75e3/features.csv",
+      "path": "cases/series_bottleneck_75b6b43c75e3/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_75b6b43c75e3/result.json",
+      "path": "cases/series_bottleneck_75b6b43c75e3/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_761cf4f1b4a9/case.json",
+      "path": "cases/series_bottleneck_761cf4f1b4a9/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_761cf4f1b4a9/features.csv",
+      "path": "cases/series_bottleneck_761cf4f1b4a9/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_761cf4f1b4a9/result.json",
+      "path": "cases/series_bottleneck_761cf4f1b4a9/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_8092f2b6eb50/case.json",
+      "path": "cases/series_bottleneck_8092f2b6eb50/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_8092f2b6eb50/features.csv",
+      "path": "cases/series_bottleneck_8092f2b6eb50/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_8092f2b6eb50/result.json",
+      "path": "cases/series_bottleneck_8092f2b6eb50/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_8323a78ac9da/case.json",
+      "path": "cases/series_bottleneck_8323a78ac9da/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_8323a78ac9da/features.csv",
+      "path": "cases/series_bottleneck_8323a78ac9da/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_8323a78ac9da/result.json",
+      "path": "cases/series_bottleneck_8323a78ac9da/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_8ccf56f6f952/case.json",
+      "path": "cases/series_bottleneck_8ccf56f6f952/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_8ccf56f6f952/features.csv",
+      "path": "cases/series_bottleneck_8ccf56f6f952/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_8ccf56f6f952/result.json",
+      "path": "cases/series_bottleneck_8ccf56f6f952/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_92d0aaa29854/case.json",
+      "path": "cases/series_bottleneck_92d0aaa29854/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_92d0aaa29854/features.csv",
+      "path": "cases/series_bottleneck_92d0aaa29854/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_92d0aaa29854/result.json",
+      "path": "cases/series_bottleneck_92d0aaa29854/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_95e4783accbc/case.json",
+      "path": "cases/series_bottleneck_95e4783accbc/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_95e4783accbc/features.csv",
+      "path": "cases/series_bottleneck_95e4783accbc/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_95e4783accbc/result.json",
+      "path": "cases/series_bottleneck_95e4783accbc/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_b0c45f7228f3/case.json",
+      "path": "cases/series_bottleneck_b0c45f7228f3/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_b0c45f7228f3/features.csv",
+      "path": "cases/series_bottleneck_b0c45f7228f3/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_b0c45f7228f3/result.json",
+      "path": "cases/series_bottleneck_b0c45f7228f3/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_bd2291067151/case.json",
+      "path": "cases/series_bottleneck_bd2291067151/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_bd2291067151/features.csv",
+      "path": "cases/series_bottleneck_bd2291067151/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_bd2291067151/result.json",
+      "path": "cases/series_bottleneck_bd2291067151/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_be2f01890969/case.json",
+      "path": "cases/series_bottleneck_be2f01890969/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_be2f01890969/features.csv",
+      "path": "cases/series_bottleneck_be2f01890969/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_be2f01890969/result.json",
+      "path": "cases/series_bottleneck_be2f01890969/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_c36de038e043/case.json",
+      "path": "cases/series_bottleneck_c36de038e043/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_c36de038e043/features.csv",
+      "path": "cases/series_bottleneck_c36de038e043/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_c36de038e043/result.json",
+      "path": "cases/series_bottleneck_c36de038e043/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_c6c535e1c333/case.json",
+      "path": "cases/series_bottleneck_c6c535e1c333/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_c6c535e1c333/features.csv",
+      "path": "cases/series_bottleneck_c6c535e1c333/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_c6c535e1c333/result.json",
+      "path": "cases/series_bottleneck_c6c535e1c333/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_c8ad71f33ec8/case.json",
+      "path": "cases/series_bottleneck_c8ad71f33ec8/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_c8ad71f33ec8/features.csv",
+      "path": "cases/series_bottleneck_c8ad71f33ec8/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_c8ad71f33ec8/result.json",
+      "path": "cases/series_bottleneck_c8ad71f33ec8/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_e56afe4ca616/case.json",
+      "path": "cases/series_bottleneck_e56afe4ca616/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_e56afe4ca616/features.csv",
+      "path": "cases/series_bottleneck_e56afe4ca616/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_e56afe4ca616/result.json",
+      "path": "cases/series_bottleneck_e56afe4ca616/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_ee24474baadc/case.json",
+      "path": "cases/series_bottleneck_ee24474baadc/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_ee24474baadc/features.csv",
+      "path": "cases/series_bottleneck_ee24474baadc/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_ee24474baadc/result.json",
+      "path": "cases/series_bottleneck_ee24474baadc/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_efac2f2408a8/case.json",
+      "path": "cases/series_bottleneck_efac2f2408a8/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_efac2f2408a8/features.csv",
+      "path": "cases/series_bottleneck_efac2f2408a8/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_efac2f2408a8/result.json",
+      "path": "cases/series_bottleneck_efac2f2408a8/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_f3d404078df0/case.json",
+      "path": "cases/series_bottleneck_f3d404078df0/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_f3d404078df0/features.csv",
+      "path": "cases/series_bottleneck_f3d404078df0/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/series_bottleneck_f3d404078df0/result.json",
+      "path": "cases/series_bottleneck_f3d404078df0/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_090cf778f343/case.json",
+      "path": "cases/warm_parallel_090cf778f343/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_090cf778f343/features.csv",
+      "path": "cases/warm_parallel_090cf778f343/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_090cf778f343/result.json",
+      "path": "cases/warm_parallel_090cf778f343/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_0cb7d7599a9c/case.json",
+      "path": "cases/warm_parallel_0cb7d7599a9c/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_0cb7d7599a9c/features.csv",
+      "path": "cases/warm_parallel_0cb7d7599a9c/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_0cb7d7599a9c/result.json",
+      "path": "cases/warm_parallel_0cb7d7599a9c/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_1501a158f188/case.json",
+      "path": "cases/warm_parallel_1501a158f188/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_1501a158f188/features.csv",
+      "path": "cases/warm_parallel_1501a158f188/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_1501a158f188/result.json",
+      "path": "cases/warm_parallel_1501a158f188/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_20a7093bab4c/case.json",
+      "path": "cases/warm_parallel_20a7093bab4c/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_20a7093bab4c/features.csv",
+      "path": "cases/warm_parallel_20a7093bab4c/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_20a7093bab4c/result.json",
+      "path": "cases/warm_parallel_20a7093bab4c/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_20bbba6f70b9/case.json",
+      "path": "cases/warm_parallel_20bbba6f70b9/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_20bbba6f70b9/features.csv",
+      "path": "cases/warm_parallel_20bbba6f70b9/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_20bbba6f70b9/result.json",
+      "path": "cases/warm_parallel_20bbba6f70b9/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_30dd8b5b7cdb/case.json",
+      "path": "cases/warm_parallel_30dd8b5b7cdb/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_30dd8b5b7cdb/features.csv",
+      "path": "cases/warm_parallel_30dd8b5b7cdb/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_30dd8b5b7cdb/result.json",
+      "path": "cases/warm_parallel_30dd8b5b7cdb/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_35a13140cf96/case.json",
+      "path": "cases/warm_parallel_35a13140cf96/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_35a13140cf96/features.csv",
+      "path": "cases/warm_parallel_35a13140cf96/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_35a13140cf96/result.json",
+      "path": "cases/warm_parallel_35a13140cf96/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_418db68c9fe2/case.json",
+      "path": "cases/warm_parallel_418db68c9fe2/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_418db68c9fe2/features.csv",
+      "path": "cases/warm_parallel_418db68c9fe2/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_418db68c9fe2/result.json",
+      "path": "cases/warm_parallel_418db68c9fe2/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_45a49d91873d/case.json",
+      "path": "cases/warm_parallel_45a49d91873d/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_45a49d91873d/features.csv",
+      "path": "cases/warm_parallel_45a49d91873d/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_45a49d91873d/result.json",
+      "path": "cases/warm_parallel_45a49d91873d/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_57c95357ce9a/case.json",
+      "path": "cases/warm_parallel_57c95357ce9a/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_57c95357ce9a/features.csv",
+      "path": "cases/warm_parallel_57c95357ce9a/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_57c95357ce9a/result.json",
+      "path": "cases/warm_parallel_57c95357ce9a/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_67c77499fced/case.json",
+      "path": "cases/warm_parallel_67c77499fced/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_67c77499fced/features.csv",
+      "path": "cases/warm_parallel_67c77499fced/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_67c77499fced/result.json",
+      "path": "cases/warm_parallel_67c77499fced/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_68f196db9441/case.json",
+      "path": "cases/warm_parallel_68f196db9441/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_68f196db9441/features.csv",
+      "path": "cases/warm_parallel_68f196db9441/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_68f196db9441/result.json",
+      "path": "cases/warm_parallel_68f196db9441/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_70c8d19cee6c/case.json",
+      "path": "cases/warm_parallel_70c8d19cee6c/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_70c8d19cee6c/features.csv",
+      "path": "cases/warm_parallel_70c8d19cee6c/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_70c8d19cee6c/result.json",
+      "path": "cases/warm_parallel_70c8d19cee6c/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_78760876f601/case.json",
+      "path": "cases/warm_parallel_78760876f601/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_78760876f601/features.csv",
+      "path": "cases/warm_parallel_78760876f601/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_78760876f601/result.json",
+      "path": "cases/warm_parallel_78760876f601/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_78cdfb90ca03/case.json",
+      "path": "cases/warm_parallel_78cdfb90ca03/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_78cdfb90ca03/features.csv",
+      "path": "cases/warm_parallel_78cdfb90ca03/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_78cdfb90ca03/result.json",
+      "path": "cases/warm_parallel_78cdfb90ca03/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_79182973e08b/case.json",
+      "path": "cases/warm_parallel_79182973e08b/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_79182973e08b/features.csv",
+      "path": "cases/warm_parallel_79182973e08b/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_79182973e08b/result.json",
+      "path": "cases/warm_parallel_79182973e08b/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_7b6cdddb2af7/case.json",
+      "path": "cases/warm_parallel_7b6cdddb2af7/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_7b6cdddb2af7/features.csv",
+      "path": "cases/warm_parallel_7b6cdddb2af7/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_7b6cdddb2af7/result.json",
+      "path": "cases/warm_parallel_7b6cdddb2af7/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_7b80c5c72f58/case.json",
+      "path": "cases/warm_parallel_7b80c5c72f58/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_7b80c5c72f58/features.csv",
+      "path": "cases/warm_parallel_7b80c5c72f58/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_7b80c5c72f58/result.json",
+      "path": "cases/warm_parallel_7b80c5c72f58/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_7e0e4e977ac2/case.json",
+      "path": "cases/warm_parallel_7e0e4e977ac2/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_7e0e4e977ac2/features.csv",
+      "path": "cases/warm_parallel_7e0e4e977ac2/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_7e0e4e977ac2/result.json",
+      "path": "cases/warm_parallel_7e0e4e977ac2/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_82e97f684854/case.json",
+      "path": "cases/warm_parallel_82e97f684854/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_82e97f684854/features.csv",
+      "path": "cases/warm_parallel_82e97f684854/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_82e97f684854/result.json",
+      "path": "cases/warm_parallel_82e97f684854/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_86fcbbba4168/case.json",
+      "path": "cases/warm_parallel_86fcbbba4168/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_86fcbbba4168/features.csv",
+      "path": "cases/warm_parallel_86fcbbba4168/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_86fcbbba4168/result.json",
+      "path": "cases/warm_parallel_86fcbbba4168/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_889dff788b3f/case.json",
+      "path": "cases/warm_parallel_889dff788b3f/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_889dff788b3f/features.csv",
+      "path": "cases/warm_parallel_889dff788b3f/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_889dff788b3f/result.json",
+      "path": "cases/warm_parallel_889dff788b3f/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_90a954e722e7/case.json",
+      "path": "cases/warm_parallel_90a954e722e7/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_90a954e722e7/features.csv",
+      "path": "cases/warm_parallel_90a954e722e7/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_90a954e722e7/result.json",
+      "path": "cases/warm_parallel_90a954e722e7/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_938258195386/case.json",
+      "path": "cases/warm_parallel_938258195386/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_938258195386/features.csv",
+      "path": "cases/warm_parallel_938258195386/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_938258195386/result.json",
+      "path": "cases/warm_parallel_938258195386/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_93d7e99ddd2f/case.json",
+      "path": "cases/warm_parallel_93d7e99ddd2f/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_93d7e99ddd2f/features.csv",
+      "path": "cases/warm_parallel_93d7e99ddd2f/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_93d7e99ddd2f/result.json",
+      "path": "cases/warm_parallel_93d7e99ddd2f/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_a0b0d5c81f56/case.json",
+      "path": "cases/warm_parallel_a0b0d5c81f56/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_a0b0d5c81f56/features.csv",
+      "path": "cases/warm_parallel_a0b0d5c81f56/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_a0b0d5c81f56/result.json",
+      "path": "cases/warm_parallel_a0b0d5c81f56/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_b42e51c84685/case.json",
+      "path": "cases/warm_parallel_b42e51c84685/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_b42e51c84685/features.csv",
+      "path": "cases/warm_parallel_b42e51c84685/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_b42e51c84685/result.json",
+      "path": "cases/warm_parallel_b42e51c84685/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_b5be764c8021/case.json",
+      "path": "cases/warm_parallel_b5be764c8021/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_b5be764c8021/features.csv",
+      "path": "cases/warm_parallel_b5be764c8021/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_b5be764c8021/result.json",
+      "path": "cases/warm_parallel_b5be764c8021/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_ba2e03499b7f/case.json",
+      "path": "cases/warm_parallel_ba2e03499b7f/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_ba2e03499b7f/features.csv",
+      "path": "cases/warm_parallel_ba2e03499b7f/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_ba2e03499b7f/result.json",
+      "path": "cases/warm_parallel_ba2e03499b7f/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_bd5dbee86d8f/case.json",
+      "path": "cases/warm_parallel_bd5dbee86d8f/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_bd5dbee86d8f/features.csv",
+      "path": "cases/warm_parallel_bd5dbee86d8f/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_bd5dbee86d8f/result.json",
+      "path": "cases/warm_parallel_bd5dbee86d8f/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_c08f33d54aed/case.json",
+      "path": "cases/warm_parallel_c08f33d54aed/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_c08f33d54aed/features.csv",
+      "path": "cases/warm_parallel_c08f33d54aed/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_c08f33d54aed/result.json",
+      "path": "cases/warm_parallel_c08f33d54aed/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_cee21ca768b4/case.json",
+      "path": "cases/warm_parallel_cee21ca768b4/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_cee21ca768b4/features.csv",
+      "path": "cases/warm_parallel_cee21ca768b4/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_cee21ca768b4/result.json",
+      "path": "cases/warm_parallel_cee21ca768b4/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_d8229679698f/case.json",
+      "path": "cases/warm_parallel_d8229679698f/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_d8229679698f/features.csv",
+      "path": "cases/warm_parallel_d8229679698f/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_d8229679698f/result.json",
+      "path": "cases/warm_parallel_d8229679698f/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_e45e525681e7/case.json",
+      "path": "cases/warm_parallel_e45e525681e7/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_e45e525681e7/features.csv",
+      "path": "cases/warm_parallel_e45e525681e7/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_e45e525681e7/result.json",
+      "path": "cases/warm_parallel_e45e525681e7/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_e96c457493b7/case.json",
+      "path": "cases/warm_parallel_e96c457493b7/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_e96c457493b7/features.csv",
+      "path": "cases/warm_parallel_e96c457493b7/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_e96c457493b7/result.json",
+      "path": "cases/warm_parallel_e96c457493b7/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_f657562c9eb6/case.json",
+      "path": "cases/warm_parallel_f657562c9eb6/case.json"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_f657562c9eb6/features.csv",
+      "path": "cases/warm_parallel_f657562c9eb6/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence cases/warm_parallel_f657562c9eb6/result.json",
+      "path": "cases/warm_parallel_f657562c9eb6/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence comparison.csv",
+      "path": "comparison.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence current_split.csv",
+      "path": "current_split.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence environment.json",
+      "path": "environment.json"
+    },
+    {
+      "label": "Unmodified pilot evidence execution_config.json",
+      "path": "execution_config.json"
+    },
+    {
+      "label": "Unmodified pilot evidence figures/pilot_waveforms.png",
+      "path": "figures/pilot_waveforms.png"
+    },
+    {
+      "label": "Unmodified pilot evidence history.jsonl",
+      "path": "history.jsonl"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/1000mv0_converted.csv",
+      "path": "inputs/current/1000mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/100mv0_converted.csv",
+      "path": "inputs/current/100mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/1100mv0_converted.csv",
+      "path": "inputs/current/1100mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/1200mv0_converted.csv",
+      "path": "inputs/current/1200mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/150mv0_converted.csv",
+      "path": "inputs/current/150mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/200mv0_converted.csv",
+      "path": "inputs/current/200mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/250mv0_converted.csv",
+      "path": "inputs/current/250mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/300mv0_converted.csv",
+      "path": "inputs/current/300mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/350mv0_converted.csv",
+      "path": "inputs/current/350mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/400mv0_converted.csv",
+      "path": "inputs/current/400mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/450mv0_converted.csv",
+      "path": "inputs/current/450mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/500mv0_converted.csv",
+      "path": "inputs/current/500mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/50mv0_converted.csv",
+      "path": "inputs/current/50mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/550mv0_converted.csv",
+      "path": "inputs/current/550mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/600mv0_converted.csv",
+      "path": "inputs/current/600mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/650mv0_converted.csv",
+      "path": "inputs/current/650mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/700mv0_converted.csv",
+      "path": "inputs/current/700mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/750mv0_converted.csv",
+      "path": "inputs/current/750mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/800mv0_converted.csv",
+      "path": "inputs/current/800mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/850mv0_converted.csv",
+      "path": "inputs/current/850mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/900mv0_converted.csv",
+      "path": "inputs/current/900mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/current/950mv0_converted.csv",
+      "path": "inputs/current/950mv0_converted.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/resistance_data.tsv",
+      "path": "inputs/resistance_data.tsv"
+    },
+    {
+      "label": "Unmodified pilot evidence inputs/resistance_preset.json",
+      "path": "inputs/resistance_preset.json"
+    },
+    {
+      "label": "Unmodified pilot evidence long_controls/refine_baseline_516cf8e50c6e/features.csv",
+      "path": "long_controls/refine_baseline_516cf8e50c6e/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence long_controls/refine_baseline_516cf8e50c6e/result.json",
+      "path": "long_controls/refine_baseline_516cf8e50c6e/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence long_controls/refine_phase_lag_2603262c8946/features.csv",
+      "path": "long_controls/refine_phase_lag_2603262c8946/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence long_controls/refine_phase_lag_2603262c8946/result.json",
+      "path": "long_controls/refine_phase_lag_2603262c8946/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence long_controls/refine_series_bottleneck_777968fed9bf/features.csv",
+      "path": "long_controls/refine_series_bottleneck_777968fed9bf/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence long_controls/refine_series_bottleneck_777968fed9bf/result.json",
+      "path": "long_controls/refine_series_bottleneck_777968fed9bf/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence long_controls/refine_warm_parallel_380205a646c1/features.csv",
+      "path": "long_controls/refine_warm_parallel_380205a646c1/features.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence long_controls/refine_warm_parallel_380205a646c1/result.json",
+      "path": "long_controls/refine_warm_parallel_380205a646c1/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence metrics.json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Unmodified pilot evidence plan.json",
+      "path": "plan.json"
+    },
+    {
+      "label": "Unmodified pilot evidence recipe.toml",
+      "path": "recipe.toml"
+    },
+    {
+      "label": "Unmodified pilot evidence refinement_plan.json",
+      "path": "refinement_plan.json"
+    },
+    {
+      "label": "Unmodified pilot evidence report.md",
+      "path": "original_report.md"
+    },
+    {
+      "label": "Unmodified pilot evidence resolved_config.json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Unmodified pilot evidence run.json",
+      "path": "original_run.json"
+    },
+    {
+      "label": "Unmodified pilot evidence screening.csv",
+      "path": "screening.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/__init__.py",
+      "path": "source/neuristor/__init__.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/__init__.py",
+      "path": "source/neuristor/analysis/__init__.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/alternating_amplitudes.py",
+      "path": "source/neuristor/analysis/alternating_amplitudes.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/boundary_search.py",
+      "path": "source/neuristor/analysis/boundary_search.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/distribution.py",
+      "path": "source/neuristor/analysis/distribution.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/experimental_waveforms.py",
+      "path": "source/neuristor/analysis/experimental_waveforms.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/extrema.py",
+      "path": "source/neuristor/analysis/extrema.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/frequency_sensitivity.py",
+      "path": "source/neuristor/analysis/frequency_sensitivity.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/lab_estimates.py",
+      "path": "source/neuristor/analysis/lab_estimates.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/lab_replay.py",
+      "path": "source/neuristor/analysis/lab_replay.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/loss_comparison.py",
+      "path": "source/neuristor/analysis/loss_comparison.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/metrics.py",
+      "path": "source/neuristor/analysis/metrics.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/model_validation.py",
+      "path": "source/neuristor/analysis/model_validation.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/optimizer_diagnostics.py",
+      "path": "source/neuristor/analysis/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/oscillation_audit.py",
+      "path": "source/neuristor/analysis/oscillation_audit.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/physical_maps.py",
+      "path": "source/neuristor/analysis/physical_maps.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/analysis/trend_validation.py",
+      "path": "source/neuristor/analysis/trend_validation.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/cli.py",
+      "path": "source/neuristor/cli.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/config.py",
+      "path": "source/neuristor/config.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/current_drive_sim.py",
+      "path": "source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/fitting/__init__.py",
+      "path": "source/neuristor/fitting/__init__.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/fitting/filament_profile.py",
+      "path": "source/neuristor/fitting/filament_profile.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/fitting/joint_inference.py",
+      "path": "source/neuristor/fitting/joint_inference.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/fitting/model_pilot.py",
+      "path": "source/neuristor/fitting/model_pilot.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/fitting/optimizer_audit.py",
+      "path": "source/neuristor/fitting/optimizer_audit.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/fitting/parameter_inference.py",
+      "path": "source/neuristor/fitting/parameter_inference.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/fitting/resistance_custom_analysis.py",
+      "path": "source/neuristor/fitting/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/fitting/saved_fit_replay.py",
+      "path": "source/neuristor/fitting/saved_fit_replay.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/fitting/steady_inference.py",
+      "path": "source/neuristor/fitting/steady_inference.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/interfaces/__init__.py",
+      "path": "source/neuristor/interfaces/__init__.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/interfaces/presentation_server.py",
+      "path": "source/neuristor/interfaces/presentation_server.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/interfaces/run_manager.py",
+      "path": "source/neuristor/interfaces/run_manager.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/layout.py",
+      "path": "source/neuristor/layout.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/model.py",
+      "path": "source/neuristor/model.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/__init__.py",
+      "path": "source/neuristor/orchestration/__init__.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/alternating_amplitudes.py",
+      "path": "source/neuristor/orchestration/alternating_amplitudes.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/artifact_catalog.py",
+      "path": "source/neuristor/orchestration/artifact_catalog.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/boundary_workflows.py",
+      "path": "source/neuristor/orchestration/boundary_workflows.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/filament_profile.py",
+      "path": "source/neuristor/orchestration/filament_profile.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/filament_study.py",
+      "path": "source/neuristor/orchestration/filament_study.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/loss_comparison.py",
+      "path": "source/neuristor/orchestration/loss_comparison.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/loss_scopes.py",
+      "path": "source/neuristor/orchestration/loss_scopes.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/map_viewers.py",
+      "path": "source/neuristor/orchestration/map_viewers.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/map_workflows.py",
+      "path": "source/neuristor/orchestration/map_workflows.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/model_pilot.py",
+      "path": "source/neuristor/orchestration/model_pilot.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/optimizer_audit.py",
+      "path": "source/neuristor/orchestration/optimizer_audit.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/optimizer_review.py",
+      "path": "source/neuristor/orchestration/optimizer_review.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/presentation_reproduction.py",
+      "path": "source/neuristor/orchestration/presentation_reproduction.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/sample_study.py",
+      "path": "source/neuristor/orchestration/sample_study.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/orchestration/trend_validation.py",
+      "path": "source/neuristor/orchestration/trend_validation.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/plotting/__init__.py",
+      "path": "source/neuristor/plotting/__init__.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/plotting/boundary_maps.py",
+      "path": "source/neuristor/plotting/boundary_maps.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/plotting/filament_profile.py",
+      "path": "source/neuristor/plotting/filament_profile.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/plotting/filament_study.py",
+      "path": "source/neuristor/plotting/filament_study.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/plotting/frequency_sensitivity.py",
+      "path": "source/neuristor/plotting/frequency_sensitivity.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/plotting/loss_comparison.py",
+      "path": "source/neuristor/plotting/loss_comparison.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/plotting/map_animations.py",
+      "path": "source/neuristor/plotting/map_animations.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/plotting/model_pilot.py",
+      "path": "source/neuristor/plotting/model_pilot.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/plotting/optimizer_diagnostics.py",
+      "path": "source/neuristor/plotting/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/plotting/presentation.py",
+      "path": "source/neuristor/plotting/presentation.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/plotting/replay_plots.py",
+      "path": "source/neuristor/plotting/replay_plots.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/plotting/trend_validation.py",
+      "path": "source/neuristor/plotting/trend_validation.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/plotting/visualization.py",
+      "path": "source/neuristor/plotting/visualization.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/provenance.py",
+      "path": "source/neuristor/provenance.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/runs.py",
+      "path": "source/neuristor/runs.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/validation.py",
+      "path": "source/neuristor/validation.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source/neuristor/workflows.py",
+      "path": "source/neuristor/workflows.py"
+    },
+    {
+      "label": "Unmodified pilot evidence source_hashes.json",
+      "path": "source_hashes.json"
+    },
+    {
+      "label": "Unmodified pilot evidence status.json",
+      "path": "original_status.json"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/matched_baseline_refine_phase_lag_2603262c8946/convergence.csv",
+      "path": "verification/matched_baseline_refine_phase_lag_2603262c8946/convergence.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/matched_baseline_refine_phase_lag_2603262c8946/result.json",
+      "path": "verification/matched_baseline_refine_phase_lag_2603262c8946/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/matched_baseline_refine_phase_lag_2603262c8946/traces.csv",
+      "path": "verification/matched_baseline_refine_phase_lag_2603262c8946/traces.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/matched_baseline_refine_phase_lag_2603262c8946/verification.csv",
+      "path": "verification/matched_baseline_refine_phase_lag_2603262c8946/verification.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/matched_baseline_refine_series_bottleneck_777968fed9bf/convergence.csv",
+      "path": "verification/matched_baseline_refine_series_bottleneck_777968fed9bf/convergence.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/matched_baseline_refine_series_bottleneck_777968fed9bf/result.json",
+      "path": "verification/matched_baseline_refine_series_bottleneck_777968fed9bf/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/matched_baseline_refine_series_bottleneck_777968fed9bf/traces.csv",
+      "path": "verification/matched_baseline_refine_series_bottleneck_777968fed9bf/traces.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/matched_baseline_refine_series_bottleneck_777968fed9bf/verification.csv",
+      "path": "verification/matched_baseline_refine_series_bottleneck_777968fed9bf/verification.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/matched_baseline_refine_warm_parallel_380205a646c1/convergence.csv",
+      "path": "verification/matched_baseline_refine_warm_parallel_380205a646c1/convergence.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/matched_baseline_refine_warm_parallel_380205a646c1/result.json",
+      "path": "verification/matched_baseline_refine_warm_parallel_380205a646c1/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/matched_baseline_refine_warm_parallel_380205a646c1/traces.csv",
+      "path": "verification/matched_baseline_refine_warm_parallel_380205a646c1/traces.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/matched_baseline_refine_warm_parallel_380205a646c1/verification.csv",
+      "path": "verification/matched_baseline_refine_warm_parallel_380205a646c1/verification.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_baseline_516cf8e50c6e/convergence.csv",
+      "path": "verification/refine_baseline_516cf8e50c6e/convergence.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_baseline_516cf8e50c6e/result.json",
+      "path": "verification/refine_baseline_516cf8e50c6e/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_baseline_516cf8e50c6e/traces.csv",
+      "path": "verification/refine_baseline_516cf8e50c6e/traces.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_baseline_516cf8e50c6e/verification.csv",
+      "path": "verification/refine_baseline_516cf8e50c6e/verification.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_phase_lag_2603262c8946/convergence.csv",
+      "path": "verification/refine_phase_lag_2603262c8946/convergence.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_phase_lag_2603262c8946/result.json",
+      "path": "verification/refine_phase_lag_2603262c8946/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_phase_lag_2603262c8946/traces.csv",
+      "path": "verification/refine_phase_lag_2603262c8946/traces.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_phase_lag_2603262c8946/verification.csv",
+      "path": "verification/refine_phase_lag_2603262c8946/verification.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_series_bottleneck_777968fed9bf/convergence.csv",
+      "path": "verification/refine_series_bottleneck_777968fed9bf/convergence.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_series_bottleneck_777968fed9bf/result.json",
+      "path": "verification/refine_series_bottleneck_777968fed9bf/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_series_bottleneck_777968fed9bf/traces.csv",
+      "path": "verification/refine_series_bottleneck_777968fed9bf/traces.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_series_bottleneck_777968fed9bf/verification.csv",
+      "path": "verification/refine_series_bottleneck_777968fed9bf/verification.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_warm_parallel_380205a646c1/convergence.csv",
+      "path": "verification/refine_warm_parallel_380205a646c1/convergence.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_warm_parallel_380205a646c1/result.json",
+      "path": "verification/refine_warm_parallel_380205a646c1/result.json"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_warm_parallel_380205a646c1/traces.csv",
+      "path": "verification/refine_warm_parallel_380205a646c1/traces.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification/refine_warm_parallel_380205a646c1/verification.csv",
+      "path": "verification/refine_warm_parallel_380205a646c1/verification.csv"
+    },
+    {
+      "label": "Unmodified pilot evidence verification_plan.json",
+      "path": "verification_plan.json"
+    },
+    {
+      "label": "Independent saved-channel accounting and feature audit",
+      "path": "native_audit.csv"
+    },
+    {
+      "label": "Three prespecified currents across all four mechanisms",
+      "path": "pilot_points.csv"
+    },
+    {
+      "label": "Classifications and convergence at every halving",
+      "path": "timestep_audit.csv"
+    },
+    {
+      "label": "Independent audit; original metrics remain unchanged",
+      "media_type": "application/json",
+      "path": "review_metrics.json"
+    },
+    {
+      "label": "Byte-identical original evidence inventory",
+      "media_type": "application/json",
+      "path": "preserved_artifact_hashes.json"
+    },
+    {
+      "label": "Full numerical run hashes and explicit native-array exclusions",
+      "media_type": "application/json",
+      "path": "full_local_inventory.json"
+    },
+    {
+      "label": "Preserved long-control classifications and physical exclusions",
+      "media_type": "application/json",
+      "path": "long_control_review.json"
+    },
+    {
+      "label": "Reviewed outcomes, trade-offs, numerical limits and next step",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    },
+    {
+      "label": "Reviewed offline all-current comparisons",
+      "media_type": "text/html",
+      "path": "START_HERE.html"
+    },
+    {
+      "label": "Independent audit and archival review generation",
+      "path": "review_audit.py"
+    },
+    {
+      "label": "Included compact-review artifact hashes",
+      "media_type": "application/json",
+      "path": "artifact_hashes.json"
+    }
+  ],
+  "command": "Audit saved pilot outputs and curate a separate reviewed bundle",
+  "created_at": "2026-10-28T11:10:37.084389+00:00",
+  "id": "20261028_111037_reviewed-partial-switching-material-model-pilot-_09fe72",
+  "kind": "analysis",
+  "model": "reviewed-material-model-pilot",
+  "name": "Reviewed partial-switching material-model pilot 20261028",
+  "provenance": {
+    "branch": "codex/partial-switching-pilot",
+    "commit": "0e39b5ee587ddf18e4abd9fc654b123427d31986",
+    "dirty": false
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "calibration_adopted": false,
+    "declared_cases": 87,
+    "elapsed_s": 847.2762409590068,
+    "finite_screened_cases": 119,
+    "long_control_cases": 4,
+    "native_histories_audited": 20,
+    "refinement_cases": 32,
+    "reviewed": true,
+    "scope": "Fixed-grid mechanism pilot; records and historical anchors seen previously",
+    "source_run_id": "20261028_105307_partial-switching-material-model-comparison-pilo_fdbd33",
+    "state": "completed",
+    "successful_candidates": [],
+    "total_screened_cases": 119,
+    "verified_cases": 7
+  },
+  "updated_at": "2026-10-28T11:10:37.680516+00:00"
+}

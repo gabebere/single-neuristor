@@ -1,0 +1,47 @@
+{
+  "anchor": "presentation_frequency",
+  "elapsed_s": 4.4960361669946,
+  "id": "warm_parallel_418db68c9fe2",
+  "metrics": {
+    "accepted_feature_loss": null,
+    "amplitude_MAPE_all": 18.62579241108277,
+    "defined_frequencies": 2,
+    "diagnostic_feature_score": 805.4211942610552,
+    "excessive_control_oscillations": 0,
+    "frequency_MAPE_defined": 0.37812500000000004,
+    "maximum_temperature_K": 425.6212463378906,
+    "mean_voltage_RMSE_mV": 129.97843234509023,
+    "passing_targets": 2,
+    "physical": false,
+    "rank": [
+      1,
+      1,
+      0,
+      805.4211942610552
+    ],
+    "shape_RMSE_defined_mV": 221.27201453410495,
+    "targets": 3
+  },
+  "simulated": true,
+  "specification": {
+    "capacity_ratio": 100.0,
+    "cooling_ratio": 1.0,
+    "coupling_ratio": 1.0,
+    "kind": "warm_parallel",
+    "weight": 0.75
+  },
+  "stage": "declared_grid",
+  "values": [
+    5.360972828226345,
+    0.005794097192405672,
+    4.832621119253842,
+    314.4,
+    333.49356636598696,
+    6.882302959338694,
+    0.2991563242902104,
+    0.7074768145807939,
+    2513.3391379829973,
+    2536.9654457644647,
+    18.21526990911648
+  ]
+}

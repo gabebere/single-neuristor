@@ -1,10 +1,65 @@
 # Partial-switching material-model pilot — 28 October 2026
 
-**Protocol; numerical outcomes pending.** This follows the negative
+**Completed: none of the tested mechanisms yields a validated fit.** This follows the negative
 [overnight fixed-f study](OVERNIGHT_FILAMENT_PROFILE_20261027.md). Gabriel
 authorized a small model-comparison pilot. It introduces optional hypotheses;
 the supported original solver, its float32 hysteresis and completed evidence
 remain unchanged. No calibration is adopted.
+
+The numerical run completed in **14.12 minutes**: 87 declared cases plus 32
+shared local probes, seven all-current replays/ablations and four 2 µs control
+cases. The [reviewed offline comparison](../runs/published/20261028_111037_reviewed-partial-switching-material-model-pilot-_09fe72/START_HERE.html)
+preserves all cases, source/input hashes and the independent native-output audit.
+
+## Reviewed outcomes
+
+All values below use the finest 0.003125 ns replay. Frequency MAPE uses the
+displayed defined denominator; Vpp uses all 11 targets and mean RMSE all 22
+records. The supported temperature domain is 284.8545–375.1625 K.
+
+| Pilot selection | Valid targets / defined frequencies | Frequency MAPE | Vpp MAPE | Mean RMSE (mV) | All-record max T (K) |
+|---|---:|---:|---:|---:|---:|
+| Original model | 7/11 / 7/11 | 32.83% | 559.1% | 37.97 | 363.52 |
+| Warm parallel | 10/11 / 10/11 | 15.06% | 1,639.0% | 64.02 | 415.79 |
+| Series bottleneck | 4/11 / 4/11 | 21.96% | 522.0% | 45.80 | 367.55 |
+| Finite switching time | 9/11 / 9/11 | 36.67% | 1,087.9% | 43.47 | 394.65 |
+
+The series candidate's smaller aggregate amplitude error partly reflects lost
+oscillations: predicted Vpp at the three pilot currents is 0, 312.6 and 0 mV,
+versus measured 101.8, 34.8 and 9.6 mV. Warm parallel regions retain more cycles
+but remain far too large and exceed calibration. Finite switching time produces
+rounder waves and reduces some swings, but slows the oscillations and still
+overheats. The selected lag is the largest tested value (6 ns), not an identified
+switching time. Both selected spatial variants use zero mutual coupling among
+the two values tried; this is not evidence that real coupling is zero.
+
+None captures the decreasing-amplitude trend while retaining all three pilot
+cycles. None passes the full waveform-convergence, shape or long-control gate.
+The series long controls retain only 3/9 sustained current/timestep records;
+warm and phase-lag controls retain 9/9 but have respectively 0/9 and 6/9 physical
+records. The pilot baseline has 6/9 sustained and 8/9 physical long-control rows.
+
+The selected pilot baseline differs from the earlier overnight reference,
+which retained 10/11 targets with frequency MAPE 16.59%, Vpp MAPE 1,437.28% and
+mean RMSE 35.52 mV. Coarse five-record physical ranking and the small shared
+refinement selected a different trade-off here. The new seven-target baseline
+does not supersede that earlier reference. Coarse exclusions can change with
+refinement, and these sparse grids do not establish complete fine-step feasibility
+or rule out either physical mechanism.
+
+All 520 original artifact hashes and all frozen-source hashes pass. All 20
+saved native histories reconstruct the reported voltage features; heat allocation
+matches V²/R within 2.38e-7 relative error, with independent topology-specific
+current/voltage checks. The full suite passes **246 tests** and validation covers
+**51 recipes**. The compact review omits the large native arrays, with explicit
+hash/inclusion inventory; those bytes remain local, not backed up on GitHub.
+Source numerical commit: `0e39b5e`.
+
+This supplies no verified quantitative improvement warranting another large fit
+without better circuit/channel constraints. Obtain the actual TIA/probe/current
+boundary information; a fixed gain/offset correction was already insufficient.
+Further material work needs constrained geometry/minor-loop/phase assumptions,
+with the same full-current and finer-timestep checks. No calibration is adopted.
 
 ```bash
 neuristor analyze model-pilot --plan
@@ -119,7 +174,10 @@ current/voltage identities, positive branch powers, thermal exchange conservatio
 the phase exponential and the exact C=0 limit. Coupled temperatures are compared
 with an independent RC-driven thermal ODE at three timesteps. Baseline/zero-phase
 paths preserve the original solver; 116 pre-change scalar/batch output arrays
-are bitwise identical after implementation. No numerical tolerances are weakened.
+are bitwise identical after implementation. The 116-array capture covers batched
+waveform outputs. Independent scalar/default checks remain in the existing suite.
+Analytic RC charging checks retain their tight tolerances; the late float32
+plateau is additionally checked by exact original-solver identity.
 
 Every finite or failed screen remains in the output. Exact specifications,
 feature tables, actual SI parameters, mechanism-off controls, convergence tables,

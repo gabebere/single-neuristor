@@ -1,0 +1,47 @@
+{
+  "anchor": "overnight_primary",
+  "bound_clamped": false,
+  "changed_coordinate": "S_e_mW_per_K",
+  "elapsed_s": 2.6987083749991143,
+  "id": "refine_phase_lag_26db278e59b8",
+  "metrics": {
+    "accepted_feature_loss": null,
+    "amplitude_MAPE_all": 3.1473283637514755,
+    "defined_frequencies": 2,
+    "diagnostic_feature_score": 54.68030255195746,
+    "excessive_control_oscillations": 0,
+    "frequency_MAPE_defined": 0.3288359788359788,
+    "maximum_temperature_K": 404.5349426269531,
+    "mean_voltage_RMSE_mV": 65.17708966431833,
+    "passing_targets": 2,
+    "physical": false,
+    "rank": [
+      1,
+      1,
+      0,
+      54.68030255195746
+    ],
+    "shape_RMSE_defined_mV": 105.97993208647878,
+    "targets": 3
+  },
+  "parent": "phase_lag_b1752f1a52f4",
+  "simulated": true,
+  "specification": {
+    "kind": "phase_lag",
+    "phase_tau_ns": 6.0
+  },
+  "stage": "shared_dynamic_refinement",
+  "values": [
+    5.665116771247434,
+    0.002793370725475313,
+    6.6492466440872375,
+    314.4,
+    333.49356636598696,
+    6.882302959338694,
+    0.2991563242902104,
+    0.956269682,
+    2513.3391379829973,
+    2536.9654457644647,
+    18.21526990911648
+  ]
+}

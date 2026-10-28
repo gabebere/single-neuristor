@@ -1,0 +1,88 @@
+schema_version = 1
+name = "Partial-switching material-model comparison pilot"
+kind = "simulation"
+model = "current"
+seed = 20261028
+[time]
+dt_ns = 0.025
+pre_us = 0.296
+duration_us = 0.25
+[input]
+amplitude_uA = 418.9
+[initial]
+voltage_V = 0.0
+temperature_K = 314.4
+[electrical]
+C_pF = 5.665116771247434
+[thermal]
+C_th_pJ_per_K = 0.026534015155
+S_e_mW_per_K = 0.003990529607821876
+T0_K = 314.4
+[resistance]
+preset = "../../data/parameters/resistance_100425_chip1_gap3.json"
+start_branch = "insulator"
+[steady]
+feature_method = "extrema"
+loss_function = "relative_squared"
+maximum_frequency_MHz = 110.0
+require_sustained = true
+require_monotone_proximity = true
+target_current_range_uA = [225.0, 610.0]
+frequency_weight = 1.0
+amplitude_weight = 1.0
+fixed_parameters = ["T0_K"]
+window_ns = [150.0, 250.0]
+data_directory = "../../data/experimental/tia_current_sweep"
+resistance_data = "../../data/experimental/100425_chip1_gap3.tsv"
+[steady.bounds]
+C_pF = [0.05, 80.0]
+S_e_mW_per_K = [0.0003, 0.03]
+tau_th_ns = [0.5, 150.0]
+gamma = [0.6, 0.98]
+[output]
+root = "runs/local"
+
+[model_pilot]
+workers = 2
+screen_dt_ns = 0.025
+verification_dt_ns = [0.025, 0.0125, 0.00625, 0.003125]
+constant_duration_ns = 2000.0
+# Nearest records by measured mean current; filenames are provenance only.
+target_currents_uA = [267.0, 419.0, 606.0]
+control_currents_uA = [190.0, 908.0]
+# Same measured data and historical anchors were seen before. This is a
+# mechanism pilot, not blind validation or a new static/material calibration.
+weights = [0.25, 0.5, 0.75]
+secondary_capacity_ratios = [10.0, 100.0]
+secondary_cooling_ratio = 1.0
+coupling_ratios = [0.0, 1.0]
+phase_tau_ns = [0.2, 0.6, 2.0, 6.0]
+refinement_factors = [0.7, 1.4]
+voltage_scale_mV = 20.0
+control_amplitude_floor_mV = 10.0
+control_amplitude_ratio = 2.0
+# Coherent reference budget: primary Cth/Se are multiplied by weight;
+# secondary budgets use (1-weight), then the above capacity/cooling ratios.
+# Electrical weight is not a measured thermal volume; these are hypotheses.
+
+[model_pilot.success]
+frequency_MAPE = 0.10
+amplitude_MAPE = 0.20
+maximum_frequency_error = 0.15
+maximum_amplitude_error = 0.30
+mean_voltage_RMSE_mV = 20.0
+convergence_fraction = 0.02
+waveform_rms_tolerance_mV = 2.0
+quiet_measured_vpp_mV = 5.0
+quiet_simulated_vpp_mV = 10.0
+shape_RMSE_mV = 20.0
+
+[[model_pilot.anchors]]
+name = "overnight_primary"
+values = [5.665116771247434, 0.003990529607821876, 6.6492466440872375, 314.4, 333.49356636598696, 6.882302959338694, 0.2991563242902104, 0.956269682, 2513.3391379829973, 2536.9654457644647, 18.21526990911648]
+[[model_pilot.anchors]]
+name = "presentation_combined"
+values = [6.253977338903387, 0.004096025473087114, 7.340933813691281, 314.4, 333.49356636598696, 6.882302959338694, 0.2991563242902104, 0.6308092755643178, 2513.3391379829973, 2536.9654457644647, 18.21526990911648]
+[[model_pilot.anchors]]
+name = "presentation_frequency"
+values = [5.360972828226345, 0.005794097192405672, 4.832621119253842, 314.4, 333.49356636598696, 6.882302959338694, 0.2991563242902104, 0.7074768145807939, 2513.3391379829973, 2536.9654457644647, 18.21526990911648]

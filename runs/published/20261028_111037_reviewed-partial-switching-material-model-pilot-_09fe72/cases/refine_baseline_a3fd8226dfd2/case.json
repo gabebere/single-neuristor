@@ -1,0 +1,46 @@
+{
+  "anchor": "overnight_primary",
+  "bound_clamped": false,
+  "changed_coordinate": "S_e_mW_per_K",
+  "elapsed_s": 2.4349115420045564,
+  "id": "refine_baseline_a3fd8226dfd2",
+  "metrics": {
+    "accepted_feature_loss": null,
+    "amplitude_MAPE_all": 15.041460624699141,
+    "defined_frequencies": 3,
+    "diagnostic_feature_score": 438.3499024883502,
+    "excessive_control_oscillations": 0,
+    "frequency_MAPE_defined": 0.16975308641975304,
+    "maximum_temperature_K": 380.5843811035156,
+    "mean_voltage_RMSE_mV": 40.23449417097066,
+    "passing_targets": 3,
+    "physical": false,
+    "rank": [
+      1,
+      0,
+      0,
+      438.3499024883502
+    ],
+    "shape_RMSE_defined_mV": 168.20686969403533,
+    "targets": 3
+  },
+  "parent": "baseline_7691157b00a5",
+  "simulated": true,
+  "specification": {
+    "kind": "baseline"
+  },
+  "stage": "shared_dynamic_refinement",
+  "values": [
+    5.665116771247434,
+    0.002793370725475313,
+    6.6492466440872375,
+    314.4,
+    333.49356636598696,
+    6.882302959338694,
+    0.2991563242902104,
+    0.956269682,
+    2513.3391379829973,
+    2536.9654457644647,
+    18.21526990911648
+  ]
+}
