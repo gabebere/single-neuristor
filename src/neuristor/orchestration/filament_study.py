@@ -36,7 +36,11 @@ def summarize(rows):
     """Keep acceptance separate from incomplete, differently denominated errors."""
     frame = pd.DataFrame(rows)
     outside = not bool(frame.temperature_valid.all())
-    score = relative_candidate_score(rows, outside)
+    # DataFrame round trips turn missing-cycle None losses into NaN. Restore
+    # their missing status before averaging defined losses; otherwise one absent
+    # cycle erases the partial diagnostic loss and its ranking tie-breaker.
+    records = [dict(row, loss=None if pd.isna(row.get("loss")) else row["loss"]) for row in rows]
+    score = relative_candidate_score(records, outside)
     frequency_error = pd.to_numeric(frame.frequency_relative_error, errors="coerce")
     return dict(
         score,

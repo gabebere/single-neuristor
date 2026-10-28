@@ -23,6 +23,28 @@ ROOT = Path(__file__).resolve().parents[1]
 RECIPE = ROOT / "experiments/current/specimen_filament_surroundings_20261027.toml"
 
 
+def test_summary_preserves_partial_loss_after_dataframe_round_trip():
+    import pandas as pd
+    from neuristor.orchestration.filament_study import summarize
+
+    rows = [dict(temperature_valid=True, temperature_max_K=360., frequency_valid=True,
+                 proximity_admissible=True, frequency_relative_error=.1,
+                 robust_amplitude_relative_error=.2, predicted_mean_mV=30., measured_mean_mV=20., loss=.05),
+            dict(temperature_valid=True, temperature_max_K=350., frequency_valid=False,
+                 proximity_admissible=True, frequency_relative_error=None,
+                 robust_amplitude_relative_error=-1., predicted_mean_mV=20., measured_mean_mV=20., loss=None)]
+    frame = pd.DataFrame(rows)
+    assert np.isnan(frame.loss.iloc[1])
+    summary = summarize(frame.to_dict('records'))
+    assert summary['dynamic_loss'] == pytest.approx(.05)
+    assert summary['score'] == pytest.approx(1001000.05)
+    assert summary['objective_loss'] is None and summary['invalid_count'] == 1
+    frame.loc[:, 'frequency_valid'] = False
+    frame.loc[:, 'loss'] = np.nan
+    summary = summarize(frame.to_dict('records'))
+    assert summary['dynamic_loss'] is None and np.isfinite(summary['score'])
+
+
 @pytest.mark.parametrize("fraction", [0, -0.1, 1.01, float("nan"), float("inf")])
 def test_fraction_rejects_nonphysical_values(fraction):
     with pytest.raises(ValueError, match="fraction"):

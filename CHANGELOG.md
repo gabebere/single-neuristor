@@ -2,6 +2,10 @@
 
 ## Unreleased — bounded overnight filament profile
 
+- Repair missing-cycle NaN handling in post-processing summaries. The overnight
+  audit restores finite partial diagnostics and verifies that both refinement
+  selections and every acceptance gate are unchanged. Original completed evidence
+  is preserved; no optimizer trajectory or physics is changed by this correction.
 - Add `neuristor analyze filament-profile` with a frozen-source, checkpointed
   eight-hour recipe, two thermal-bound families, fixed-f forward/reverse
   continuations, adaptive midpoints and paired mean-aware refinements.
