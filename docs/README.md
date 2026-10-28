@@ -7,6 +7,7 @@ instructions and scientific records without duplicating setup instructions.
 |---|---|
 | Current conclusions and the next research question | [Research handoff](RESEARCH_HANDOFF.md) |
 | Inspect the new overnight filament search design | [Fixed-f profile protocol](OVERNIGHT_FILAMENT_PROFILE_20261027.md) |
+| Compare optional partial-switching mechanisms | [Material-model pilot](MATERIAL_MODEL_PILOT_20261028.md) |
 | Run a new measured sample | [Sample studies](SAMPLE_STUDY.md) |
 | Understand the implementation | [Codebase map](CODEBASE_MAP.md) |
 | Edit recipes or inspect bundle contents | [Experiment format](EXPERIMENT_FORMAT.md), [run bundles](RUN_BUNDLES.md) |

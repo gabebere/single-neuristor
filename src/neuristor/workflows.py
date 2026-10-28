@@ -2711,6 +2711,13 @@ def run_presentation_reproduction(config, *, output_root=None, resume=None,
     return run(config, output_root=output_root, resume=resume, command=command)
 
 
+def run_model_pilot(config, *, output_root=None, command='neuristor analyze model-pilot'):
+    """Compare optional material mechanisms against the same presentation records."""
+    from .orchestration.model_pilot import run_model_pilot as run
+
+    return run(config, output_root=output_root, command=command)
+
+
 def run_filament_profile(config=None, *, resume=None, output_root=None, prepare=False, command='neuristor analyze filament-profile'):
     """Freeze, run or resume the bounded fixed-fraction overnight experiment."""
     from .orchestration.filament_profile import run_filament_profile as run

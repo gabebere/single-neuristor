@@ -1,5 +1,12 @@
 # Codebase map
 
+The optional `analyze model-pilot` command routes through `workflows.run_model_pilot`
+and `orchestration/model_pilot.py`, with case design in `fitting/model_pilot.py`
+and rendering in `plotting/model_pilot.py`. Experimental physics lives alongside
+the authoritative current solver in `current_drive_sim.py`; the finite-rate
+constitutive helper is in `model.py`. Existing solver entry points are unchanged.
+[Pilot protocol](MATERIAL_MODEL_PILOT_20261028.md).
+
 The bounded overnight filament workflow routes through `analyze filament-profile`
 → `workflows.run_filament_profile` → `orchestration/filament_profile.py`.
 `fitting/filament_profile.py` defines thermal-bound/start families and acceptance

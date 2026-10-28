@@ -647,6 +647,25 @@ def simulate_vin_sweep(
     return results
 
 
+def resistance_from_semiconducting_weight(T_K, weight, params):
+    """Evaluate the existing constitutive law at an explicit phase weight.
+
+    Used only by the experimental finite-rate state: weight=1 denotes the
+    semiconducting contribution and weight=0 leaves Rm. The original hysteresis
+    evaluation path and its float32 arithmetic are unchanged.
+    """
+    temperature = _clamp_temperature_array(np.asarray(T_K, dtype=_SIM_DTYPE), params)
+    phase = np.asarray(weight, dtype=_SIM_DTYPE)
+    if not np.isfinite(phase).all() or np.any(phase < 0) or np.any(phase > 1):
+        raise ValueError("Semiconducting weight must be finite and in [0, 1]")
+    if _TORCH_HYSTERESIS_AVAILABLE:
+        value = params.R0 * torch.exp(params.Ea_over_k / _torch_tensor(temperature)) * _torch_tensor(phase)
+        contribution = np.asarray(value.numpy(), dtype=_SIM_DTYPE)
+    else:
+        contribution = np.asarray(params.R0 * np.exp(params.Ea_over_k / temperature) * phase, dtype=_SIM_DTYPE)
+    return np.asarray(contribution + params.Rm, dtype=_SIM_DTYPE)
+
+
 def find_oscillatory_band_1d(
     run_sim: Callable[[float], SimOut],
     start: float,

@@ -102,12 +102,13 @@ def settled_loss(measured, predicted, settings):
                          and abs(pratio-1)<=.05 and abs(decay)<=np.log(1.2)))
 
 
-def evaluate_settled(dataset, values, base, indices, settings, dt_ns, measured=None, native_callback=None):
+def evaluate_settled(dataset, values, base, indices, settings, dt_ns, measured=None, native_callback=None,
+                     *, simulator=None):
     """Simulate with real prehistory; return only settled-window objective features."""
     window = settings['window_ns']
     p = joint_model(values, base, dt_ns)
     p = replace(p, t_pre_s=max(0, -dataset.time_ns[0]*1e-9), t_end_s=window[1]*1e-9)
-    outputs = simulate_current_waveforms(dataset.current_uA[:, indices], p,
+    outputs = (simulator or simulate_current_waveforms)(dataset.current_uA[:, indices], p,
         waveform_time_s=dataset.time_ns*1e-9,
         audit_proximity=bool(settings.get('require_monotone_proximity', False)))
     keep = dataset.time_ns <= window[1]
@@ -129,6 +130,20 @@ def evaluate_settled(dataset, values, base, indices, settings, dt_ns, measured=N
         row.update(temperature_min_K=float(o['T'].min()), temperature_max_K=float(o['T'].max()),
                    temperature_valid=bool(o['T'].min() >= p.resist_params.T_min_K
                                           and o['T'].max() <= p.resist_params.T_max_K))
+        if 'T_secondary' in o:
+            secondary = o['T_secondary']
+            if not np.isfinite(secondary).all():
+                raise ValueError('Non-finite secondary temperature')
+            secondary_valid = bool(secondary.min() >= p.resist_params.T_min_K
+                                   and secondary.max() <= p.resist_params.T_max_K)
+            row.update(primary_temperature_min_K=row['temperature_min_K'],
+                       primary_temperature_max_K=row['temperature_max_K'],
+                       secondary_temperature_min_K=float(secondary.min()),
+                       secondary_temperature_max_K=float(secondary.max()))
+            row['temperature_min_K'] = min(row['temperature_min_K'], float(secondary.min()))
+            row['temperature_max_K'] = max(row['temperature_max_K'], float(secondary.max()))
+            row['temperature_valid'] &= secondary_valid
+            outside |= not secondary_valid
         if native_callback is not None:
             native_callback(int(i), o, p)
         if settings.get('require_monotone_proximity', False):

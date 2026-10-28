@@ -122,6 +122,9 @@ is available with `neuristor analyze filament-profile --plan`, then
 `neuristor analyze filament-profile` (up to eight hours). The completed 21,232-evaluation
 follow-up found no quantitative, converged fit; [reviewed results](runs/published/20261028_033930_reviewed-overnight-filament-profile-20261028_039915/START_HERE.html)
 preserve the failures and numerical limits.
+The follow-up [material-model pilot](docs/MATERIAL_MODEL_PILOT_20261028.md) compares
+warm regions, a series VO₂ bottleneck and finite switching time separately:
+`neuristor analyze model-pilot --plan`, then `neuristor analyze model-pilot`.
 
 ## One home for jobs and results
 

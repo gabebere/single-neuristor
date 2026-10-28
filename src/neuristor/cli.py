@@ -418,6 +418,26 @@ def analyze_filament_study(
     typer.echo(f"Results: {bundle.root / 'START_HERE.html'}")
 
 
+@analyze_app.command("model-pilot")
+def analyze_model_pilot(
+    config: Optional[Path] = typer.Option(None, "--config", "-c", exists=True, dir_okay=False),
+    set_values: list[str] = typer.Option([], "--set"),
+    output_root: Optional[Path] = typer.Option(None, "--output-root"),
+    plan: bool = typer.Option(False, "--plan"),
+) -> None:
+    """Try warm regions, a series VO2 bottleneck and finite switching time separately."""
+    from .orchestration.model_pilot import plan_model_pilot
+    from .workflows import run_model_pilot
+
+    cfg = _configured(config or find_project_root()/"experiments/current/specimen_model_pilot_20261028.toml", set_values, "current")
+    if plan:
+        typer.echo(json.dumps(plan_model_pilot(cfg), indent=2))
+        return
+    bundle = run_model_pilot(cfg, output_root=output_root, command=_command())
+    _announce_bundle(bundle.root)
+    typer.echo(f"Results: {bundle.root / 'START_HERE.html'}")
+
+
 @analyze_app.command("filament-profile")
 def analyze_filament_profile(
     config: Optional[Path] = typer.Option(None, "--config", "-c", exists=True, dir_okay=False),

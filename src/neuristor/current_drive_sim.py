@@ -19,7 +19,7 @@ import imageio.v2 as imageio
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .model import HysteresisArray, YuanhangResistParams
+from .model import HysteresisArray, YuanhangResistParams, resistance_from_semiconducting_weight
 
 
 _EPS = 1e-12
@@ -763,6 +763,214 @@ def simulate_current_waveforms(
     )
     return _simulate_with_current_matrix(t, interpolated * 1e-6, params,
                                          audit_proximity=audit_proximity)
+
+
+@dataclass(frozen=True)
+class ExperimentalCurrentModel:
+    """Opt-in material hypotheses, separate from the supported default model.
+
+    For parallel regions primary_fraction is a conductance weight; for series
+    regions it partitions the uniform-temperature resistance. Secondary thermal
+    parameters are physical SI values, not automatically identified geometry.
+    The primary thermal capacity/cooling are supplied in CurrentDriveParams.
+    """
+
+    kind: str = "baseline"
+    primary_fraction: float = 0.75
+    C_secondary_J_per_K: float = 1e-13
+    S_secondary_W_per_K: float = 1e-6
+    coupling_W_per_K: float = 0.0
+    phase_tau_s: float = 0.0
+
+    def __post_init__(self):
+        if self.kind not in {"baseline", "warm_parallel", "series_bottleneck", "phase_lag"}:
+            raise ValueError("Unknown experimental current model")
+        values = [self.primary_fraction, self.C_secondary_J_per_K, self.S_secondary_W_per_K,
+                  self.coupling_W_per_K, self.phase_tau_s]
+        if not np.isfinite(values).all():
+            raise ValueError("Experimental model parameters must be finite")
+        if not 0 < self.primary_fraction < 1 or self.C_secondary_J_per_K <= 0:
+            raise ValueError("Require 0 < primary fraction < 1 and positive secondary heat capacity")
+        if min(self.S_secondary_W_per_K, self.coupling_W_per_K, self.phase_tau_s) < 0:
+            raise ValueError("Cooling, coupling and phase time must be nonnegative")
+
+
+def two_region_electrical_channels(voltage_V, primary_reference_ohm, secondary_reference_ohm,
+                                   fraction, topology):
+    """Partition current, internal voltage and Joule heat without double counting.
+
+    Equal reference resistances recover the measured whole-device R(T) in both
+    topologies. Series elements are regions inside the measured device: no
+    external resistor or change to an imposed ideal current is introduced.
+    """
+    v = np.asarray(voltage_V)
+    hot, secondary = np.asarray(primary_reference_ohm), np.asarray(secondary_reference_ohm)
+    if (not 0 < fraction < 1 or not np.isfinite(v).all() or not np.isfinite(hot).all()
+            or not np.isfinite(secondary).all() or np.any(hot <= 0) or np.any(secondary <= 0)):
+        raise ValueError("Require positive reference resistances and 0 < fraction < 1")
+    if topology == "warm_parallel":
+        resistance = _filament_resistance(hot, secondary, fraction)
+        primary_current = v * _SIM_DTYPE(fraction) / hot
+        secondary_current = v * _SIM_DTYPE(1-fraction) / secondary
+        primary_voltage = secondary_voltage = v
+    elif topology == "series_bottleneck":
+        r1 = _SIM_DTYPE(fraction)*hot
+        r2 = _SIM_DTYPE(1-fraction)*secondary
+        resistance = r1+r2
+        primary_current = secondary_current = v/resistance
+        primary_voltage = primary_current*r1
+        secondary_voltage = secondary_current*r2
+    else:
+        raise ValueError("Choose a two-region electrical topology")
+    return dict(R=resistance, I_device=v/resistance, I_primary=primary_current,
+                I_secondary=secondary_current, V_primary=primary_voltage, V_secondary=secondary_voltage,
+                P_primary=primary_voltage*primary_current, P_secondary=secondary_voltage*secondary_current)
+
+
+def coupled_thermal_propagator(*, C_primary_J_per_K, C_secondary_J_per_K,
+                               S_primary_W_per_K, S_secondary_W_per_K, coupling_W_per_K, dt_s):
+    """Exact frozen-power step for two passive coupled thermal nodes.
+
+    Mutual heat is K(Tprimary-Tsecondary), with opposite signs at the two nodes.
+    An augmented matrix exponential handles zero bath cooling without a singular
+    inverse. Compute these coefficients once per integration, not at each step.
+    """
+    from scipy.linalg import expm
+
+    values = [C_primary_J_per_K, C_secondary_J_per_K, S_primary_W_per_K,
+              S_secondary_W_per_K, coupling_W_per_K, dt_s]
+    if not np.isfinite(values).all() or min(values[:2]) <= 0 or dt_s <= 0 or min(values[2:5]) < 0:
+        raise ValueError("Invalid thermal capacities, conductances or timestep")
+    c1, c2, s1, s2, k, step = values
+    matrix = np.zeros((4, 4))
+    matrix[:2, :2] = [[-(s1+k)/c1, k/c1], [k/c2, -(s2+k)/c2]]
+    matrix[0, 2] = 1/c1
+    matrix[1, 3] = 1/c2
+    evolution = expm(step*matrix)
+    return evolution[:2, :2], evolution[:2, 2:]
+
+
+def advance_coupled_temperatures(primary_K, secondary_K, primary_power_W, secondary_power_W,
+                                 *, T0_K, propagator):
+    """Advance both temperatures with frozen powers using energy-conserving coupling."""
+    evolution, heating = propagator
+    a, b = np.asarray(primary_K)-T0_K, np.asarray(secondary_K)-T0_K
+    return (T0_K+evolution[0, 0]*a+evolution[0, 1]*b+heating[0, 0]*primary_power_W+heating[0, 1]*secondary_power_W,
+            T0_K+evolution[1, 0]*a+evolution[1, 1]*b+heating[1, 0]*primary_power_W+heating[1, 1]*secondary_power_W)
+
+
+def simulate_experimental_current_waveforms(currents_uA, params, experiment, *, waveform_time_s,
+                                            audit_proximity=False):
+    """Integrate one experimental mechanism with the same ideal-current KCL.
+
+    Baseline and zero phase time delegate exactly to the original solver. Other
+    modes preserve the original float32 hysteresis target and use exact frozen
+    RC, thermal and phase substeps. Their coupling still requires refinement.
+    Phase-lag hysteresis anchors follow the original quasi-static target; the
+    actual semiconducting weight relaxes toward it and determines resistance.
+    """
+    if experiment.kind == "baseline" or (experiment.kind == "phase_lag" and experiment.phase_tau_s == 0):
+        return simulate_current_waveforms(currents_uA, params, waveform_time_s=waveform_time_s,
+                                         audit_proximity=audit_proximity)
+    if params.filament_fraction != 1 or params.sigma_W_sqrt_s != 0:
+        raise ValueError("Do not combine mechanisms with the old cold branch or thermal noise")
+    currents = np.asarray(currents_uA, float)
+    if currents.ndim == 1:
+        currents = currents[:, None]
+    times = np.asarray(waveform_time_s, float)
+    if currents.ndim != 2 or times.ndim != 1 or len(times) < 2 or len(times) != len(currents):
+        raise ValueError("Require matching waveform times and current columns")
+    if not np.isfinite(times).all() or not np.isfinite(currents).all() or np.any(np.diff(times) <= 0):
+        raise ValueError("Waveforms must be finite with increasing times")
+    if not currents.shape[1]:
+        return []
+    t = _time_grid(params.dt_s, params.t_end_s, params.t_pre_s)
+    source = np.column_stack([np.interp(t.astype(float), times, currents[:, i]) for i in range(currents.shape[1])])
+    source = np.asarray(source*1e-6, dtype=_SIM_DTYPE)
+    shape = source.shape
+    two_regions = experiment.kind in {"warm_parallel", "series_bottleneck"}
+    names = ["V_vo2", "T", "g_eq", "g_dyn", "R", "P", "I_device", "P_primary", "P_secondary",
+             "I_primary", "I_secondary", "V_primary", "V_secondary", "R_reference_hot"]
+    if two_regions:
+        names += ["T_secondary", "g_secondary", "R_reference_secondary"]
+    arrays = {key: np.zeros(shape, dtype=_SIM_DTYPE) for key in names}
+    arrays["V_vo2"][0] = params.V_init_V
+    arrays["T"][0] = params.T_init_K
+    targets = []
+    for _ in range(2 if two_regions else 1):
+        hysteresis = HysteresisArray(params.resist_params, size=shape[1], start_branch=params.start_branch,
+                                     independent_anchors=True)
+        hysteresis.initialize(np.full(shape[1], params.T_init_K, dtype=_SIM_DTYPE))
+        targets.append(hysteresis)
+    minimum = np.ones(shape[1])
+    if two_regions:
+        arrays["T_secondary"][0] = params.T_init_K
+        propagation = coupled_thermal_propagator(C_primary_J_per_K=params.C_th_J_per_K,
+            C_secondary_J_per_K=experiment.C_secondary_J_per_K, S_primary_W_per_K=params.S_e_W_per_K,
+            S_secondary_W_per_K=experiment.S_secondary_W_per_K,
+            coupling_W_per_K=experiment.coupling_W_per_K, dt_s=params.dt_s)
+        # Preserve float32 state while computing stable substeps on temperature
+        # differences in float64, avoiding a spurious accumulated bath offset.
+    else:
+        alpha = _SIM_DTYPE(-np.expm1(-params.dt_s/experiment.phase_tau_s))
+        phase = None
+    for index in range(len(t)):
+        temperature = arrays["T"][index]
+        reference, equilibrium = targets[0].evaluate(temperature)
+        if audit_proximity:
+            minimum = np.minimum(minimum, targets[0].proximity_temperature_slope(temperature))
+        arrays["g_eq"][index] = equilibrium
+        if two_regions:
+            reference2, equilibrium2 = targets[1].evaluate(arrays["T_secondary"][index])
+            arrays["g_secondary"][index] = equilibrium2
+            arrays["R_reference_secondary"][index] = reference2
+            if audit_proximity:
+                minimum = np.minimum(minimum, targets[1].proximity_temperature_slope(arrays["T_secondary"][index]))
+            arrays["g_dyn"][index] = equilibrium
+            resistance = (_filament_resistance(reference, reference2, experiment.primary_fraction)
+                          if experiment.kind == "warm_parallel" else
+                          _SIM_DTYPE(experiment.primary_fraction)*reference+_SIM_DTYPE(1-experiment.primary_fraction)*reference2)
+        else:
+            if phase is None:
+                phase = equilibrium.copy()
+            arrays["g_dyn"][index] = phase
+            reference = resistance_from_semiconducting_weight(temperature, phase, params.resist_params)
+            resistance = reference
+        arrays["R"][index] = resistance
+        arrays["R_reference_hot"][index] = reference
+        if params.C_F == 0:
+            arrays["V_vo2"][index] = source[index]*resistance
+        voltage = arrays["V_vo2"][index]
+        arrays["P"][index] = voltage*voltage/resistance
+        if two_regions:
+            channels = two_region_electrical_channels(voltage, reference, reference2,
+                                                      experiment.primary_fraction, experiment.kind)
+            for key, value in channels.items():
+                arrays[key][index] = value
+        else:
+            arrays["I_device"][index] = voltage/resistance
+            arrays["I_primary"][index] = voltage/resistance
+            arrays["V_primary"][index] = voltage
+            arrays["P_primary"][index] = arrays["P"][index]
+        if index == len(t)-1:
+            break
+        arrays["V_vo2"][index+1] = _advance_voltage_exact(voltage, source[index], resistance,
+                                                         dt_s=params.dt_s, C_F=params.C_F)
+        if two_regions:
+            next_primary, next_secondary = advance_coupled_temperatures(
+                temperature.astype(float), arrays["T_secondary"][index].astype(float),
+                arrays["P_primary"][index].astype(float), arrays["P_secondary"][index].astype(float),
+                T0_K=params.T0_K, propagator=propagation)
+            arrays["T"][index+1] = next_primary
+            arrays["T_secondary"][index+1] = next_secondary
+        else:
+            arrays["T"][index+1] = _advance_temperature_exact(temperature, arrays["P"][index],
+                T0_K=params.T0_K, dt_s=params.dt_s, C_th_J_per_K=params.C_th_J_per_K,
+                S_e_W_per_K=params.S_e_W_per_K)
+            phase = np.clip(phase+alpha*(equilibrium-phase), 0., 1.)
+    return [dict(t=t, I_in=source[:, i], **{name: value[:, i].copy() for name, value in arrays.items()},
+                 **({"minimum_proximity_slope": np.asarray(minimum[i])} if audit_proximity else {}))
+            for i in range(shape[1])]
 
 
 def simulate_current_steps(

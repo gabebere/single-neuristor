@@ -71,6 +71,12 @@ No new calibration was adopted during repository consolidation.
 
 ## Latest fitting method versus requested next work
 
+A separate [material-model pilot](MATERIAL_MODEL_PILOT_20261028.md) is implemented
+for the authorized follow-up. It compares warm parallel regions, a series VO₂
+bottleneck and finite switching time separately, with matched reference-vector
+ablations. **Numerical outcomes pending**; these optional hypotheses do not alter
+the supported solver or adopt a calibration.
+
 The [overnight fixed-f profile](OVERNIGHT_FILAMENT_PROFILE_20261027.md) completed
 all planned stages in 7.06 hours: 21,232 stage-unique evaluations, nine fractions,
 two thermal-bound families and fine-step/2 µs checks. **No quantitative,

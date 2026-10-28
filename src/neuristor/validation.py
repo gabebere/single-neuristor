@@ -52,6 +52,10 @@ def validate_repository(project_root: str | Path | None = None) -> ValidationRep
                 from .orchestration.filament_profile import plan_filament_profile
 
                 plan_filament_profile(config)
+            if 'model_pilot' in config:
+                from .orchestration.model_pilot import plan_model_pilot
+
+                plan_model_pilot(config)
             if config.get("kind") == "reproduction":
                 from .orchestration.presentation_reproduction import plan_presentation_reproduction
 

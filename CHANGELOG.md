@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased — material-model comparison pilot
+
+- Add optional warm parallel regions, a series VO₂ bottleneck and finite phase
+  response time, with the original ideal-current solver as the exact baseline.
+- Conserve branch heat and mutual thermal exchange; recover measured R(T) at
+  uniform temperature and preserve the exact C=0 voltage limit.
+- Add a versioned 87-case mechanism grid, shared local probes, all-current
+  timestep checks, exact-reference-vector ablations and 2 µs controls through
+  `neuristor analyze model-pilot`. Save every case and an offline comparison.
+- Verify analytic thermal/RC/phase controls and bitwise compatibility of 116
+  pre-change output arrays. Scientific pilot outcomes are pending; no calibration
+  or change to existing default trajectories is adopted.
+
 ## Unreleased — bounded overnight filament profile
 
 - Repair missing-cycle NaN handling in post-processing summaries. The overnight
