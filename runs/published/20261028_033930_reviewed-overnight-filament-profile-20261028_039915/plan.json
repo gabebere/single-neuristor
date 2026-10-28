@@ -1,0 +1,171 @@
+{
+  "adaptive_midpoints_up_to": 4,
+  "caveat": "Optimizer-excluded currents were seen previously and informed historical seeds; they are not blind validation.",
+  "constant_control_indices": [
+    5,
+    10,
+    14
+  ],
+  "final_refinements_up_to": 6,
+  "fractions": [
+    1.0,
+    0.75,
+    0.5,
+    0.3,
+    0.2,
+    0.1,
+    0.05,
+    0.03,
+    0.01
+  ],
+  "primary_profiles": 17,
+  "profile_hours": 6.5,
+  "reverse_continuations": 16,
+  "split": [
+    {
+      "current_uA": 38.14747575149247,
+      "group": "control",
+      "index": 0,
+      "source_label_mV": 50.0
+    },
+    {
+      "current_uA": 76.14645333611547,
+      "group": "control",
+      "index": 1,
+      "source_label_mV": 100.0
+    },
+    {
+      "current_uA": 114.02278781045628,
+      "group": "control",
+      "index": 2,
+      "source_label_mV": 150.0
+    },
+    {
+      "current_uA": 152.07520064747646,
+      "group": "control",
+      "index": 3,
+      "source_label_mV": 200.0
+    },
+    {
+      "current_uA": 189.78481489725564,
+      "group": "control",
+      "index": 4,
+      "source_label_mV": 250.0
+    },
+    {
+      "current_uA": 228.28194801752292,
+      "group": "training",
+      "index": 5,
+      "source_label_mV": 300.0
+    },
+    {
+      "current_uA": 266.63381756349264,
+      "group": "optimizer_excluded",
+      "index": 6,
+      "source_label_mV": 350.0
+    },
+    {
+      "current_uA": 303.16975916335514,
+      "group": "training",
+      "index": 7,
+      "source_label_mV": 400.0
+    },
+    {
+      "current_uA": 341.63048964720224,
+      "group": "training",
+      "index": 8,
+      "source_label_mV": 450.0
+    },
+    {
+      "current_uA": 380.7487568255196,
+      "group": "training",
+      "index": 9,
+      "source_label_mV": 500.0
+    },
+    {
+      "current_uA": 418.8568677552722,
+      "group": "optimizer_excluded",
+      "index": 10,
+      "source_label_mV": 550.0
+    },
+    {
+      "current_uA": 457.67299715652115,
+      "group": "training",
+      "index": 11,
+      "source_label_mV": 600.0
+    },
+    {
+      "current_uA": 494.5467574453731,
+      "group": "training",
+      "index": 12,
+      "source_label_mV": 650.0
+    },
+    {
+      "current_uA": 532.5991244405486,
+      "group": "training",
+      "index": 13,
+      "source_label_mV": 700.0
+    },
+    {
+      "current_uA": 569.5450791794345,
+      "group": "optimizer_excluded",
+      "index": 14,
+      "source_label_mV": 750.0
+    },
+    {
+      "current_uA": 606.2799905984709,
+      "group": "training",
+      "index": 15,
+      "source_label_mV": 800.0
+    },
+    {
+      "current_uA": 645.2971900827099,
+      "group": "control",
+      "index": 16,
+      "source_label_mV": 850.0
+    },
+    {
+      "current_uA": 682.2839660347508,
+      "group": "control",
+      "index": 17,
+      "source_label_mV": 900.0
+    },
+    {
+      "current_uA": 721.3068657151125,
+      "group": "control",
+      "index": 18,
+      "source_label_mV": 950.0
+    },
+    {
+      "current_uA": 757.8339085990701,
+      "group": "control",
+      "index": 19,
+      "source_label_mV": 1000.0
+    },
+    {
+      "current_uA": 833.9540681326382,
+      "group": "control",
+      "index": 20,
+      "source_label_mV": 1100.0
+    },
+    {
+      "current_uA": 907.0417701985936,
+      "group": "control",
+      "index": 21,
+      "source_label_mV": 1200.0
+    }
+  ],
+  "success": {
+    "amplitude_MAPE": 0.2,
+    "convergence_fraction": 0.02,
+    "frequency_MAPE": 0.1,
+    "maximum_amplitude_error": 0.3,
+    "maximum_frequency_error": 0.15,
+    "mean_voltage_RMSE_mV": 20.0,
+    "quiet_measured_vpp_mV": 5.0,
+    "quiet_simulated_vpp_mV": 10.0,
+    "waveform_rms_tolerance_mV": 2.0
+  },
+  "wall_hours": 8.0,
+  "workers": 2
+}

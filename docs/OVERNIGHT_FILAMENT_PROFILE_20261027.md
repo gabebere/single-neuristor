@@ -1,18 +1,66 @@
 # Overnight filament-fraction profile — 27 October 2026
 
-**Protocol and implementation; numerical outcomes are pending.** This is a
+**Completed 28 October: no quantitative, converged fit found.** This is a
 bounded follow-up to the [249-evaluation trial](FILAMENT_SURROUNDINGS_20261027.md),
 not an adopted specimen calibration. Gabriel authorized an overnight search.
 
-The full job **started at 21:35 Israel time on 27 October**, with an eight-hour
-deadline at **05:35 on 28 October**. Local entry point:
-[`START_HERE.html`](../runs/local/20261027_193458_overnight-fixed-f-filament-profile-and-cross-cur_5e8844/START_HERE.html).
+The full job **started at 21:35 Israel time on 27 October** and completed at
+approximately **04:39 on 28 October**, before the original 05:35 deadline.
+It ran 7.06 hours and completed all 76 stages without a restart or skipped stage.
+Reviewed entry point:
+[`START_HERE.html`](../runs/published/20261028_033930_reviewed-overnight-filament-profile-20261028_039915/START_HERE.html).
 Frozen source commit: `8ae0081ba73b90474545ca8032843bba057a1c06`, pushed on
-`codex/overnight-filament-profile`. The original supervisor PID is 33018; use the
-bundle's process/status files to identify any later restart. Numerical progress
-was verified after launch. A quiet 30-minute monitor is attached to this chat.
-The local bundle is ignored by Git; only the protocol/software are currently
-backed up on the new GitHub branch. Completed results will require separate review.
+`codex/overnight-filament-profile`. The original full local numerical bundle is
+`20261027_193458_overnight-fixed-f-filament-profile-and-cross-cur_5e8844`.
+The compact review preserves original metrics/configuration and input/source hashes;
+large arrays and optimizer histories remain local and are not backed up on GitHub.
+
+## Completed results
+
+The 43 searches made **21,232 stage-unique evaluations**, including repeated starts
+across stages (20,698 distinct saved physical vectors). Twenty-one profile points,
+six final candidates and six 2 µs control cases were verified. The finest final
+step is 0.003125 ns. Frequency MAPE below uses 10 defined frequencies in every
+row; valid sustained-target counts can be smaller. Vpp errors use all 11 targets;
+mean-voltage RMSE uses all 22 records.
+
+| Final candidate | Valid targets | Frequency MAPE | Vpp MAPE | Mean RMSE (mV) |
+|---|---:|---:|---:|---:|
+| f=1, primary | 10/11 | 16.59% | 1,437.3% | 35.52 |
+| f=1, mean-aware | 9/11 | 35.17% | 1,582.7% | 46.24 |
+| f=0.75, inherited, primary | 10/11 | 19.80% | 1,898.5% | 69.64 |
+| f=0.75, inherited, mean-aware | 10/11 | 19.80% | 1,898.5% | 69.64 |
+| f≈0.866025, scaled, primary | 10/11 | 22.89% | 1,677.2% | 60.48 |
+| f≈0.866025, scaled, mean-aware | 10/11 | 24.42% | 1,655.8% | 60.75 |
+
+No final candidate passes both timestep halvings: feature comparisons pass 12–17
+of 22 target/halving pairs and waveform comparisons only 0–2 of 22. At f=0.75,
+four measured-input paths exceed the 284.8545–375.1625 K temperature domain,
+reaching 379.82 K. Short-replay proximity is admissible in all six final cases.
+The scaled alternatives avoid false quiet-control oscillations; the primary f=1
+case has one and inherited f=0.75 has two. No candidate passes every gate.
+
+All final 2 µs controls leave the temperature domain at ~569.55 µA at every
+step. Only the primary f=1 case remains sustained at all three selected currents;
+the other five lose low-current oscillations at ~228.28 µA. Thus the primary f=1
+case passes two of three current-specific joint long-control checks and the others
+one of three, rather than establishing a fully physical persistent fit.
+
+All 94 frozen input/source files and 76 completed-stage inventories pass hash
+verification. All 132 native final histories reconstruct the saved voltage features
+and preserve branch-current/power identities within 2.60e-7 relative error.
+A DataFrame missing-value issue erased partial diagnostic losses in the original
+summary. Audited finite-loss summaries restore them and verify that both selected
+refinement seeds and all acceptance decisions are unchanged. Maintained reporting
+was corrected in commit `1322225` with a regression test; the frozen search and
+original evidence were not modified. The full software suite passes 224 tests.
+
+This bounded negative result does not identify f, establish a global optimum or
+rule out current localization. Before adding arbitrary f(t), confirm channel
+conversion/gain/offset/delay and probe nodes with a known-resistor control, and
+audit timestep/hysteresis fidelity on fixed representative vectors. If surrounding
+warming is independently supported, a constrained two-temperature model is a
+possible next hypothesis, not a result of this search. No calibration is adopted.
 
 ```bash
 neuristor analyze filament-profile --plan

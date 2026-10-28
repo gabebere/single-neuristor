@@ -119,7 +119,9 @@ For the optional hot-filament/cold-surroundings experiment on the presentation
 measurements, see [the declared model and comparison protocol](docs/FILAMENT_SURROUNDINGS_20261027.md).
 The broader [overnight fraction-profile protocol](docs/OVERNIGHT_FILAMENT_PROFILE_20261027.md)
 is available with `neuristor analyze filament-profile --plan`, then
-`neuristor analyze filament-profile` (up to eight hours; numerical outcomes pending).
+`neuristor analyze filament-profile` (up to eight hours). The completed 21,232-evaluation
+follow-up found no quantitative, converged fit; [reviewed results](runs/published/20261028_033930_reviewed-overnight-filament-profile-20261028_039915/START_HERE.html)
+preserve the failures and numerical limits.
 
 ## One home for jobs and results
 

@@ -1,0 +1,587 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reviewed overnight filament search</title><style>
+body{font:16px system-ui;color:#172735;line-height:1.6;margin:2rem auto;max-width:1250px;padding:0 1rem}
+h1,h2{line-height:1.2}.result{padding:1rem;border-left:5px solid #c48c28;background:#fff5dc}
+.scroll{overflow:auto} table{border-collapse:collapse;font-size:13px}td,th{padding:.5rem;border:1px solid #ccd5df;text-align:left}
+th{background:#edf3f7}img{max-width:100%;height:auto} a{color:#0d628f}details{margin:1rem 0}
+</style><h1>The overnight filament search is complete</h1>
+<p class="result"><strong>No candidate recovered a quantitative, converged match.</strong>
+The job completed 21,232 stage-unique evaluations in 7.06 hours, including both thermal assumptions,
+all planned checks and long controls. No calibration is adopted. This does not rule out a filament.</p>
+<p><a href="report.md">Full reviewed report</a> · <a href="final_comparison.csv">Final comparisons</a> ·
+<a href="review_metrics.json">Integrity audit</a> · <a href="plan.json">Original plan</a> ·
+<a href="full_local_inventory.json">Included and omitted evidence</a></p>
+<h2>Six final comparisons</h2>
+<p>Finest timestep: 0.003125 ns. <strong>Valid</strong> means sustained target checks passed;
+<strong>Defined</strong> is the frequency-error denominator. Frequency errors use defined targets,
+Vpp errors all 11 targets, and mean-voltage error all 22 records. Outside-T counts are out of 22.
+Feature and waveform counts cover 22 comparisons (11 targets × two halvings).</p>
+<div class="scroll"><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Family</th>
+      <th>f</th>
+      <th>Objective</th>
+      <th>Valid</th>
+      <th>Defined</th>
+      <th>Frequency_MAPE</th>
+      <th>Vpp_MAPE</th>
+      <th>Mean_RMSE</th>
+      <th>Outside_T</th>
+      <th>Feature_pairs</th>
+      <th>Waveform_pairs</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Inherited</td>
+      <td>1</td>
+      <td>Frequency + Vpp</td>
+      <td>10/11</td>
+      <td>10/11</td>
+      <td>16.59%</td>
+      <td>1437.3%</td>
+      <td>35.52 mV</td>
+      <td>0/22</td>
+      <td>17/22</td>
+      <td>0/22</td>
+    </tr>
+    <tr>
+      <td>Inherited</td>
+      <td>1</td>
+      <td>+ mean voltage</td>
+      <td>9/11</td>
+      <td>10/11</td>
+      <td>35.17%</td>
+      <td>1582.7%</td>
+      <td>46.24 mV</td>
+      <td>0/22</td>
+      <td>17/22</td>
+      <td>2/22</td>
+    </tr>
+    <tr>
+      <td>Inherited</td>
+      <td>0.75</td>
+      <td>Frequency + Vpp</td>
+      <td>10/11</td>
+      <td>10/11</td>
+      <td>19.80%</td>
+      <td>1898.5%</td>
+      <td>69.64 mV</td>
+      <td>4/22</td>
+      <td>12/22</td>
+      <td>2/22</td>
+    </tr>
+    <tr>
+      <td>Inherited</td>
+      <td>0.75</td>
+      <td>+ mean voltage</td>
+      <td>10/11</td>
+      <td>10/11</td>
+      <td>19.80%</td>
+      <td>1898.5%</td>
+      <td>69.64 mV</td>
+      <td>4/22</td>
+      <td>12/22</td>
+      <td>2/22</td>
+    </tr>
+    <tr>
+      <td>Scaled thermal volume</td>
+      <td>0.866025</td>
+      <td>Frequency + Vpp</td>
+      <td>10/11</td>
+      <td>10/11</td>
+      <td>22.89%</td>
+      <td>1677.2%</td>
+      <td>60.48 mV</td>
+      <td>0/22</td>
+      <td>15/22</td>
+      <td>2/22</td>
+    </tr>
+    <tr>
+      <td>Scaled thermal volume</td>
+      <td>0.866025</td>
+      <td>+ mean voltage</td>
+      <td>10/11</td>
+      <td>10/11</td>
+      <td>24.42%</td>
+      <td>1655.8%</td>
+      <td>60.75 mV</td>
+      <td>0/22</td>
+      <td>14/22</td>
+      <td>2/22</td>
+    </tr>
+  </tbody>
+</table></div>
+<p>All six fail the joint long-control test. Smaller fractions and the mean-aware attempts did not solve
+the discrepancy. Very small-f candidates can appear to reduce amplitude error by losing oscillations;
+missing cycles remain failures, not zero error.</p>
+<h2>What the final waveforms show</h2><p>Black: measured. Blue: simulated.
+Every final candidate is shown at low/mid/high measured currents; all 22 waveforms are linked below.</p>
+<img src="figures/final_waveforms.png" alt="Six final candidates compared with measured voltage at three currents">
+<h2>Profile across fractions</h2><img src="figures/profile.png" alt="Frequency, amplitude, mean and valid-cycle diagnostics across filament fractions">
+<details><summary>All 21 profile checks, including failed cases</summary><div class="scroll">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>family</th>
+      <th>fraction</th>
+      <th>passing_targets</th>
+      <th>defined_frequencies</th>
+      <th>frequency_MAPE_percent</th>
+      <th>amplitude_MAPE_percent</th>
+      <th>mean_voltage_RMSE_mV</th>
+      <th>outside_temperature_records</th>
+      <th>inadmissible_proximity_records</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>inherited</td>
+      <td>0.6124</td>
+      <td>6</td>
+      <td>6</td>
+      <td>17.57</td>
+      <td>1007</td>
+      <td>90.04</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>inherited</td>
+      <td>0.866</td>
+      <td>9</td>
+      <td>9</td>
+      <td>14.35</td>
+      <td>1658</td>
+      <td>54.92</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>volume_scaled</td>
+      <td>0.6124</td>
+      <td>2</td>
+      <td>3</td>
+      <td>18.5</td>
+      <td>184.9</td>
+      <td>76.77</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>volume_scaled</td>
+      <td>0.866</td>
+      <td>10</td>
+      <td>10</td>
+      <td>21.62</td>
+      <td>1684</td>
+      <td>59.98</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>inherited</td>
+      <td>1</td>
+      <td>9</td>
+      <td>9</td>
+      <td>26.59</td>
+      <td>735.9</td>
+      <td>42.33</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>inherited</td>
+      <td>0.01</td>
+      <td>0</td>
+      <td>1</td>
+      <td>33.33</td>
+      <td>91.9</td>
+      <td>1148</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>inherited</td>
+      <td>0.03</td>
+      <td>0</td>
+      <td>1</td>
+      <td>33.33</td>
+      <td>91.9</td>
+      <td>1147</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>inherited</td>
+      <td>0.1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>33.33</td>
+      <td>96.47</td>
+      <td>1128</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>inherited</td>
+      <td>0.2</td>
+      <td>4</td>
+      <td>4</td>
+      <td>24.82</td>
+      <td>3149</td>
+      <td>447.7</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>inherited</td>
+      <td>0.5</td>
+      <td>7</td>
+      <td>7</td>
+      <td>29.87</td>
+      <td>1155</td>
+      <td>126.5</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>inherited</td>
+      <td>0.75</td>
+      <td>9</td>
+      <td>9</td>
+      <td>27.79</td>
+      <td>2072</td>
+      <td>97.89</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>volume_scaled</td>
+      <td>0.01</td>
+      <td>0</td>
+      <td>0</td>
+      <td>undefined</td>
+      <td>100</td>
+      <td>595.6</td>
+      <td>6</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>volume_scaled</td>
+      <td>0.03</td>
+      <td>0</td>
+      <td>0</td>
+      <td>undefined</td>
+      <td>100</td>
+      <td>542.1</td>
+      <td>6</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>volume_scaled</td>
+      <td>0.05</td>
+      <td>0</td>
+      <td>0</td>
+      <td>undefined</td>
+      <td>100</td>
+      <td>512.7</td>
+      <td>6</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>volume_scaled</td>
+      <td>0.1</td>
+      <td>0</td>
+      <td>2</td>
+      <td>237.5</td>
+      <td>99.38</td>
+      <td>175.6</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>volume_scaled</td>
+      <td>0.2</td>
+      <td>3</td>
+      <td>3</td>
+      <td>24.79</td>
+      <td>863.4</td>
+      <td>298.6</td>
+      <td>5</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>volume_scaled</td>
+      <td>0.3</td>
+      <td>5</td>
+      <td>5</td>
+      <td>24.32</td>
+      <td>3226</td>
+      <td>358</td>
+      <td>4</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>inherited</td>
+      <td>0.05</td>
+      <td>0</td>
+      <td>1</td>
+      <td>33.33</td>
+      <td>91.91</td>
+      <td>1144</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>inherited</td>
+      <td>0.3</td>
+      <td>5</td>
+      <td>5</td>
+      <td>22.79</td>
+      <td>2763</td>
+      <td>350.5</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>volume_scaled</td>
+      <td>0.5</td>
+      <td>5</td>
+      <td>5</td>
+      <td>23.31</td>
+      <td>813.6</td>
+      <td>137.1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>volume_scaled</td>
+      <td>0.75</td>
+      <td>9</td>
+      <td>9</td>
+      <td>17.31</td>
+      <td>1847</td>
+      <td>70.75</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table></div></details>
+<h2>Long-time checks</h2><p>At 2 µs, the high-current control (~569.55 µA) leaves the calibrated temperature
+domain for every final candidate and timestep. Only the primary f=1 candidate retains sustained low-current
+oscillations (~228.28 µA). None passes all three currents.</p>
+<details><summary>Current-by-current long-control audit</summary><div class="scroll"><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>stage</th>
+      <th>current_uA</th>
+      <th>sustained_all_steps</th>
+      <th>physical_all_steps</th>
+      <th>features_converged</th>
+      <th>frequency_MHz_maximum_halving_change</th>
+      <th>robust_vpp_mV_maximum_halving_change</th>
+      <th>passing</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>control_refine_baseline_mean</td>
+      <td>228.28</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>undefined</td>
+      <td>undefined</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>control_refine_baseline_mean</td>
+      <td>418.86</td>
+      <td>True</td>
+      <td>True</td>
+      <td>True</td>
+      <td>0.0098678</td>
+      <td>0.0012635</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>control_refine_baseline_mean</td>
+      <td>569.55</td>
+      <td>True</td>
+      <td>False</td>
+      <td>True</td>
+      <td>0.012576</td>
+      <td>0.0040743</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>control_refine_baseline_primary</td>
+      <td>228.28</td>
+      <td>True</td>
+      <td>True</td>
+      <td>True</td>
+      <td>0.0012389</td>
+      <td>0.00068448</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>control_refine_baseline_primary</td>
+      <td>418.86</td>
+      <td>True</td>
+      <td>True</td>
+      <td>True</td>
+      <td>0.00928</td>
+      <td>0.0011592</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>control_refine_baseline_primary</td>
+      <td>569.55</td>
+      <td>True</td>
+      <td>False</td>
+      <td>True</td>
+      <td>0.01104</td>
+      <td>0.0044136</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>control_refine_inherited_mean</td>
+      <td>228.28</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>undefined</td>
+      <td>undefined</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>control_refine_inherited_mean</td>
+      <td>418.86</td>
+      <td>True</td>
+      <td>True</td>
+      <td>True</td>
+      <td>0.0084282</td>
+      <td>0.012587</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>control_refine_inherited_mean</td>
+      <td>569.55</td>
+      <td>True</td>
+      <td>False</td>
+      <td>True</td>
+      <td>0.011984</td>
+      <td>0.0022184</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>control_refine_inherited_primary</td>
+      <td>228.28</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>undefined</td>
+      <td>undefined</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>control_refine_inherited_primary</td>
+      <td>418.86</td>
+      <td>True</td>
+      <td>True</td>
+      <td>True</td>
+      <td>0.0084282</td>
+      <td>0.012587</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>control_refine_inherited_primary</td>
+      <td>569.55</td>
+      <td>True</td>
+      <td>False</td>
+      <td>True</td>
+      <td>0.011984</td>
+      <td>0.0022184</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>control_refine_volume_scaled_mean</td>
+      <td>228.28</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>undefined</td>
+      <td>undefined</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>control_refine_volume_scaled_mean</td>
+      <td>418.86</td>
+      <td>True</td>
+      <td>True</td>
+      <td>True</td>
+      <td>0.0082563</td>
+      <td>0.0012414</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>control_refine_volume_scaled_mean</td>
+      <td>569.55</td>
+      <td>True</td>
+      <td>False</td>
+      <td>True</td>
+      <td>0.010355</td>
+      <td>0.0046202</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>control_refine_volume_scaled_primary</td>
+      <td>228.28</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>undefined</td>
+      <td>undefined</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>control_refine_volume_scaled_primary</td>
+      <td>418.86</td>
+      <td>True</td>
+      <td>True</td>
+      <td>True</td>
+      <td>0.0085472</td>
+      <td>0.00085394</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>control_refine_volume_scaled_primary</td>
+      <td>569.55</td>
+      <td>True</td>
+      <td>False</td>
+      <td>True</td>
+      <td>0.010253</td>
+      <td>0.0046818</td>
+      <td>False</td>
+    </tr>
+  </tbody>
+</table></div></details>
+<h2>Recommended next step</h2><p>Confirm channel conversion, gain, offsets, delay and probe nodes with a
+known-resistor control. Audit timestep/hysteresis fidelity on fixed representative vectors before another fit.
+If independent evidence supports surrounding-film warming, consider a constrained two-temperature model.
+An arbitrary varying fraction would add freedom without resolving the current uncertainty.</p>
+<h2>Review and provenance</h2><p>All 94 frozen input/source files and 76 stage inventories pass hash checks.
+All 132 native finest-step histories reproduce the saved final features and preserve branch-current/power
+identities within 2.60×10⁻⁷ relative error. A post-processing NaN issue erased partial diagnostics in the original
+summary. Corrected diagnostics preserve both selected refinement seeds and every acceptance decision;
+original files remain unchanged. See the report for details.</p>
+<p>Three currents were initially excluded from optimization but seen historically. Final fits use all 11 targets;
+this is not blind validation. No accepted all-target loss or inferred physical area fraction is established.</p>
+<p>The full ~964 MB numerical run remains local. This compact archive omits large native arrays and histories;
+their hashes and exclusion flags are recorded. Those omitted bytes are not backed up on GitHub.</p>
+<details><summary>Numerical tables and sampled waveforms</summary><ul><li>final_refine_baseline_mean: <a href="stages/final_refine_baseline_mean/verification.csv">features</a> · <a href="stages/final_refine_baseline_mean/convergence.csv">timestep checks</a> · <a href="stages/final_refine_baseline_mean/traces.csv">all 22 sampled waveforms</a></li><li>final_refine_baseline_primary: <a href="stages/final_refine_baseline_primary/verification.csv">features</a> · <a href="stages/final_refine_baseline_primary/convergence.csv">timestep checks</a> · <a href="stages/final_refine_baseline_primary/traces.csv">all 22 sampled waveforms</a></li><li>final_refine_inherited_mean: <a href="stages/final_refine_inherited_mean/verification.csv">features</a> · <a href="stages/final_refine_inherited_mean/convergence.csv">timestep checks</a> · <a href="stages/final_refine_inherited_mean/traces.csv">all 22 sampled waveforms</a></li><li>final_refine_inherited_primary: <a href="stages/final_refine_inherited_primary/verification.csv">features</a> · <a href="stages/final_refine_inherited_primary/convergence.csv">timestep checks</a> · <a href="stages/final_refine_inherited_primary/traces.csv">all 22 sampled waveforms</a></li><li>final_refine_volume_scaled_mean: <a href="stages/final_refine_volume_scaled_mean/verification.csv">features</a> · <a href="stages/final_refine_volume_scaled_mean/convergence.csv">timestep checks</a> · <a href="stages/final_refine_volume_scaled_mean/traces.csv">all 22 sampled waveforms</a></li><li>final_refine_volume_scaled_primary: <a href="stages/final_refine_volume_scaled_primary/verification.csv">features</a> · <a href="stages/final_refine_volume_scaled_primary/convergence.csv">timestep checks</a> · <a href="stages/final_refine_volume_scaled_primary/traces.csv">all 22 sampled waveforms</a></li><li>profile_check_adaptive_inherited_0p612372436: <a href="stages/profile_check_adaptive_inherited_0p612372436/verification.csv">features</a> · <a href="stages/profile_check_adaptive_inherited_0p612372436/convergence.csv">timestep checks</a></li><li>profile_check_adaptive_inherited_0p866025404: <a href="stages/profile_check_adaptive_inherited_0p866025404/verification.csv">features</a> · <a href="stages/profile_check_adaptive_inherited_0p866025404/convergence.csv">timestep checks</a></li><li>profile_check_adaptive_volume_scaled_0p612372436: <a href="stages/profile_check_adaptive_volume_scaled_0p612372436/verification.csv">features</a> · <a href="stages/profile_check_adaptive_volume_scaled_0p612372436/convergence.csv">timestep checks</a></li><li>profile_check_adaptive_volume_scaled_0p866025404: <a href="stages/profile_check_adaptive_volume_scaled_0p866025404/verification.csv">features</a> · <a href="stages/profile_check_adaptive_volume_scaled_0p866025404/convergence.csv">timestep checks</a></li><li>profile_check_baseline: <a href="stages/profile_check_baseline/verification.csv">features</a> · <a href="stages/profile_check_baseline/convergence.csv">timestep checks</a></li><li>profile_check_forward_inherited_0p01: <a href="stages/profile_check_forward_inherited_0p01/verification.csv">features</a> · <a href="stages/profile_check_forward_inherited_0p01/convergence.csv">timestep checks</a></li><li>profile_check_forward_inherited_0p03: <a href="stages/profile_check_forward_inherited_0p03/verification.csv">features</a> · <a href="stages/profile_check_forward_inherited_0p03/convergence.csv">timestep checks</a></li><li>profile_check_forward_inherited_0p1: <a href="stages/profile_check_forward_inherited_0p1/verification.csv">features</a> · <a href="stages/profile_check_forward_inherited_0p1/convergence.csv">timestep checks</a></li><li>profile_check_forward_inherited_0p2: <a href="stages/profile_check_forward_inherited_0p2/verification.csv">features</a> · <a href="stages/profile_check_forward_inherited_0p2/convergence.csv">timestep checks</a></li><li>profile_check_forward_inherited_0p5: <a href="stages/profile_check_forward_inherited_0p5/verification.csv">features</a> · <a href="stages/profile_check_forward_inherited_0p5/convergence.csv">timestep checks</a></li><li>profile_check_forward_inherited_0p75: <a href="stages/profile_check_forward_inherited_0p75/verification.csv">features</a> · <a href="stages/profile_check_forward_inherited_0p75/convergence.csv">timestep checks</a></li><li>profile_check_forward_volume_scaled_0p01: <a href="stages/profile_check_forward_volume_scaled_0p01/verification.csv">features</a> · <a href="stages/profile_check_forward_volume_scaled_0p01/convergence.csv">timestep checks</a></li><li>profile_check_forward_volume_scaled_0p03: <a href="stages/profile_check_forward_volume_scaled_0p03/verification.csv">features</a> · <a href="stages/profile_check_forward_volume_scaled_0p03/convergence.csv">timestep checks</a></li><li>profile_check_forward_volume_scaled_0p05: <a href="stages/profile_check_forward_volume_scaled_0p05/verification.csv">features</a> · <a href="stages/profile_check_forward_volume_scaled_0p05/convergence.csv">timestep checks</a></li><li>profile_check_forward_volume_scaled_0p1: <a href="stages/profile_check_forward_volume_scaled_0p1/verification.csv">features</a> · <a href="stages/profile_check_forward_volume_scaled_0p1/convergence.csv">timestep checks</a></li><li>profile_check_forward_volume_scaled_0p2: <a href="stages/profile_check_forward_volume_scaled_0p2/verification.csv">features</a> · <a href="stages/profile_check_forward_volume_scaled_0p2/convergence.csv">timestep checks</a></li><li>profile_check_forward_volume_scaled_0p3: <a href="stages/profile_check_forward_volume_scaled_0p3/verification.csv">features</a> · <a href="stages/profile_check_forward_volume_scaled_0p3/convergence.csv">timestep checks</a></li><li>profile_check_reverse_inherited_0p05: <a href="stages/profile_check_reverse_inherited_0p05/verification.csv">features</a> · <a href="stages/profile_check_reverse_inherited_0p05/convergence.csv">timestep checks</a></li><li>profile_check_reverse_inherited_0p3: <a href="stages/profile_check_reverse_inherited_0p3/verification.csv">features</a> · <a href="stages/profile_check_reverse_inherited_0p3/convergence.csv">timestep checks</a></li><li>profile_check_reverse_volume_scaled_0p5: <a href="stages/profile_check_reverse_volume_scaled_0p5/verification.csv">features</a> · <a href="stages/profile_check_reverse_volume_scaled_0p5/convergence.csv">timestep checks</a></li><li>profile_check_reverse_volume_scaled_0p75: <a href="stages/profile_check_reverse_volume_scaled_0p75/verification.csv">features</a> · <a href="stages/profile_check_reverse_volume_scaled_0p75/convergence.csv">timestep checks</a></li></ul></details>
+<p><a href="audited_verification.csv">Audited profile/final table</a> · <a href="long_control_audit.csv">Long controls</a> ·
+<a href="native_conservation_audit.csv">Native audit</a> · <a href="search_parameters.csv">Named parameters</a> ·
+<a href="current_split.csv">Current split</a> · <a href="original_report.md">Original generated report</a></p></html>

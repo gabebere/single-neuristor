@@ -1,0 +1,18 @@
+{
+  "pid": 33018,
+  "caffeinate_pid": 33019,
+  "command": [
+    "/opt/anaconda3/bin/python",
+    "-c",
+    "from neuristor.cli import main; main()",
+    "analyze",
+    "filament-profile",
+    "--resume",
+    "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/local/20261027_193458_overnight-fixed-f-filament-profile-and-cross-cur_5e8844"
+  ],
+  "started_local": "2026-10-27T21:35:26.640323+02:00",
+  "estimated_deadline_local": "2026-10-28T05:35:26.640323+02:00",
+  "pythonpath": "/Users/gabrielberezovsky/Documents/Projects/single-neuristor/runs/local/20261027_193458_overnight-fixed-f-filament-profile-and-cross-cur_5e8844/source",
+  "numerical_threads": 1,
+  "source_commit": "8ae0081ba73b90474545ca8032843bba057a1c06"
+}

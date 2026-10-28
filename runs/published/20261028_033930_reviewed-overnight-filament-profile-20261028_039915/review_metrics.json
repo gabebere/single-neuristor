@@ -1,0 +1,27 @@
+{
+  "all_final_native_features_match_saved_tables": true,
+  "attempts": 1,
+  "audited_refinement_selection": {
+    "inherited": {
+      "actual_candidate": "forward_inherited_0p75",
+      "audited_candidate": "forward_inherited_0p75",
+      "unchanged": true
+    },
+    "volume_scaled": {
+      "actual_candidate": "adaptive_volume_scaled_0p866025404",
+      "audited_candidate": "adaptive_volume_scaled_0p866025404",
+      "unchanged": true
+    }
+  },
+  "calibration_adopted": false,
+  "completed_stage_hashes_verified": 76,
+  "distinct_saved_physical_vectors": 20698,
+  "distinct_vectors_with_objective_dt_and_target_scope": 20748,
+  "frozen_file_hashes_verified": 94,
+  "native_balance_maximum_relative_error": 2.593542437784446e-07,
+  "native_histories_audited": 132,
+  "numerical_source_commit": "8ae0081ba73b90474545ca8032843bba057a1c06",
+  "recomputed_acceptance_matches_original": true,
+  "stage_unique_evaluations": 21232,
+  "summary_nan_issue": "Missing-cycle losses became NaN in DataFrame summaries, erasing the partial loss diagnostic. Accepted objectives remain undefined. Finite-loss post-processing restores the diagnostic without changing either selected refinement seed."
+}

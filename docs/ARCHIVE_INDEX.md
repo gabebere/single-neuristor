@@ -10,6 +10,22 @@ presentation artifacts. That distinction matters because Git history preserves e
 experiments, while only the current solver and audit should be used for new numerical
 claims.
 
+## Overnight fixed-f filament profile — 28 October 2026
+
+- [`20261028_033930_reviewed-overnight-filament-profile-20261028_039915`](../runs/published/20261028_033930_reviewed-overnight-filament-profile-20261028_039915/START_HERE.html):
+  completed 21,232 stage-unique evaluations across nine fractions and two thermal
+  families, forward/reverse continuations, four adaptive midpoints and six final
+  primary/mean-aware candidates. All 76 planned stages completed in 7.06 hours.
+  None passes all target, physical, waveform-convergence and 2 µs-control gates.
+  The finest primary f=1 diagnostic retains 10/11 valid targets but Vpp MAPE
+  remains 1,437%; the retained fractional alternatives do not resolve the mismatch.
+  All 132 native final histories pass branch-balance and feature-replay audits.
+  A post-processing NaN correction restores partial-loss diagnostics without
+  changing either refinement selection or any acceptance decision. Original metrics,
+  inputs/source, tables and figures are byte-preserved. Large histories/arrays
+  remain local with explicit hash/inclusion inventory; no calibration is adopted.
+  [Protocol, results, audit and next step](OVERNIGHT_FILAMENT_PROFILE_20261027.md).
+
 ## Experimental filament and cold surroundings — 27 October 2026
 
 - `20261027_184359_reviewed-filament-and-cold-surroundings-presenta_a6fe81`:

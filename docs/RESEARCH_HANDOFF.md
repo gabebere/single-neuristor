@@ -1,6 +1,6 @@
 # Research handoff
 
-Last scientific review: **27 October 2026**. Layout updated **26 October 2026**. Read this, the root README, and AGENTS.md before
+Last scientific review: **28 October 2026**. Layout updated **26 October 2026**. Read this, the root README, and AGENTS.md before
 continuing. The [detailed research history](RESEARCH_HISTORY.md) preserves previous
 results, commands, parameter tables, and caveats without making them a new task list.
 
@@ -71,19 +71,19 @@ No new calibration was adopted during repository consolidation.
 
 ## Latest fitting method versus requested next work
 
-An [eight-hour fixed-f profile](OVERNIGHT_FILAMENT_PROFILE_20261027.md) is now
-implemented for the requested overnight follow-up: nine fractions, separate
-inherited/volume-scaled thermal bounds, forward/reverse starts, initial 8/3
-current split, all-22 replay, paired mean-aware refinements and smaller-timestep
-and 2 µs controls. **Running; results pending.** The frozen-source job started
-27 October at 21:35 Israel time, with its eight-hour deadline at 05:35 on
-28 October. Local bundle:
-`runs/local/20261027_193458_overnight-fixed-f-filament-profile-and-cross-cur_5e8844`
-(open `START_HERE.html`). Frozen code is `8ae0081`, pushed on
-`codex/overnight-filament-profile`; the job executes its own copied source.
-This protocol is not new scientific evidence. Its three initially excluded
-currents were seen historically, and final refinements use all 11 targets.
-No calibration is adopted.
+The [overnight fixed-f profile](OVERNIGHT_FILAMENT_PROFILE_20261027.md) completed
+all planned stages in 7.06 hours: 21,232 stage-unique evaluations, nine fractions,
+two thermal-bound families and fine-step/2 µs checks. **No quantitative,
+converged fit was found.** At 0.003125 ns the primary f=1 diagnostic passes
+10/11 target checks, with frequency MAPE 16.59% on 10 defined frequencies,
+Vpp MAPE 1,437% and all-record mean RMSE 35.52 mV. Retained f=0.75/0.866025
+final candidates have larger errors; no final candidate passes the full timestep
+or long-control gate. This does not identify f or rule out localization.
+The [compact reviewed evidence](../runs/published/20261028_033930_reviewed-overnight-filament-profile-20261028_039915/START_HERE.html)
+preserves input/source provenance, all checks and the reporting-correction audit;
+the ~964 MB full numerical histories remain local. Initial exclusions were seen
+historically and final fits use all 11 targets. Confirm channel mapping and audit
+numerical fidelity before adding a freely varying f. No calibration is adopted.
 
 On 27 October Gabriel confirmed that the fitted R(T) and oscillation data use
 the same electrode pair, with uniform stage heating for R(T). An optional

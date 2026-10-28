@@ -1,0 +1,18 @@
+{
+  "calibration_adopted": false,
+  "completed_profile_points": 21,
+  "constant_control_cases": 6,
+  "coverage_complete": true,
+  "elapsed_s": 25431.74321603775,
+  "final_candidates_verified": 6,
+  "held_out_scope": "Optimizer-excluded initially, historically seen; final refinements use all 11 targets",
+  "interrupted_optimizer_trajectory_can_differ": false,
+  "phase": "finished",
+  "search_stages": 43,
+  "skipped_budget": [],
+  "state": "completed",
+  "successful_candidates": [],
+  "total_unique_candidate_evaluations": 21232,
+  "updated_utc": "2026-10-28T02:39:20.509329+00:00",
+  "wall_hours": 8.0
+}

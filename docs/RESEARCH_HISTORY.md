@@ -1254,3 +1254,62 @@ its frozen source and inputs in local bundle
 Post-launch numerical evaluations were verified; a quiet monitor will inspect
 completion/failure. Local generated results are not yet backed up to GitHub.
 No scientific conclusion or calibration changes at launch.
+
+## 28 October 2026 — overnight profile completed and reviewed
+
+The frozen-source run finished at approximately 04:39 Israel time, after
+7.064 hours and before its original eight-hour deadline. All 76 stages completed
+without a restart: 43 searches, 21 profile verifications, six final verifications
+and six long-control cases. It made 21,232 stage-unique evaluations, including
+repeated starts across stages; 20,698 distinct physical parameter/f vectors were
+saved. Nine declared fractions and four adaptive midpoints were examined under
+the inherited and volume-scaled thermal intervals, with fixed static R(T)/T0.
+
+**No quantitative, converged fit was found.** At 0.003125 ns the primary f=1
+diagnostic passes 10/11 target cycle/frequency checks with frequency MAPE 16.59%
+on 10 defined frequencies, Vpp MAPE 1,437.28% on all 11 targets and mean-voltage
+RMSE 35.52 mV on all 22 records. Its mean-aware counterpart passes 9/11 checks
+but has 10 defined frequencies (MAPE 35.17%), Vpp MAPE 1,582.75% and mean RMSE
+46.24 mV. The retained inherited f=0.75 primary/mean-aware vectors coincide:
+10/11 valid, frequency MAPE 19.80% on 10, Vpp MAPE 1,898.46%, mean RMSE 69.64 mV.
+The scaled-family f≈0.866025 primary and mean-aware candidates retain 10/11 valid,
+frequency MAPE 22.89%/24.42% on 10, Vpp MAPE 1,677.19%/1,655.83% and mean RMSE
+60.48/60.75 mV. All accepted all-target losses remain undefined.
+
+Final feature checks pass only 12–17 of 22 target/halving pairs; waveform checks
+pass 0–2 of 22. Both f=0.75 final cases leave the temperature domain on four of
+22 measured-input paths (all-record peak 379.82 K, configured upper bound
+375.1625 K). Other final short replays remain inside the domain; all retain
+admissible proximity. Quiet-control false positives are one for both f=1 cases,
+two for both f=0.75 cases and zero for the scaled alternatives. None passes every
+observable/physical/numerical gate. The frequency/Vpp/mean comparison is conditional,
+not evidence of a statistically identified f or a globally optimized fit.
+
+All 2 µs final control cases leave the domain at ~569.55 µA at all three steps.
+Only the primary f=1 case stays sustained at all three selected currents; other
+cases lose low-current oscillations (~228.28 µA). Its long-control features converge,
+but the high-current physical failure prevents joint acceptance. Primary f=1
+passes two of three current-specific joint checks; the others pass one of three.
+These failures do not prove physical instability or exclude localization.
+
+Independent review verifies all 94 frozen files and all 76 completed-stage hash
+inventories. All 132 native final histories reproduce the saved voltage features;
+branch-current and power identities agree within 2.60e-7 relative error. The review
+found that DataFrame conversion of missing losses to NaN erased the original
+partial diagnostic summary loss. Correcting that post-processing leaves both
+selected refinement seeds and all acceptance decisions unchanged. Maintained
+reporting was fixed separately in `1322225`; the frozen search, original summaries
+and full numerical bundle remain unchanged. The updated suite passes 224 tests.
+
+The compact reviewed bundle is
+`20261028_033930_reviewed-overnight-filament-profile-20261028_039915`.
+It preserves original metrics/configuration, measured inputs and executable source,
+all verification/convergence/control tables, six final sampled waveform tables,
+figures, audit code and explicit hashes. Full optimizer JSONL, native arrays and
+profile-only sampled waveforms remain in the ~964 MB local numerical bundle;
+those omitted bytes are not backed up on GitHub by the compact review.
+Initial excluded currents were seen historically, and final refinements fit all
+11 targets. Next: verify device-terminal/channel conversion and readout transfer
+with a known-resistor control, plus a dedicated numerical-fidelity audit before
+another parameter search. No arbitrary f(t), new physical extension or calibration
+was adopted. [Protocol and reviewed evidence](OVERNIGHT_FILAMENT_PROFILE_20261027.md).

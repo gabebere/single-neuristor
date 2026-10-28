@@ -14,8 +14,10 @@
 - Add live progress, named parameter tables and final evidence plots; guard
   resume with source/input/environment hashes, exclusive locking and cached
   evaluation caps. Physics and default fitting objectives remain unchanged.
-- Verify 223 tests and all 50 recipes. Overnight scientific outcomes are pending;
-  no calibration is adopted.
+- Complete all 76 overnight stages in 7.06 hours with 21,232 stage-unique evaluations;
+  no candidate passes the full observable/physical/convergence/long-control gates.
+  Preserve a separate compact reviewed bundle and audit all 132 native final histories.
+- Verify 224 tests and all 50 recipes. No calibration is adopted.
 
 ## Unreleased — experimental filament and cold surroundings
 

@@ -1,0 +1,1772 @@
+{
+  "artifacts": [
+    {
+      "label": "Resolved configuration",
+      "media_type": "application/json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Reviewed methods, outcomes, correction and next step",
+      "media_type": "text/markdown",
+      "path": "report.md"
+    },
+    {
+      "label": "Review entry point",
+      "media_type": "text/markdown",
+      "path": "README.md"
+    },
+    {
+      "label": "Offline reviewed comparison and evidence",
+      "media_type": "text/html",
+      "path": "START_HERE.html"
+    },
+    {
+      "label": "Archival review/report generation source",
+      "path": "review_finalize.py"
+    },
+    {
+      "label": "Reviewed evidence README.md",
+      "path": "README.md"
+    },
+    {
+      "label": "Reviewed evidence START_HERE.html",
+      "path": "START_HERE.html"
+    },
+    {
+      "label": "Reviewed evidence adaptive_plan.json",
+      "path": "adaptive_plan.json"
+    },
+    {
+      "label": "Reviewed evidence audited_verification.csv",
+      "path": "audited_verification.csv"
+    },
+    {
+      "label": "Reviewed evidence current_split.csv",
+      "path": "current_split.csv"
+    },
+    {
+      "label": "Reviewed evidence environment.json",
+      "path": "environment.json"
+    },
+    {
+      "label": "Reviewed evidence execution_config.json",
+      "path": "execution_config.json"
+    },
+    {
+      "label": "Reviewed evidence figures/final_waveforms.png",
+      "path": "figures/final_waveforms.png"
+    },
+    {
+      "label": "Reviewed evidence figures/profile.png",
+      "path": "figures/profile.png"
+    },
+    {
+      "label": "Reviewed evidence final_comparison.csv",
+      "path": "final_comparison.csv"
+    },
+    {
+      "label": "Reviewed evidence frozen_hashes.json",
+      "path": "frozen_hashes.json"
+    },
+    {
+      "label": "Reviewed evidence full_local_inventory.json",
+      "path": "full_local_inventory.json"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/1000mv0_converted.csv",
+      "path": "inputs/current/1000mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/100mv0_converted.csv",
+      "path": "inputs/current/100mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/1100mv0_converted.csv",
+      "path": "inputs/current/1100mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/1200mv0_converted.csv",
+      "path": "inputs/current/1200mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/150mv0_converted.csv",
+      "path": "inputs/current/150mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/200mv0_converted.csv",
+      "path": "inputs/current/200mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/250mv0_converted.csv",
+      "path": "inputs/current/250mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/300mv0_converted.csv",
+      "path": "inputs/current/300mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/350mv0_converted.csv",
+      "path": "inputs/current/350mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/400mv0_converted.csv",
+      "path": "inputs/current/400mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/450mv0_converted.csv",
+      "path": "inputs/current/450mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/500mv0_converted.csv",
+      "path": "inputs/current/500mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/50mv0_converted.csv",
+      "path": "inputs/current/50mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/550mv0_converted.csv",
+      "path": "inputs/current/550mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/600mv0_converted.csv",
+      "path": "inputs/current/600mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/650mv0_converted.csv",
+      "path": "inputs/current/650mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/700mv0_converted.csv",
+      "path": "inputs/current/700mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/750mv0_converted.csv",
+      "path": "inputs/current/750mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/800mv0_converted.csv",
+      "path": "inputs/current/800mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/850mv0_converted.csv",
+      "path": "inputs/current/850mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/900mv0_converted.csv",
+      "path": "inputs/current/900mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/current/950mv0_converted.csv",
+      "path": "inputs/current/950mv0_converted.csv"
+    },
+    {
+      "label": "Reviewed evidence inputs/original_recipe.toml",
+      "path": "inputs/original_recipe.toml"
+    },
+    {
+      "label": "Reviewed evidence inputs/resistance_data.tsv",
+      "path": "inputs/resistance_data.tsv"
+    },
+    {
+      "label": "Reviewed evidence inputs/resistance_preset.json",
+      "path": "inputs/resistance_preset.json"
+    },
+    {
+      "label": "Reviewed evidence inputs/seed_vectors.csv",
+      "path": "inputs/seed_vectors.csv"
+    },
+    {
+      "label": "Reviewed evidence long_control_audit.csv",
+      "path": "long_control_audit.csv"
+    },
+    {
+      "label": "Reviewed evidence metrics.json",
+      "path": "metrics.json"
+    },
+    {
+      "label": "Reviewed evidence native_conservation_audit.csv",
+      "path": "native_conservation_audit.csv"
+    },
+    {
+      "label": "Reviewed evidence original_launch.json",
+      "path": "original_launch.json"
+    },
+    {
+      "label": "Reviewed evidence original_process.json",
+      "path": "original_process.json"
+    },
+    {
+      "label": "Reviewed evidence original_report.md",
+      "path": "original_report.md"
+    },
+    {
+      "label": "Reviewed evidence original_run.json",
+      "path": "original_run.json"
+    },
+    {
+      "label": "Reviewed evidence original_state.json",
+      "path": "original_state.json"
+    },
+    {
+      "label": "Reviewed evidence original_status.json",
+      "path": "original_status.json"
+    },
+    {
+      "label": "Reviewed evidence plan.json",
+      "path": "plan.json"
+    },
+    {
+      "label": "Reviewed evidence preserved_artifact_hashes.json",
+      "path": "preserved_artifact_hashes.json"
+    },
+    {
+      "label": "Reviewed evidence refinement_plan.json",
+      "path": "refinement_plan.json"
+    },
+    {
+      "label": "Reviewed evidence report.md",
+      "path": "report.md"
+    },
+    {
+      "label": "Reviewed evidence resolved_config.json",
+      "path": "resolved_config.json"
+    },
+    {
+      "label": "Reviewed evidence review_audit.py",
+      "path": "review_audit.py"
+    },
+    {
+      "label": "Reviewed evidence review_finalize.py",
+      "path": "review_finalize.py"
+    },
+    {
+      "label": "Reviewed evidence review_metrics.json",
+      "path": "review_metrics.json"
+    },
+    {
+      "label": "Reviewed evidence search_parameters.csv",
+      "path": "search_parameters.csv"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/__init__.py",
+      "path": "source/neuristor/__init__.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/__init__.py",
+      "path": "source/neuristor/analysis/__init__.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/alternating_amplitudes.py",
+      "path": "source/neuristor/analysis/alternating_amplitudes.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/boundary_search.py",
+      "path": "source/neuristor/analysis/boundary_search.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/distribution.py",
+      "path": "source/neuristor/analysis/distribution.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/experimental_waveforms.py",
+      "path": "source/neuristor/analysis/experimental_waveforms.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/extrema.py",
+      "path": "source/neuristor/analysis/extrema.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/frequency_sensitivity.py",
+      "path": "source/neuristor/analysis/frequency_sensitivity.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/lab_estimates.py",
+      "path": "source/neuristor/analysis/lab_estimates.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/lab_replay.py",
+      "path": "source/neuristor/analysis/lab_replay.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/loss_comparison.py",
+      "path": "source/neuristor/analysis/loss_comparison.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/metrics.py",
+      "path": "source/neuristor/analysis/metrics.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/model_validation.py",
+      "path": "source/neuristor/analysis/model_validation.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/optimizer_diagnostics.py",
+      "path": "source/neuristor/analysis/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/oscillation_audit.py",
+      "path": "source/neuristor/analysis/oscillation_audit.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/physical_maps.py",
+      "path": "source/neuristor/analysis/physical_maps.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/analysis/trend_validation.py",
+      "path": "source/neuristor/analysis/trend_validation.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/cli.py",
+      "path": "source/neuristor/cli.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/config.py",
+      "path": "source/neuristor/config.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/current_drive_sim.py",
+      "path": "source/neuristor/current_drive_sim.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/fitting/__init__.py",
+      "path": "source/neuristor/fitting/__init__.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/fitting/filament_profile.py",
+      "path": "source/neuristor/fitting/filament_profile.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/fitting/joint_inference.py",
+      "path": "source/neuristor/fitting/joint_inference.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/fitting/optimizer_audit.py",
+      "path": "source/neuristor/fitting/optimizer_audit.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/fitting/parameter_inference.py",
+      "path": "source/neuristor/fitting/parameter_inference.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/fitting/resistance_custom_analysis.py",
+      "path": "source/neuristor/fitting/resistance_custom_analysis.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/fitting/saved_fit_replay.py",
+      "path": "source/neuristor/fitting/saved_fit_replay.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/fitting/steady_inference.py",
+      "path": "source/neuristor/fitting/steady_inference.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/interfaces/__init__.py",
+      "path": "source/neuristor/interfaces/__init__.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/interfaces/presentation_server.py",
+      "path": "source/neuristor/interfaces/presentation_server.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/interfaces/run_manager.py",
+      "path": "source/neuristor/interfaces/run_manager.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/layout.py",
+      "path": "source/neuristor/layout.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/model.py",
+      "path": "source/neuristor/model.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/orchestration/__init__.py",
+      "path": "source/neuristor/orchestration/__init__.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/orchestration/alternating_amplitudes.py",
+      "path": "source/neuristor/orchestration/alternating_amplitudes.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/orchestration/artifact_catalog.py",
+      "path": "source/neuristor/orchestration/artifact_catalog.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/orchestration/boundary_workflows.py",
+      "path": "source/neuristor/orchestration/boundary_workflows.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/orchestration/filament_profile.py",
+      "path": "source/neuristor/orchestration/filament_profile.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/orchestration/filament_study.py",
+      "path": "source/neuristor/orchestration/filament_study.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/orchestration/loss_comparison.py",
+      "path": "source/neuristor/orchestration/loss_comparison.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/orchestration/loss_scopes.py",
+      "path": "source/neuristor/orchestration/loss_scopes.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/orchestration/map_viewers.py",
+      "path": "source/neuristor/orchestration/map_viewers.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/orchestration/map_workflows.py",
+      "path": "source/neuristor/orchestration/map_workflows.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/orchestration/optimizer_audit.py",
+      "path": "source/neuristor/orchestration/optimizer_audit.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/orchestration/optimizer_review.py",
+      "path": "source/neuristor/orchestration/optimizer_review.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/orchestration/presentation_reproduction.py",
+      "path": "source/neuristor/orchestration/presentation_reproduction.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/orchestration/sample_study.py",
+      "path": "source/neuristor/orchestration/sample_study.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/orchestration/trend_validation.py",
+      "path": "source/neuristor/orchestration/trend_validation.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/plotting/__init__.py",
+      "path": "source/neuristor/plotting/__init__.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/plotting/boundary_maps.py",
+      "path": "source/neuristor/plotting/boundary_maps.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/plotting/filament_profile.py",
+      "path": "source/neuristor/plotting/filament_profile.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/plotting/filament_study.py",
+      "path": "source/neuristor/plotting/filament_study.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/plotting/frequency_sensitivity.py",
+      "path": "source/neuristor/plotting/frequency_sensitivity.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/plotting/loss_comparison.py",
+      "path": "source/neuristor/plotting/loss_comparison.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/plotting/map_animations.py",
+      "path": "source/neuristor/plotting/map_animations.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/plotting/optimizer_diagnostics.py",
+      "path": "source/neuristor/plotting/optimizer_diagnostics.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/plotting/presentation.py",
+      "path": "source/neuristor/plotting/presentation.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/plotting/replay_plots.py",
+      "path": "source/neuristor/plotting/replay_plots.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/plotting/trend_validation.py",
+      "path": "source/neuristor/plotting/trend_validation.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/plotting/visualization.py",
+      "path": "source/neuristor/plotting/visualization.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/provenance.py",
+      "path": "source/neuristor/provenance.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/runs.py",
+      "path": "source/neuristor/runs.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/validation.py",
+      "path": "source/neuristor/validation.py"
+    },
+    {
+      "label": "Reviewed evidence source/neuristor/workflows.py",
+      "path": "source/neuristor/workflows.py"
+    },
+    {
+      "label": "Reviewed evidence source_hashes.json",
+      "path": "source_hashes.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_inherited_0p612372436/result.json",
+      "path": "stages/adaptive_inherited_0p612372436/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_inherited_0p612372436/seed_vectors.json",
+      "path": "stages/adaptive_inherited_0p612372436/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_inherited_0p612372436/task.json",
+      "path": "stages/adaptive_inherited_0p612372436/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_inherited_0p612372436/timing.json",
+      "path": "stages/adaptive_inherited_0p612372436/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_inherited_0p866025404/result.json",
+      "path": "stages/adaptive_inherited_0p866025404/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_inherited_0p866025404/seed_vectors.json",
+      "path": "stages/adaptive_inherited_0p866025404/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_inherited_0p866025404/task.json",
+      "path": "stages/adaptive_inherited_0p866025404/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_inherited_0p866025404/timing.json",
+      "path": "stages/adaptive_inherited_0p866025404/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_volume_scaled_0p612372436/result.json",
+      "path": "stages/adaptive_volume_scaled_0p612372436/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_volume_scaled_0p612372436/seed_vectors.json",
+      "path": "stages/adaptive_volume_scaled_0p612372436/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_volume_scaled_0p612372436/task.json",
+      "path": "stages/adaptive_volume_scaled_0p612372436/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_volume_scaled_0p612372436/timing.json",
+      "path": "stages/adaptive_volume_scaled_0p612372436/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_volume_scaled_0p866025404/result.json",
+      "path": "stages/adaptive_volume_scaled_0p866025404/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_volume_scaled_0p866025404/seed_vectors.json",
+      "path": "stages/adaptive_volume_scaled_0p866025404/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_volume_scaled_0p866025404/task.json",
+      "path": "stages/adaptive_volume_scaled_0p866025404/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/adaptive_volume_scaled_0p866025404/timing.json",
+      "path": "stages/adaptive_volume_scaled_0p866025404/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/baseline/result.json",
+      "path": "stages/baseline/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/baseline/seed_vectors.json",
+      "path": "stages/baseline/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/baseline/task.json",
+      "path": "stages/baseline/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/baseline/timing.json",
+      "path": "stages/baseline/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_baseline_mean/constant_current.csv",
+      "path": "stages/control_refine_baseline_mean/constant_current.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_baseline_mean/result.json",
+      "path": "stages/control_refine_baseline_mean/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_baseline_mean/task.json",
+      "path": "stages/control_refine_baseline_mean/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_baseline_primary/constant_current.csv",
+      "path": "stages/control_refine_baseline_primary/constant_current.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_baseline_primary/result.json",
+      "path": "stages/control_refine_baseline_primary/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_baseline_primary/task.json",
+      "path": "stages/control_refine_baseline_primary/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_inherited_mean/constant_current.csv",
+      "path": "stages/control_refine_inherited_mean/constant_current.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_inherited_mean/result.json",
+      "path": "stages/control_refine_inherited_mean/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_inherited_mean/task.json",
+      "path": "stages/control_refine_inherited_mean/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_inherited_primary/constant_current.csv",
+      "path": "stages/control_refine_inherited_primary/constant_current.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_inherited_primary/result.json",
+      "path": "stages/control_refine_inherited_primary/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_inherited_primary/task.json",
+      "path": "stages/control_refine_inherited_primary/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_volume_scaled_mean/constant_current.csv",
+      "path": "stages/control_refine_volume_scaled_mean/constant_current.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_volume_scaled_mean/result.json",
+      "path": "stages/control_refine_volume_scaled_mean/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_volume_scaled_mean/task.json",
+      "path": "stages/control_refine_volume_scaled_mean/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_volume_scaled_primary/constant_current.csv",
+      "path": "stages/control_refine_volume_scaled_primary/constant_current.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_volume_scaled_primary/result.json",
+      "path": "stages/control_refine_volume_scaled_primary/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/control_refine_volume_scaled_primary/task.json",
+      "path": "stages/control_refine_volume_scaled_primary/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_baseline_mean/convergence.csv",
+      "path": "stages/final_refine_baseline_mean/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_baseline_mean/result.json",
+      "path": "stages/final_refine_baseline_mean/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_baseline_mean/task.json",
+      "path": "stages/final_refine_baseline_mean/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_baseline_mean/traces.csv",
+      "path": "stages/final_refine_baseline_mean/traces.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_baseline_mean/verification.csv",
+      "path": "stages/final_refine_baseline_mean/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_baseline_primary/convergence.csv",
+      "path": "stages/final_refine_baseline_primary/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_baseline_primary/result.json",
+      "path": "stages/final_refine_baseline_primary/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_baseline_primary/task.json",
+      "path": "stages/final_refine_baseline_primary/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_baseline_primary/traces.csv",
+      "path": "stages/final_refine_baseline_primary/traces.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_baseline_primary/verification.csv",
+      "path": "stages/final_refine_baseline_primary/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_inherited_mean/convergence.csv",
+      "path": "stages/final_refine_inherited_mean/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_inherited_mean/result.json",
+      "path": "stages/final_refine_inherited_mean/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_inherited_mean/task.json",
+      "path": "stages/final_refine_inherited_mean/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_inherited_mean/traces.csv",
+      "path": "stages/final_refine_inherited_mean/traces.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_inherited_mean/verification.csv",
+      "path": "stages/final_refine_inherited_mean/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_inherited_primary/convergence.csv",
+      "path": "stages/final_refine_inherited_primary/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_inherited_primary/result.json",
+      "path": "stages/final_refine_inherited_primary/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_inherited_primary/task.json",
+      "path": "stages/final_refine_inherited_primary/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_inherited_primary/traces.csv",
+      "path": "stages/final_refine_inherited_primary/traces.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_inherited_primary/verification.csv",
+      "path": "stages/final_refine_inherited_primary/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_volume_scaled_mean/convergence.csv",
+      "path": "stages/final_refine_volume_scaled_mean/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_volume_scaled_mean/result.json",
+      "path": "stages/final_refine_volume_scaled_mean/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_volume_scaled_mean/task.json",
+      "path": "stages/final_refine_volume_scaled_mean/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_volume_scaled_mean/traces.csv",
+      "path": "stages/final_refine_volume_scaled_mean/traces.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_volume_scaled_mean/verification.csv",
+      "path": "stages/final_refine_volume_scaled_mean/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_volume_scaled_primary/convergence.csv",
+      "path": "stages/final_refine_volume_scaled_primary/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_volume_scaled_primary/result.json",
+      "path": "stages/final_refine_volume_scaled_primary/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_volume_scaled_primary/task.json",
+      "path": "stages/final_refine_volume_scaled_primary/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_volume_scaled_primary/traces.csv",
+      "path": "stages/final_refine_volume_scaled_primary/traces.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/final_refine_volume_scaled_primary/verification.csv",
+      "path": "stages/final_refine_volume_scaled_primary/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p01/result.json",
+      "path": "stages/forward_inherited_0p01/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p01/seed_vectors.json",
+      "path": "stages/forward_inherited_0p01/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p01/task.json",
+      "path": "stages/forward_inherited_0p01/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p01/timing.json",
+      "path": "stages/forward_inherited_0p01/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p03/result.json",
+      "path": "stages/forward_inherited_0p03/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p03/seed_vectors.json",
+      "path": "stages/forward_inherited_0p03/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p03/task.json",
+      "path": "stages/forward_inherited_0p03/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p03/timing.json",
+      "path": "stages/forward_inherited_0p03/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p05/result.json",
+      "path": "stages/forward_inherited_0p05/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p05/seed_vectors.json",
+      "path": "stages/forward_inherited_0p05/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p05/task.json",
+      "path": "stages/forward_inherited_0p05/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p05/timing.json",
+      "path": "stages/forward_inherited_0p05/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p1/result.json",
+      "path": "stages/forward_inherited_0p1/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p1/seed_vectors.json",
+      "path": "stages/forward_inherited_0p1/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p1/task.json",
+      "path": "stages/forward_inherited_0p1/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p1/timing.json",
+      "path": "stages/forward_inherited_0p1/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p2/result.json",
+      "path": "stages/forward_inherited_0p2/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p2/seed_vectors.json",
+      "path": "stages/forward_inherited_0p2/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p2/task.json",
+      "path": "stages/forward_inherited_0p2/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p2/timing.json",
+      "path": "stages/forward_inherited_0p2/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p3/result.json",
+      "path": "stages/forward_inherited_0p3/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p3/seed_vectors.json",
+      "path": "stages/forward_inherited_0p3/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p3/task.json",
+      "path": "stages/forward_inherited_0p3/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p3/timing.json",
+      "path": "stages/forward_inherited_0p3/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p5/result.json",
+      "path": "stages/forward_inherited_0p5/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p5/seed_vectors.json",
+      "path": "stages/forward_inherited_0p5/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p5/task.json",
+      "path": "stages/forward_inherited_0p5/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p5/timing.json",
+      "path": "stages/forward_inherited_0p5/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p75/result.json",
+      "path": "stages/forward_inherited_0p75/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p75/seed_vectors.json",
+      "path": "stages/forward_inherited_0p75/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p75/task.json",
+      "path": "stages/forward_inherited_0p75/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_inherited_0p75/timing.json",
+      "path": "stages/forward_inherited_0p75/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p01/result.json",
+      "path": "stages/forward_volume_scaled_0p01/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p01/seed_vectors.json",
+      "path": "stages/forward_volume_scaled_0p01/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p01/task.json",
+      "path": "stages/forward_volume_scaled_0p01/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p01/timing.json",
+      "path": "stages/forward_volume_scaled_0p01/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p03/result.json",
+      "path": "stages/forward_volume_scaled_0p03/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p03/seed_vectors.json",
+      "path": "stages/forward_volume_scaled_0p03/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p03/task.json",
+      "path": "stages/forward_volume_scaled_0p03/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p03/timing.json",
+      "path": "stages/forward_volume_scaled_0p03/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p05/result.json",
+      "path": "stages/forward_volume_scaled_0p05/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p05/seed_vectors.json",
+      "path": "stages/forward_volume_scaled_0p05/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p05/task.json",
+      "path": "stages/forward_volume_scaled_0p05/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p05/timing.json",
+      "path": "stages/forward_volume_scaled_0p05/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p1/result.json",
+      "path": "stages/forward_volume_scaled_0p1/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p1/seed_vectors.json",
+      "path": "stages/forward_volume_scaled_0p1/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p1/task.json",
+      "path": "stages/forward_volume_scaled_0p1/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p1/timing.json",
+      "path": "stages/forward_volume_scaled_0p1/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p2/result.json",
+      "path": "stages/forward_volume_scaled_0p2/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p2/seed_vectors.json",
+      "path": "stages/forward_volume_scaled_0p2/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p2/task.json",
+      "path": "stages/forward_volume_scaled_0p2/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p2/timing.json",
+      "path": "stages/forward_volume_scaled_0p2/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p3/result.json",
+      "path": "stages/forward_volume_scaled_0p3/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p3/seed_vectors.json",
+      "path": "stages/forward_volume_scaled_0p3/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p3/task.json",
+      "path": "stages/forward_volume_scaled_0p3/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p3/timing.json",
+      "path": "stages/forward_volume_scaled_0p3/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p5/result.json",
+      "path": "stages/forward_volume_scaled_0p5/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p5/seed_vectors.json",
+      "path": "stages/forward_volume_scaled_0p5/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p5/task.json",
+      "path": "stages/forward_volume_scaled_0p5/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p5/timing.json",
+      "path": "stages/forward_volume_scaled_0p5/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p75/result.json",
+      "path": "stages/forward_volume_scaled_0p75/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p75/seed_vectors.json",
+      "path": "stages/forward_volume_scaled_0p75/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p75/task.json",
+      "path": "stages/forward_volume_scaled_0p75/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/forward_volume_scaled_0p75/timing.json",
+      "path": "stages/forward_volume_scaled_0p75/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_inherited_0p612372436/convergence.csv",
+      "path": "stages/profile_check_adaptive_inherited_0p612372436/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_inherited_0p612372436/result.json",
+      "path": "stages/profile_check_adaptive_inherited_0p612372436/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_inherited_0p612372436/task.json",
+      "path": "stages/profile_check_adaptive_inherited_0p612372436/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_inherited_0p612372436/verification.csv",
+      "path": "stages/profile_check_adaptive_inherited_0p612372436/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_inherited_0p866025404/convergence.csv",
+      "path": "stages/profile_check_adaptive_inherited_0p866025404/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_inherited_0p866025404/result.json",
+      "path": "stages/profile_check_adaptive_inherited_0p866025404/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_inherited_0p866025404/task.json",
+      "path": "stages/profile_check_adaptive_inherited_0p866025404/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_inherited_0p866025404/verification.csv",
+      "path": "stages/profile_check_adaptive_inherited_0p866025404/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_volume_scaled_0p612372436/convergence.csv",
+      "path": "stages/profile_check_adaptive_volume_scaled_0p612372436/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_volume_scaled_0p612372436/result.json",
+      "path": "stages/profile_check_adaptive_volume_scaled_0p612372436/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_volume_scaled_0p612372436/task.json",
+      "path": "stages/profile_check_adaptive_volume_scaled_0p612372436/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_volume_scaled_0p612372436/verification.csv",
+      "path": "stages/profile_check_adaptive_volume_scaled_0p612372436/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_volume_scaled_0p866025404/convergence.csv",
+      "path": "stages/profile_check_adaptive_volume_scaled_0p866025404/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_volume_scaled_0p866025404/result.json",
+      "path": "stages/profile_check_adaptive_volume_scaled_0p866025404/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_volume_scaled_0p866025404/task.json",
+      "path": "stages/profile_check_adaptive_volume_scaled_0p866025404/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_adaptive_volume_scaled_0p866025404/verification.csv",
+      "path": "stages/profile_check_adaptive_volume_scaled_0p866025404/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_baseline/convergence.csv",
+      "path": "stages/profile_check_baseline/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_baseline/result.json",
+      "path": "stages/profile_check_baseline/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_baseline/task.json",
+      "path": "stages/profile_check_baseline/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_baseline/verification.csv",
+      "path": "stages/profile_check_baseline/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p01/convergence.csv",
+      "path": "stages/profile_check_forward_inherited_0p01/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p01/result.json",
+      "path": "stages/profile_check_forward_inherited_0p01/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p01/task.json",
+      "path": "stages/profile_check_forward_inherited_0p01/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p01/verification.csv",
+      "path": "stages/profile_check_forward_inherited_0p01/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p03/convergence.csv",
+      "path": "stages/profile_check_forward_inherited_0p03/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p03/result.json",
+      "path": "stages/profile_check_forward_inherited_0p03/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p03/task.json",
+      "path": "stages/profile_check_forward_inherited_0p03/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p03/verification.csv",
+      "path": "stages/profile_check_forward_inherited_0p03/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p1/convergence.csv",
+      "path": "stages/profile_check_forward_inherited_0p1/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p1/result.json",
+      "path": "stages/profile_check_forward_inherited_0p1/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p1/task.json",
+      "path": "stages/profile_check_forward_inherited_0p1/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p1/verification.csv",
+      "path": "stages/profile_check_forward_inherited_0p1/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p2/convergence.csv",
+      "path": "stages/profile_check_forward_inherited_0p2/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p2/result.json",
+      "path": "stages/profile_check_forward_inherited_0p2/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p2/task.json",
+      "path": "stages/profile_check_forward_inherited_0p2/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p2/verification.csv",
+      "path": "stages/profile_check_forward_inherited_0p2/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p5/convergence.csv",
+      "path": "stages/profile_check_forward_inherited_0p5/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p5/result.json",
+      "path": "stages/profile_check_forward_inherited_0p5/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p5/task.json",
+      "path": "stages/profile_check_forward_inherited_0p5/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p5/verification.csv",
+      "path": "stages/profile_check_forward_inherited_0p5/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p75/convergence.csv",
+      "path": "stages/profile_check_forward_inherited_0p75/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p75/result.json",
+      "path": "stages/profile_check_forward_inherited_0p75/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p75/task.json",
+      "path": "stages/profile_check_forward_inherited_0p75/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_inherited_0p75/verification.csv",
+      "path": "stages/profile_check_forward_inherited_0p75/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p01/convergence.csv",
+      "path": "stages/profile_check_forward_volume_scaled_0p01/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p01/result.json",
+      "path": "stages/profile_check_forward_volume_scaled_0p01/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p01/task.json",
+      "path": "stages/profile_check_forward_volume_scaled_0p01/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p01/verification.csv",
+      "path": "stages/profile_check_forward_volume_scaled_0p01/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p03/convergence.csv",
+      "path": "stages/profile_check_forward_volume_scaled_0p03/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p03/result.json",
+      "path": "stages/profile_check_forward_volume_scaled_0p03/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p03/task.json",
+      "path": "stages/profile_check_forward_volume_scaled_0p03/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p03/verification.csv",
+      "path": "stages/profile_check_forward_volume_scaled_0p03/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p05/convergence.csv",
+      "path": "stages/profile_check_forward_volume_scaled_0p05/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p05/result.json",
+      "path": "stages/profile_check_forward_volume_scaled_0p05/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p05/task.json",
+      "path": "stages/profile_check_forward_volume_scaled_0p05/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p05/verification.csv",
+      "path": "stages/profile_check_forward_volume_scaled_0p05/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p1/convergence.csv",
+      "path": "stages/profile_check_forward_volume_scaled_0p1/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p1/result.json",
+      "path": "stages/profile_check_forward_volume_scaled_0p1/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p1/task.json",
+      "path": "stages/profile_check_forward_volume_scaled_0p1/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p1/verification.csv",
+      "path": "stages/profile_check_forward_volume_scaled_0p1/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p2/convergence.csv",
+      "path": "stages/profile_check_forward_volume_scaled_0p2/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p2/result.json",
+      "path": "stages/profile_check_forward_volume_scaled_0p2/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p2/task.json",
+      "path": "stages/profile_check_forward_volume_scaled_0p2/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p2/verification.csv",
+      "path": "stages/profile_check_forward_volume_scaled_0p2/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p3/convergence.csv",
+      "path": "stages/profile_check_forward_volume_scaled_0p3/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p3/result.json",
+      "path": "stages/profile_check_forward_volume_scaled_0p3/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p3/task.json",
+      "path": "stages/profile_check_forward_volume_scaled_0p3/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_forward_volume_scaled_0p3/verification.csv",
+      "path": "stages/profile_check_forward_volume_scaled_0p3/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_inherited_0p05/convergence.csv",
+      "path": "stages/profile_check_reverse_inherited_0p05/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_inherited_0p05/result.json",
+      "path": "stages/profile_check_reverse_inherited_0p05/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_inherited_0p05/task.json",
+      "path": "stages/profile_check_reverse_inherited_0p05/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_inherited_0p05/verification.csv",
+      "path": "stages/profile_check_reverse_inherited_0p05/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_inherited_0p3/convergence.csv",
+      "path": "stages/profile_check_reverse_inherited_0p3/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_inherited_0p3/result.json",
+      "path": "stages/profile_check_reverse_inherited_0p3/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_inherited_0p3/task.json",
+      "path": "stages/profile_check_reverse_inherited_0p3/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_inherited_0p3/verification.csv",
+      "path": "stages/profile_check_reverse_inherited_0p3/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_volume_scaled_0p5/convergence.csv",
+      "path": "stages/profile_check_reverse_volume_scaled_0p5/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_volume_scaled_0p5/result.json",
+      "path": "stages/profile_check_reverse_volume_scaled_0p5/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_volume_scaled_0p5/task.json",
+      "path": "stages/profile_check_reverse_volume_scaled_0p5/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_volume_scaled_0p5/verification.csv",
+      "path": "stages/profile_check_reverse_volume_scaled_0p5/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_volume_scaled_0p75/convergence.csv",
+      "path": "stages/profile_check_reverse_volume_scaled_0p75/convergence.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_volume_scaled_0p75/result.json",
+      "path": "stages/profile_check_reverse_volume_scaled_0p75/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_volume_scaled_0p75/task.json",
+      "path": "stages/profile_check_reverse_volume_scaled_0p75/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/profile_check_reverse_volume_scaled_0p75/verification.csv",
+      "path": "stages/profile_check_reverse_volume_scaled_0p75/verification.csv"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_baseline_mean/result.json",
+      "path": "stages/refine_baseline_mean/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_baseline_mean/seed_vectors.json",
+      "path": "stages/refine_baseline_mean/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_baseline_mean/task.json",
+      "path": "stages/refine_baseline_mean/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_baseline_mean/timing.json",
+      "path": "stages/refine_baseline_mean/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_baseline_primary/result.json",
+      "path": "stages/refine_baseline_primary/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_baseline_primary/seed_vectors.json",
+      "path": "stages/refine_baseline_primary/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_baseline_primary/task.json",
+      "path": "stages/refine_baseline_primary/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_baseline_primary/timing.json",
+      "path": "stages/refine_baseline_primary/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_inherited_mean/result.json",
+      "path": "stages/refine_inherited_mean/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_inherited_mean/seed_vectors.json",
+      "path": "stages/refine_inherited_mean/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_inherited_mean/task.json",
+      "path": "stages/refine_inherited_mean/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_inherited_mean/timing.json",
+      "path": "stages/refine_inherited_mean/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_inherited_primary/result.json",
+      "path": "stages/refine_inherited_primary/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_inherited_primary/seed_vectors.json",
+      "path": "stages/refine_inherited_primary/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_inherited_primary/task.json",
+      "path": "stages/refine_inherited_primary/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_inherited_primary/timing.json",
+      "path": "stages/refine_inherited_primary/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_volume_scaled_mean/result.json",
+      "path": "stages/refine_volume_scaled_mean/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_volume_scaled_mean/seed_vectors.json",
+      "path": "stages/refine_volume_scaled_mean/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_volume_scaled_mean/task.json",
+      "path": "stages/refine_volume_scaled_mean/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_volume_scaled_mean/timing.json",
+      "path": "stages/refine_volume_scaled_mean/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_volume_scaled_primary/result.json",
+      "path": "stages/refine_volume_scaled_primary/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_volume_scaled_primary/seed_vectors.json",
+      "path": "stages/refine_volume_scaled_primary/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_volume_scaled_primary/task.json",
+      "path": "stages/refine_volume_scaled_primary/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/refine_volume_scaled_primary/timing.json",
+      "path": "stages/refine_volume_scaled_primary/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p01/result.json",
+      "path": "stages/reverse_inherited_0p01/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p01/seed_vectors.json",
+      "path": "stages/reverse_inherited_0p01/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p01/task.json",
+      "path": "stages/reverse_inherited_0p01/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p01/timing.json",
+      "path": "stages/reverse_inherited_0p01/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p03/result.json",
+      "path": "stages/reverse_inherited_0p03/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p03/seed_vectors.json",
+      "path": "stages/reverse_inherited_0p03/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p03/task.json",
+      "path": "stages/reverse_inherited_0p03/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p03/timing.json",
+      "path": "stages/reverse_inherited_0p03/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p05/result.json",
+      "path": "stages/reverse_inherited_0p05/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p05/seed_vectors.json",
+      "path": "stages/reverse_inherited_0p05/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p05/task.json",
+      "path": "stages/reverse_inherited_0p05/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p05/timing.json",
+      "path": "stages/reverse_inherited_0p05/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p1/result.json",
+      "path": "stages/reverse_inherited_0p1/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p1/seed_vectors.json",
+      "path": "stages/reverse_inherited_0p1/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p1/task.json",
+      "path": "stages/reverse_inherited_0p1/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p1/timing.json",
+      "path": "stages/reverse_inherited_0p1/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p2/result.json",
+      "path": "stages/reverse_inherited_0p2/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p2/seed_vectors.json",
+      "path": "stages/reverse_inherited_0p2/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p2/task.json",
+      "path": "stages/reverse_inherited_0p2/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p2/timing.json",
+      "path": "stages/reverse_inherited_0p2/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p3/result.json",
+      "path": "stages/reverse_inherited_0p3/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p3/seed_vectors.json",
+      "path": "stages/reverse_inherited_0p3/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p3/task.json",
+      "path": "stages/reverse_inherited_0p3/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p3/timing.json",
+      "path": "stages/reverse_inherited_0p3/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p5/result.json",
+      "path": "stages/reverse_inherited_0p5/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p5/seed_vectors.json",
+      "path": "stages/reverse_inherited_0p5/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p5/task.json",
+      "path": "stages/reverse_inherited_0p5/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p5/timing.json",
+      "path": "stages/reverse_inherited_0p5/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p75/result.json",
+      "path": "stages/reverse_inherited_0p75/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p75/seed_vectors.json",
+      "path": "stages/reverse_inherited_0p75/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p75/task.json",
+      "path": "stages/reverse_inherited_0p75/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_inherited_0p75/timing.json",
+      "path": "stages/reverse_inherited_0p75/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p01/result.json",
+      "path": "stages/reverse_volume_scaled_0p01/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p01/seed_vectors.json",
+      "path": "stages/reverse_volume_scaled_0p01/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p01/task.json",
+      "path": "stages/reverse_volume_scaled_0p01/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p01/timing.json",
+      "path": "stages/reverse_volume_scaled_0p01/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p03/result.json",
+      "path": "stages/reverse_volume_scaled_0p03/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p03/seed_vectors.json",
+      "path": "stages/reverse_volume_scaled_0p03/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p03/task.json",
+      "path": "stages/reverse_volume_scaled_0p03/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p03/timing.json",
+      "path": "stages/reverse_volume_scaled_0p03/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p05/result.json",
+      "path": "stages/reverse_volume_scaled_0p05/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p05/seed_vectors.json",
+      "path": "stages/reverse_volume_scaled_0p05/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p05/task.json",
+      "path": "stages/reverse_volume_scaled_0p05/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p05/timing.json",
+      "path": "stages/reverse_volume_scaled_0p05/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p1/result.json",
+      "path": "stages/reverse_volume_scaled_0p1/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p1/seed_vectors.json",
+      "path": "stages/reverse_volume_scaled_0p1/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p1/task.json",
+      "path": "stages/reverse_volume_scaled_0p1/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p1/timing.json",
+      "path": "stages/reverse_volume_scaled_0p1/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p2/result.json",
+      "path": "stages/reverse_volume_scaled_0p2/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p2/seed_vectors.json",
+      "path": "stages/reverse_volume_scaled_0p2/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p2/task.json",
+      "path": "stages/reverse_volume_scaled_0p2/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p2/timing.json",
+      "path": "stages/reverse_volume_scaled_0p2/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p3/result.json",
+      "path": "stages/reverse_volume_scaled_0p3/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p3/seed_vectors.json",
+      "path": "stages/reverse_volume_scaled_0p3/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p3/task.json",
+      "path": "stages/reverse_volume_scaled_0p3/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p3/timing.json",
+      "path": "stages/reverse_volume_scaled_0p3/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p5/result.json",
+      "path": "stages/reverse_volume_scaled_0p5/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p5/seed_vectors.json",
+      "path": "stages/reverse_volume_scaled_0p5/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p5/task.json",
+      "path": "stages/reverse_volume_scaled_0p5/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p5/timing.json",
+      "path": "stages/reverse_volume_scaled_0p5/timing.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p75/result.json",
+      "path": "stages/reverse_volume_scaled_0p75/result.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p75/seed_vectors.json",
+      "path": "stages/reverse_volume_scaled_0p75/seed_vectors.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p75/task.json",
+      "path": "stages/reverse_volume_scaled_0p75/task.json"
+    },
+    {
+      "label": "Reviewed evidence stages/reverse_volume_scaled_0p75/timing.json",
+      "path": "stages/reverse_volume_scaled_0p75/timing.json"
+    },
+    {
+      "label": "Reviewed evidence verified_candidates.csv",
+      "path": "verified_candidates.csv"
+    },
+    {
+      "label": "Complete curated artifact hashes",
+      "media_type": "application/json",
+      "path": "review_artifact_hashes.json"
+    }
+  ],
+  "command": "Post-run frozen-source audit and compact archival review",
+  "created_at": "2026-10-28T03:39:30.325102+00:00",
+  "id": "20261028_033930_reviewed-overnight-filament-profile-20261028_039915",
+  "kind": "analysis",
+  "model": "reviewed-overnight-filament-profile",
+  "name": "Reviewed overnight filament profile 20261028",
+  "provenance": {
+    "branch": "codex/overnight-filament-profile",
+    "commit": "1322225313edccc1f80e34d520d757ae9e6550dc",
+    "dirty": false
+  },
+  "schema_version": 1,
+  "status": "completed",
+  "storage": "public",
+  "summary": {
+    "calibration_adopted": false,
+    "completed_profile_points": 21,
+    "constant_control_cases": 6,
+    "coverage_complete": true,
+    "elapsed_s": 25431.74321603775,
+    "final_candidates_verified": 6,
+    "held_out_scope": "Optimizer-excluded initially, historically seen; final refinements use all 11 targets",
+    "interrupted_optimizer_trajectory_can_differ": false,
+    "native_histories_audited": 132,
+    "reviewed": true,
+    "search_stages": 43,
+    "skipped_budget": [],
+    "source_run_id": "20261027_193458_overnight-fixed-f-filament-profile-and-cross-cur_5e8844",
+    "state": "completed",
+    "successful_candidates": [],
+    "summary_correction_changes_selection": false,
+    "total_unique_candidate_evaluations": 21232,
+    "wall_hours": 8.0
+  },
+  "updated_at": "2026-10-28T03:39:32.482860+00:00"
+}
