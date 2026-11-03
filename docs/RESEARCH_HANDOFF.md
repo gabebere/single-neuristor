@@ -71,6 +71,13 @@ No new calibration was adopted during repository consolidation.
 
 ## Latest fitting method versus requested next work
 
+**Implementation rollback — 3 November 2026:** at Gabriel's request, the material-model
+pilot implementation, command, recipe and dedicated tests were removed. Active
+source is restored exactly to pre-pilot commit `64a0d1e`. The completed public
+comparison remains unchanged as historical evidence; its frozen source and Git
+commit `0e39b5e` preserve reproducibility. Earlier filament workflows remain.
+No calibration is adopted.
+
 The [material-model pilot](MATERIAL_MODEL_PILOT_20261028.md) completed 119 cases,
 seven all-current replays/ablations and four 2 µs control cases. **No validated
 improvement was found.** Warm parallel regions retain 10/11 targets but overheat;
@@ -80,8 +87,7 @@ outside calibration (9/11 valid). None passes the full convergence/long-control
 gates. These sparse tests do not rule out the mechanisms. The selected pilot
 baseline is a new trade-off and does not supersede the earlier 10/11 reference.
 [Reviewed comparisons and audit](../runs/published/20261028_111037_reviewed-partial-switching-material-model-pilot-_09fe72/START_HERE.html)
-preserve all cases, native reconstruction checks and exclusions. Existing default
-trajectories remain bitwise compatible; no calibration is adopted.
+preserve all cases, native reconstruction checks and exclusions. The pilot is now retired; no calibration is adopted.
 
 The [overnight fixed-f profile](OVERNIGHT_FILAMENT_PROFILE_20261027.md) completed
 all planned stages in 7.06 hours: 21,232 stage-unique evaluations, nine fractions,

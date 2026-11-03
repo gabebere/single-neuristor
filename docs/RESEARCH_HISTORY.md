@@ -1380,3 +1380,13 @@ constraints. The actual TIA feedback/probe-current boundary remains the next
 external constraint; fixed gain/offset corrections already failed in the earlier
 audit. No arbitrary f(t), per-current parameters, channel rescaling or calibration
 is adopted. [Full protocol and reviewed evidence](MATERIAL_MODEL_PILOT_20261028.md).
+
+
+## 3 November 2026 — material-model pilot rollback
+
+At Gabriel's request, restore active source exactly to pre-pilot commit
+`64a0d1e`, removing the optional warm-parallel, series-bottleneck and phase-lag
+pilot command, recipe and dedicated tests. This retires an unsuccessful trial,
+not the earlier filament workflows. Completed public bundles remain unchanged;
+Git commit `0e39b5e` and their frozen source preserve the trial implementation.
+No new calibration or scientific result is introduced by this rollback.

@@ -12,6 +12,10 @@ claims.
 
 ## Material-model comparison pilot — 28 October 2026
 
+Implementation retired on 3 November 2026 at Gabriel's request. The reviewed
+bundle is preserved unchanged; active source is restored to pre-pilot `64a0d1e`.
+Historical implementation remains at `0e39b5e`.
+
 - [`20261028_111037_reviewed-partial-switching-material-model-pilot-_09fe72`](../runs/published/20261028_111037_reviewed-partial-switching-material-model-pilot-_09fe72/START_HERE.html):
   compares optional warm parallel regions, a series VO₂ bottleneck/access path
   and finite phase response separately. All 119 screening/refinement cases, seven

@@ -1,5 +1,11 @@
 # Partial-switching material-model pilot — 28 October 2026
 
+**Retired on 3 November 2026:** the active implementation, CLI command and recipe
+were rolled back at Gabriel's request. The completed evidence below is unchanged.
+To inspect or rerun the historical implementation, use Git commit `0e39b5e` in a
+separate checkout, or inspect the frozen source in the reviewed bundle. Commands
+and recipe descriptions below document that historical version.
+
 **Completed: none of the tested mechanisms yields a validated fit.** This follows the negative
 [overnight fixed-f study](OVERNIGHT_FILAMENT_PROFILE_20261027.md). Gabriel
 authorized a small model-comparison pilot. It introduces optional hypotheses;
@@ -67,7 +73,7 @@ neuristor analyze model-pilot
 ```
 
 Versioned recipe:
-[`specimen_model_pilot_20261028.toml`](../experiments/current/specimen_model_pilot_20261028.toml).
+[`specimen_model_pilot_20261028.toml` at the historical commit](https://github.com/gabebere/single-neuristor/blob/0e39b5ee587ddf18e4abd9fc654b123427d31986/experiments/current/specimen_model_pilot_20261028.toml).
 The new local bundle preserves original inputs, source, all cases, numerical
 tables and an offline HTML viewer. This is a finite grid and local follow-up,
 not another overnight global optimization. Runtime depends on the machine.

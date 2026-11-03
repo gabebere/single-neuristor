@@ -1,6 +1,13 @@
 # Changelog
 
-## Unreleased — material-model comparison pilot
+## 3 November 2026 — retire material-model pilot
+
+- Restore active source exactly to pre-pilot commit `64a0d1e`; remove the pilot
+  command, recipe and dedicated tests at Gabriel's request.
+- Preserve completed public evidence unchanged and retain implementation in Git
+  history. Earlier filament workflows remain available.
+
+## Historical — material-model comparison pilot
 
 - Add optional warm parallel regions, a series VO₂ bottleneck and finite phase
   response time, with the original ideal-current solver as the exact baseline.
