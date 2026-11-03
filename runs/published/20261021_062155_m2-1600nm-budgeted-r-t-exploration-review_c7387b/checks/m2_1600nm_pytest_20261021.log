@@ -1,0 +1,14 @@
+........................................................................ [ 37%]
+........................................................................ [ 74%]
+..................................................                       [100%]
+=============================== warnings summary ===============================
+tests/test_joint_inference.py: 2 warnings
+tests/test_loss_scopes.py: 3 warnings
+tests/test_optimizer_audit.py: 2 warnings
+tests/test_steady_inference.py: 4 warnings
+  /Users/gabrielberezovsky/Documents/Projects/single-neuristor/src/neuristor/model.py:244: RuntimeWarning:
+  
+  divide by zero encountered in arctanh
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+194 passed, 11 warnings in 121.77s (0:02:01)
